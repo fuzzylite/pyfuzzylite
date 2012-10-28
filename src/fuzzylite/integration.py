@@ -14,6 +14,9 @@ class Trapezoidal:
 
     @staticmethod
     def area(term, sample_size):
+        from math import isinf
+        if isinf(term.maximum) or isinf(term.minimum):
+            raise ValueError('cannot compute area on term that extends to infinity') 
         sum_area = 0.0
         step_size = (term.maximum - term.minimum) / sample_size
         step = term.minimum
@@ -37,6 +40,9 @@ class Trapezoidal:
 
     @staticmethod
     def area_and_centroid(term, sample_size):
+        from math import isinf
+        if isinf(term.maximum) or isinf(term.minimum):
+            raise ValueError('cannot compute area on term that extends to infinity')
         sum_area = 0.0
         step_size = (term.maximum - term.minimum) / sample_size
         step = term.minimum

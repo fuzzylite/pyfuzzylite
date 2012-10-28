@@ -15,6 +15,3 @@ class CenterOfGravity:
     def defuzzify(term, integration, sample_size ):
         return integration.centroid(term, sample_size)
     
-    
-        
-        

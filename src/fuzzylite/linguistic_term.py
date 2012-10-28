@@ -5,7 +5,7 @@ Created on 10/10/2012
 '''
 
 from fuzzylite.fuzzy_operator import FuzzyOperator
-from fuzzylite.math_utils import Scale
+from fuzzylite.fuzzy_operation import Scale
 
 
 class LinguisticTerm:
@@ -21,11 +21,9 @@ class LinguisticTerm:
         self.modulation_degree = modulation_degree
         self.fuzzy_operator = fuzzy_operator
         
-    
     def toFCL(self):
         '''Returns a string in Fuzzy Control Language.'''
-        return 'TERM ' + str(self.name) + ' := ' + \
-            str(self.__class__.__name__) + ' ';
+        return 'TERM ' + str(self.name) + ' := ' + str(self)
     
     def membership(self, crisp): raise NotImplementedError()
 
@@ -40,8 +38,8 @@ class Triangular(LinguisticTerm):
         LinguisticTerm.__init__(self, name, minimum, maximum)
         self.middle_vertex = middle_vertex
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
         '(' + str(self.minimum) + ', ' + \
         str(self.middle_vertex) + ', ' + str(self.maximum) + ')'
 
@@ -51,7 +49,8 @@ class Triangular(LinguisticTerm):
         if crisp < self.middle_vertex :
             mu = Scale(crisp, 0.0, 1.0, self.minimum, self.middle_vertex)
         else:
-            mu = Scale(crisp, 1.0, 0.0,  self.middle_vertex, self.maximum);
+            mu = Scale(crisp, 0.0, 1.0,  self.maximum, self.middle_vertex);
+#            mu = Scale(crisp, 1.0, 0.0,  self.middle_vertex, self.maximum);
         return self.fuzzy_operator.modulate(mu, self.modulation_degree);
 
 class Rectangular(LinguisticTerm):
@@ -59,8 +58,8 @@ class Rectangular(LinguisticTerm):
     def __init__(self, name, minimum, maximum):
         LinguisticTerm.__init__(self, name, minimum, maximum)
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
             '(' + str(self.minimum) + ', ' + str(self.maximum) + ')'
     
     def membership(self, crisp):
@@ -80,8 +79,8 @@ class Trapezoidal(LinguisticTerm):
         self.b = b 
         self.c = c
         
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
         '(' + str(self.minimum) + ', ' + str(self.b) + ', ' + \
         str(self.c) + ', ' + str(self.maximum) + ')'
 
@@ -94,7 +93,8 @@ class Trapezoidal(LinguisticTerm):
         elif crisp < self.c:
             mu = 1.0
         elif crisp < self.maximum:
-            mu = Scale(crisp, 1.0, 0.0, self.c, self.maximum)
+            mu = Scale(crisp, 0.0, 1.0, self.maximum, self.c)
+#            mu = Scale(crisp, 1.0, 0.0, self.c, self.maximum)
         else: return 0.0
          
         return self.fuzzy_operator.modulate(mu, self.modulation_degree);
@@ -104,8 +104,8 @@ class LeftShoulder(LinguisticTerm):
     def __init__(self, name, minimum, maximum):
         LinguisticTerm.__init__(self, name, minimum, maximum) 
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
             '(' + str(self.minimum) + ', ' + str(self.maximum) + ')'
     
     def membership(self, crisp):
@@ -120,8 +120,8 @@ class RightShoulder(LinguisticTerm):
     def __init__(self, name, minimum, maximum):
         LinguisticTerm.__init__(self, name, minimum, maximum)
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
             '(' + str(self.minimum) + ', ' + str(self.maximum) + ')'
 
     def membership(self, crisp):
@@ -140,8 +140,8 @@ class Singleton(Rectangular):
         self.value = value
         self.epsilon = epsilon
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + \
+    def __str__(self):
+        return str(self.__class__.__name__) + \
             str(self.value) + '(' + str(self.epsilon) + ')'
 
 class Function(LinguisticTerm):
@@ -150,9 +150,9 @@ class Function(LinguisticTerm):
         LinguisticTerm.__init__(self, name, minimum, maximum)
         self.lambda_expression = lambda_expression
     
-    def toFCL(self):
-        return LinguisticTerm.toFCL(self) + str(self.lambda_expression) \
-            + ', (' + str(self.minimum) + ', ' + str(self.maximum) + ')'
+    def __str__(self):
+        return str(self.__class__.__name__) + str(self.lambda_expression) + \
+            ', (' + str(self.minimum) + ', ' + str(self.maximum) + ')'
             
     def membership(self, crisp):
         return self.lambda_expression(crisp, self.minimum, self.maximum)
@@ -163,9 +163,14 @@ class Composite(LinguisticTerm):
         LinguisticTerm.__init__(self, name, float('-inf'), float('inf'))
         self.terms = terms;
     
+    def __str__(self):
+        return str(self.__class__.__name__) + '{' + \
+            ' , '.join('[' + str(term) + ']' for term in self.terms) + '}'
+    
     def toFCL(self):
-        return LinguisticTerm.toFCL(self) + '{' +\
-            ''.join('[' + term.toFCL() + ']' for term in self.terms) + '}'
+        return 'TERM ' + str(self.name) + ' := ' + \
+            str(self.__class__.__name__) + '{' + \
+            ' , '.join('[' + term.toFCL() + ']' for term in self.terms) + '}'
     
     def membership(self, crisp):
         mu = 0.0
@@ -175,17 +180,18 @@ class Composite(LinguisticTerm):
 
 if __name__ == '__main__':
     
-    
+    a = Triangular('Low', 0, 5, 10)
+    print(a)
+    print(a.toFCL())
     #Test: Composite
     composite = Composite('mix')
     composite.terms.append(Triangular('a', 0, 5, 10))
     composite.terms.append(Rectangular('a', 0, 5))
+    print(composite)
     print(composite.toFCL())
-    l = []
-    l.append('pe')
-    l.append('cue')
-    l.append('ca')
-    print(repr([x for x in list]))
+    
+    
+    
 
     
     
