@@ -35,7 +35,7 @@ class DescriptiveAntecedent(FuzzyAntecedent):
         
     def __str__(self):
         result = ''
-        if self.node == self.Node.Terminal:
+        if self.node is self.Node.Terminal:
             result += self.input_var.name + ' ' + FuzzyRule.FR_IS + ' ' + \
                         ' '.join(hedge[0] for hedge in self.hedges)
             result += self.term.name
@@ -49,19 +49,19 @@ class DescriptiveAntecedent(FuzzyAntecedent):
     
     def degree_of_truth(self):
         #if node is terminal, then return the membership value and its hedges
-        if self.node == self.Node.Terminal:
+        if self.node is self.Node.Terminal:
             result = self.term.membership(self.input_var.input)
             for hedge in self.hedges: result = hedge(result)
             return result
         else:
-            if self.left is None or self.right is  None:
+            if not self.left  or not self.right:
                 raise ValueError('left and right antecedents must exist')
             
-            if self.node == self.Node.And:
-                return self.fuzzy_operator.tnorm(self.left.degree_of_truth(), \
+            if self.node is self.Node.And:
+                return self.fuzzy_operator.tnorm(self.left.degree_of_truth(), 
                                                  self.right.degree_of_truth())
-            elif self.node == self.Node.Or:
-                return self.fuzzy_operator.snorm(self.left.degree_of_truth(), \
+            elif self.node is self.Node.Or:
+                return self.fuzzy_operator.snorm(self.left.degree_of_truth(), 
                                                  self.right.degree_of_truth())
             else: raise ValueError('node cannot be None')
 
