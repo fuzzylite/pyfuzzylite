@@ -4,14 +4,13 @@ Created on 27/10/2012
 @author: jcrada
 '''
 from fuzzylite.linguistic_term import Composite
-
+from collections import OrderedDict
 
 class LinguisticVariable(object):
     '''Represents a linguistic variable which contains different linguistic terms.'''
 
 
     def __init__(self, name):
-        from collections import OrderedDict
         self.name = name
         self.terms = OrderedDict()
     
@@ -24,7 +23,6 @@ class LinguisticVariable(object):
         return self.terms[key].maximum
     
     def compound(self):
-        from fuzzylite.linguistic_term import Composite
         terms = list(self.terms.values())
         return Composite(self.name, terms)
     
@@ -64,9 +62,9 @@ if __name__ == '__main__':
     var.terms[med.name] = med
     var.terms[hi.name] = hi
     var.input = 1
-    print('min=',var.minimum())
-    print('max=',var.maximum())
-    for i in range(0,21):
+    print('min=', var.minimum())
+    print('max=', var.maximum())
+    for i in range(0, 21):
         print(i, '=', var.fuzzify(i))
     
     
