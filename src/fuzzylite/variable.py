@@ -3,10 +3,10 @@ Created on 27/10/2012
 
 @author: jcrada
 '''
-from fuzzylite.linguistic_term import Composite
+from fuzzylite.membership_function import Composite
 from collections import OrderedDict
 
-class LinguisticVariable(object):
+class Variable(object):
     '''Represents a linguistic variable which contains different linguistic terms.'''
 
 
@@ -32,18 +32,18 @@ class LinguisticVariable(object):
         return ' + '.join(memberships)
     
 
-class InputVariable(LinguisticVariable):
+class InputVariable(Variable):
     '''Defines a linguistic variable for input.'''
     
     def __init__(self, name):
-        LinguisticVariable.__init__(self, name)
+        Variable.__init__(self, name)
         self.input = float(0.0)
 
-class OutputVariable(LinguisticVariable):
+class OutputVariable(Variable):
     '''Defines a linguistic variable for output.'''
     
     def __init__(self, name):
-        LinguisticVariable.__init__(self, name)
+        Variable.__init__(self, name)
         self.output = Composite('output')
 
 if __name__ == '__main__':
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 #    print(next(reversed(d)))
 #    for key in d.items():
 #        print(key)
-    from fuzzylite.linguistic_term import Triangular
+    from fuzzylite.membership_function import Triangular
     var = InputVariable('test')
     low = Triangular('Low', 0, 5, 10)
     med = Triangular('Med', 5, 10, 15)
@@ -64,8 +64,10 @@ if __name__ == '__main__':
     var.input = 1
     print('min=', var.minimum())
     print('max=', var.maximum())
-    for i in range(0, 21):
-        print(i, '=', var.fuzzify(i))
+    x = 0
+    while x < 21:
+        print(x, '=', var.fuzzify(x))
+        x += 0.5
     
     
     

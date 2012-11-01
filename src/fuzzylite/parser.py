@@ -3,9 +3,6 @@ Created on 28/10/2012
 
 @author: jcrada
 '''
-from fuzzylite.fuzzy_antecedent import DescriptiveAntecedent
-from fuzzylite.fuzzy_rule import FuzzyRule
-
 
 from math import *
 
@@ -20,14 +17,17 @@ class Operator:
     @staticmethod
     def default_operators():
         p = 7
+        from fuzzylite.fuzzy_rule import FuzzyRule
+        o_and = FuzzyRule.FR_AND
+        o_or = FuzzyRule.FR_OR
         return ({
                '!':Operator('!', p, arity=1), '~':Operator('~', p, arity=1),
                '^':Operator('^', p - 1, associativity=1),
                '*':Operator('*', p - 2), '/':Operator('/', p - 2), '%':Operator('%', p - 2),
                '+':Operator('+', p - 3), '-':Operator('-', p - 3),
                '&':Operator('&', p - 4), '|':Operator('|', p - 5),
-               '&&':Operator('&&', p - 6), 'and':Operator('and', p - 6, mask=' and '),
-               '||':Operator('||', p - 7), 'or':Operator('or', p - 7, mask=' or ')
+               '&&':Operator('&&', p - 6), o_and:Operator(o_and, p - 6, mask=' %s ' % o_and),
+               '||':Operator('||', p - 7), o_or:Operator(o_or, p - 7, mask=' %s ' % o_or)
                 })
 
 class Function:
@@ -41,7 +41,7 @@ class Function:
         import inspect, math
         functions = {f:Function(f, 1) for f in dir(math) if inspect.isbuiltin(eval(f))}
         # updating those functions with 2 parameters manually as builtin cannot be inspected
-        del functions['fsum']  # deleting fsum as parameter is iterable 
+        del functions['fsum']  # deletes fsum as parameter is iterable 
         twoargs = ['copysign', 'fmod', 'ldexp', 'log', 'pow', 'atan2', 'hypot']
         for f in twoargs: functions[f].arity = 2
         return functions
@@ -49,7 +49,6 @@ class Function:
 
 class Parser:
     
-        
     
     default_operators = Operator.default_operators()
     default_functions = Function.default_functions()
@@ -114,48 +113,7 @@ class Parser:
 
         return ' '.join(queue)
 
-    @staticmethod
-    def antecedent_expression_tree(infix, fuzzy_engine, operators=default_operators):
-        '''Builds an expression tree from the antecedent of a fuzzy rule.'''
-        postfix = Parser.infix_to_postfix(infix, operators, {})
-#        //e.g. Postfix antecedent: Energy is LOW Distance is FAR_AWAY and
-#        3 4 2 * 1 5 - 2 3 ^ ^ / +
-        tokens = postfix.split()
-        s_var, s_is, s_hedge, s_term, s_operator = range(5)
-        variables = fuzzy_engine.input
-        hedges = fuzzy_engine.hedgeset.hedge
-        state = (s_var)
-        expression = []
-        for token in tokens:
-            if s_var in state:
-                if token not in variables: 
-                    raise SyntaxError('expected variable, but found ' + token)
-                expression.append(DescriptiveAntecedent(fuzzy_operator=fuzzy_engine.fuzzy_operator))
-                expression[-1].input = variables[token]
-                state = (s_is)
-            
-            elif s_is in state:
-                if token != FuzzyRule.FR_IS:
-                    raise SyntaxError('expected keyword ' + FuzzyRule.FR_IS + 
-                                      ', but found ' + token )
-                state = (s_hedge, s_term)
-            
-            elif s_hedge in state or s_term in state:
-                if token in hedges:
-                    expression[-1].hedge.append(object)
-                    #no state change
-                elif token in variables.terms:
-                    expression[-1].term = variables.terms[token]
-                    state = (s_var, s_operator)
-                else: 
-                    raise SyntaxError('expected hedge or term, but found ' + token)
-            
-            elif s_operator in state:
-                if token not in operators:
-                    raise SyntaxError('expected operator, but found ' + token)
-                expression[-1].operator = token
-                
-        
+ 
         
 
 if __name__ == '__main__':

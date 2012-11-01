@@ -16,7 +16,7 @@ class FuzzyOperator:
     '''
     instance = None
     @staticmethod
-    def Default():
+    def default():
         '''Retrieves the default fuzzy operator.'''
         if FuzzyOperator.instance is None:
             FuzzyOperator.instance = FuzzyOperator()
@@ -50,10 +50,10 @@ class FuzzyOperator:
         return self.integration.area_and_centroid(term, self.sample_size)
     
 if __name__ == "__main__":
-    print(FuzzyOperator.Default().tnorm)
-#    FuzzyOperator.Default().tnorm = lambda a,b: a ** b
-#    print(FuzzyOperator.Default().tnorm)
-    fop = FuzzyOperator.Default()
+    print(FuzzyOperator.default().tnorm)
+#    FuzzyOperator.default().tnorm = lambda a,b: a ** b
+#    print(FuzzyOperator.default().tnorm)
+    fop = FuzzyOperator.default()
     print('And: ', fop.tnorm(2,5))
     print('Or: ', fop.snorm(2,5))
     print('And: ', fop.tnorm)

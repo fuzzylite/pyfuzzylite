@@ -12,15 +12,17 @@ class FuzzyEngine:
     '''Wraps the whole system.'''
     
 
-    def __init__(self, name, fuzzy_operator = FuzzyOperator.Default(),
+    def __init__(self, name, fop = FuzzyOperator.default(),
                   hedge = HedgeDict()):
         self.name = name
-        self.fuzzy_operator = fuzzy_operator
+        self.fop = fop
         self.hedge = hedge
         self.input = OrderedDict()
         self.output = OrderedDict()
     
     def process(self):
+        for key in self.output:
+            self.output[key].output.clear()
         pass
     
     def toFCL(self):

@@ -5,8 +5,8 @@ Created on 30/10/2012
 '''
 
 from fuzzylite.fuzzy_engine import FuzzyEngine
-from fuzzylite.linguistic_variable import InputVariable, OutputVariable
-from fuzzylite.linguistic_term import LeftShoulder, Triangular, RightShoulder
+from fuzzylite.variable import InputVariable, OutputVariable
+from fuzzylite.membership_function import Triangular
 class Example(object):
     '''
     classdocs
@@ -15,9 +15,9 @@ class Example(object):
     def simple_mamdani():
         fe = FuzzyEngine('simple-mamdani')
         energy = InputVariable('Energy')
-        energy.terms['LOW'] = LeftShoulder('LOW', 0.25, 0.5)
+        energy.terms['LOW'] = Triangular('LOW', 0.0, 0.25, 0.5)
         energy.terms['MEDIUM'] = Triangular('MEDIUM', 0.25, 0.5, 0.75)
-        energy.terms['HIGH'] = RightShoulder('HIGH', 0.5, 0.75)
+        energy.terms['HIGH'] = Triangular('HIGH', 0.5, 0.75, 1.0)
         fe.input['Energy'] = energy
         
         health = OutputVariable('Health')
