@@ -4,16 +4,18 @@ Created on 30/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.fuzzy_engine import FuzzyEngine
+from fuzzylite.engine import Engine
 from fuzzylite.variable import InputVariable, OutputVariable
-from fuzzylite.membership_function import Triangular
+from fuzzylite.term import Triangular
+from fuzzylite.ruleblock import RuleBlock
+from fuzzylite.mamdani import MamdaniRule
 class Example(object):
     '''
     classdocs
     '''
     @staticmethod
     def simple_mamdani():
-        fe = FuzzyEngine('simple-mamdani')
+        fe = Engine('simple-mamdani')
         energy = InputVariable('Energy')
         energy.terms['LOW'] = Triangular('LOW', 0.0, 0.25, 0.5)
         energy.terms['MEDIUM'] = Triangular('MEDIUM', 0.25, 0.5, 0.75)
@@ -25,6 +27,22 @@ class Example(object):
         health.terms['REGULAR'] = Triangular('REGULAR', 0.25, 0.5, 0.75)
         health.terms['GOOD'] = Triangular('GOOD', 0.5, 0.75, 1.0)
         fe.output['Health'] = health
+        
+        rules = RuleBlock('')
+        rules.append(MamdaniRule('if Energy is LOW then Health is BAD', fe))
+        rules.append(MamdaniRule('if Energy is MEDIUM then Health is REGULAR', fe))
+        rules.append(MamdaniRule('if Energy is HIGH then Health is GOOD', fe))
+        fe.ruleblock[''] = rules
+        
+        input = 0.0
+        while input <= 1.0:
+            energy.input = input
+            fe.process()
+            print('Energy=%s\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
+            print('Output=%s\nHealth is %s' % (health.output.defuzzify(health), health.fuzzify(input))))
+            input += 0.1
+            
+            
         
         return fe
         

@@ -4,7 +4,7 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.fuzzy_operator import FuzzyOperator
+from fuzzylite.operator import Operator
 
 
 #TODO: Copy matlab membership functions
@@ -14,7 +14,7 @@ class Term:
     '''
     
     def __init__(self, name, minimum, maximum, alphacut=1.0,
-                 fop=FuzzyOperator.default()):
+                 fop=Operator.default()):
         self.name = name
         self.minimum = minimum
         self.maximum = maximum
@@ -47,7 +47,9 @@ class Triangular(Term):
         mu = None
         if x <= self.minimum or x >= self.maximum:
             mu = 0.0
-        elif x <= self.middle_vertex :
+        elif x == self.middle_vertex:
+            mu = 1.0
+        elif x < self.middle_vertex :
             mu = (x - self.minimum) / (self.middle_vertex - self.minimum)
         else:
             mu = (self.maximum - x) / (self.maximum - self.middle_vertex) 
@@ -122,7 +124,7 @@ class Composite(Term):
         return str(self.__class__.__name__) + '{' + \
             ' , '.join('[' + str(term) + ']' for term in self.terms) + '}'
     
-    def add(self, term):
+    def aggregate(self, term):
         import math
         if math.isinf(self.minimum) or term.minimum < self.minimum:
             self.minimum = term.minimum

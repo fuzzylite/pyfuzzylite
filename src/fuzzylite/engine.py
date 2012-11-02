@@ -4,26 +4,28 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.fuzzy_operator import FuzzyOperator
 from fuzzylite.hedge_dict import HedgeDict
+from fuzzylite.operator import Operator
+from fuzzylite.ruleblock import RuleBlock
 from collections import OrderedDict
 
-class FuzzyEngine:
+class Engine:
     '''Wraps the whole system.'''
     
 
-    def __init__(self, name, fop = FuzzyOperator.default(),
+    def __init__(self, name, fop = Operator.default(),
                   hedge = HedgeDict()):
         self.name = name
         self.fop = fop
         self.hedge = hedge
         self.input = OrderedDict()
         self.output = OrderedDict()
+        self.ruleblock = OrderedDict()
     
     def process(self):
         for key in self.output:
             self.output[key].output.clear()
-        pass
+        
     
     def toFCL(self):
         fcl = ['FUNCTION_BLOCK %s\n\n' % self.name]
@@ -51,15 +53,15 @@ class FuzzyEngine:
                 fcl.append('%s\n' % term.toFCL())
         fcl.append('END_DEFUZZIFY\n\n')
 
-#        for (int i = 0; i < numberOfRuleBlocks(); ++i) {
-#            ss << ruleBlock(i)->toString() << "\n\n";
-#        }
+        for key in self.ruleblock:
+            fcl.append('%s\n\n' % self.ruleblock[key].toFCL())
+
 
         fcl.append('END_FUNCTION_BLOCK')
         return ''.join(fcl)
     
 if __name__ == '__main__':
-    print(FuzzyEngine(None).toFCL())
+    print(Engine(None).toFCL())
     
         
         

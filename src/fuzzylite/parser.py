@@ -17,9 +17,9 @@ class Operator:
     @staticmethod
     def default_operators():
         p = 7
-        from fuzzylite.fuzzy_rule import FuzzyRule
-        o_and = FuzzyRule.FR_AND
-        o_or = FuzzyRule.FR_OR
+        from fuzzylite.rule import Rule
+        o_and = Rule.FR_AND
+        o_or = Rule.FR_OR
         return ({
                '!':Operator('!', p, arity=1), '~':Operator('~', p, arity=1),
                '^':Operator('^', p - 1, associativity=1),

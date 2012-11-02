@@ -12,6 +12,6 @@ class CenterOfGravity:
     '''
 
     @staticmethod
-    def defuzzify(term, integration, sample_size ):
-        return integration.centroid(term, sample_size)
+    def defuzzify(term, integrator, sample_size ):
+        return integrator.centroid(term, sample_size)
     

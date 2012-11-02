@@ -3,7 +3,7 @@ Created on 27/10/2012
 
 @author: jcrada
 '''
-from fuzzylite.membership_function import Composite
+from fuzzylite.term import Composite
 from collections import OrderedDict
 
 class Variable(object):
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 #    print(next(reversed(d)))
 #    for key in d.items():
 #        print(key)
-    from fuzzylite.membership_function import Triangular
+    from fuzzylite.term import Triangular
     var = InputVariable('test')
     low = Triangular('Low', 0, 5, 10)
     med = Triangular('Med', 5, 10, 15)
