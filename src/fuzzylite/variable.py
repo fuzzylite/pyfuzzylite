@@ -53,11 +53,11 @@ if __name__ == '__main__':
 #    print(next(reversed(d)))
 #    for key in d.items():
 #        print(key)
-    from fuzzylite.term import Triangular
+    from fuzzylite.term import Triangle
     var = InputVariable('test')
-    low = Triangular('Low', 0, 5, 10)
-    med = Triangular('Med', 5, 10, 15)
-    hi = Triangular('Hi', 10, 15, 20)
+    low = Triangle('Low', 0, 5, 10)
+    med = Triangle('Med', 5, 10, 15)
+    hi = Triangle('Hi', 10, 15, 20)
     var.terms[low.name] = low
     var.terms[med.name] = med
     var.terms[hi.name] = hi

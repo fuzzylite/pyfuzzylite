@@ -17,6 +17,8 @@ class RuleBlock(list):
         self.fop = fop
         
     def fire_rules(self):
+        if len(self) == 0: 
+            raise ValueError('no rules to fire')
         for rule in self:
             rule.fire(rule.firing_strength(self.fop), self.fop)
     
@@ -31,4 +33,4 @@ class RuleBlock(list):
     
     
 if __name__ == '__main__':
-    pass
+    RuleBlock().fire_rules()

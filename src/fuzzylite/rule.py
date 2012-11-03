@@ -21,7 +21,7 @@ class Rule(object):
         pass
     
     def firing_strength(self, fop = Operator.default()):
-        return self.antecedent.firing_strength(fop = fop)
+        return self.antecedent.firing_strength(fop)
     
     def fire(self, strength, fop = Operator.default()):
         self.consequent.fire(strength)
@@ -32,7 +32,7 @@ class Rule(object):
 
 class FuzzyAntecedent(object):
     
-    def firing_strength(self, fop = Operator.default()):
+    def firing_strength(self, fop):
         raise NotImplementedError('firing_strength')
 
 class FuzzyConsequent(object):

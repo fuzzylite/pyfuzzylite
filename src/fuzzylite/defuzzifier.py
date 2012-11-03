@@ -5,13 +5,15 @@ Created on 10/10/2012
 '''
 #from fuzzylite.fuzzy_operator import FuzzyOperator
 
-
-class CenterOfGravity:
+class Defuzzifier(object):
+    def defuzzify(self, term, integrator, sample_size):
+        raise NotImplementedError('defuzzify')
+    
+class CenterOfGravity(Defuzzifier):
     '''
     Defuzzifies a term according to the Center of Gravity
     '''
 
-    @staticmethod
-    def defuzzify(term, integrator, sample_size ):
+    def defuzzify(self, term, integrator, sample_size):
         return integrator.centroid(term, sample_size)
     

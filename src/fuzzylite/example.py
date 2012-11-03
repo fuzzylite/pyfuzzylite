@@ -5,8 +5,9 @@ Created on 30/10/2012
 '''
 
 from fuzzylite.engine import Engine
+from fuzzylite.operator import Operator
 from fuzzylite.variable import InputVariable, OutputVariable
-from fuzzylite.term import Triangular
+from fuzzylite.term import Triangle
 from fuzzylite.ruleblock import RuleBlock
 from fuzzylite.mamdani import MamdaniRule
 class Example(object):
@@ -15,17 +16,18 @@ class Example(object):
     '''
     @staticmethod
     def simple_mamdani():
-        fe = Engine('simple-mamdani')
+        fop = Operator.default()
+        fe = Engine('simple-mamdani',fop=fop)
         energy = InputVariable('Energy')
-        energy.terms['LOW'] = Triangular('LOW', 0.0, 0.25, 0.5)
-        energy.terms['MEDIUM'] = Triangular('MEDIUM', 0.25, 0.5, 0.75)
-        energy.terms['HIGH'] = Triangular('HIGH', 0.5, 0.75, 1.0)
+        energy.terms['LOW'] = Triangle('LOW', 0.0, 0.25, 0.5)
+        energy.terms['MEDIUM'] = Triangle('MEDIUM', 0.25, 0.5, 0.75)
+        energy.terms['HIGH'] = Triangle('HIGH', 0.5, 0.75, 1.0)
         fe.input['Energy'] = energy
         
         health = OutputVariable('Health')
-        health.terms['BAD'] = Triangular('BAD', 0.0, 0.25, 0.5)
-        health.terms['REGULAR'] = Triangular('REGULAR', 0.25, 0.5, 0.75)
-        health.terms['GOOD'] = Triangular('GOOD', 0.5, 0.75, 1.0)
+        health.terms['BAD'] = Triangle('BAD', 0.0, 0.25, 0.5)
+        health.terms['REGULAR'] = Triangle('REGULAR', 0.25, 0.5, 0.75)
+        health.terms['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
         fe.output['Health'] = health
         
         rules = RuleBlock('')
@@ -39,7 +41,7 @@ class Example(object):
             energy.input = input
             fe.process()
             print('Energy=%s\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
-            print('Output=%s\nHealth is %s' % (health.output.defuzzify(health), health.fuzzify(input))))
+            print('Output=%s\nHealth is %s' % (fop.defuzzify(health.output), health.fuzzify(input)))
             input += 0.1
             
             

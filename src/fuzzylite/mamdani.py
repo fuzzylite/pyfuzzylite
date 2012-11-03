@@ -63,11 +63,13 @@ class MamdaniAntecedent(FuzzyAntecedent):
         def __str__(self):
             return str(self.operator)
     
-    def degree_of_truth(self, fuzzy_operator, node=None):
+#    def firing_strength(self, fop):
+#        return self.firing_strength(fop, None)
+    
+    def firing_strength(self, fop, node = None):
         if node is None: 
             node = self.root
         if isinstance(node, MamdaniAntecedent.Proposition):
-            
             result = node.term.membership(node.variable.input)
             for hedge in node.hedges:
                 result = hedge.apply(result)
@@ -76,10 +78,10 @@ class MamdaniAntecedent(FuzzyAntecedent):
             if not (node.left or node.right):
                 raise ValueError('left and right operands must exist')
             if node.operator == Rule.FR_AND:
-                return fuzzy_operator.tnorm(self.degree_of_truth(node=self.left),
+                return fop.tnorm(self.firing_strength(node=self.left),
                                               self.degree_of_truth(node=self.right))
             elif node.operator == Rule.FR_OR:
-                return fuzzy_operator.snorm(self.degree_of_truth(node=self.left),
+                return fop.snorm(self.firing_strength(node=self.left),
                                               self.degree_of_truth(node=self.right))
             else: raise ValueError('unknown operator %s' % node.operator)
         else: raise TypeError('unexpected node type %s' % type(node))

@@ -4,7 +4,7 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.integrator import Trapezoidal
+from fuzzylite.integrator import Trapezoid
 from fuzzylite.defuzzifier import CenterOfGravity
 
 def scale(x, to_min, to_max, from_min, from_max):
@@ -74,7 +74,7 @@ class Operator:
         
     def __init__(self, tnorm = FuzzyAnd.Min, snorm = FuzzyOr.Max, 
                  modulate = FuzzyModulate.Clip, aggregate = FuzzyOr.Max,
-                 integrator = Trapezoidal, defuzzifier = CenterOfGravity,
+                 integrator = Trapezoid(), defuzzifier = CenterOfGravity(),
                  sample_size = 100, epsilon = 1e-5):
         '''Constructs a Operator with default values.'''
         self.tnorm = tnorm

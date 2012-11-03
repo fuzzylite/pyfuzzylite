@@ -23,9 +23,14 @@ class Engine:
         self.ruleblock = OrderedDict()
     
     def process(self):
+        if len(self.output) == 0:
+            raise ValueError('engine has no outputs')
+        if len(self.ruleblock) == 0:
+            raise ValueError('engine has no ruleblocks')
         for key in self.output:
             self.output[key].output.clear()
-        
+        for key in self.ruleblock:
+            self.ruleblock[key].fire_rules()
     
     def toFCL(self):
         fcl = ['FUNCTION_BLOCK %s\n\n' % self.name]

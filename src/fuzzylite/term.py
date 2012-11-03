@@ -28,7 +28,7 @@ class Term:
     def membership(self, x): raise NotImplementedError()
 
 
-class Triangular(Term):
+class Triangle(Term):
     '''
     Defines a triangular term using minimum as the left vertex,
     middle as the center vertex, and maximum as the right vertex
@@ -55,7 +55,7 @@ class Triangular(Term):
             mu = (self.maximum - x) / (self.maximum - self.middle_vertex) 
         return self.fop.modulate(mu, self.alphacut);
 
-class Trapezoidal(Term):
+class Trapezoid(Term):
     '''
     Defines a trapezoidal term using minimum and maximum as left-most and
     right-most vertices, and b and c as left and right vertices.
@@ -85,7 +85,7 @@ class Trapezoidal(Term):
 
         return self.fop.modulate(mu, self.alphacut);
         
-class Rectangular(Term):
+class Rectangle(Term):
     '''Defines a rectangular term in the range [minimum, maximum].'''
     def __init__(self, name, minimum, maximum):
         Term.__init__(self, name, minimum, maximum)
@@ -150,13 +150,13 @@ class Composite(Term):
 
 if __name__ == '__main__':
     
-    a = Triangular('Low', 0, 5, 10)
+    a = Triangle('Low', 0, 5, 10)
     print(a)
     print(a.toFCL())
     #Test: Composite
     composite = Composite('mix')
-    composite.terms.append(Triangular('a', 0, 5, 10))
-    composite.terms.append(Rectangular('a', 0, 5))
+    composite.terms.append(Triangle('a', 0, 5, 10))
+    composite.terms.append(Rectangle('a', 0, 5))
     print(composite)
     print(composite.toFCL())
     
