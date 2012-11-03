@@ -4,15 +4,13 @@ Created on 3/11/2012
 @author: jcrada
 '''
 
-from fuzzylite.operator import Operator
-
 class RuleBlock(list):
     '''
     A set of rules.
     '''
 
 
-    def __init__(self, name=None, fop=Operator.default()):
+    def __init__(self, name, fop):
         self.name = name
         self.fop = fop
         
@@ -23,14 +21,17 @@ class RuleBlock(list):
             rule.fire(rule.firing_strength(self.fop), self.fop)
     
     def toFCL(self):
-        fcl = ['RULEBLOCK %s\n' % self.name]
+        fcl = []
+        fcl.append('RULEBLOCK %s' % self.name)
+        fcl.append(self.fop.toFCL())
         for i in range(0, len(self)):
-            fcl.append('  RULE %i: %s;\n' % (i + 1, str(self[i])))
+            fcl.append('RULE %i: %s;' % (i + 1, str(self[i])))
             
         fcl.append('END_RULEBLOCK')
         
-        return ' '.join(fcl)
+        return '\n'.join(fcl)
     
     
 if __name__ == '__main__':
-    RuleBlock().fire_rules()
+    from fuzzylite.operator import Operator
+    RuleBlock('',Operator.default()).fire_rules()

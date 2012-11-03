@@ -17,7 +17,7 @@ class Example(object):
     @staticmethod
     def simple_mamdani():
         fop = Operator.default()
-        fe = Engine('simple-mamdani',fop=fop)
+        fe = Engine('simple-mamdani', fop)
         energy = InputVariable('Energy')
         energy.terms['LOW'] = Triangle('LOW', 0.0, 0.25, 0.5)
         energy.terms['MEDIUM'] = Triangle('MEDIUM', 0.25, 0.5, 0.75)
@@ -30,19 +30,20 @@ class Example(object):
         health.terms['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
         fe.output['Health'] = health
         
-        rules = RuleBlock('')
+        rules = RuleBlock('', fop)
         rules.append(MamdaniRule('if Energy is LOW then Health is BAD', fe))
         rules.append(MamdaniRule('if Energy is MEDIUM then Health is REGULAR', fe))
         rules.append(MamdaniRule('if Energy is HIGH then Health is GOOD', fe))
         fe.ruleblock[''] = rules
         
-        input = 0.0
-        while input <= 1.0:
-            energy.input = input
-            fe.process()
-            print('Energy=%s\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
-            print('Output=%s\nHealth is %s' % (fop.defuzzify(health.output), health.fuzzify(input)))
-            input += 0.1
+#        input = 0.0
+#        while input <= 1.0:
+#            energy.input = input
+#            fe.process()
+#            print(health.output)
+#            print('Energy=%s\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
+#            print('Output=%s\nHealth is %s' % (fop.defuzzify(health.output), health.fuzzify(input)))
+#            input += 0.1
             
             
         

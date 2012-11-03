@@ -70,7 +70,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
         if node is None: 
             node = self.root
         if isinstance(node, MamdaniAntecedent.Proposition):
-            result = node.term.membership(node.variable.input)
+            result = node.term.membership(node.variable.input, fop)
             for hedge in node.hedges:
                 result = hedge.apply(result)
             return result
@@ -88,7 +88,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
         
         
     
-    def parse(self, infix, fuzzy_engine, operators=Parser.default_operators):
+    def parse(self, infix, engine, operators=Parser.default_operators):
         '''
         Builds an proposition tree from the antecedent of a fuzzy rule.
         The rules are:  1) After a variable comes 'is',
@@ -105,9 +105,9 @@ class MamdaniAntecedent(FuzzyAntecedent):
         proposition = []
         for token in tokens:
             if s_variable in state:
-                if token in fuzzy_engine.input:
+                if token in engine.input:
                     proposition.append(MamdaniAntecedent.Proposition())
-                    proposition[-1].variable = fuzzy_engine.input[token]
+                    proposition[-1].variable = engine.input[token]
                     state = [s_is]
                     continue
             
@@ -119,8 +119,8 @@ class MamdaniAntecedent(FuzzyAntecedent):
                 continue
             
             if s_hedge in state:
-                if token in fuzzy_engine.hedge:
-                    proposition[-1].hedges.append(fuzzy_engine.hedge[token])
+                if token in engine.hedge:
+                    proposition[-1].hedges.append(engine.hedge[token])
                     if token == 'any':
                         state = [s_variable, s_operator]
                     else:
@@ -226,7 +226,7 @@ class MamdaniConsequent(FuzzyConsequent):
             proposition.variable.output.aggregate(term)
             
 
-    def parse(self, infix, fuzzy_engine):
+    def parse(self, infix, engine):
         '''
         Extracts the list of propositions from the consequent
         The rules are:  1) After a variable comes 'is',
@@ -242,9 +242,9 @@ class MamdaniConsequent(FuzzyConsequent):
         proposition = []
         for token in tokens:
             if s_variable in state:
-                if token in fuzzy_engine.output:
+                if token in engine.output:
                     proposition.append(MamdaniConsequent.Proposition())
-                    proposition[-1].variable = fuzzy_engine.output[token]
+                    proposition[-1].variable = engine.output[token]
                     state = [s_is]
                     continue
             
@@ -254,8 +254,8 @@ class MamdaniConsequent(FuzzyConsequent):
                     continue
             
             if s_hedge in state:
-                if token in fuzzy_engine.hedge:
-                    proposition[-1].hedges.append(fuzzy_engine.hedge[token])
+                if token in engine.hedge:
+                    proposition[-1].hedges.append(engine.hedge[token])
                     state = [s_hedge, s_term]
                     continue
 

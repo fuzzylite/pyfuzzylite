@@ -5,15 +5,13 @@ Created on 10/10/2012
 '''
 
 from fuzzylite.hedge_dict import HedgeDict
-from fuzzylite.operator import Operator
-from fuzzylite.ruleblock import RuleBlock
 from collections import OrderedDict
 
 class Engine:
     '''Wraps the whole system.'''
     
 
-    def __init__(self, name, fop = Operator.default(),
+    def __init__(self, name, fop,
                   hedge = HedgeDict()):
         self.name = name
         self.fop = fop
@@ -33,40 +31,41 @@ class Engine:
             self.ruleblock[key].fire_rules()
     
     def toFCL(self):
-        fcl = ['FUNCTION_BLOCK %s\n\n' % self.name]
+        fcl = ['FUNCTION_BLOCK %s' % self.name]
+        fcl.append('')
         
-        fcl.append('VAR_INPUT\n')
+        fcl.append('VAR_INPUT')
         for key in self.input:
-            fcl.append('%s: REAL;\n' % key)
-        fcl.append('END_VAR\n\n')
+            fcl.append('%s: REAL;' % key)
+        fcl.append('END_VAR')
+        fcl.append('')
+        
+        fcl.append('VAR_OUTPUT')
+        for key in self.output:
+            fcl.append('%s: REAL;' % key)
+        fcl.append('END_VAR')
+        fcl.append('')
         
         for key in self.input:
-            fcl.append('FUZZIFY %s\n' % key)
-            for key, term in self.input[key].terms.items():
-                fcl.append('%s;\n' % term.toFCL())
-                
-        fcl.append('END_FUZZIFY\n\n')
-        
-        fcl.append('VAR_OUTPUT\n')
-        for key in self.output:
-            fcl.append('%s: REAL\n' % key)
-        fcl.append('END_VAR\n\n')
+            fcl.append(self.input[key].toFCL())
+        fcl.append('')
         
         for key in self.output:
-            fcl.append('DEFUZZIFY %s\n' % key)
-            for key, term in self.output[key].terms.items():
-                fcl.append('%s\n' % term.toFCL())
-        fcl.append('END_DEFUZZIFY\n\n')
+            fcl.append(self.output[key].toFCL())
+        fcl.append('')    
 
         for key in self.ruleblock:
-            fcl.append('%s\n\n' % self.ruleblock[key].toFCL())
-
+            fcl.append(self.ruleblock[key].toFCL())
+        fcl.append('')
 
         fcl.append('END_FUNCTION_BLOCK')
-        return ''.join(fcl)
+        return '\n'.join(fcl)
     
 if __name__ == '__main__':
-    print(Engine(None).toFCL())
+    e = Engine(None, None)
+    from fuzzylite.example import Example
+    fe = Example.simple_mamdani()
+    print (fe.toFCL())
     
         
         

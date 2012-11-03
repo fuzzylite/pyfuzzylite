@@ -4,28 +4,33 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.operator import Operator
-
 
 #TODO: Copy matlab membership functions
-class Term:
+class Term(object):
     '''
     Provides the necessary properties for any linguistic term
     '''
     
-    def __init__(self, name, minimum, maximum, alphacut=1.0,
-                 fop=Operator.default()):
+    def __init__(self, name, minimum, maximum, alphacut=1.0):
         self.name = name
         self.minimum = minimum
         self.maximum = maximum
-        self.alphacut = alphacut
-        self.fop = fop
-        
+    
+    def discretize(self, divisions = 100):
+        dx = (self.maximum - self.minimum) / divisions
+        x = None
+        y = None
+        for i in range(0, divisions + 1):
+            x = self.minimum + i * dx
+            y = self.membership(x)
+            yield (x,y)
+    
     def toFCL(self):
         '''Returns a string in Fuzzy Control Language.'''
         return 'TERM ' + str(self.name) + ' := ' + str(self)
     
     def membership(self, x): raise NotImplementedError()
+
 
 
 class Triangle(Term):
@@ -44,16 +49,14 @@ class Triangle(Term):
         str(self.middle_vertex) + ', ' + str(self.maximum) + ')'
 
     def membership(self, x):
-        mu = None
         if x <= self.minimum or x >= self.maximum:
-            mu = 0.0
+            return 0.0
         elif x == self.middle_vertex:
-            mu = 1.0
+            return 1.0
         elif x < self.middle_vertex :
-            mu = (x - self.minimum) / (self.middle_vertex - self.minimum)
+            return (x - self.minimum) / (self.middle_vertex - self.minimum)
         else:
-            mu = (self.maximum - x) / (self.maximum - self.middle_vertex) 
-        return self.fop.modulate(mu, self.alphacut);
+            return (self.maximum - x) / (self.maximum - self.middle_vertex) 
 
 class Trapezoid(Term):
     '''
@@ -72,18 +75,15 @@ class Trapezoid(Term):
         str(self.c) + ', ' + str(self.maximum) + ')'
 
     def membership(self, x):
-        mu = None
         if x <= self.minimum or x >= self.maximum: 
-            mu = 0.0
+            return 0.0
         elif x <= self.b:
-            mu = (x - self.minimum) / (self.b - self.minimum)
+            return (x - self.minimum) / (self.b - self.minimum)
         elif x <= self.c:
-            mu = 1.0
+            return 1.0
         elif x <= self.maximum:
-            mu = (self.maximum - x) / (self.maximum - self.c)
-        else: mu = 0.0
-
-        return self.fop.modulate(mu, self.alphacut);
+            return (self.maximum - x) / (self.maximum - self.c)
+        else: return 0.0
         
 class Rectangle(Term):
     '''Defines a rectangular term in the range [minimum, maximum].'''
@@ -95,11 +95,7 @@ class Rectangle(Term):
             '(' + str(self.minimum) + ', ' + str(self.maximum) + ')'
     
     def membership(self, x):
-        mu = None
-        if x < self.minimum or x > self.maximum: 
-            mu = 0.0 
-        else: mu = 1.0
-        return self.fop.modulate(mu, self.alphacut)
+        return 1.0 if self.minimum <= x <= self.maximum else 0.0
 
 class Function(Term):
     '''Defines a linguistic term by a function given as a lambda expression.'''
@@ -114,11 +110,13 @@ class Function(Term):
     def membership(self, x):
         return self.lambda_expression(x, self.minimum, self.maximum)
 
-class Composite(Term):
+from fuzzylite.operator import FuzzyOr
+class Cumulative(Term):
     '''Defines a linguistic term with other terms.'''
-    def __init__(self, name):
+    def __init__(self, name, accumulate = FuzzyOr.Max):
         Term.__init__(self, name, float('-inf'), float('inf'))
-        self.terms = [];
+        self.terms = []
+        self.accumulate = accumulate
     
     def __str__(self):
         return str(self.__class__.__name__) + '{' + \
@@ -145,16 +143,18 @@ class Composite(Term):
     def membership(self, x):
         mu = 0.0
         for term in self.terms:
-            mu = self.fop.aggregate(mu, term.membership(x))
-        return self.fop.modulate(mu, self.alphacut) 
+            mu = self.accumulate(mu, term.membership(x))
+        return mu 
 
 if __name__ == '__main__':
     
     a = Triangle('Low', 0, 5, 10)
+    for pair in a.discretize(10):
+        print(pair)
     print(a)
     print(a.toFCL())
     #Test: Composite
-    composite = Composite('mix')
+    composite = Cumulative('mix')
     composite.terms.append(Triangle('a', 0, 5, 10))
     composite.terms.append(Rectangle('a', 0, 5))
     print(composite)

@@ -3,8 +3,12 @@ Created on 27/10/2012
 
 @author: jcrada
 '''
-from fuzzylite.term import Composite
+from fuzzylite.operator import Operator
+from fuzzylite.operator import FuzzyOr
+from fuzzylite.term import Cumulative
 from collections import OrderedDict
+from fuzzylite.defuzzifier import CenterOfGravity
+
 
 class Variable(object):
     '''Represents a linguistic variable which contains different linguistic terms.'''
@@ -22,15 +26,13 @@ class Variable(object):
         key = next(reversed(self.terms))
         return self.terms[key].maximum
     
-    def compound(self):
-        terms = list(self.terms.values())
-        return Composite(self.name, terms)
-    
-    def fuzzify(self, crisp):
-        memberships = [str(term.membership(crisp)) + '/' + term.name \
+    def fuzzify(self, crisp,  fop=Operator.default()):
+        memberships = [str(term.membership(crisp,  fop)) + '/' + term.name \
                             for term in self.terms.values()]
         return ' + '.join(memberships)
     
+    def toFCL(self):
+        return '\n'.join([self.terms[key].toFCL() for key in self.terms])
 
 class InputVariable(Variable):
     '''Defines a linguistic variable for input.'''
@@ -38,14 +40,38 @@ class InputVariable(Variable):
     def __init__(self, name):
         Variable.__init__(self, name)
         self.input = float(0.0)
+        
+    def toFCL(self):
+        fcl = []
+        fcl.append('FUZZIFY %s' % self.name)
+        fcl.append(Variable.toFCL(self))
+        fcl.append('END_FUZZIFY')
+        return '\n'.join(fcl)
 
 class OutputVariable(Variable):
     '''Defines a linguistic variable for output.'''
     
-    def __init__(self, name):
+    def __init__(self, name, defuzzifier = CenterOfGravity(), 
+                 accumulate = FuzzyOr.Max):
         Variable.__init__(self, name)
-        self.output = Composite('output')
-
+        self.default = None
+        self.defuzzifier = defuzzifier
+        self.output = Cumulative('output', accumulate)
+    
+    def toFCL(self):
+        fcl = []
+        fcl.append('DEFUZZIFY %s' % self.name)
+        fcl.append(Variable.toFCL(self))
+        fcl.append('ACCU : %s' % self.output.accumulate.__name__.upper())
+        fcl.append('METHOD : %s' % self.defuzzifier.toFCL())
+        if self.default is not None:
+            fcl.append('DEFAULT : %f' % self.default)
+        fcl.append('END_DEFUZZIFY')
+        return '\n'.join(fcl)
+    
+    def defuzzify(self):
+        
+    
 if __name__ == '__main__':
 #    from collections import OrderedDict
 #    d = OrderedDict([('a',1), ('b',2), ('c',3)])

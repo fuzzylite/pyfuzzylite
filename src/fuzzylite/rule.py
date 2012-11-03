@@ -20,10 +20,10 @@ class Rule(object):
         self.consequent = None
         pass
     
-    def firing_strength(self, fop = Operator.default()):
+    def firing_strength(self, fop):
         return self.antecedent.firing_strength(fop)
     
-    def fire(self, strength, fop = Operator.default()):
+    def fire(self, strength, fop):
         self.consequent.fire(strength)
 
     def __str__(self):

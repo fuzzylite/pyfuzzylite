@@ -4,7 +4,7 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.integrator import Trapezoid
+from fuzzylite.integrator import Rectangle
 from fuzzylite.defuzzifier import CenterOfGravity
 
 def scale(x, to_min, to_max, from_min, from_max):
@@ -74,31 +74,38 @@ class Operator:
         
     def __init__(self, tnorm = FuzzyAnd.Min, snorm = FuzzyOr.Max, 
                  modulate = FuzzyModulate.Clip, aggregate = FuzzyOr.Max,
-                 integrator = Trapezoid(), defuzzifier = CenterOfGravity(),
-                 sample_size = 100, epsilon = 1e-5):
+                 defuzzifier = CenterOfGravity(), epsilon = 1e-5):
         '''Constructs a Operator with default values.'''
         self.tnorm = tnorm
         self.snorm = snorm
         self.modulate = modulate
         self.aggregate = aggregate
-        self.integrator = integrator
         self.defuzzifier = defuzzifier
-        self.sample_size = sample_size
         self.epsilon = epsilon
     
     def defuzzify(self, term):
-        return self.defuzzifier.defuzzify(term, self.integrator, self.sample_size)
+        return self.defuzzifier.defuzzify(term)
     
-    def area(self, term):
-        return self.integrator.area(term, self.sample_size)
+#    def area(self, term):
+#        return self.integrator.area(term, self.sample_size)
+#    
+#    def centroid(self, term):
+#        return self.integrator.centroid(term, self.sample_size)
+#    
+#    def area_and_centroid(self, term):
+#        return self.integrator.area_and_centroid(term, self.sample_size)
     
-    def centroid(self, term):
-        return self.integrator.centroid(term, self.sample_size)
-    
-    def area_and_centroid(self, term):
-        return self.integrator.area_and_centroid(term, self.sample_size)
-    
-
+    def toFCL(self):
+        from fuzzylite.rule import Rule
+        fcl = []
+        fcl.append('%s : %s;' % (Rule.FR_AND.upper(), 
+                                       self.tnorm.__name__.upper()))
+        fcl.append('%s : %s;' % (Rule.FR_OR.upper(), 
+                                       self.snorm.__name__.upper()))
+        fcl.append('ACT : %s;' % self.modulate.__name__.upper())
+        fcl.append('ACCU : %s;' % self.aggregate.__name__.upper())
+        fcl.append('METHOD : %s;' % self.defuzzifier.toFCL())
+        return '\n'.join(fcl)
 
 
 if __name__ == "__main__":
