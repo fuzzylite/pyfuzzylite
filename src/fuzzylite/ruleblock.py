@@ -4,7 +4,7 @@ Created on 3/11/2012
 @author: jcrada
 '''
 
-class RuleBlock(list):
+class RuleBlock(object):
     '''
     A set of rules.
     '''
@@ -13,7 +13,11 @@ class RuleBlock(list):
     def __init__(self, name, fop):
         self.name = name
         self.fop = fop
-        
+        self.rules = []
+    
+    def __iter__(self):
+        return iter(self.rules)    
+    
     def fire_rules(self):
         if len(self) == 0: 
             raise ValueError('no rules to fire')
