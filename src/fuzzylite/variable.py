@@ -18,6 +18,10 @@ class Variable(object):
         self.name = name
         self.terms = OrderedDict()
     
+    def __iter__(self):
+        for key in self.terms:
+            yield self.terms[key]
+    
     def minimum(self):
         key = next(iter(self.terms)) #first element
         return self.terms[key].minimum
@@ -27,12 +31,14 @@ class Variable(object):
         return self.terms[key].maximum
     
     def fuzzify(self, crisp,  fop=Operator.default()):
-        memberships = [str(term.membership(crisp,  fop)) + '/' + term.name \
-                            for term in self.terms.values()]
-        return ' + '.join(memberships)
+        fuzzy = ['%f/%s' % (term.membership(crisp), term.name) for term in self]
+        return ' + '.join(fuzzy)
     
     def toFCL(self):
-        return '\n'.join([self.terms[key].toFCL() for key in self.terms])
+        return '\n'.join([term.toFCL() for term in self])
+
+
+        
 
 class InputVariable(Variable):
     '''Defines a linguistic variable for input.'''
@@ -70,7 +76,7 @@ class OutputVariable(Variable):
         return '\n'.join(fcl)
     
     def defuzzify(self):
-        
+        return self.defuzzifier.defuzzify(self.output)
     
 if __name__ == '__main__':
 #    from collections import OrderedDict

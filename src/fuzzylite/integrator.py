@@ -4,7 +4,7 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-#TODO: Compute centroid in Trapezoid ,Rectangle, and Simpson.
+# TODO: Compute centroid in Trapezoid ,Rectangle, and Simpson.
 
 class Integrator(object):
     
@@ -19,7 +19,7 @@ class Integrator(object):
     
 from math import isinf
 
-class Rectangle(Integrator): #ready
+class Rectangle(Integrator):  # ready
     def area(self, term, samplesize):
         if  isinf(term.minimum) or isinf(term.maximum):
             raise ValueError('cannot compute area on term that extends to infinity')
@@ -29,10 +29,30 @@ class Rectangle(Integrator): #ready
             area += term.membership(term.minimum + (i + 0.5) * dx)
         return area * dx
     
+    def aread(self, term, divisions):
+        area = 0.0
+        for unused_x, y in term.discretize(divisions=divisions, align='c'):
+            area += y
+        dx = (term.maximum - term.minimum) / (divisions)
+        return area * dx
+    
     def centroid(self, term, samplesize):
         (unused_area, centroid) = self.area_and_centroid(term, samplesize)
         return centroid
     
+    def area_and_centroidd(self, term, divisions):
+        xcentroid = ycentroid = 0.0
+        area = 0.0
+        for x, y in term.discretize(divisions):
+            xcentroid += y * x
+            ycentroid += y * y
+            area += y
+        xcentroid /= area
+        ycentroid /= 2 * area
+        dx = (term.maximum - term.minimum) / divisions
+        area *= dx
+        return (area, [xcentroid, ycentroid])
+     
     def area_and_centroid(self, term, samplesize):
         if  isinf(term.minimum) or isinf(term.maximum):
             raise ValueError('cannot compute area on term that extends to infinity')
@@ -67,10 +87,20 @@ class Trapezoid(Integrator):
             raise ValueError('cannot compute area on term that extends to infinity')
         dx = (term.maximum - term.minimum) / samplesize
         area = term.membership(term.minimum) + term.membership(term.maximum)
-        for i in range(1, samplesize):
+        for i in range(1, samplesize - 1):
             area += 2.0 * term.membership(term.minimum + i * dx)
         area *= 0.5 * dx
-        return area 
+        return area
+    
+    def aread(self, term, divisions):
+        area = 0.0
+        drange = term.discretize(divisions, align='l')
+        _, y0 = next(drange) 
+        for unused_x, y in drange:
+            area += y + y0
+            y0 = y
+        dx = (term.maximum - term.minimum) / (divisions - 1)
+        return area * 0.5 * dx
 
     def centroid(self, term, samplesize):
         (unused_area, centroid) = self.area_and_centroid(term, samplesize) 
@@ -85,11 +115,11 @@ class Trapezoid(Integrator):
         y1 = None
         xcentroid = ycentroid = 0.0
         area = 0
-        for i in range(1, samplesize+1):
+        for i in range(1, samplesize + 1):
             y1 = term.membership(term.minimum + i * dx)
             area_i = y0 + y1 
             area += area_i
-            if y0 + y1 > 0: #convex polygon assumed
+            if y0 + y1 > 0:  # convex polygon assumed
                 xcentroid += area_i * (dx * (y0 + 2 * y1) / (3 * (y0 + y1))
                                          + term.minimum + (i - 1) * dx)
                 ycentroid += area_i * (1.0 / 3.0 * (y1 + (y0 * y0 / (y0 + y1))))
@@ -117,9 +147,13 @@ if __name__ == '__main__':
     for t in terms:
         print(str(t))
         print('R=%s' % Rectangle().area(t, samplesize))
-        print('R=%s %s' % Rectangle().area_and_centroid(t, samplesize))
+        print('R=%s' % Rectangle().aread(t, samplesize))
+#        print('R=%s %s' % Rectangle().area_and_centroid(t, samplesize))
+#        print('R=%s %s' % Rectangle().area_and_centroidd(t, samplesize))
         print('T=%s' % Trapezoid().area(t, samplesize))
-        print('T=%s %s' % Trapezoid().area_and_centroid(t, samplesize))
+        print('T=%s' % Trapezoid().aread(t, samplesize))
+#        print('R=%s %s' % Trapezoid().area_and_centroid(t, samplesize))
+#        print('R=%s %s' % Trapezoid().area_and_centroidd(t, samplesize))
         print('---------------------------')
     
         
