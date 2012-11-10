@@ -70,7 +70,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
         if node is None: 
             node = self.root
         if isinstance(node, MamdaniAntecedent.Proposition):
-            result = node.term.membership(node.variable.input, fop)
+            result = node.term.membership(node.variable.input)
             for hedge in node.hedges:
                 result = hedge.apply(result)
             return result
@@ -78,10 +78,10 @@ class MamdaniAntecedent(FuzzyAntecedent):
             if not (node.left or node.right):
                 raise ValueError('left and right operands must exist')
             if node.operator == Rule.FR_AND:
-                return fop.tnorm(self.firing_strength(node=self.left),
+                return fop.tnorm(self.degree_of_truth(node=self.left),
                                               self.degree_of_truth(node=self.right))
             elif node.operator == Rule.FR_OR:
-                return fop.snorm(self.firing_strength(node=self.left),
+                return fop.snorm(self.degree_of_truth(node=self.left),
                                               self.degree_of_truth(node=self.right))
             else: raise ValueError('unknown operator %s' % node.operator)
         else: raise TypeError('unexpected node type %s' % type(node))
@@ -128,8 +128,8 @@ class MamdaniAntecedent(FuzzyAntecedent):
                     continue
 
             if s_term in state:
-                if token in proposition[-1].variable.terms:
-                    proposition[-1].term = proposition[-1].variable.terms[token]
+                if token in proposition[-1].variable.term:
+                    proposition[-1].term = proposition[-1].variable.term[token]
                     state = [s_variable, s_operator]
                     continue
 
@@ -260,8 +260,8 @@ class MamdaniConsequent(FuzzyConsequent):
                     continue
 
             if s_term in state:
-                if token in proposition[-1].variable.terms:
-                    proposition[-1].term = proposition[-1].variable.terms[token]
+                if token in proposition[-1].variable.term:
+                    proposition[-1].term = proposition[-1].variable.term[token]
                     state = [s_and, s_with]
                     continue
 

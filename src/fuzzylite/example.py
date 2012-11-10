@@ -16,26 +16,26 @@ class Example(object):
     '''
     @staticmethod
     def simple_mamdani():
-        fop = Operator.default()
-        fe = Engine('simple-mamdani', fop)
+        fe = Engine('simple-mamdani')
         energy = InputVariable('Energy')
-        energy.terms['LOW'] = Triangle('LOW', 0.0, 0.25, 0.5)
-        energy.terms['MEDIUM'] = Triangle('MEDIUM', 0.25, 0.5, 0.75)
-        energy.terms['HIGH'] = Triangle('HIGH', 0.5, 0.75, 1.0)
+        energy.term['LOW'] = Triangle('LOW', 0.0, 0.25, 0.5)
+        energy.term['MEDIUM'] = Triangle('MEDIUM', 0.25, 0.5, 0.75)
+        energy.term['HIGH'] = Triangle('HIGH', 0.5, 0.75, 1.0)
         fe.input['Energy'] = energy
         
         health = OutputVariable('Health')
-        health.terms['BAD'] = Triangle('BAD', 0.0, 0.25, 0.5)
-        health.terms['REGULAR'] = Triangle('REGULAR', 0.25, 0.5, 0.75)
-        health.terms['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
+        health.term['BAD'] = Triangle('BAD', 0.0, 0.25, 0.5)
+        health.term['REGULAR'] = Triangle('REGULAR', 0.25, 0.5, 0.75)
+        health.term['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
         fe.output['Health'] = health
         
-        rules = RuleBlock('', fop)
+        rules = RuleBlock('')
         rules.append(MamdaniRule('if Energy is LOW then Health is BAD', fe))
         rules.append(MamdaniRule('if Energy is MEDIUM then Health is REGULAR', fe))
         rules.append(MamdaniRule('if Energy is HIGH then Health is GOOD', fe))
         fe.ruleblock[''] = rules
         
+        fe.configure(Operator.default())
 #        input = 0.0
 #        while input <= 1.0:
 #            energy.input = input

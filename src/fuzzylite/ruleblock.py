@@ -4,19 +4,19 @@ Created on 3/11/2012
 @author: jcrada
 '''
 
-class RuleBlock(object):
+class RuleBlock(list):
     '''
     A set of rules.
     '''
 
-
-    def __init__(self, name, fop):
+    def __init__(self, name):
         self.name = name
+        self.fop = None
+        
+    def configure(self, fop):
         self.fop = fop
-        self.rules = []
-    
-    def __iter__(self):
-        return iter(self.rules)    
+        for rule in self:
+            rule.configure(fop)
     
     def fire_rules(self):
         if len(self) == 0: 
@@ -38,4 +38,4 @@ class RuleBlock(object):
     
 if __name__ == '__main__':
     from fuzzylite.operator import Operator
-    RuleBlock('',Operator.default()).fire_rules()
+    RuleBlock('').fire_rules()

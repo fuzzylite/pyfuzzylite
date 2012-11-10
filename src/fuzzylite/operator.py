@@ -4,8 +4,8 @@ Created on 10/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.integrator import Rectangle
-from fuzzylite.defuzzifier import CenterOfGravity
+
+
 
 def scale(x, to_min, to_max, from_min, from_max):
     '''Scales number x in range [from_min, from_max] to its equivalent in range [to_min, to_max].'''
@@ -36,12 +36,12 @@ class FuzzyOr:
         return max(a, b)
     
     @staticmethod
-    def Sum(a,b):
+    def Sum(a, b):
         '''Defines the OR operation as the algebraic sum.'''
         return a + b - (a * b)
     
     @staticmethod
-    def BSum(a,b):
+    def BSum(a, b):
         '''Defines the OR operation as the algebraic bounded sum.'''
         return min(1, a + b)
 
@@ -54,10 +54,11 @@ class FuzzyModulate:
         return min(a, b)
     
     @staticmethod
-    def Scale(a,b):
+    def Scale(a, b):
         '''Defines the modulation as scaling.'''
         return a * b;
 
+from fuzzylite.defuzzifier import CenterOfGravity
 class Operator:
     '''
     Operator provides all the necessary operations to be performed.
@@ -68,42 +69,39 @@ class Operator:
     def default():
         '''Retrieves the default fuzzy operator.'''
         if Operator.instance is None:
-            Operator.instance = Operator()
+            Operator.instance = Operator('Default')
         return Operator.instance
         
         
-    def __init__(self, tnorm = FuzzyAnd.Min, snorm = FuzzyOr.Max, 
-                 modulate = FuzzyModulate.Clip, aggregate = FuzzyOr.Max,
-                 defuzzifier = CenterOfGravity(), epsilon = 1e-5):
+    def __init__(self, name, tnorm=FuzzyAnd.Min, snorm=FuzzyOr.Max,
+                 modulate=FuzzyModulate.Clip, accumulate=FuzzyOr.Max,
+                 defuzzifier=CenterOfGravity()):
         '''Constructs a Operator with default values.'''
+        self.name = name
         self.tnorm = tnorm
         self.snorm = snorm
         self.modulate = modulate
-        self.aggregate = aggregate
+        self.accumulate = accumulate
         self.defuzzifier = defuzzifier
-        self.epsilon = epsilon
     
-    def defuzzify(self, term):
-        return self.defuzzifier.defuzzify(term)
-    
-#    def area(self, term):
-#        return self.integrator.area(term, self.sample_size)
-#    
-#    def centroid(self, term):
-#        return self.integrator.centroid(term, self.sample_size)
-#    
-#    def area_and_centroid(self, term):
-#        return self.integrator.area_and_centroid(term, self.sample_size)
+    def __str__(self):
+        result = ['Operator %s' % self.name]
+        result.append('tnorm = %s' % self.tnorm.__name__)
+        result.append('snorm = %s' % self.snorm.__name__)
+        result.append('modulate = %s' % self.modulate.__name__)
+        result.append('accumulate = %s' % self.accumulate.__name__)
+        result.append('defuzzifier = %s' % self.defuzzifier)
+        return '\n'.join(result)
     
     def toFCL(self):
         from fuzzylite.rule import Rule
         fcl = []
-        fcl.append('%s : %s;' % (Rule.FR_AND.upper(), 
+        fcl.append('%s : %s;' % (Rule.FR_AND.upper(),
                                        self.tnorm.__name__.upper()))
-        fcl.append('%s : %s;' % (Rule.FR_OR.upper(), 
+        fcl.append('%s : %s;' % (Rule.FR_OR.upper(),
                                        self.snorm.__name__.upper()))
         fcl.append('ACT : %s;' % self.modulate.__name__.upper())
-        fcl.append('ACCU : %s;' % self.aggregate.__name__.upper())
+        fcl.append('ACCU : %s;' % self.accumulate.__name__.upper())
         fcl.append('METHOD : %s;' % self.defuzzifier.toFCL())
         return '\n'.join(fcl)
 
@@ -113,9 +111,10 @@ if __name__ == "__main__":
 #    Operator.default().tnorm = lambda a,b: a ** b
 #    print(Operator.default().tnorm)
     fop = Operator.default()
-    print('And: ', fop.tnorm(2,5))
-    print('Or: ', fop.snorm(2,5))
+    print('And: ', fop.tnorm(2, 5))
+    print('Or: ', fop.snorm(2, 5))
     print('And: ', fop.tnorm)
+    print(fop)
 
 
 

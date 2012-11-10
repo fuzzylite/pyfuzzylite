@@ -5,7 +5,7 @@ Created on 10/10/2012
 '''
 
 
-#TODO: Copy matlab membership functions
+# TODO: Copy matlab membership functions
 from math import isinf
 class Term(object):
     '''
@@ -17,7 +17,10 @@ class Term(object):
         self.minimum = minimum
         self.maximum = maximum
     
-    def discretize(self, divisions=100, align='left'):
+    def configure(self, fop): 
+        pass
+    
+    def discretize(self, divisions=100, align='center'):
         if  isinf(self.minimum) or isinf(self.maximum):
             raise ValueError('cannot discretize a term whose minimum or maximum is infinity')
         dx = (self.maximum - self.minimum) / divisions
@@ -27,7 +30,8 @@ class Term(object):
         if align == 'left': pass
         elif align == 'center': shift = 0.5
         elif align == 'right': shift = 1.0
-        for i in range(0, divisions ):
+        else: raise ValueError('invalid align value <%s>' % align)
+        for i in range(0, divisions):
             x = self.minimum + (i + shift) * dx
             y = self.membership(x)
             yield (x, y)
@@ -117,20 +121,25 @@ class Function(Term):
     def membership(self, x):
         return self.lambda_expression(x, self.minimum, self.maximum)
 
-from fuzzylite.operator import FuzzyOr
+
 from collections import OrderedDict
-class Cumulative(Term):
-    '''Defines a linguistic term with other terms.'''
-    def __init__(self, name, accumulate=FuzzyOr.Max):
+class Output(Term):
+    '''Defines a linguistic term with other term.'''
+    def __init__(self, name):
         Term.__init__(self, name, float('-inf'), float('inf'))
-        self.terms = OrderedDict()
-        self.accumulate = accumulate
+        self.term = OrderedDict()
+        self.accumulate = None
+        self.modulate = None
     
     def __str__(self):
-        terms = ['[' + str(term) + ']' for term in self.terms]
+        terms = ['[' + str(term) + ']' for term in self.term]
         return '%s (%s, %s) {%s}' % (self.__class__.__name__,
                                     self.minimum, self.maximum,
                                     ' , '.join(terms)) 
+    
+    def configure(self, fop):
+        self.accumulate = fop.accumulate
+        self.modulate = fop.modulate
     
     def aggregate(self, term, alphacut=1.0):
         import math
@@ -138,22 +147,24 @@ class Cumulative(Term):
             self.minimum = term.minimum
         if math.isinf(self.maximum) or term.maximum > self.maximum:
             self.maximum = term.maximum
-        self.terms[term] = alphacut
+        self.term[term] = alphacut
         
     def clear(self):
         self.minimum = float('-inf')
         self.maximum = float('inf')
-        self.terms = OrderedDict()
+        self.term = OrderedDict()
     
     def toFCL(self):
-        terms = ['[' + term.toFCL() + ']' for term in self.terms]
-        return 'TERM := %s {%s}' % (self.__class__.__name__, 
+        terms = ['[' + term.toFCL() + ']' for term in self.term]
+        return 'TERM := %s {%s}' % (self.__class__.__name__,
                                     ' , '.join(terms)) 
     
     def membership(self, x):
         mu = 0.0
-        for term in self.terms:
-            mu = self.accumulate(mu, term.membership(x))
+        for term, alphacut in self.term.items():
+            mu = self.accumulate(mu,
+                                 self.modulate(term.membership(x), 
+                                               alphacut))
         return mu 
 
 if __name__ == '__main__':
@@ -163,8 +174,8 @@ if __name__ == '__main__':
         print(pair)
     print(a)
     print(a.toFCL())
-    #Test: Composite
-    composite = Cumulative('mix')
+    # Test: Composite
+    composite = Output('mix')
     composite.aggregate(Triangle('a', 0, 5, 10))
     composite.aggregate(Rectangle('a', 0, 5))
     print(composite)

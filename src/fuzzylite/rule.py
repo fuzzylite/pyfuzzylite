@@ -4,7 +4,6 @@ Created on 27/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.operator import Operator
 class Rule(object):
     '''Defines a fuzzy rule'''
     
@@ -18,6 +17,8 @@ class Rule(object):
     def __init__(self):
         self.antecedent = None
         self.consequent = None
+    
+    def configure(self, fop): 
         pass
     
     def firing_strength(self, fop):

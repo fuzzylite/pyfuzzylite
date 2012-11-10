@@ -5,20 +5,30 @@ Created on 10/10/2012
 '''
 
 from fuzzylite.hedge_dict import HedgeDict
+from fuzzylite.operator import Operator
 from collections import OrderedDict
 
 class Engine:
     '''Wraps the whole system.'''
     
 
-    def __init__(self, name, fop,
-                  hedge = HedgeDict()):
+    def __init__(self, name = None):
         self.name = name
-        self.fop = fop
-        self.hedge = hedge
+        self.fop = None
+        self.hedge =  HedgeDict()
         self.input = OrderedDict()
         self.output = OrderedDict()
         self.ruleblock = OrderedDict()
+    
+    def configure(self, fop = Operator.default()):
+        self.fop = fop
+        for variable in self.input:
+            self.input[variable].configure(fop)
+        for variable in self.output:
+            self.output[variable].configure(fop)
+        for name in self.ruleblock:
+            self.ruleblock[name].configure(fop)
+        
     
     def process(self):
         if len(self.output) == 0:
@@ -62,7 +72,7 @@ class Engine:
         return '\n'.join(fcl)
     
 if __name__ == '__main__':
-    e = Engine(None, None)
+    e = Engine()
     from fuzzylite.example import Example
     fe = Example.simple_mamdani()
     print (fe.toFCL())

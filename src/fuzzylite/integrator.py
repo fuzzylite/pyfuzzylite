@@ -31,7 +31,7 @@ class Rectangle(Integrator):  # ready
     
     def aread(self, term, divisions):
         area = 0.0
-        for unused_x, y in term.discretize(divisions=divisions, align='c'):
+        for unused_x, y in term.discretize(divisions=divisions, align='center'):
             area += y
         dx = (term.maximum - term.minimum) / (divisions)
         return area * dx
@@ -43,7 +43,7 @@ class Rectangle(Integrator):  # ready
     def area_and_centroidd(self, term, divisions):
         xcentroid = ycentroid = 0.0
         area = 0.0
-        for x, y in term.discretize(divisions):
+        for x, y in term.discretize(divisions,align='center'):
             xcentroid += y * x
             ycentroid += y * y
             area += y
@@ -73,65 +73,7 @@ class Rectangle(Integrator):  # ready
         
         return (area, [xcentroid, ycentroid]) 
 
-import logging
-class Trapezoid(Integrator):
-    '''
-    Integrates a term to compute its area and centroid using the trapezoidal rule.
-    The results are not as precised as those from Rectangle, which could be from
-    a very hard-to-find bug.
-    '''
 
-    def area(self, term, samplesize):
-        logging.warn('fuzzylite.Trapezoid() integration is buggy')
-        if  isinf(term.minimum) or isinf(term.maximum):
-            raise ValueError('cannot compute area on term that extends to infinity')
-        dx = (term.maximum - term.minimum) / samplesize
-        area = term.membership(term.minimum) + term.membership(term.maximum)
-        for i in range(1, samplesize - 1):
-            area += 2.0 * term.membership(term.minimum + i * dx)
-        area *= 0.5 * dx
-        return area
-    
-    def aread(self, term, divisions):
-        area = 0.0
-        drange = term.discretize(divisions, align='l')
-        _, y0 = next(drange) 
-        for unused_x, y in drange:
-            area += y + y0
-            y0 = y
-        dx = (term.maximum - term.minimum) / (divisions - 1)
-        return area * 0.5 * dx
-
-    def centroid(self, term, samplesize):
-        (unused_area, centroid) = self.area_and_centroid(term, samplesize) 
-        return centroid
-    
-    def area_and_centroid(self, term, samplesize):
-        logging.warn('fuzzylite.Trapezoid() integration is buggy')
-        if  isinf(term.minimum) or isinf(term.maximum):
-            raise ValueError('cannot compute area on term that extends to infinity')
-        dx = (term.maximum - term.minimum) / samplesize
-        y0 = term.membership(term.minimum)
-        y1 = None
-        xcentroid = ycentroid = 0.0
-        area = 0
-        for i in range(1, samplesize + 1):
-            y1 = term.membership(term.minimum + i * dx)
-            area_i = y0 + y1 
-            area += area_i
-            if y0 + y1 > 0:  # convex polygon assumed
-                xcentroid += area_i * (dx * (y0 + 2 * y1) / (3 * (y0 + y1))
-                                         + term.minimum + (i - 1) * dx)
-                ycentroid += area_i * (1.0 / 3.0 * (y1 + (y0 * y0 / (y0 + y1))))
-            y0 = y1 
-        
-        area += y0 + term.membership(term.maximum)
-        
-        xcentroid /= area
-        ycentroid /= area
-        area *= 0.5 * dx
-        
-        return (area, [xcentroid, ycentroid])
 
 
 
@@ -148,10 +90,10 @@ if __name__ == '__main__':
         print(str(t))
         print('R=%s' % Rectangle().area(t, samplesize))
         print('R=%s' % Rectangle().aread(t, samplesize))
-#        print('R=%s %s' % Rectangle().area_and_centroid(t, samplesize))
-#        print('R=%s %s' % Rectangle().area_and_centroidd(t, samplesize))
-        print('T=%s' % Trapezoid().area(t, samplesize))
-        print('T=%s' % Trapezoid().aread(t, samplesize))
+        print('R=%s %s' % Rectangle().area_and_centroid(t, samplesize))
+        print('R=%s %s' % Rectangle().area_and_centroidd(t, samplesize))
+#        print('T=%s' % Trapezoid().area(t, samplesize))
+#        print('T=%s' % Trapezoid().aread(t, samplesize))
 #        print('R=%s %s' % Trapezoid().area_and_centroid(t, samplesize))
 #        print('R=%s %s' % Trapezoid().area_and_centroidd(t, samplesize))
         print('---------------------------')
