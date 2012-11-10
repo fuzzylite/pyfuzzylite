@@ -3,7 +3,7 @@ Created on 3/11/2012
 
 @author: jcrada
 '''
-
+from fuzzylite.rule import Rule
 class RuleBlock(list):
     '''
     A set of rules.
@@ -15,19 +15,25 @@ class RuleBlock(list):
         
     def configure(self, fop):
         self.fop = fop
-        for rule in self:
-            rule.configure(fop)
     
     def fire_rules(self):
         if len(self) == 0: 
             raise ValueError('no rules to fire')
         for rule in self:
-            rule.fire(rule.firing_strength(self.fop), self.fop)
+            strength = rule.firing_strength(self.fop)
+            if strength > 0.0:
+                rule.fire(strength, self.fop.activation)
     
     def toFCL(self):
         fcl = []
         fcl.append('RULEBLOCK %s' % self.name)
-        fcl.append(self.fop.toFCL())
+        fcl.append('%s : %s;' % (Rule.FR_AND.upper(),
+                                       self.fop.tnorm.__name__.upper()))
+        fcl.append('%s : %s;' % (Rule.FR_OR.upper(),
+                                       self.fop.snorm.__name__.upper()))
+        fcl.append('ACT : %s;' % self.fop.activation.__name__.upper())
+        fcl.append('ACCU : %s;' % self.fop.accumulation.__name__.upper())
+        fcl.append('')
         for i in range(0, len(self)):
             fcl.append('RULE %i: %s;' % (i + 1, str(self[i])))
             
@@ -38,4 +44,7 @@ class RuleBlock(list):
     
 if __name__ == '__main__':
     from fuzzylite.operator import Operator
-    RuleBlock('').fire_rules()
+    x = RuleBlock('a')
+    x.configure(Operator.default())
+    print(x.toFCL())
+    

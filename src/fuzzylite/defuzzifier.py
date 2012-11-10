@@ -36,7 +36,11 @@ class CenterOfGravity(Defuzzifier):
         ycentroid /= 2 * area
         dx = (term.maximum - term.minimum) / self.divisions
         area *= dx
-        return (xcentroid, ycentroid)
+        if __debug__:
+            import logging
+            logging.info('centroid at (%f, %f)' % (xcentroid,ycentroid))
+        return xcentroid
+#        return (xcentroid, ycentroid)
     
     def toFCL(self):
         return 'COG'
@@ -54,7 +58,8 @@ class SmallestOfMaximum(Defuzzifier):
             if y > ymax:
                 xsmallest = x
                 ymax = y
-        return (xsmallest, ymax)
+        return xsmallest
+#        return (xsmallest, ymax)
         
     def toFCL(self):
         return 'SOM'
@@ -72,7 +77,8 @@ class LargestOfMaximum(Defuzzifier):
             if y >= ymax:
                 xlargest = x
                 ymax = y
-        return (xlargest, ymax)
+        return xlargest
+#        return (xlargest, ymax)
     
     def toFCL(self):
         return 'LOM'
@@ -96,8 +102,8 @@ class MiddleOfMaximum(Defuzzifier):
                 xlargest = x
             elif y < ymax:
                 same_plateau = False
-                
-        return ((xlargest + xsmallest) / 2.0, ymax)
+        return (xlargest + xsmallest) / 2.0
+#        return ((xlargest + xsmallest) / 2.0, ymax)
     
     def toFCL(self):
         return 'MOM'

@@ -23,7 +23,7 @@ class Example(object):
         energy.term['HIGH'] = Triangle('HIGH', 0.5, 0.75, 1.0)
         fe.input['Energy'] = energy
         
-        health = OutputVariable('Health')
+        health = OutputVariable('Health', default=float('nan'))
         health.term['BAD'] = Triangle('BAD', 0.0, 0.25, 0.5)
         health.term['REGULAR'] = Triangle('REGULAR', 0.25, 0.5, 0.75)
         health.term['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
@@ -36,14 +36,16 @@ class Example(object):
         fe.ruleblock[''] = rules
         
         fe.configure(Operator.default())
-#        input = 0.0
-#        while input <= 1.0:
-#            energy.input = input
-#            fe.process()
-#            print(health.output)
-#            print('Energy=%s\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
-#            print('Output=%s\nHealth is %s' % (fop.defuzzify(health.output), health.fuzzify(input)))
-#            input += 0.1
+        input = 0.0
+        while input <= 1.0:
+            energy.input = input
+            fe.process()
+            print(health.output)
+            output = health.defuzzify()
+            print('Energy=%f\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
+            print('Output=%f\nHealth is %s' % (output, health.fuzzify(output)))
+            print('-------')
+            input += 0.1
             
             
         
@@ -70,8 +72,13 @@ class Example(object):
 
 
 if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level = logging.DEBUG,
+                        format = '%(levelname)-10s %(asctime)s %(message)s')
     fe = Example.simple_mamdani()
-    print (fe.toFCL())
+    print('Debug: %s' % __debug__  )
+    logging.info('LLLL')
+    logging.debug('LLLL')
     
     
     

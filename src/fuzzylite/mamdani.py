@@ -63,8 +63,6 @@ class MamdaniAntecedent(FuzzyAntecedent):
         def __str__(self):
             return str(self.operator)
     
-#    def firing_strength(self, fop):
-#        return self.firing_strength(fop, None)
     
     def firing_strength(self, fop, node = None):
         if node is None: 
@@ -190,6 +188,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
     def __str__(self):
         return self.str_postfix()
 
+from fuzzylite.term import Output
 class MamdaniConsequent(FuzzyConsequent):
     '''A Mamdani consequent of the form <variable> is [hedges] <term> [with <weight>].'''
 
@@ -215,15 +214,19 @@ class MamdaniConsequent(FuzzyConsequent):
     def __str__(self):
         return (' %s ' % Rule.FR_AND).join([str(prop) for prop in self.propositions])
 
-    def fire(self, strength):
-        import copy
+    def fire(self, strength, activation):
+        if __debug__:
+            import logging
+            logging.info('Firing at %s Rule: %s' % (strength, self))
+            
         for proposition in self.propositions:
-            term = copy.deepcopy(proposition.term)
+            term = Output(proposition.term)
             alphacut = strength * proposition.weight
             for hedge in proposition.hedges: 
                 alphacut = hedge.apply(alphacut)
             term.alphacut = alphacut
-            proposition.variable.output.aggregate(term)
+            term.activation = activation
+            proposition.variable.output.append(term)
             
 
     def parse(self, infix, engine):

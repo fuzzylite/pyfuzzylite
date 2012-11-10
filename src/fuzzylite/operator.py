@@ -74,22 +74,22 @@ class Operator:
         
         
     def __init__(self, name, tnorm=FuzzyAnd.Min, snorm=FuzzyOr.Max,
-                 modulate=FuzzyModulate.Clip, accumulate=FuzzyOr.Max,
+                 activation=FuzzyModulate.Clip, accumulation=FuzzyOr.Max,
                  defuzzifier=CenterOfGravity()):
         '''Constructs a Operator with default values.'''
         self.name = name
         self.tnorm = tnorm
         self.snorm = snorm
-        self.modulate = modulate
-        self.accumulate = accumulate
+        self.activation = activation
+        self.accumulation = accumulation
         self.defuzzifier = defuzzifier
     
     def __str__(self):
         result = ['Operator %s' % self.name]
         result.append('tnorm = %s' % self.tnorm.__name__)
         result.append('snorm = %s' % self.snorm.__name__)
-        result.append('modulate = %s' % self.modulate.__name__)
-        result.append('accumulate = %s' % self.accumulate.__name__)
+        result.append('activation = %s' % self.activation.__name__)
+        result.append('accumulation = %s' % self.accumulation.__name__)
         result.append('defuzzifier = %s' % self.defuzzifier)
         return '\n'.join(result)
     
@@ -100,8 +100,8 @@ class Operator:
                                        self.tnorm.__name__.upper()))
         fcl.append('%s : %s;' % (Rule.FR_OR.upper(),
                                        self.snorm.__name__.upper()))
-        fcl.append('ACT : %s;' % self.modulate.__name__.upper())
-        fcl.append('ACCU : %s;' % self.accumulate.__name__.upper())
+        fcl.append('ACT : %s;' % self.activation.__name__.upper())
+        fcl.append('ACCU : %s;' % self.accumulation.__name__.upper())
         fcl.append('METHOD : %s;' % self.defuzzifier.toFCL())
         return '\n'.join(fcl)
 

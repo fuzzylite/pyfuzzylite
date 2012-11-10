@@ -24,8 +24,8 @@ class Rule(object):
     def firing_strength(self, fop):
         return self.antecedent.firing_strength(fop)
     
-    def fire(self, strength, fop):
-        self.consequent.fire(strength)
+    def fire(self, strength, activation):
+        self.consequent.fire(strength, activation)
 
     def __str__(self):
         return '%s %s %s %s' % (Rule.FR_IF, str(self.antecedent), 
@@ -38,6 +38,6 @@ class FuzzyAntecedent(object):
 
 class FuzzyConsequent(object):
     
-    def fire(self, strength):
+    def fire(self, strength, activation):
         raise NotImplementedError('fire')
 

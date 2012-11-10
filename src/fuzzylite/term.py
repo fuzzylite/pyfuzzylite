@@ -17,9 +17,6 @@ class Term(object):
         self.minimum = minimum
         self.maximum = maximum
     
-    def configure(self, fop): 
-        pass
-    
     def discretize(self, divisions=100, align='center'):
         if  isinf(self.minimum) or isinf(self.maximum):
             raise ValueError('cannot discretize a term whose minimum or maximum is infinity')
@@ -122,49 +119,65 @@ class Function(Term):
         return self.lambda_expression(x, self.minimum, self.maximum)
 
 
-from collections import OrderedDict
 class Output(Term):
-    '''Defines a linguistic term with other term.'''
-    def __init__(self, name):
-        Term.__init__(self, name, float('-inf'), float('inf'))
-        self.term = OrderedDict()
-        self.accumulate = None
-        self.modulate = None
+    '''Wraps a linguistic term with alphacut.'''
+    def __init__(self, term, alphacut = 1.0, activation = None):
+        Term.__init__(self, term.name, term.minimum, term.maximum)
+        self.term = term
+        self.alphacut = alphacut
+        self.activation = activation
     
     def __str__(self):
-        terms = ['[' + str(term) + ']' for term in self.term]
+        return '%s %s %f' % (self.term, self.activation.__name__, self.alphacut)
+    
+    def membership(self, x):
+        return self.activation(self.term.membership(x), self.alphacut) 
+
+import math
+class Cumulative(Term):
+    '''Defines a cumulative term made up by other terms'''
+
+    def __init__(self, name, accumulation=None):
+        Term.__init__(self, name, float('-inf'), float('inf'))
+        self.terms = []
+        self.accumulation = accumulation
+    
+    def __str__(self):
+        terms = ['[' + str(term) + ']' for term in self.terms]
         return '%s (%s, %s) {%s}' % (self.__class__.__name__,
                                     self.minimum, self.maximum,
                                     ' , '.join(terms)) 
     
-    def configure(self, fop):
-        self.accumulate = fop.accumulate
-        self.modulate = fop.modulate
-    
-    def aggregate(self, term, alphacut=1.0):
-        import math
+    def append(self, term):
+        if __debug__:
+            import logging 
+            logging.debug('appended: %s' % term)
         if math.isinf(self.minimum) or term.minimum < self.minimum:
             self.minimum = term.minimum
         if math.isinf(self.maximum) or term.maximum > self.maximum:
             self.maximum = term.maximum
-        self.term[term] = alphacut
+        self.terms.append(term)
         
     def clear(self):
+        if __debug__:
+            import logging
+            logging.debug('clearing output')
         self.minimum = float('-inf')
         self.maximum = float('inf')
-        self.term = OrderedDict()
+        self.terms = []
+        
+    def is_empty(self):
+        return len(self.terms) == 0
     
     def toFCL(self):
-        terms = ['[' + term.toFCL() + ']' for term in self.term]
+        terms = ['[' + term.toFCL() + ']' for term in self.terms]
         return 'TERM := %s {%s}' % (self.__class__.__name__,
                                     ' , '.join(terms)) 
     
     def membership(self, x):
         mu = 0.0
-        for term, alphacut in self.term.items():
-            mu = self.accumulate(mu,
-                                 self.modulate(term.membership(x), 
-                                               alphacut))
+        for term in self.terms:
+            mu = self.accumulation(mu, term.membership(x))
         return mu 
 
 if __name__ == '__main__':
@@ -175,9 +188,9 @@ if __name__ == '__main__':
     print(a)
     print(a.toFCL())
     # Test: Composite
-    composite = Output('mix')
-    composite.aggregate(Triangle('a', 0, 5, 10))
-    composite.aggregate(Rectangle('a', 0, 5))
+    composite = Cumulative('mix')
+    composite.append(Triangle('a', 0, 5, 10))
+    composite.append(Rectangle('a', 0, 5))
     print(composite)
     print(composite.toFCL())
     

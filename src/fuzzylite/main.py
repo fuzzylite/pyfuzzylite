@@ -8,6 +8,7 @@ class Something:
     
     def __init__(self, n):
         self.n = n
+        self.do = 'da bi da'
 
     def __iter__(self):
         return self
@@ -17,8 +18,11 @@ class Something:
         if self.n > 10: raise StopIteration
         self.n += 1
         return self.n
+    
+    def do(self):
+        print('do bi do')
 
 if __name__ == '__main__':
     x = Something(0)
-    for i in x:
-        print('loop')
+    x.do()
+    
