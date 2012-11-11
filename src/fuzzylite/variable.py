@@ -7,29 +7,40 @@ Created on 27/10/2012
 from collections import OrderedDict
 
 class Variable(object):
-    '''Represents a linguistic variable which contains different linguistic term.'''
-
+    '''A Linguistic Variable.
+    
+    Represents a fuzzy linguistic variable such as Energy, Health, Service, Tip.
+    This variable assumes that terms are added in proper order.
+    
+    Attributes:
+        name: the name of this variable.
+        term: an ordered dictionary of fuzzy terms.'''
 
     def __init__(self, name):
         self.name = name
         self.term = OrderedDict()
     
     def __iter__(self):
+        '''Returns a generator that iterates through all the terms of this variable.''' 
         for key in self.term:
             yield self.term[key]
     
     def configure(self, fop): 
+        '''Configures the variable using the definitions from FuzzyOperator.'''
         pass
     
     def minimum(self):
+        '''Returns the minimum value from the first term added to this variable.'''
         key = next(iter(self.term)) #first element
         return self.term[key].minimum
         
     def maximum(self):
+        '''Returns the maximum value from the last term added to this variable.'''
         key = next(reversed(self.term))
         return self.term[key].maximum
     
     def fuzzify(self, x):
+        '''Returns a string defining the degrees of membership of x to each term.'''
         fuzzy = []
         for term in self:
             if x is not None:
@@ -39,13 +50,19 @@ class Variable(object):
         return ' + '.join(fuzzy)
     
     def toFCL(self):
+        '''Returns a string representing this variable in the Fuzzy Control Language.''' 
         return '\n'.join([term.toFCL() for term in self])
 
 
         
 
 class InputVariable(Variable):
-    '''Defines a linguistic variable for input.'''
+    '''An input variable.
+    
+    Defines input variables such as Energy or Service.
+    
+    Attributes:
+        input: a float defining the input value of this variable.'''
     
     def __init__(self, name):
         Variable.__init__(self, name)
@@ -62,7 +79,15 @@ class InputVariable(Variable):
 from fuzzylite.term import Cumulative
 
 class OutputVariable(Variable):
-    '''Defines a linguistic variable for output.'''
+    '''An output varible such as Health or Tip.
+    
+    Defines a linguistic variable for output.
+    
+    Attributes:
+        default: a float value to assume by default if there is no output.
+        defuzzifier: an instance of a defuzzifier method.
+        output: a Cumulative term to which Output terms will be appended.
+    '''
     
     def __init__(self, name, default = None):
         Variable.__init__(self, name)
@@ -86,6 +111,7 @@ class OutputVariable(Variable):
         return '\n'.join(fcl)
     
     def defuzzify(self):
+        '''Returns a single float value representing the defuzzified output.'''
         if self.output.is_empty():
             return self.default
         return self.defuzzifier.defuzzify(self.output)

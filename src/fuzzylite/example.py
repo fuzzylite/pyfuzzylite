@@ -18,15 +18,15 @@ class Example(object):
     def simple_mamdani():
         fe = Engine('simple-mamdani')
         energy = InputVariable('Energy')
-        energy.term['LOW'] = Triangle('LOW', 0.0, 0.25, 0.5)
-        energy.term['MEDIUM'] = Triangle('MEDIUM', 0.25, 0.5, 0.75)
-        energy.term['HIGH'] = Triangle('HIGH', 0.5, 0.75, 1.0)
+        energy.term['LOW'] = Triangle('LOW', 0.0, 0.5, 1.0)
+        energy.term['MEDIUM'] = Triangle('MEDIUM', 0.5, 1.0, 1.5)
+        energy.term['HIGH'] = Triangle('HIGH', 1.0, 1.5, 2.0)
         fe.input['Energy'] = energy
         
         health = OutputVariable('Health', default=float('nan'))
-        health.term['BAD'] = Triangle('BAD', 0.0, 0.25, 0.5)
-        health.term['REGULAR'] = Triangle('REGULAR', 0.25, 0.5, 0.75)
-        health.term['GOOD'] = Triangle('GOOD', 0.5, 0.75, 1.0)
+        health.term['BAD'] = Triangle('BAD', 0.0, 0.5, 1.0)
+        health.term['REGULAR'] = Triangle('REGULAR', 0.5, 1.0, 1.5)
+        health.term['GOOD'] = Triangle('GOOD', 1.0, 1.5, 2.0)
         fe.output['Health'] = health
         
         rules = RuleBlock('')
