@@ -92,18 +92,6 @@ class Operator:
         result.append('accumulation = %s' % self.accumulation.__name__)
         result.append('defuzzifier = %s' % self.defuzzifier)
         return '\n'.join(result)
-    
-    def toFCL(self):
-        from fuzzylite.rule import Rule
-        fcl = []
-        fcl.append('%s : %s;' % (Rule.FR_AND.upper(),
-                                       self.tnorm.__name__.upper()))
-        fcl.append('%s : %s;' % (Rule.FR_OR.upper(),
-                                       self.snorm.__name__.upper()))
-        fcl.append('ACT : %s;' % self.activation.__name__.upper())
-        fcl.append('ACCU : %s;' % self.accumulation.__name__.upper())
-        fcl.append('METHOD : %s;' % self.defuzzifier.toFCL())
-        return '\n'.join(fcl)
 
 
 if __name__ == "__main__":

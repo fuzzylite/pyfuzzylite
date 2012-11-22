@@ -209,15 +209,14 @@ class MamdaniConsequent(FuzzyConsequent):
             return ' '.join(result)
 
     def __init__(self):
+        FuzzyConsequent.__init__(self)
         self.propositions = []
         
     def __str__(self):
         return (' %s ' % Rule.FR_AND).join([str(prop) for prop in self.propositions])
 
     def fire(self, strength, activation):
-        if __debug__:
-            import logging
-            logging.info('Firing at %s Rule: %s' % (strength, self))
+        self.logger.debug('Firing at %s Rule: %s' % (strength, self))
             
         for proposition in self.propositions:
             term = Output(proposition.term)

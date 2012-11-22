@@ -3,7 +3,7 @@ Created on 27/10/2012
 
 @author: jcrada
 '''
-
+import logging
 class Rule(object):
     '''Defines a fuzzy rule'''
     
@@ -17,6 +17,7 @@ class Rule(object):
     def __init__(self):
         self.antecedent = None
         self.consequent = None
+        self.logger = logging.getLogger(type(self).__name__)
     
     def configure(self, fop): 
         pass
@@ -33,10 +34,16 @@ class Rule(object):
 
 class FuzzyAntecedent(object):
     
+    def __init__(self):
+        self.logger = logging.getLogger(type(self).__name__)
+    
     def firing_strength(self, fop):
         raise NotImplementedError('firing_strength')
 
 class FuzzyConsequent(object):
+    
+    def __init__(self):
+        self.logger = logging.getLogger(type(self).__name__)
     
     def fire(self, strength, activation):
         raise NotImplementedError('fire')

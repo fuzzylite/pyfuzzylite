@@ -4,6 +4,7 @@ Created on 27/10/2012
 @author: jcrada
 '''
 
+import logging
 from collections import OrderedDict
 
 class Variable(object):
@@ -19,6 +20,7 @@ class Variable(object):
     def __init__(self, name):
         self.name = name
         self.term = OrderedDict()
+        self.logger = logging.getLogger(type(self).__name__)
     
     def __iter__(self):
         '''Returns a generator that iterates through all the terms of this variable.''' 
@@ -49,13 +51,6 @@ class Variable(object):
                 fuzzy.append('None/%s' % term.name)
         return ' + '.join(fuzzy)
     
-    def toFCL(self):
-        '''Returns a string representing this variable in the Fuzzy Control Language.''' 
-        return '\n'.join([term.toFCL() for term in self])
-
-
-        
-
 class InputVariable(Variable):
     '''An input variable.
     
@@ -68,14 +63,6 @@ class InputVariable(Variable):
         Variable.__init__(self, name)
         self.input = float(0.0)
     
-    def toFCL(self):
-        fcl = []
-        fcl.append('FUZZIFY %s' % self.name)
-        fcl.append(Variable.toFCL(self))
-        fcl.append('END_FUZZIFY')
-        return '\n'.join(fcl)
-
-
 from fuzzylite.term import Cumulative
 
 class OutputVariable(Variable):
@@ -99,16 +86,6 @@ class OutputVariable(Variable):
         Variable.configure(self, fop)
         self.defuzzifier = fop.defuzzifier
         self.output.accumulation = fop.accumulation
-    
-    def toFCL(self):
-        fcl = []
-        fcl.append('DEFUZZIFY %s' % self.name)
-        fcl.append(Variable.toFCL(self))
-        fcl.append('METHOD : %s' % self.defuzzifier.toFCL())
-        if self.default is not None:
-            fcl.append('DEFAULT : %f' % self.default)
-        fcl.append('END_DEFUZZIFY')
-        return '\n'.join(fcl)
     
     def defuzzify(self):
         '''Returns a single float value representing the defuzzified output.'''

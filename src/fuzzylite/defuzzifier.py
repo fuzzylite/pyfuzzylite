@@ -3,20 +3,22 @@ Created on 10/10/2012
 
 @author: jcrada
 '''
+import logging
 
 class Defuzzifier(object):
     
     def __init__(self, divisions=100):
         self.divisions = divisions
+        self._logger = logging.getLogger(__name__) 
     
     def __str__(self):
-        return self.__class__.__name__
+        acronym = []
+        for letter in self.__class__.__name__:
+            if letter.isupper(): acronym.append(letter)
+        return ''.join(acronym)
     
     def defuzzify(self, term):
         raise NotImplementedError('defuzzify')
-    
-    def toFCL(self):
-        raise NotImplementedError('toFCL')
     
 class CenterOfGravity(Defuzzifier):
     '''
@@ -26,6 +28,7 @@ class CenterOfGravity(Defuzzifier):
         Defuzzifier.__init__(self, divisions)
 
     def defuzzify(self, term):
+        '''Defuzzifies the term by computing the centroid of the term'''
         xcentroid = ycentroid = 0.0
         area = 0.0
         for x, y in term.discretize(self.divisions):
@@ -36,14 +39,11 @@ class CenterOfGravity(Defuzzifier):
         ycentroid /= 2 * area
         dx = (term.maximum - term.minimum) / self.divisions
         area *= dx
-        if __debug__:
-            import logging
-            logging.info('centroid at (%f, %f)' % (xcentroid,ycentroid))
+        
+        self._logger.debug('centroid at (%f, %f)' % (xcentroid, ycentroid))
         return xcentroid
-#        return (xcentroid, ycentroid)
     
-    def toFCL(self):
-        return 'COG'
+    
     
 class SmallestOfMaximum(Defuzzifier):
     '''Defuzzifies the a term according to the smallest of the maximum value'''
@@ -52,17 +52,16 @@ class SmallestOfMaximum(Defuzzifier):
         Defuzzifier.__init__(self, divisions)
     
     def defuzzify(self, term):
+        '''Defuzzifies the term by locating the leftmost x of the maximum membership function'''
         xsmallest = None
         ymax = -1.0  
         for x, y in term.discretize(self.divisions):
             if y > ymax:
                 xsmallest = x
                 ymax = y
-        return xsmallest
-#        return (xsmallest, ymax)
         
-    def toFCL(self):
-        return 'SOM'
+        self._logger.debug('centroid at (%f, %f)' % (xsmallest, ymax))
+        return xsmallest
 
 class LargestOfMaximum(Defuzzifier):
     '''Defuzzifies the a term according to the largest of the maximum value'''
@@ -71,25 +70,26 @@ class LargestOfMaximum(Defuzzifier):
         Defuzzifier.__init__(self, divisions)
     
     def defuzzify(self, term):
+        '''Defuzzifies the term by locating the rightmost x of the maximum membership function'''
         xlargest = None
         ymax = -1.0  
         for x, y in term.discretize(self.divisions):
             if y >= ymax:
                 xlargest = x
                 ymax = y
+        
+        self._logger.debug('centroid at (%f, %f)' % (xlargest,ymax))
         return xlargest
-#        return (xlargest, ymax)
-    
-    def toFCL(self):
-        return 'LOM'
 
 class MiddleOfMaximum(Defuzzifier):
-    '''Defuzzifies the a term according to the largest of the maximum value'''
+    '''Defuzzifies the a term according to the middle of the maximum value'''
      
     def __init__(self, divisions=100):
         Defuzzifier.__init__(self, divisions)
     
     def defuzzify(self, term):
+        '''Defuzzifies the term by first locating the smallest and largest x of the maximum
+        membership function, and then locating the middle by a simple average'''
         xsmallest = xlargest = None
         ymax = -1.0
         same_plateau = False  
@@ -102,11 +102,14 @@ class MiddleOfMaximum(Defuzzifier):
                 xlargest = x
             elif y < ymax:
                 same_plateau = False
+        
+        self._logger.debug('centroid at (%f, %f)' % ((xlargest + xsmallest) / 2.0, ymax))
         return (xlargest + xsmallest) / 2.0
 #        return ((xlargest + xsmallest) / 2.0, ymax)
-    
-    def toFCL(self):
-        return 'MOM'
+
+if __name__ == '__main__':
+    x = MiddleOfMaximum()
+    print(x)
     
     
     

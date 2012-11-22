@@ -7,6 +7,7 @@ Created on 10/10/2012
 
 # TODO: Copy matlab membership functions
 from math import isinf
+import logging
 class Term(object):
     '''Base class to define fuzzy linguistic terms such as LOW, MEDIUM, HIGH.
     
@@ -20,6 +21,7 @@ class Term(object):
         self.name = name
         self.minimum = minimum
         self.maximum = maximum
+        self.logger = logging.getLogger(type(self).__name__)
         
     def __str__(self):
         '''Returns a string ready to be used for FCL'''
@@ -55,10 +57,6 @@ class Term(object):
             x = self.minimum + (i + shift) * dx
             y = self.membership(x)
             yield (x, y)
-    
-    def toFCL(self):
-        '''Returns the term formatted according to the Fuzzy Control Language.'''
-        return 'TERM %s := %s' % (self.name, self)
     
     def membership(self, x):
         '''Determines the degree of membership from crisp number x to the term.
@@ -232,9 +230,7 @@ class Cumulative(Term):
     
     def append(self, term):
         '''Appends a term to the list of terms.'''
-        if __debug__:
-            import logging 
-            logging.debug('appended: %s' % term)
+        self.logger.debug('appending term: %s' % term)
         #the following updates the boundaries of this term.
         if math.isinf(self.minimum) or term.minimum < self.minimum:
             self.minimum = term.minimum
@@ -244,9 +240,7 @@ class Cumulative(Term):
         
     def clear(self):
         '''Clears the term by removing all the terms it is made up with.'''
-        if __debug__:
-            import logging
-            logging.debug('clearing output')
+        self.logger.debug('clearing output')
         self.minimum = float('-inf')
         self.maximum = float('inf')
         self.terms = []
@@ -255,13 +249,10 @@ class Cumulative(Term):
         '''Returns a boolean that indicates whether the term contains other terms.'''
         return len(self.terms) == 0
     
-    def toFCL(self):
-        terms = ['[' + term.toFCL() + ']' for term in self.terms]
-        return 'TERM := %s {%s}' % (self.__class__.__name__,
-                                    ' , '.join(terms)) 
-    
     def membership(self, x):
         '''Returns the membership of x using the accumulation function.'''
+        if self.accumulation is None:
+            raise ValueError('accumulation method cannot be None');
         mu = 0.0
         for term in self.terms:
             mu = self.accumulation(mu, term.membership(x))
@@ -273,13 +264,12 @@ if __name__ == '__main__':
     for pair in a.discretize(10):
         print(pair)
     print(a)
-    print(a.toFCL())
     # Test: Composite
     composite = Cumulative('mix')
     composite.append(Triangle('a', 0, 5, 10))
     composite.append(Rectangle('a', 0, 5))
     print(composite)
-    print(composite.toFCL())
+    
     
     
     

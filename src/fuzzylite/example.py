@@ -10,12 +10,18 @@ from fuzzylite.variable import InputVariable, OutputVariable
 from fuzzylite.term import Triangle
 from fuzzylite.ruleblock import RuleBlock
 from fuzzylite.mamdani import MamdaniRule
+
+import logging
+
 class Example(object):
     '''
     classdocs
     '''
-    @staticmethod
-    def simple_mamdani():
+    def __init__(self):
+        self._logger = logging.getLogger(__name__)
+        
+
+    def simple_mamdani(self):
         fe = Engine('simple-mamdani')
         energy = InputVariable('Energy')
         energy.term['LOW'] = Triangle('LOW', 0.0, 0.5, 1.0)
@@ -37,18 +43,17 @@ class Example(object):
         
         fe.configure(Operator.default())
         input = 0.0
-        while input <= 1.0:
+        while input <= 2.0:
             energy.input = input
             fe.process()
-            print(health.output)
+            self._logger.info(health.output)
             output = health.defuzzify()
-            print('Energy=%f\nEnergy is %s' % (energy.input, energy.fuzzify(input)))
-            print('Output=%f\nHealth is %s' % (output, health.fuzzify(output)))
-            print('-------')
+            self._logger.info('Energy=%f', energy.input)
+            self._logger.info('Energy is %s', energy.fuzzify(input))
+            self._logger.info('Output=%f' , output)
+            self._logger.info('Health is %s', health.fuzzify(output)) 
+            self._logger.info('-------')
             input += 0.1
-            
-            
-        
         return fe
         
 
@@ -74,11 +79,9 @@ class Example(object):
 if __name__ == '__main__':
     import logging
     logging.basicConfig(level = logging.DEBUG,
-                        format = '%(levelname)-10s %(asctime)s %(message)s')
-    fe = Example.simple_mamdani()
-    print('Debug: %s' % __debug__  )
-    logging.info('LLLL')
-    logging.debug('LLLL')
+                        format = '%(asctime)s - %(name)-20s - %(levelname)s - %(message)s')
+    fe = Example().simple_mamdani()
+    
     
     
     
