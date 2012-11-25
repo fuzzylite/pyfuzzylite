@@ -6,7 +6,7 @@ Created on 10/10/2012
 
 
 # TODO: Copy matlab membership functions
-from math import isinf
+import math
 import logging
 class Term(object):
     '''Base class to define fuzzy linguistic terms such as LOW, MEDIUM, HIGH.
@@ -42,7 +42,7 @@ class Term(object):
         Raises:
             ValueError: if the term is unbounded (i.e. tends to infinity)
         '''
-        if  isinf(self.minimum) or isinf(self.maximum):
+        if  math.isinf(self.minimum) or math.isinf(self.maximum):
             raise ValueError('cannot discretize a term whose minimum or maximum is infinity')
         # dx is the step size
         dx = (self.maximum - self.minimum) / divisions
@@ -214,6 +214,102 @@ class Function(Term):
     def membership(self, x):
         return self.lambda_expression(x, self.minimum, self.maximum)
 
+class Gaussian(Term):
+    '''Gaussian curve membership function
+
+    from matlab docs:
+    The symmetric Gaussian function depends on two parameters sigma and c as given 
+    by
+    
+    f(x, sigma, c) = exp(-(x - c).^2/(2*sigma^2));
+    
+    '''
+    def __init__(self, name, minimum, maximum, sigma, c):
+        Term.__init__(self, minimum, maximum)
+        self.sigma = sigma
+        self.c = c
+        
+    def __str__(self):
+        return '%s (%s, %s, %s, %s)' % (self.__class__.__name__,
+                                        self.minimum, self.maximum,
+                                        self.sigma, self.c)
+    def membership(self, x):
+        # from matlab: gaussmf.m
+        return math.exp((-(x - self.c) ** 2) / (2 * self.sigma ** 2))
+    
+class Bell(Term):
+    '''Generalized bell-shaped membership function
+    
+    from matlab docs:
+    The generalized bell function depends on three parameters a, b, and c as given by:
+        
+        tmp = ((x - c)/a).^2;
+        if (tmp == 0 & b == 0)
+            y = 0.5;
+        elseif (tmp == 0 & b < 0)
+            y = 0;
+        else
+            tmp = tmp.^b;
+            y = 1./(1 + tmp);
+        end
+    
+    where the parameter b is usually positive. The parameter c locates the center
+    of the curve. Enter the parameter vector params, the second argument for 
+    gbellmf, as the vector whose entries are a, b, and c, respectively.
+    '''
+    
+    def __init__(self, name, minimum, maximum, a, b, c):
+        Term.__init__(self, minimum, maximum)
+        self.a = a
+        self.b = b
+        self.c = c
+        
+    def __str__(self):
+        return '%s (%s, %s, %s, %s, %s)' % (self.__class__.__name__,
+                                        self.minimum, self.maximum,
+                                        self.a, self.b, self.c)
+        
+    def membership(self, x):
+        # from matlab: gbellmf.m
+        tmp = ((x - self.c) / self.a) ** 2
+        if tmp == 0.0 and self.b == 0:
+            return 0.5
+        elif tmp == 0.0 & self.b < 0:
+            return 0.0
+        else:
+            tmp = tmp ** self.b
+            return 1.0 / (1 + tmp)
+
+
+class Sigmoid(Term):
+    '''Sigmoidal membership function
+
+    from matlab docs:
+    The sigmoidal function, sigmf(x,[a c]), as given in the following equation 
+    by f(x,a,c) is a mapping on a vector x, and depends on two parameters a and c.
+    
+    f(x,a,c) = 1./(1 + exp(-a*(x-c)));
+
+    Depending on the sign of the parameter a, the sigmoidal membership function 
+    is inherently open to the right or to the left, and thus is appropriate for 
+    representing concepts such as 'very large' or 'very negative'.
+    '''
+
+
+    def __init__(self, name, minimum, maximum, a, c):
+        Term.__init__(self, minimum, maximum)
+        self.a = a
+        self.c = c
+    
+    def __str__(self):
+        return '%s (%s, %s, %s, %s)' % (self.__class__.__name__,
+                                        self.minimum, self.maximum,
+                                        self.a, self.c)
+    
+    def membership(self, x):
+        # from matlab: sigmf.m 
+        return 1.0 / (1 + math.exp( -self.a * (x - self.c)))
+
 
 class Output(Term):
     '''An output term to be used in the Cumulative output term.
@@ -240,7 +336,7 @@ class Output(Term):
             raise ValueError('activation must take a FuzzyAnd function')
         return self.activation(self.term.membership(x), self.alphacut) 
 
-import math
+
 class Cumulative(Term):
     '''A term made up with multiple terms.
     
