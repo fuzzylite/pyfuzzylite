@@ -4,35 +4,42 @@ Created on 31/10/2012
 @author: jcrada
 '''
 
-from fuzzylite.rule import Rule, FuzzyAntecedent, FuzzyConsequent 
-from fuzzylite.parser import Parser
-
+from fl.rule import Rule, FuzzyAntecedent, FuzzyConsequent 
+from fl.parser import Parser
+import re
 class MamdaniRule(Rule):
     
-    def __init__(self, rule=None, fe=None):
+    def __init__(self):
         Rule.__init__(self)
-        if rule is not None:
-            self.parse(rule, fe)  
-        
-    def parse(self, rule, fe):
+    
+    @classmethod
+    def parse(cls, rule, fe):
         '''
         Parses a fuzzy rule from text.
         
         rule -- fuzzy rule in format <if ... then ...>
         fe -- an instance to the fuzzy engine
         '''
-        try:
-            import re
-            antecedent, consequent = re.compile('^\s*if\s+|\s+then\s+').split(rule)[1:] #first element is empty
-        except ValueError:
+        
+        matcher = re.compile('(^\s*if\s+)(.*)(\s+then\s+)(.*)').match(rule)
+        if not matcher or len(matcher.groups()) != 4:
             raise SyntaxError('expected rule as <%s ... %s ...>, but found <%s>'
                               % (Rule.FR_IF,Rule.FR_THEN, rule))
-        self.antecedent = MamdaniAntecedent()
-        self.antecedent.parse(antecedent, fe)
         
-        self.consequent = MamdaniConsequent() 
-        self.consequent.parse(consequent, fe)
+        #matcher.groups() = ('if ', 'Energy is LOW', ' then ', 'Health is BAD')
+        #matcher.group(0) is whole rule
+        antecedent = matcher.group(2)
+        consequent = matcher.group(4)
         
+        instance = cls()
+        
+        instance.antecedent = MamdaniAntecedent()
+        instance.antecedent.parse(antecedent, fe)
+        
+        instance.consequent = MamdaniConsequent() 
+        instance.consequent.parse(consequent, fe)
+        
+        return instance
 
 
 
@@ -64,7 +71,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
             return str(self.operator)
     
     
-    def firing_strength(self, fop, node = None):
+    def firing_strength(self, tnorm, snorm, node = None):
         if node is None: 
             node = self.root
         if isinstance(node, MamdaniAntecedent.Proposition):
@@ -76,11 +83,11 @@ class MamdaniAntecedent(FuzzyAntecedent):
             if not (node.left or node.right):
                 raise ValueError('left and right operands must exist')
             if node.operator == Rule.FR_AND:
-                return fop.tnorm(self.degree_of_truth(node=self.left),
-                                              self.degree_of_truth(node=self.right))
+                return tnorm(self.firing_strength(tnorm, snorm, node=self.left),
+                             self.firing_strength(tnorm, snorm, node=self.right))
             elif node.operator == Rule.FR_OR:
-                return fop.snorm(self.degree_of_truth(node=self.left),
-                                              self.degree_of_truth(node=self.right))
+                return snorm(self.firing_strength(tnorm, snorm, node=self.left),
+                             self.firing_strength(tnorm, snorm, node=self.right))
             else: raise ValueError('unknown operator %s' % node.operator)
         else: raise TypeError('unexpected node type %s' % type(node))
         
@@ -188,7 +195,7 @@ class MamdaniAntecedent(FuzzyAntecedent):
     def __str__(self):
         return self.str_postfix()
 
-from fuzzylite.term import Output
+from fl.term import Output
 class MamdaniConsequent(FuzzyConsequent):
     '''A Mamdani consequent of the form <variable> is [hedges] <term> [with <weight>].'''
 
@@ -305,11 +312,10 @@ class MamdaniConsequent(FuzzyConsequent):
         self.propositions = proposition
 
 if __name__ == '__main__':
-    from fuzzylite.example import Example
-    fe = Example.simple_mamdani()
+    from fl.example import Example
+    fe = Example().simple_mamdani()
     infix = 'if Energy is LOW then Health is BAD'
-    rule = MamdaniRule()
-    rule.parse(infix, fe)
+    rule = MamdaniRule.parse(infix, fe)
     print(rule) 
     
     

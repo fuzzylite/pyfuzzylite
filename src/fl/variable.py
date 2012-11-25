@@ -63,7 +63,7 @@ class InputVariable(Variable):
         Variable.__init__(self, name)
         self.input = float(0.0)
     
-from fuzzylite.term import Cumulative
+from fl.term import Cumulative
 
 class OutputVariable(Variable):
     '''An output varible such as Health or Tip.
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 #    print(next(reversed(d)))
 #    for key in d.items():
 #        print(key)
-    from fuzzylite.term import Triangle
+    from fl.term import Triangle
     var = InputVariable('test')
     low = Triangle('Low', 0, 5, 10)
     med = Triangle('Med', 5, 10, 15)

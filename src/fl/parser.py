@@ -4,6 +4,7 @@ Created on 28/10/2012
 @author: jcrada
 '''
 
+#TODO: get rid of this wildcard
 from math import *
 
 class Operator:
@@ -17,7 +18,7 @@ class Operator:
     @staticmethod
     def default_operators():
         p = 7
-        from fuzzylite.rule import Rule
+        from fl.rule import Rule
         o_and = Rule.FR_AND
         o_or = Rule.FR_OR
         return ({

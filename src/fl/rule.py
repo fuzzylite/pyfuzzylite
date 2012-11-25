@@ -22,8 +22,8 @@ class Rule(object):
     def configure(self, fop): 
         pass
     
-    def firing_strength(self, fop):
-        return self.antecedent.firing_strength(fop)
+    def firing_strength(self, tnorm, snorm):
+        return self.antecedent.firing_strength(tnorm, snorm)
     
     def fire(self, strength, activation):
         self.consequent.fire(strength, activation)
@@ -37,7 +37,7 @@ class FuzzyAntecedent(object):
     def __init__(self):
         self.logger = logging.getLogger(type(self).__name__)
     
-    def firing_strength(self, fop):
+    def firing_strength(self, tnorm, snorm):
         raise NotImplementedError('firing_strength')
 
 class FuzzyConsequent(object):

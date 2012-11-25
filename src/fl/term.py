@@ -24,8 +24,8 @@ class Term(object):
         self.logger = logging.getLogger(type(self).__name__)
         
     def __str__(self):
-        '''Returns a string ready to be used for FCL'''
-        return super.__str__(self)
+        '''Returns a string of this term.'''
+        return '%s (%s, %s)' % (self.__class__.__name__, self.minimum, self.maximum)
     
     def discretize(self, divisions=100, align='center'):
         '''Discretizes terms.
@@ -44,7 +44,7 @@ class Term(object):
         '''
         if  isinf(self.minimum) or isinf(self.maximum):
             raise ValueError('cannot discretize a term whose minimum or maximum is infinity')
-        #dx is the step size
+        # dx is the step size
         dx = (self.maximum - self.minimum) / divisions
         x = None
         y = None
@@ -153,6 +153,40 @@ class Rectangle(Term):
     
     def membership(self, x):
         return 1.0 if self.minimum <= x <= self.maximum else 0.0
+    
+class LeftShoulder(Term):
+    '''A left shoulder term. 
+    mu=1.0 ___
+              \
+               \___ mu=0.0
+    Defines a left shoulder term as shown above.'''
+    
+    def __init__(self, name, minimum, maximum):
+        Term.__init__(self, name, minimum, maximum)
+        
+    
+    def membership(self, x):
+        if x <= self.minimum: return 1.0
+        if x >= self.maximum: return 0.0
+        return (x - self.minimum) / (self.maximum - self.minimum)
+        
+
+class RightShoulder(Term):
+    '''A right shoulder term. 
+                ___ mu=1.0
+               /   
+    mu=0.0 ___/      
+    Defines a right shoulder term as shown above.'''
+    
+    def __init__(self, name, minimum, maximum):
+        Term.__init__(self, name, minimum, maximum)
+        
+    
+    def membership(self, x):
+        if x <= self.minimum: return 0.0
+        if x >= self.maximum: return 1.0
+        return (self.maximum - x) / (self.maximum - self.minimum)
+
 
 class Function(Term):
     '''A function term.
@@ -191,7 +225,7 @@ class Output(Term):
         alphacut: the float degree of the activation.
         activation: a method to define membership functions considering the alphacut.
                     It takes functions from FuzzyAnd'''
-    def __init__(self, term, alphacut = 1.0, activation = None):
+    def __init__(self, term, alphacut=1.0, activation=None):
         Term.__init__(self, term.name, term.minimum, term.maximum)
         self.term = term
         self.alphacut = alphacut
@@ -224,14 +258,14 @@ class Cumulative(Term):
     
     def __str__(self):
         terms = ['[' + str(term) + ']' for term in self.terms]
-        return '%s (%s, %s) {%s}' % (self.__class__.__name__,
+        return '%s (%s, %s, %s)' % (self.__class__.__name__,
                                     self.minimum, self.maximum,
                                     ' , '.join(terms)) 
     
     def append(self, term):
         '''Appends a term to the list of terms.'''
         self.logger.debug('appending term: %s' % term)
-        #the following updates the boundaries of this term.
+        # the following updates the boundaries of this term.
         if math.isinf(self.minimum) or term.minimum < self.minimum:
             self.minimum = term.minimum
         if math.isinf(self.maximum) or term.maximum > self.maximum:
