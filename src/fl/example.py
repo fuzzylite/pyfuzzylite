@@ -11,9 +11,7 @@ from fl.ruleblock import RuleBlock
 from fl.mamdani import MamdaniRule
 
 class Example(object):
-    '''
-    classdocs
-    '''
+    
     
         
     @staticmethod

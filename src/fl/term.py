@@ -188,7 +188,7 @@ class RightShoulder(Term):
         return (self.maximum - x) / (self.maximum - self.minimum)
 
 
-class Function(Term):
+class Lambda(Term):
     '''A function term.
     
     Defines a linguistic term by a function given as a lambda expression.
@@ -202,17 +202,18 @@ class Function(Term):
                            minimum: the minimum value of the term.
                            maximum: the maximum value of the term.
     '''
-    def __init__(self, name, lambda_expression, minimum, maximum):
+    def __init__(self, name, strlambda, minimum, maximum):
         Term.__init__(self, name, minimum, maximum)
-        self.lambda_expression = lambda_expression
+        self.strlambda = strlambda
+        self.lambda_ = eval(strlambda)
     
     def __str__(self):
         return '%s %s (%s, %s)' % (self.__class__.__name__,
-                                    self.lambda_expression,
+                                    self.strlambda,
                                     self.minimum, self.maximum)
 
     def membership(self, x):
-        return self.lambda_expression(x, self.minimum, self.maximum)
+        return self.lambda_(x, self.minimum, self.maximum)
 
 class Gaussian(Term):
     '''Gaussian curve membership function
