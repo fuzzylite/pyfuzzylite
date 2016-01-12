@@ -168,7 +168,7 @@ class LeftShoulder(Term):
     def membership(self, x):
         if x <= self.minimum: return 1.0
         if x >= self.maximum: return 0.0
-        return (x - self.minimum) / (self.maximum - self.minimum)
+        return 1.0 - ((x - self.minimum) / (self.maximum - self.minimum))
         
 
 class RightShoulder(Term):
@@ -185,7 +185,7 @@ class RightShoulder(Term):
     def membership(self, x):
         if x <= self.minimum: return 0.0
         if x >= self.maximum: return 1.0
-        return (self.maximum - x) / (self.maximum - self.minimum)
+        return 1.0 - ((self.maximum - x) / (self.maximum - self.minimum))
 
 
 class Lambda(Term):
