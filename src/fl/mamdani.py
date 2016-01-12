@@ -83,8 +83,10 @@ class MamdaniAntecedent(FuzzyAntecedent):
             if not (node.left or node.right):
                 raise ValueError('left and right operands must exist')
             if node.operator == Rule.FR_AND:
-                return tnorm(self.firing_strength(tnorm, snorm, node=self.left),
-                             self.firing_strength(tnorm, snorm, node=self.right))
+                return tnorm(self.firing_strength(tnorm, snorm, node=node.left),
+                             self.firing_strength(tnorm, snorm, node=node.right))
+                #return tnorm(self.firing_strength(tnorm, snorm, node=self.left),  # TODO:  Is the previous change right????
+                #            self.firing_strength(tnorm, snorm, node=self.right))
             elif node.operator == Rule.FR_OR:
                 return snorm(self.firing_strength(tnorm, snorm, node=self.left),
                              self.firing_strength(tnorm, snorm, node=self.right))
