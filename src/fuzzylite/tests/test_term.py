@@ -42,9 +42,22 @@ class TermAssert(object):
             self.test.assertEqual(self.actual.membership(x), mf)
         return self
 
-    def has_memberships(self, x_mf: dict):
+    def has_memberships(self, x_mf: dict, height=1.0):
         for x in x_mf.keys():
-            self.has_membership(x, x_mf[x])
+            self.has_membership(x, height * x_mf[x])
+        return self
+
+    def has_tsukamoto(self, x, mf, minimum=-1.0, maximum=1.0):
+        self.test.assertEqual(self.actual.is_monotonic(), True)
+        if isnan(mf):
+            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True)
+        else:
+            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf)
+        return self
+
+    def has_tsukamotos(self, x_mf: dict, minimum=-1.0, maximum=1.0):
+        for x in x_mf.keys():
+            self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
 
@@ -79,49 +92,49 @@ class TestTerm(unittest.TestCase):
                               -inf: 0.0}) \
             .configured_as("0 0.25 3.0 0.5") \
             .exports_to("term: bell Bell 0.000 0.250 3.000 0.500") \
-            .has_memberships({-0.5: 0.5 * 0.015384615384615385,
-                              -0.4: 0.5 * 0.05625177755617076,
-                              -0.25: 0.5 * 0.5,
-                              -0.1: 0.5 * 0.9959207087768499,
-                              0.0: 0.5 * 1.0,
-                              0.1: 0.5 * 0.9959207087768499,
-                              0.25: 0.5 * 0.5,
-                              0.4: 0.5 * 0.05625177755617076,
-                              0.5: 0.5 * 0.015384615384615385,
+            .has_memberships({-0.5: 0.015384615384615385,
+                              -0.4: 0.05625177755617076,
+                              -0.25: 0.5,
+                              -0.1: 0.9959207087768499,
+                              0.0: 1.0,
+                              0.1: 0.9959207087768499,
+                              0.25: 0.5,
+                              0.4: 0.05625177755617076,
+                              0.5: 0.015384615384615385,
                               nan: nan,
                               inf: 0.0,
-                              -inf: 0.0})
+                              -inf: 0.0}, height=0.5)
 
     def test_binary(self):
         TermAssert(self, Binary("binary")) \
             .exports_to("term: binary Binary nan nan") \
             .takes_parameters(2) \
             .is_not_monotonic() \
-            .configured_as("0.5 inf") \
-            .exports_to("term: binary Binary 0.500 inf") \
-            .has_memberships({0.0: 0.0,
-                              0.1: 0.0,
-                              0.25: 0.0,
-                              0.49: 0.0,
+            .configured_as("0 inf") \
+            .exports_to("term: binary Binary 0.000 inf") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.0,
+                              -0.25: 0.0,
+                              -0.1: 0.0,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 1.0,
+                              0.4: 1.0,
                               0.5: 1.0,
-                              0.51: 1.0,
-                              0.75: 1.0,
-                              0.9: 1.0,
-                              1.0: 1.0,
                               nan: nan,
                               inf: 1.0,
                               -inf: 0.0}) \
-            .configured_as("0.5 -inf 0.5") \
-            .exports_to("term: binary Binary 0.500 -inf 0.500") \
-            .has_memberships({0.0: 0.5,
-                              0.1: 0.5,
-                              0.25: 0.5,
-                              0.49: 0.5,
-                              0.5: 0.5,
-                              0.51: 0.0,
-                              0.75: 0.0,
-                              0.9: 0.0,
-                              1.0: 0.0,
+            .configured_as("0 -inf 0.5") \
+            .exports_to("term: binary Binary 0.000 -inf 0.500") \
+            .has_memberships({-0.5: 0.5,
+                              -0.4: 0.5,
+                              -0.25: 0.5,
+                              -0.1: 0.5,
+                              0.0: 0.5,
+                              0.1: 0.0,
+                              0.25: 0.0,
+                              0.4: 0.0,
+                              0.5: 0.0,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.5})
@@ -131,31 +144,31 @@ class TestTerm(unittest.TestCase):
             .exports_to("term: concave Concave nan nan") \
             .takes_parameters(2) \
             .is_monotonic() \
-            .configured_as("0.500 0.750") \
-            .exports_to("term: concave Concave 0.500 0.750") \
-            .has_memberships({0.0: 0.250,
-                              0.1: 0.2777777777777778,
-                              0.25: 0.3333333333333333,
-                              0.4: 0.4166666666666667,
-                              0.5: 0.5,
-                              0.6: 0.625,
-                              0.75: 1.0,
-                              0.9: 1.0,
-                              1.0: 1.0,
+            .configured_as("0.00 0.50") \
+            .exports_to("term: concave Concave 0.000 0.500") \
+            .has_memberships({-0.5: 0.3333333333333333,
+                              -0.4: 0.35714285714285715,
+                              -0.25: 0.4,
+                              -0.1: 0.45454545454545453,
+                              0.0: 0.5,
+                              0.1: 0.5555555555555556,
+                              0.25: 0.6666666666666666,
+                              0.4: 0.8333333333333334,
+                              0.5: 1.0,
                               nan: nan,
                               inf: 1.0,
                               -inf: 0.0}) \
-            .configured_as("0.500 0.250 0.5") \
-            .exports_to("term: concave Concave 0.500 0.250 0.500") \
-            .has_memberships({0.0: 0.5,
-                              0.1: 0.5,
-                              0.25: 0.5,
-                              0.4: 0.5 * 0.625,
-                              0.5: 0.5 * 0.5,
-                              0.6: 0.5 * 0.4166666666666667,
-                              0.75: 0.5 * 0.3333333333333333,
-                              0.9: 0.5 * 0.2777777777777778,
-                              1.0: 0.5 * 0.250,
+            .configured_as("0.00 -0.500 0.5") \
+            .exports_to("term: concave Concave 0.000 -0.500 0.500") \
+            .has_memberships({-0.5: 0.5,
+                              -0.4: 0.4166666666666667,
+                              -0.25: 0.3333333333333333,
+                              -0.1: 0.2777777777777778,
+                              0.0: 0.25,
+                              0.1: 0.22727272727272727,
+                              0.25: 0.2,
+                              0.4: 0.17857142857142858,
+                              0.5: 0.16666666666666666,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.5})
@@ -167,66 +180,66 @@ class TestTerm(unittest.TestCase):
             .is_not_monotonic() \
             .configured_as("0.5") \
             .exports_to("term: constant Constant 0.500") \
-            .has_memberships({0.0: 0.5,
+            .has_memberships({-0.5: 0.5,
+                              -0.4: 0.5,
+                              -0.25: 0.5,
+                              -0.1: 0.5,
+                              0.0: 0.5,
                               0.1: 0.5,
                               0.25: 0.5,
                               0.4: 0.5,
                               0.5: 0.5,
-                              0.6: 0.5,
-                              0.75: 0.5,
-                              0.9: 0.5,
-                              1.0: 0.5,
                               nan: 0.5,
                               inf: 0.5,
                               -inf: 0.5}) \
-            .configured_as("0.500 0.5") \
-            .exports_to("term: constant Constant 0.500") \
-            .has_memberships({0.0: 0.5,
-                              0.1: 0.5,
-                              0.25: 0.5,
-                              0.4: 0.5,
-                              0.5: 0.5,
-                              0.6: 0.5,
-                              0.75: 0.5,
-                              0.9: 0.5,
-                              1.0: 0.5,
-                              nan: 0.5,
-                              inf: 0.5,
-                              -inf: 0.5})
+            .configured_as("-0.500 0.5") \
+            .exports_to("term: constant Constant -0.500") \
+            .has_memberships({-0.5: -0.5,
+                              -0.4: -0.5,
+                              -0.25: -0.5,
+                              -0.1: -0.5,
+                              0.0: -0.5,
+                              0.1: -0.5,
+                              0.25: -0.5,
+                              0.4: -0.5,
+                              0.5: -0.5,
+                              nan: -0.5,
+                              inf: -0.5,
+                              -inf: -0.5})
 
     def test_cosine(self):
         TermAssert(self, Cosine("cosine")) \
             .exports_to("term: cosine Cosine nan nan") \
             .takes_parameters(2) \
             .is_not_monotonic() \
-            .configured_as("0.5 1") \
-            .exports_to("term: cosine Cosine 0.500 1.000") \
-            .has_memberships({0.0: 0.0,
-                              0.1: 0.09549150281252633,
+            .configured_as("0.0 1") \
+            .exports_to("term: cosine Cosine 0.000 1.000") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.09549150281252633,
+                              -0.25: 0.5,
+                              -0.1: 0.9045084971874737,
+                              0.0: 1.0,
+                              0.1: 0.9045084971874737,
                               0.25: 0.5,
-                              0.49: 0.9990133642141358,
-                              0.5: 1.0,
-                              0.51: 0.9990133642141358,
-                              0.75: 0.5,
-                              0.9: 0.09549150281252633,
-                              1.0: 0.0,
+                              0.4: 0.09549150281252633,
+                              0.5: 0.0,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0}) \
-            .configured_as("0.5 1.0 0.5") \
-            .exports_to("term: cosine Cosine 0.500 1.000 0.500") \
-            .has_memberships({0.0: 0.5 * 0.0,
-                              0.1: 0.5 * 0.09549150281252633,
-                              0.25: 0.5 * 0.5,
-                              0.49: 0.5 * 0.9990133642141358,
-                              0.5: 0.5 * 1.0,
-                              0.51: 0.5 * 0.9990133642141358,
-                              0.75: 0.5 * 0.5,
-                              0.9: 0.5 * 0.09549150281252633,
-                              1.0: 0.5 * 0.0,
-                              nan: 0.5 * nan,
-                              inf: 0.5 * 0.0,
-                              -inf: 0.5 * 0.0})
+            .configured_as("0.0 1.0 0.5") \
+            .exports_to("term: cosine Cosine 0.000 1.000 0.500") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.09549150281252633,
+                              -0.25: 0.5,
+                              -0.1: 0.9045084971874737,
+                              0.0: 1.0,
+                              0.1: 0.9045084971874737,
+                              0.25: 0.5,
+                              0.4: 0.09549150281252633,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_discrete(self):
         pass
@@ -239,359 +252,468 @@ class TestTerm(unittest.TestCase):
             .exports_to("term: gaussian Gaussian nan nan") \
             .takes_parameters(2) \
             .is_not_monotonic() \
-            .configured_as("0.5 0.25") \
-            .exports_to("term: gaussian Gaussian 0.500 0.250") \
-            .has_memberships({0.0: 0.1353352832366127,
-                              0.1: 0.2780373004531941,
+            .configured_as("0.0 0.25") \
+            .exports_to("term: gaussian Gaussian 0.000 0.250") \
+            .has_memberships({-0.5: 0.1353352832366127,
+                              -0.4: 0.2780373004531941,
+                              -0.25: 0.6065306597126334,
+                              -0.1: 0.9231163463866358,
+                              0.0: 1.0,
+                              0.1: 0.9231163463866358,
                               0.25: 0.6065306597126334,
-                              0.49: 0.9992003199146837,
-                              0.5: 1.0,
-                              0.51: 0.9992003199146837,
-                              0.75: 0.6065306597126334,
-                              0.9: 0.2780373004531941,
-                              1.0: 0.1353352832366127,
+                              0.4: 0.2780373004531941,
+                              0.5: 0.1353352832366127,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0}) \
-            .configured_as("0.5 0.25 0.5") \
-            .exports_to("term: gaussian Gaussian 0.500 0.250 0.500") \
-            .has_memberships({0.0: 0.5 * 0.1353352832366127,
-                              0.1: 0.5 * 0.2780373004531941,
-                              0.25: 0.5 * 0.6065306597126334,
-                              0.49: 0.5 * 0.9992003199146837,
-                              0.5: 0.5 * 1.0,
-                              0.51: 0.5 * 0.9992003199146837,
-                              0.75: 0.5 * 0.6065306597126334,
-                              0.9: 0.5 * 0.2780373004531941,
-                              1.0: 0.5 * 0.1353352832366127,
-                              nan: 0.5 * nan,
-                              inf: 0.5 * 0.0,
-                              -inf: 0.5 * 0.0})
-
-        self.assertEqual(str(Gaussian()), "term: unnamed Gaussian nan nan")
-        self.assertEqual(str(Gaussian("x", 0.5, 1)), "term: x Gaussian 0.500 1.000")
-        self.assertEqual(str(Gaussian("x", 0.5, 1, 0.5)), "term: x Gaussian 0.500 1.000 0.500")
-        self.assertEqual(Gaussian().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            Gaussian().configure("")
-
-        gaussian = Gaussian("gaussian")
-        gaussian.configure("0.5 0.25")
-        self.assertEqual(str(gaussian), "term: gaussian Gaussian 0.500 0.250")
-        self.assertEqual(gaussian.membership(0.5), 1.0)
-        self.assertEqual(gaussian.membership(0.75), 0.6065306597126334)
-        self.assertEqual(gaussian.membership(0.25), 0.6065306597126334)
-        gaussian.configure("0.5 0.25 0.5")
-        self.assertEqual(gaussian.membership(0.5), 0.5)
-        self.assertEqual(gaussian.membership(0.75), 0.3032653298563167)
-        self.assertEqual(gaussian.membership(0.25), 0.3032653298563167)
+            .configured_as("0.0 0.25 0.5") \
+            .exports_to("term: gaussian Gaussian 0.000 0.250 0.500") \
+            .has_memberships({-0.5: 0.1353352832366127,
+                              -0.4: 0.2780373004531941,
+                              -0.25: 0.6065306597126334,
+                              -0.1: 0.9231163463866358,
+                              0.0: 1.0,
+                              0.1: 0.9231163463866358,
+                              0.25: 0.6065306597126334,
+                              0.4: 0.2780373004531941,
+                              0.5: 0.1353352832366127,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_gaussian_product(self):
-        self.assertEqual(str(GaussianProduct()), "term: unnamed GaussianProduct nan nan nan nan")
-        self.assertEqual(str(GaussianProduct("x", 0.3, 0.1, 0.6, 0.2)),
-                         "term: x GaussianProduct 0.300 0.100 0.600 0.200")
-        self.assertEqual(str(GaussianProduct("x", 0.3, 0.1, 0.6, 0.2, 0.5)),
-                         "term: x GaussianProduct 0.300 0.100 0.600 0.200 0.500")
-        self.assertEqual(GaussianProduct().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 4, got 0\)"):
-            GaussianProduct().configure("")
-
-        gaussian_product = GaussianProduct("gaussianProduct")
-        gaussian_product.configure("0.30 0.10 0.60 0.20")
-        self.assertEqual(str(gaussian_product), "term: gaussianProduct GaussianProduct 0.300 0.100 0.600 0.200")
-        self.assertEqual(gaussian_product.membership(0.5), 1.0)
-        self.assertEqual(gaussian_product.membership(0.75), 0.7548396019890073)
-        self.assertEqual(gaussian_product.membership(0.25), 0.8824969025845955)
-        gaussian_product.configure("0.30 0.10 0.60 0.20 0.5")
-        self.assertEqual(gaussian_product.membership(0.5), 0.5)
-        self.assertEqual(gaussian_product.membership(0.75), 0.3774198009945037)
-        self.assertEqual(gaussian_product.membership(0.25), 0.4412484512922977)
+        TermAssert(self, GaussianProduct("gaussian_product")) \
+            .exports_to("term: gaussian_product GaussianProduct nan nan nan nan") \
+            .takes_parameters(4) \
+            .is_not_monotonic() \
+            .configured_as("0.0 0.25 0.1 0.5") \
+            .exports_to("term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500") \
+            .has_memberships({-0.5: 0.1353352832366127,
+                              -0.4: 0.2780373004531941,
+                              -0.25: 0.6065306597126334,
+                              -0.1: 0.9231163463866358,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 0.9559974818331,
+                              0.4: 0.835270211411272,
+                              0.5: 0.7261490370736908,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("0.0 0.25 0.1 0.5 0.5") \
+            .exports_to("term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500 0.500") \
+            .has_memberships({-0.5: 0.1353352832366127,
+                              -0.4: 0.2780373004531941,
+                              -0.25: 0.6065306597126334,
+                              -0.1: 0.9231163463866358,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 0.9559974818331,
+                              0.4: 0.835270211411272,
+                              0.5: 0.7261490370736908,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_pi_shape(self):
-        self.assertEqual(str(PiShape()), "term: unnamed PiShape nan nan nan nan")
-        self.assertEqual(str(PiShape("x", 0.000, 0.333, 0.666, 1.000)),
-                         "term: x PiShape 0.000 0.333 0.666 1.000")
-        self.assertEqual(str(PiShape("x", 0.000, 0.333, 0.666, 1.000, 0.5)),
-                         "term: x PiShape 0.000 0.333 0.666 1.000 0.500")
-        self.assertEqual(PiShape().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 4, got 0\)"):
-            PiShape().configure("")
-
-        pi_shape = PiShape("pi_shape")
-        pi_shape.configure("0.000 0.333 0.666 1.000")
-        self.assertEqual(str(pi_shape), "term: pi_shape PiShape 0.000 0.333 0.666 1.000")
-        self.assertEqual(pi_shape.membership(0.5), 1.0)
-        self.assertEqual(pi_shape.membership(0.75), 0.8734985119581198)
-        self.assertEqual(pi_shape.membership(0.25), 0.8757496234973712)
-        pi_shape.configure("0.000 0.333 0.666 1.000 0.5")
-        self.assertEqual(pi_shape.membership(0.5), 0.5)
-        self.assertEqual(pi_shape.membership(0.75), 0.4367492559790599)
-        self.assertEqual(pi_shape.membership(0.25), 0.4378748117486856)
+        TermAssert(self, PiShape("pi_shape")) \
+            .exports_to("term: pi_shape PiShape nan nan nan nan") \
+            .takes_parameters(4) \
+            .is_not_monotonic() \
+            .configured_as("-.9 -.1 .1 1") \
+            .exports_to("term: pi_shape PiShape -0.900 -0.100 0.100 1.000") \
+            .has_memberships({-0.5: 0.5,
+                              -0.4: 0.71875,
+                              -0.25: 0.9296875,
+                              -0.1: 1.0,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 0.9444444444444444,
+                              0.4: 0.7777777777777777,
+                              0.5: 0.6049382716049383,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-.9 -.1 .1 1 .5") \
+            .exports_to("term: pi_shape PiShape -0.900 -0.100 0.100 1.000 0.500") \
+            .has_memberships({-0.5: 0.5,
+                              -0.4: 0.71875,
+                              -0.25: 0.9296875,
+                              -0.1: 1.0,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 0.9444444444444444,
+                              0.4: 0.7777777777777777,
+                              0.5: 0.6049382716049383,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_ramp(self):
-        self.assertEqual(str(Ramp()), "term: unnamed Ramp nan nan")
-        self.assertEqual(str(Ramp("x", 0.25, 0.750)), "term: x Ramp 0.250 0.750")
-        self.assertEqual(str(Ramp("x", 0.25, 0.750, 0.5)), "term: x Ramp 0.250 0.750 0.500")
-        self.assertEqual(Ramp().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            Ramp().configure("")
-
-        ramp = Ramp("ramp")
-        ramp.configure("0.250 0.750")
-        self.assertEqual(str(ramp), "term: ramp Ramp 0.250 0.750")
-        self.assertEqual(ramp.membership(0.5), 0.5)
-        self.assertEqual(ramp.membership(0.75), 1.0)
-        self.assertEqual(ramp.membership(0.6), 0.7)
-        self.assertEqual(ramp.membership(0.25), 0.0)
-        ramp.configure("0.250 0.750 0.5")
-        self.assertEqual(ramp.membership(0.5), 0.25)
-        self.assertEqual(ramp.membership(0.75), 0.5)
-        self.assertEqual(ramp.membership(0.6), 0.35)
-        self.assertEqual(ramp.membership(0.25), 0.0)
+        TermAssert(self, Ramp("ramp")) \
+            .exports_to("term: ramp Ramp nan nan") \
+            .takes_parameters(2) \
+            .is_monotonic() \
+            .configured_as("-0.250 0.750") \
+            .exports_to("term: ramp Ramp -0.250 0.750") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.0,
+                              -0.25: 0.0,
+                              -0.1: 0.150,
+                              0.0: 0.250,
+                              0.1: 0.350,
+                              0.25: 0.500,
+                              0.4: 0.650,
+                              0.5: 0.750,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}) \
+            .has_tsukamotos({0.0: -0.250,
+                             0.1: -0.150,
+                             0.25: 0.0,
+                             0.4: 0.15000000000000002,
+                             0.5: 0.25,
+                             0.6: 0.35,
+                             0.75: 0.5,
+                             0.9: 0.65,
+                             1.0: 0.75,
+                             nan: nan,
+                             inf: inf,
+                             -inf: -inf
+                             }) \
+            .configured_as("0.250 -0.750 0.5") \
+            .exports_to("term: ramp Ramp 0.250 -0.750 0.500") \
+            .has_memberships({-0.5: 0.750,
+                              -0.4: 0.650,
+                              -0.25: 0.500,
+                              -0.1: 0.350,
+                              0.0: 0.250,
+                              0.1: 0.150,
+                              0.25: 0.0,
+                              0.4: 0.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 1.0}, height=0.5) \
+            .has_tsukamotos({0.0: 0.250,
+                             0.1: 0.04999999999999999,
+                             0.25: -0.25,
+                             0.4: -0.550,
+                             0.5: -0.75,  # maximum \mu(x)=0.5.
+                             # 0.6: -0.75,
+                             # 0.75: -0.75,
+                             # 0.9: -0.75,
+                             # 1.0: -0.75,
+                             nan: nan,
+                             inf: -inf,
+                             -inf: inf
+                             })
 
     def test_rectangle(self):
-        self.assertEqual(str(Rectangle()), "term: unnamed Rectangle nan nan")
-        self.assertEqual(str(Rectangle("x", 0.25, 0.750)), "term: x Rectangle 0.250 0.750")
-        self.assertEqual(str(Rectangle("x", 0.25, 0.750, 0.5)), "term: x Rectangle 0.250 0.750 0.500")
-        self.assertEqual(Rectangle().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            Rectangle().configure("")
-
-        rectangle = Rectangle("rectangle")
-        rectangle.configure("0.250 0.750")
-        self.assertEqual(str(rectangle), "term: rectangle Rectangle 0.250 0.750")
-        self.assertEqual(rectangle.membership(0.5), 1.0)
-        self.assertEqual(rectangle.membership(0.75), 1.0)
-        self.assertEqual(rectangle.membership(0.25), 1.0)
-        self.assertEqual(rectangle.membership(0.76), 0.0)
-        self.assertEqual(rectangle.membership(0.24), 0.0)
-        rectangle.configure("0.250 0.750 0.5")
-        self.assertEqual(rectangle.membership(0.5), 0.5)
-        self.assertEqual(rectangle.membership(0.75), 0.5)
-        self.assertEqual(rectangle.membership(0.25), 0.5)
-        self.assertEqual(rectangle.membership(0.76), 0.0)
-        self.assertEqual(rectangle.membership(0.24), 0.0)
+        TermAssert(self, Rectangle("rectangle")) \
+            .exports_to("term: rectangle Rectangle nan nan") \
+            .takes_parameters(2) \
+            .is_not_monotonic() \
+            .configured_as("-0.4 0.4") \
+            .exports_to("term: rectangle Rectangle -0.400 0.400") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 1.0,
+                              -0.25: 1.0,
+                              -0.1: 1.0,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 1.0,
+                              0.4: 1.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.4 0.4 0.5") \
+            .exports_to("term: rectangle Rectangle -0.400 0.400 0.500") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 1.0,
+                              -0.25: 1.0,
+                              -0.1: 1.0,
+                              0.0: 1.0,
+                              0.1: 1.0,
+                              0.25: 1.0,
+                              0.4: 1.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_s_shape(self):
-        self.assertEqual(str(SShape()), "term: unnamed SShape nan nan")
-        self.assertEqual(str(SShape("x", 0.25, 0.750)), "term: x SShape 0.250 0.750")
-        self.assertEqual(str(SShape("x", 0.25, 0.750, 0.5)), "term: x SShape 0.250 0.750 0.500")
-        self.assertEqual(SShape().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            SShape().configure("")
-
-        s_shape = SShape("s_shape")
-        s_shape.configure("0.250 0.750")
-        self.assertEqual(str(s_shape), "term: s_shape SShape 0.250 0.750")
-        self.assertEqual(s_shape.membership(0.5), 0.5)
-        self.assertEqual(s_shape.membership(0.6), 0.82)
-        self.assertEqual(s_shape.membership(0.75), 1.0)
-        self.assertEqual(s_shape.membership(0.25), 0.0)
-        s_shape.configure("0.250 0.750 0.5")
-        self.assertEqual(s_shape.membership(0.5), 0.25)
-        self.assertEqual(s_shape.membership(0.6), 0.41)
-        self.assertEqual(s_shape.membership(0.75), 0.5)
-        self.assertEqual(s_shape.membership(0.25), 0.0)
+        TermAssert(self, SShape("s_shape")) \
+            .exports_to("term: s_shape SShape nan nan") \
+            .takes_parameters(2) \
+            .is_monotonic() \
+            .configured_as("-0.4 0.4") \
+            .exports_to("term: s_shape SShape -0.400 0.400") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.0,
+                              -0.25: 0.07031250000000001,
+                              -0.1: 0.28125000000000006,
+                              0.0: 0.5,
+                              0.1: 0.71875,
+                              0.25: 0.9296875,
+                              0.4: 1.0,
+                              0.5: 1.0,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.4 0.4 0.5") \
+            .exports_to("term: s_shape SShape -0.400 0.400 0.500") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.0,
+                              -0.25: 0.07031250000000001,
+                              -0.1: 0.28125000000000006,
+                              0.0: 0.5,
+                              0.1: 0.71875,
+                              0.25: 0.9296875,
+                              0.4: 1.0,
+                              0.5: 1.0,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_sigmoid(self):
-        self.assertEqual(str(Sigmoid()), "term: unnamed Sigmoid nan nan")
-        self.assertEqual(str(Sigmoid("x", 0.5, 40.000)), "term: x Sigmoid 0.500 40.000")
-        self.assertEqual(str(Sigmoid("x", 0.5, 40.000, 0.5)), "term: x Sigmoid 0.500 40.000 0.500")
-        self.assertEqual(Sigmoid().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            Sigmoid().configure("")
-
-        sigmoid = Sigmoid("sigmoid")
-        sigmoid.configure("0.50 40.000")
-        self.assertEqual(str(sigmoid), "term: sigmoid Sigmoid 0.500 40.000")
-        self.assertEqual(sigmoid.membership(0.25), 4.5397868702434395e-05)
-        self.assertEqual(sigmoid.membership(0.4), 0.017986209962091573)
-        self.assertEqual(sigmoid.membership(0.5), 0.5)
-        self.assertEqual(sigmoid.membership(0.6), 0.9820137900379085)
-        self.assertEqual(sigmoid.membership(0.75), 0.9999546021312976)
-
-        sigmoid.configure("0.50 40.000 0.5")
-        self.assertEqual(sigmoid.membership(0.25), 2.2698934351217197e-05)
-        self.assertEqual(sigmoid.membership(0.4), 0.008993104981045786)
-        self.assertEqual(sigmoid.membership(0.5), 0.25)
-        self.assertEqual(sigmoid.membership(0.6), 0.4910068950189542)
-        self.assertEqual(sigmoid.membership(0.75), 0.4999773010656488)
+        TermAssert(self, Sigmoid("sigmoid")) \
+            .exports_to("term: sigmoid Sigmoid nan nan") \
+            .takes_parameters(2) \
+            .is_monotonic() \
+            .configured_as("0 10") \
+            .exports_to("term: sigmoid Sigmoid 0.000 10.000") \
+            .has_memberships({-0.5: 0.0066928509242848554,
+                              -0.4: 0.01798620996209156,
+                              -0.25: 0.07585818002124355,
+                              -0.1: 0.2689414213699951,
+                              0.0: 0.5,
+                              0.1: 0.7310585786300049,
+                              0.25: 0.9241418199787566,
+                              0.4: 0.9820137900379085,
+                              0.5: 0.9933071490757153,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}) \
+            .configured_as("0 10 .5") \
+            .exports_to("term: sigmoid Sigmoid 0.000 10.000 0.500") \
+            .has_memberships({-0.5: 0.0066928509242848554,
+                              -0.4: 0.01798620996209156,
+                              -0.25: 0.07585818002124355,
+                              -0.1: 0.2689414213699951,
+                              0.0: 0.5,
+                              0.1: 0.7310585786300049,
+                              0.25: 0.9241418199787566,
+                              0.4: 0.9820137900379085,
+                              0.5: 0.9933071490757153,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_sigmoid_difference(self):
-        self.assertEqual(str(SigmoidDifference()), "term: unnamed SigmoidDifference nan nan nan nan")
-        self.assertEqual(str(SigmoidDifference("x", 0.25, 40, 20, 0.75)),
-                         "term: x SigmoidDifference 0.250 40.000 20.000 0.750")
-        self.assertEqual(str(SigmoidDifference("x", 0.25, 40, 20, 0.75, 0.5)),
-                         "term: x SigmoidDifference 0.250 40.000 20.000 0.750 0.500")
-        self.assertEqual(SigmoidDifference().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 4, got 0\)"):
-            SigmoidDifference().configure("")
-
-        sigmoid_difference = SigmoidDifference("sigmoid_difference")
-        sigmoid_difference.configure("0.25 40 20 0.75")
-        self.assertEqual(str(sigmoid_difference),
-                         "term: sigmoid_difference SigmoidDifference 0.250 40.000 20.000 0.750")
-        self.assertEqual(sigmoid_difference.membership(0.25), 0.49995460213129755)
-        self.assertEqual(sigmoid_difference.membership(0.4), 0.9966163256489647)
-        self.assertEqual(sigmoid_difference.membership(0.5), 0.9932617512070128)
-        self.assertEqual(sigmoid_difference.membership(0.6), 0.9525732952944055)
-        self.assertEqual(sigmoid_difference.membership(0.75), 0.4999999979388463)
-
-        sigmoid_difference.configure("0.25 40 20 0.75 0.5")
-        self.assertEqual(sigmoid_difference.membership(0.25), 0.24997730106564878)
-        self.assertEqual(sigmoid_difference.membership(0.4), 0.49830816282448237)
-        self.assertEqual(sigmoid_difference.membership(0.5), 0.4966308756035064)
-        self.assertEqual(sigmoid_difference.membership(0.6), 0.47628664764720274)
-        self.assertEqual(sigmoid_difference.membership(0.75), 0.24999999896942315)
+        TermAssert(self, SigmoidDifference("sigmoid_difference")) \
+            .exports_to("term: sigmoid_difference SigmoidDifference nan nan nan nan") \
+            .takes_parameters(4) \
+            .is_not_monotonic() \
+            .configured_as("-0.25 25.00 50.00 0.25") \
+            .exports_to("term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250") \
+            .has_memberships({-0.5: 0.0019267346633274238,
+                              -0.4: 0.022977369910017923,
+                              -0.25: 0.49999999998611205,
+                              -0.1: 0.9770226049799834,
+                              0.0: 0.9980695386973883,
+                              0.1: 0.9992887851439739,
+                              0.25: 0.49999627336071584,
+                              0.4: 0.000552690994449101,
+                              0.5: 3.7194451510957904e-06,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.25 25.00 50.00 0.25 0.5") \
+            .exports_to("term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500") \
+            .has_memberships({-0.5: 0.0019267346633274238,
+                              -0.4: 0.022977369910017923,
+                              -0.25: 0.49999999998611205,
+                              -0.1: 0.9770226049799834,
+                              0.0: 0.9980695386973883,
+                              0.1: 0.9992887851439739,
+                              0.25: 0.49999627336071584,
+                              0.4: 0.000552690994449101,
+                              0.5: 3.7194451510957904e-06,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_sigmoid_product(self):
-        self.assertEqual(str(SigmoidProduct()), "term: unnamed SigmoidProduct nan nan nan nan")
-        self.assertEqual(str(SigmoidProduct("x", 0.25, 40, -20, 0.75)),
-                         "term: x SigmoidProduct 0.250 40.000 -20.000 0.750")
-        self.assertEqual(str(SigmoidProduct("x", 0.25, 40, -20, 0.75, 0.5)),
-                         "term: x SigmoidProduct 0.250 40.000 -20.000 0.750 0.500")
-        self.assertEqual(SigmoidProduct().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 4, got 0\)"):
-            SigmoidProduct().configure("")
-
-        sigmoid_product = SigmoidProduct("sigmoid_product")
-        sigmoid_product.configure("0.25 40 -20 0.75")
-        self.assertEqual(str(sigmoid_product),
-                         "term: sigmoid_product SigmoidProduct 0.250 40.000 -20.000 0.750")
-        self.assertEqual(sigmoid_product.membership(0.25), 0.4999773010656488)
-        self.assertEqual(sigmoid_product.membership(0.4), 0.9966185783352449)
-        self.assertEqual(sigmoid_product.membership(0.5), 0.9932620550481802)
-        self.assertEqual(sigmoid_product.membership(0.6), 0.9525733347303482)
-        self.assertEqual(sigmoid_product.membership(0.75), 0.49999999896942315)
-
-        sigmoid_product.configure("0.25 40 -20 0.75 0.5")
-        self.assertEqual(sigmoid_product.membership(0.25), 0.2499886505328244)
-        self.assertEqual(sigmoid_product.membership(0.4), 0.49830928916762246)
-        self.assertEqual(sigmoid_product.membership(0.5), 0.4966310275240901)
-        self.assertEqual(sigmoid_product.membership(0.6), 0.4762866673651741)
-        self.assertEqual(sigmoid_product.membership(0.75), 0.24999999948471158)
+        TermAssert(self, SigmoidProduct("sigmoid_product")) \
+            .exports_to("term: sigmoid_product SigmoidProduct nan nan nan nan") \
+            .takes_parameters(4) \
+            .is_not_monotonic() \
+            .configured_as("-0.250 20.000 -20.000 0.250") \
+            .exports_to("term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250") \
+            .has_memberships({-0.5: 0.006692848876926853,
+                              -0.4: 0.04742576597971327,
+                              -0.25: 0.4999773010656488,
+                              -0.1: 0.9517062830264366,
+                              0.0: 0.9866590924049252,
+                              0.1: 0.9517062830264366,
+                              0.25: 0.4999773010656488,
+                              0.4: 0.04742576597971327,
+                              0.5: 0.006692848876926853,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.250 20.000 -20.000 0.250 0.5") \
+            .exports_to("term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250 0.500") \
+            .has_memberships({-0.5: 0.006692848876926853,
+                              -0.4: 0.04742576597971327,
+                              -0.25: 0.4999773010656488,
+                              -0.1: 0.9517062830264366,
+                              0.0: 0.9866590924049252,
+                              0.1: 0.9517062830264366,
+                              0.25: 0.4999773010656488,
+                              0.4: 0.04742576597971327,
+                              0.5: 0.006692848876926853,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_spike(self):
-        self.assertEqual(str(Spike()), "term: unnamed Spike nan nan")
-        self.assertEqual(str(Spike("x", 0.5, 1.0)), "term: x Spike 0.500 1.000")
-        self.assertEqual(str(Spike("x", 0.5, 1.0, 0.5)), "term: x Spike 0.500 1.000 0.500")
-        self.assertEqual(Spike().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            Spike().configure("")
-
-        spike = Spike("spike")
-        spike.configure("0.500 1.000")
-        self.assertEqual(str(spike), "term: spike Spike 0.500 1.000")
-        self.assertEqual(spike.membership(0.25), 0.0820849986238988)
-        self.assertEqual(spike.membership(0.4), 0.3678794411714424)
-        self.assertEqual(spike.membership(0.5), 1)
-        self.assertEqual(spike.membership(0.6), 0.3678794411714424)
-        self.assertEqual(spike.membership(0.75), 0.0820849986238988)
-        spike.configure("0.500 1.000 0.5")
-        self.assertEqual(spike.membership(0.25), 0.0410424993119494)
-        self.assertEqual(spike.membership(0.4), 0.1839397205857212)
-        self.assertEqual(spike.membership(0.5), 0.5)
-        self.assertEqual(spike.membership(0.6), 0.1839397205857212)
-        self.assertEqual(spike.membership(0.75), 0.0410424993119494)
+        TermAssert(self, Spike("spike")) \
+            .exports_to("term: spike Spike nan nan") \
+            .takes_parameters(2) \
+            .is_not_monotonic() \
+            .configured_as("0 1.0") \
+            .exports_to("term: spike Spike 0.000 1.000") \
+            .has_memberships({-0.5: 0.006737946999085467,
+                              -0.4: 0.01831563888873418,
+                              -0.25: 0.0820849986238988,
+                              -0.1: 0.36787944117144233,
+                              0.0: 1.0,
+                              0.1: 0.36787944117144233,
+                              0.25: 0.0820849986238988,
+                              0.4: 0.01831563888873418,
+                              0.5: 0.006737946999085467,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("0 1.0 .5") \
+            .exports_to("term: spike Spike 0.000 1.000 0.500") \
+            .has_memberships({-0.5: 0.006737946999085467,
+                              -0.4: 0.01831563888873418,
+                              -0.25: 0.0820849986238988,
+                              -0.1: 0.36787944117144233,
+                              0.0: 1.0,
+                              0.1: 0.36787944117144233,
+                              0.25: 0.0820849986238988,
+                              0.4: 0.01831563888873418,
+                              0.5: 0.006737946999085467,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_trapezoid(self):
-        self.assertEqual(str(Trapezoid()), "term: unnamed Trapezoid nan nan nan nan")
-        self.assertEqual(str(Trapezoid("x", 0.1, 0.3, 0.7, 0.9)),
-                         "term: x Trapezoid 0.100 0.300 0.700 0.900")
-        self.assertEqual(str(Trapezoid("x", 0.1, 0.3, 0.7, 0.9, 0.5)),
-                         "term: x Trapezoid 0.100 0.300 0.700 0.900 0.500")
-        self.assertEqual(Trapezoid().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 4, got 0\)"):
-            Trapezoid().configure("")
-
-        trapezoid = Trapezoid("trapezoid")
-        trapezoid.configure("0.100 0.300 0.700 0.900")
-        self.assertEqual(str(trapezoid),
-                         "term: trapezoid Trapezoid 0.100 0.300 0.700 0.900")
-        self.assertEqual(trapezoid.membership(0.1), 0.0)
-        self.assertEqual(trapezoid.membership(0.25), 0.75)
-        self.assertEqual(trapezoid.membership(0.4), 1.0)
-        self.assertEqual(trapezoid.membership(0.5), 1.0)
-        self.assertEqual(trapezoid.membership(0.6), 1.0)
-        self.assertEqual(trapezoid.membership(0.75), 0.7499999999999999)
-        self.assertEqual(trapezoid.membership(0.9), 0.0)
-
-        trapezoid.configure("0.100 0.300 0.700 0.900 0.500")
-        self.assertEqual(trapezoid.membership(0.1), 0.0)
-        self.assertEqual(trapezoid.membership(0.25), 0.375)
-        self.assertEqual(trapezoid.membership(0.4), 0.5)
-        self.assertEqual(trapezoid.membership(0.5), 0.5)
-        self.assertEqual(trapezoid.membership(0.6), 0.5)
-        self.assertEqual(trapezoid.membership(0.75), 0.37499999999999994)
-        self.assertEqual(trapezoid.membership(0.9), 0.0)
+        TermAssert(self, Trapezoid("trapezoid")) \
+            .exports_to("term: trapezoid Trapezoid nan nan nan nan") \
+            .takes_parameters(4) \
+            .is_not_monotonic() \
+            .configured_as("-0.400 -0.100 0.100 0.400") \
+            .exports_to("term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.500,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 0.500,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.400 -0.100 0.100 0.400 .5") \
+            .exports_to("term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.500,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 0.500,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_triangle(self):
-        self.assertEqual(str(Triangle()), "term: unnamed Triangle nan nan nan")
-        self.assertEqual(str(Triangle("x", 0.25, 0.5, 0.75)),
-                         "term: x Triangle 0.250 0.500 0.750")
-        self.assertEqual(str(Triangle("x", 0.25, 0.5, 0.75, 0.5)),
-                         "term: x Triangle 0.250 0.500 0.750 0.500")
-        self.assertEqual(Triangle().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 3, got 0\)"):
-            Triangle().configure("")
-
-        triangle = Triangle("triangle")
-        triangle.configure("0.250 0.500 0.750")
-        self.assertEqual(str(triangle), "term: triangle Triangle 0.250 0.500 0.750")
-        self.assertEqual(triangle.membership(0.0), 0.0)
-        self.assertEqual(triangle.membership(0.1), 0.0)
-        self.assertEqual(triangle.membership(0.25), 0.0)
-        self.assertEqual(triangle.membership(0.4), 0.6000000000000001)
-        self.assertEqual(triangle.membership(0.5), 1.0)
-        self.assertEqual(triangle.membership(0.6), 0.6000000000000001)
-        self.assertEqual(triangle.membership(0.75), 0.0)
-        self.assertEqual(triangle.membership(0.9), 0.0)
-        self.assertEqual(triangle.membership(1.0), 0.0)
-
-        triangle.configure("0.250 0.500 0.750 0.500")
-        self.assertEqual(triangle.membership(0.0), 0.0)
-        self.assertEqual(triangle.membership(0.1), 0.0)
-        self.assertEqual(triangle.membership(0.25), 0.0)
-        self.assertEqual(triangle.membership(0.4), 0.30000000000000004)
-        self.assertEqual(triangle.membership(0.5), 0.5)
-        self.assertEqual(triangle.membership(0.6), 0.30000000000000004)
-        self.assertEqual(triangle.membership(0.75), 0.0)
-        self.assertEqual(triangle.membership(0.9), 0.0)
-        self.assertEqual(triangle.membership(1.0), 0.0)
+        TermAssert(self, Triangle("triangle")) \
+            .exports_to("term: triangle Triangle nan nan nan") \
+            .takes_parameters(3) \
+            .is_not_monotonic() \
+            .configured_as("-0.400 0.000 0.400") \
+            .exports_to("term: triangle Triangle -0.400 0.000 0.400") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.37500000000000006,
+                              -0.1: 0.7500000000000001,
+                              0.0: 1.000,
+                              0.1: 0.7500000000000001,
+                              0.25: 0.37500000000000006,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.400 0.000 0.400 .5") \
+            .exports_to("term: triangle Triangle -0.400 0.000 0.400 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.37500000000000006,
+                              -0.1: 0.7500000000000001,
+                              0.0: 1.000,
+                              0.1: 0.7500000000000001,
+                              0.25: 0.37500000000000006,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_z_shape(self):
-        self.assertEqual(str(ZShape()), "term: unnamed ZShape nan nan")
-        self.assertEqual(str(ZShape("x", 0.25, 0.750)), "term: x ZShape 0.250 0.750")
-        self.assertEqual(str(ZShape("x", 0.25, 0.750, 0.5)), "term: x ZShape 0.250 0.750 0.500")
-        self.assertEqual(ZShape().is_monotonic(), False)
-
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected 2, got 0\)"):
-            ZShape().configure("")
-
-        z_shape = ZShape("z_shape")
-        z_shape.configure("0.250 0.750")
-        self.assertEqual(str(z_shape), "term: z_shape ZShape 0.250 0.750")
-        self.assertEqual(z_shape.membership(0.5), 0.5)
-        self.assertEqual(z_shape.membership(0.6), 0.18000000000000005)
-        self.assertEqual(z_shape.membership(0.75), 0.0)
-        self.assertEqual(z_shape.membership(0.25), 1.0)
-        z_shape.configure("0.250 0.750 0.5")
-        self.assertEqual(z_shape.membership(0.5), 0.25)
-        self.assertEqual(z_shape.membership(0.6), 0.09000000000000002)
-        self.assertEqual(z_shape.membership(0.75), 0.0)
-        self.assertEqual(z_shape.membership(0.25), 0.5)
+        TermAssert(self, ZShape("z_shape")) \
+            .exports_to("term: z_shape ZShape nan nan") \
+            .takes_parameters(2) \
+            .is_monotonic() \
+            .configured_as("-0.4 0.4") \
+            .exports_to("term: z_shape ZShape -0.400 0.400") \
+            .has_memberships({-0.5: 1.0,
+                              -0.4: 1.0,
+                              -0.25: 0.9296875,
+                              -0.1: 0.71875,
+                              0.0: 0.5,
+                              0.1: 0.28125000000000006,
+                              0.25: 0.07031250000000001,
+                              0.4: 0.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 1.0}) \
+            .configured_as("-0.4 0.4 0.5") \
+            .exports_to("term: z_shape ZShape -0.400 0.400 0.500") \
+            .has_memberships({-0.5: 1.0,
+                              -0.4: 1.0,
+                              -0.25: 0.9296875,
+                              -0.1: 0.71875,
+                              0.0: 0.5,
+                              0.1: 0.28125000000000006,
+                              0.25: 0.07031250000000001,
+                              0.4: 0.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 1.0}, height=0.5)
 
 
 if __name__ == '__main__':

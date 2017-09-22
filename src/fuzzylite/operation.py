@@ -9,3 +9,7 @@ def valid_name(name: str) -> str:
 def str_(x: float) -> str:
     global decimals
     return ("{:.%sf}" % decimals).format(x)
+
+
+def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float, to_maximum: float) -> float:
+    return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum) + to_minimum
