@@ -15,7 +15,9 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+from bisect import bisect
 from math import cos, exp, fabs, inf, isnan, nan, pi
+from typing import Dict, List, Union
 
 import fuzzylite.engine
 import fuzzylite.exporter
@@ -126,6 +128,17 @@ class Term(object):
         """
         return False
 
+    def discretize(self, start: float, end: float, resolution: int = 100, bounded_mf=True):
+        result = Discrete(self.name)
+        dx = (end - start) / resolution
+        for i in range(0, resolution + 1):
+            x = start + i * dx
+            y = self.membership(x)
+            if bounded_mf:
+                y = op.bound(y, 0.0, 1.0)
+            result.xy.append(Discrete.Pair(x, y))
+        return result
+
 
 class Bell(Term):
     __slots__ = "center", "width", "slope"
@@ -203,10 +216,10 @@ class Concave(Term):
 
         return self.height * 1.0
 
-    def is_monotonic(self):
+    def is_monotonic(self) -> bool:
         return True
 
-    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float):
+    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
         i = self.inflection
         e = self.end
         return (i - e) / self.membership(activation_degree) + 2 * e - i
@@ -239,7 +252,7 @@ class Constant(Term):
         if not values:
             raise ValueError("not enough values to unpack (expected 1, got 0)")
         self.value = values[0]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.height = 1.0
 
 
 class Cosine(Term):
@@ -270,7 +283,126 @@ class Cosine(Term):
 
 
 class Discrete(Term):
-    pass
+    class Pair(object):
+        __slots__ = "x", "y"
+
+        def __init__(self, x=nan, y=nan):
+            self.x = x
+            self.y = y
+
+        def __iter__(self):
+            return iter((self.x, self.y))
+
+        def __str__(self):
+            return "(%s,%s)" % (self.x, self.y)
+
+        def __eq__(self, other):
+            if isinstance(other, float): return self.x == other
+            return self.x == other.x
+
+        def __ne__(self, other):
+            if isinstance(other, float): return self.x != other
+            return self.x != other.x
+
+        def __lt__(self, other):
+            if isinstance(other, float): return self.x < other
+            return self.x < other.x
+
+        def __le__(self, other):
+            if isinstance(other, float): return self.x <= other
+            return self.x <= other.x
+
+        def __gt__(self, other):
+            if isinstance(other, float): return self.x > other
+            return self.x > other.x
+
+        def __ge__(self, other):
+            if isinstance(other, float): return self.x >= other
+            return self.x >= other.x
+
+    __slots__ = "xy"
+
+    def __init__(self, name="", xy: [Pair] = None, height=1.0):
+        super().__init__(name, height)
+        self.xy = xy if xy else []
+
+    def __iter__(self):
+        return iter(self.xy)
+
+    def membership(self, x: float) -> float:
+        if isnan(x):
+            return nan
+
+        if not self.xy:
+            raise ValueError()
+
+        if x <= self.xy[0].x:
+            return self.height * self.xy[0].y
+
+        if x >= self.xy[-1].x:
+            return self.height * self.xy[-1].y
+
+        index = bisect(self.xy, x)
+
+        lower_bound = self.xy[index - 1]
+        if x == lower_bound.x:
+            return self.height * lower_bound.y
+
+        upper_bound = self.xy[index]
+
+        return self.height * op.scale(x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y)
+
+    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float):
+        # todo: approximate tsukamoto
+        pass
+
+    def parameters(self) -> str:
+        return super()._parameters(*Discrete.values_from(self.xy),
+                                   self.height if self.height != 1.0 else None)
+
+    def configure(self, parameters: str) -> None:
+        values = [float(x) for x in parameters.split()]
+        if len(values) % 2 == 0:
+            self.height = 1.0
+        else:
+            self.height = values[-1]
+            del values[-1]
+
+        self.xy = Discrete.pairs_from(values)
+
+    def x(self):
+        return (pair.x for pair in self.xy)
+
+    def y(self):
+        return (pair.y for pair in self.xy)
+
+    def sort(self):
+        Discrete.sort_pairs(self.xy)
+
+    @staticmethod
+    def sort_pairs(xy: [Pair]):
+        xy.sort(key=lambda pair: pair.x)
+
+    @staticmethod
+    def pairs_from(values: Union[List[float], Dict[float, float]]) -> [Pair]:
+        if isinstance(values, dict):
+            return [Discrete.Pair(x, y) for x, y in values.items()]
+
+        if len(values) % 2 != 0:
+            raise ValueError("not enough values to unpack (expected even number, got %i) in %s" % (len(values), values))
+
+        return [Discrete.Pair(values[i], values[i + 1]) for i in range(0, len(values) - 1, 2)]
+
+    @staticmethod
+    def values_from(pairs: [Pair]) -> [float]:
+        result = []
+        for xy in pairs:
+            result.extend(xy)
+        return result
+
+    @staticmethod
+    def dict_from(pairs: [Pair]) -> Dict[float, float]:
+        return {pair.x: pair.y for pair in pairs}
 
 
 class Function(Term):
@@ -389,7 +521,6 @@ class PiShape(Term):
         self.height = 1.0 if len(values) == 4 else values[-1]
 
 
-# TODO: Tsukamoto
 class Ramp(Term):
     __slots__ = "start", "end"
 
@@ -418,6 +549,14 @@ class Ramp(Term):
             if x <= self.end:
                 return self.height * 1.0
             return self.height * (self.start - x) / (self.start - self.end)
+
+    def is_monotonic(self) -> bool:
+        return True
+
+    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
+        if isnan(activation_degree):
+            return nan
+        return op.scale(activation_degree, 0.0, self.height * 1.0, self.start, self.end)
 
     def parameters(self) -> str:
         return super()._parameters(self.start, self.end,
@@ -480,6 +619,9 @@ class SShape(Term):
 
         return self.height * 1.0
 
+    def is_monotonic(self) -> bool:
+        return True
+
     def parameters(self) -> str:
         return super()._parameters(self.start, self.end,
                                    self.height if self.height != 1.0 else None)
@@ -503,6 +645,9 @@ class Sigmoid(Term):
         if isnan(x):
             return nan
         return self.height * 1.0 / (1.0 + exp(-self.slope * (x - self.inflection)))
+
+    def is_monotonic(self) -> bool:
+        return True
 
     def parameters(self) -> str:
         return super()._parameters(self.inflection, self.slope,
@@ -708,6 +853,9 @@ class ZShape(Term):
             return self.height * 2.0 * ((x - self.end) / (self.end - self.start)) ** 2
 
         return self.height * 0.0
+
+    def is_monotonic(self):
+        return True
 
     def parameters(self) -> str:
         return super()._parameters(self.start, self.end,

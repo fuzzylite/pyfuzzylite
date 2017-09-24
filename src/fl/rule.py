@@ -14,9 +14,10 @@ class Rule(object):
     FR_OR = 'or'
     FR_WITH = 'with'
 
-    def __init__(self):
+    def __init__(self, text: str):
         self.antecedent = None
         self.consequent = None
+        self.text = text
         self.logger = logging.getLogger(type(self).__name__)
     
     def configure(self, fop): 

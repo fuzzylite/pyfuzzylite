@@ -7,6 +7,7 @@ class TermAssert(object):
     def __init__(self, test: unittest.TestCase, actual: Term):
         self.test = test
         self.actual = actual
+        self.test.maxDiff = None  # show all differences
 
     def has_name(self, name, height=1.0):
         self.test.assertEqual(self.actual.name, name)
@@ -60,6 +61,10 @@ class TermAssert(object):
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
+    def apply(self, func, args=(), **kwds) -> None:
+        func(self.actual, *args, **kwds)
+        return self
+
 
 class TestTerm(unittest.TestCase):
     def test_term(self):
@@ -70,6 +75,20 @@ class TestTerm(unittest.TestCase):
 
         self.assertEqual(str(Term("xxx", 0.5)), "term: xxx Term 0.500")
         self.assertEqual(Term().is_monotonic(), False)
+
+        discrete_triangle = Triangle("triangle", -1, 0, 1).discretize(-1, 1, 10)
+        self.assertEqual(Discrete.dict_from(discrete_triangle.xy),
+                         {-1.0: 0.0,
+                          -0.8: 0.19999999999999996,
+                          -0.6: 0.4,
+                          -0.3999999999999999: 0.6000000000000001,
+                          -0.19999999999999996: 0.8,
+                          0.0: 1.0,
+                          0.20000000000000018: 0.7999999999999998,
+                          0.40000000000000013: 0.5999999999999999,
+                          0.6000000000000001: 0.3999999999999999,
+                          0.8: 0.19999999999999996,
+                          1.0: 0.0})
 
     def test_bell(self):
         TermAssert(self, Bell("bell")) \
@@ -242,7 +261,52 @@ class TestTerm(unittest.TestCase):
                               -inf: 0.0}, height=0.5)
 
     def test_discrete(self):
-        pass
+        TermAssert(self, Discrete("discrete")) \
+            .exports_to("term: discrete Discrete ") \
+            .is_not_monotonic() \
+            .configured_as("0 1 8 9 4 5 2 3 6 7") \
+            .exports_to("term: discrete Discrete 0.000 1.000 8.000 9.000 4.000 5.000 2.000 3.000 6.000 7.000") \
+            .apply(Discrete.sort) \
+            .exports_to("term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000") \
+            .configured_as("0 1 8 9 4 5 2 3 6 7 0.5") \
+            .apply(Discrete.sort) \
+            .exports_to("term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000 0.500") \
+            .configured_as(" -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000") \
+            .exports_to("term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.3999999999999999,
+                              -0.25: 1.0,
+                              -0.1: 0.7,
+                              0.0: 0.5,
+                              0.1: 0.7,
+                              0.25: 1.0,
+                              0.4: 0.3999999999999999,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as(" -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.5") \
+            .exports_to("term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.500") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.3999999999999999,
+                              -0.25: 1.0,
+                              -0.1: 0.7,
+                              0.0: 0.5,
+                              0.1: 0.7,
+                              0.25: 1.0,
+                              0.4: 0.3999999999999999,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}, height=0.5)
+
+        self.assertEqual(Discrete.pairs_from([]), [])
+        self.assertEqual(Discrete.values_from(Discrete.pairs_from([1, 2, 3, 4])), [1, 2, 3, 4])
+        self.assertEqual(Discrete.values_from(Discrete.pairs_from({1: 2, 3: 4})), [1, 2, 3, 4])
+
+        with self.assertRaisesRegex(ValueError,
+                                    r"not enough values to unpack \(expected even number, got 3\)"):
+            Discrete.pairs_from([1, 2, 3])
 
     def test_function(self):
         pass

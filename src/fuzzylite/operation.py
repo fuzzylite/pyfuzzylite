@@ -13,3 +13,9 @@ def str_(x: float) -> str:
 
 def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float, to_maximum: float) -> float:
     return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum) + to_minimum
+
+
+def bound(x: float, minimum: float, maximum: float):
+    if x > maximum: return maximum
+    if x < minimum: return minimum
+    return x
