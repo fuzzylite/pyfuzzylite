@@ -405,10 +405,6 @@ class Discrete(Term):
         return {pair.x: pair.y for pair in pairs}
 
 
-class Function(Term):
-    pass
-
-
 class Gaussian(Term):
     __slots__ = "mean", "standard_deviation"
 
@@ -420,8 +416,8 @@ class Gaussian(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp(
-            (-(x - self.mean) * (x - self.mean)) / (2.0 * self.standard_deviation * self.standard_deviation));
+        return self.height * exp((-(x - self.mean) * (x - self.mean)) /
+                                 (2.0 * self.standard_deviation * self.standard_deviation))
 
     def parameters(self) -> str:
         return super()._parameters(self.mean, self.standard_deviation,
@@ -451,12 +447,12 @@ class GaussianProduct(Term):
         a = b = 1.0
 
         if x < self.mean_a:
-            a = exp((-(x - self.mean_a) * (x - self.mean_a)) / (
-                2.0 * self.standard_deviation_a * self.standard_deviation_a))
+            a = exp((-(x - self.mean_a) * (x - self.mean_a)) /
+                    (2.0 * self.standard_deviation_a * self.standard_deviation_a))
 
         if x > self.mean_b:
-            b = exp((-(x - self.mean_b) * (x - self.mean_b)) / (
-                2.0 * self.standard_deviation_b * self.standard_deviation_b))
+            b = exp((-(x - self.mean_b) * (x - self.mean_b)) /
+                    (2.0 * self.standard_deviation_b * self.standard_deviation_b))
 
         return self.height * a * b
 
@@ -732,7 +728,7 @@ class Spike(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp(-fabs(10.0 / self.width * (x - self.center)));
+        return self.height * exp(-fabs(10.0 / self.width * (x - self.center)))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width,
@@ -865,3 +861,7 @@ class ZShape(Term):
         values = tuple(float(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
+
+
+class Function(Term):
+    pass

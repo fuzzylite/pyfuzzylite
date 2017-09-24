@@ -1,3 +1,20 @@
+"""
+ pyfuzzylite (TM), a fuzzy logic control library in Python.
+ Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
+ Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+
+ This file is part of pyfuzzylite.
+
+ pyfuzzylite is free software: you can redistribute it and/or modify it under
+ the terms of the FuzzyLite License included with the software.
+
+ You should have received a copy of the FuzzyLite License along with
+ pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+
+ pyfuzzylite is a trademark of FuzzyLite Limited
+ fuzzylite is a registered trademark of FuzzyLite Limited.
+"""
+
 import unittest
 
 from fuzzylite.term import *
@@ -61,8 +78,8 @@ class TermAssert(object):
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
-    def apply(self, func, args=(), **kwds) -> None:
-        func(self.actual, *args, **kwds)
+    def apply(self, func, args=(), **kwargs):
+        func(self.actual, *args, **kwargs)
         return self
 
 
@@ -307,9 +324,6 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,
                                     r"not enough values to unpack \(expected even number, got 3\)"):
             Discrete.pairs_from([1, 2, 3])
-
-    def test_function(self):
-        pass
 
     def test_gaussian(self):
         TermAssert(self, Gaussian("gaussian")) \
@@ -778,6 +792,9 @@ class TestTerm(unittest.TestCase):
                               nan: nan,
                               inf: 0.0,
                               -inf: 1.0}, height=0.5)
+
+    def test_function(self):
+        pass
 
 
 if __name__ == '__main__':
