@@ -16,6 +16,7 @@
 """
 
 import unittest
+from typing import Callable
 
 from fuzzylite.term import *
 
@@ -26,7 +27,7 @@ class TermAssert(object):
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
-    def has_name(self, name, height=1.0):
+    def has_name(self, name: str, height: float = 1.0):
         self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
         return self
@@ -37,7 +38,7 @@ class TermAssert(object):
             self.actual.__class__().configure("")
         return self
 
-    def is_monotonic(self, monotonic=True):
+    def is_monotonic(self, monotonic: bool = True):
         self.test.assertEqual(self.actual.is_monotonic(), monotonic)
         return self
 
@@ -53,33 +54,33 @@ class TermAssert(object):
         self.actual.configure(parameters)
         return self
 
-    def has_membership(self, x, mf):
+    def has_membership(self, x: float, mf: float):
         if isnan(mf):
-            self.test.assertEqual(isnan(self.actual.membership(x)), True)
+            self.test.assertEqual(isnan(self.actual.membership(x)), True, "when x=%f" % x)
         else:
-            self.test.assertEqual(self.actual.membership(x), mf)
+            self.test.assertEqual(self.actual.membership(x), mf, "when x=%f" % x)
         return self
 
-    def has_memberships(self, x_mf: dict, height=1.0):
+    def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0):
         for x in x_mf.keys():
             self.has_membership(x, height * x_mf[x])
         return self
 
-    def has_tsukamoto(self, x, mf, minimum=-1.0, maximum=1.0):
+    def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0):
         self.test.assertEqual(self.actual.is_monotonic(), True)
         if isnan(mf):
-            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True)
+            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True, "when x=%f" % x)
         else:
-            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf)
+            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, "when x=%f" % x)
         return self
 
-    def has_tsukamotos(self, x_mf: dict, minimum=-1.0, maximum=1.0):
+    def has_tsukamotos(self, x_mf: Dict[float, float], minimum: float = -1.0, maximum: float = 1.0):
         for x in x_mf.keys():
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
-    def apply(self, func, args=(), **kwargs):
-        func(self.actual, *args, **kwargs)
+    def apply(self, func: Callable[..., None], args=(), **kwds):
+        func(self.actual, *args, **kwds)
         return self
 
 
