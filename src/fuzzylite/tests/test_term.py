@@ -18,7 +18,7 @@
 import unittest
 from typing import Callable
 
-from fuzzylite.term import *
+from fuzzylite import *
 
 
 class TermAssert(object):
@@ -56,9 +56,9 @@ class TermAssert(object):
 
     def has_membership(self, x: float, mf: float):
         if isnan(mf):
-            self.test.assertEqual(isnan(self.actual.membership(x)), True, "when x=%f" % x)
+            self.test.assertEqual(isnan(self.actual.membership(x)), True, "when x=%.3f" % x)
         else:
-            self.test.assertEqual(self.actual.membership(x), mf, "when x=%f" % x)
+            self.test.assertEqual(self.actual.membership(x), mf, "when x=%.3f" % x)
         return self
 
     def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0):
@@ -69,9 +69,9 @@ class TermAssert(object):
     def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0):
         self.test.assertEqual(self.actual.is_monotonic(), True)
         if isnan(mf):
-            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True, "when x=%f" % x)
+            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True, "when x=%.3f" % x)
         else:
-            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, "when x=%f" % x)
+            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, "when x=%.3f" % x)
         return self
 
     def has_tsukamotos(self, x_mf: Dict[float, float], minimum: float = -1.0, maximum: float = 1.0):
@@ -795,6 +795,56 @@ class TestTerm(unittest.TestCase):
                               -inf: 1.0}, height=0.5)
 
     def test_function(self):
+        pass
+
+    def test_activated(self):
+        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
+            .exports_to("AlgebraicProduct (1.000, activated)") \
+            .is_not_monotonic() \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.37500000000000006,
+                              -0.1: 0.7500000000000001,
+                              0.0: 1.000,
+                              0.1: 0.7500000000000001,
+                              0.25: 0.37500000000000006,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
+
+        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
+            .exports_to("AlgebraicProduct (0.500, activated)") \
+            .is_not_monotonic() \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.18750000000000003,
+                              -0.1: 0.37500000000000006,
+                              0.0: 0.5,
+                              0.1: 0.37500000000000006,
+                              0.25: 0.18750000000000003,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
+
+        activated = Activated()
+        self.assertEqual(str(activated), "(1.000*none)")
+        self.assertEqual(isnan(activated.membership(nan)), True, "when x=%f" % nan)
+
+        with self.assertRaisesRegex(NotImplementedError, ""):
+            activated.configure("")
+
+        with self.assertRaisesRegex(ValueError, "expected a term to activate, but none found"):
+            activated.membership(0.0)
+
+        activated = Activated(Triangle("x", 0, 1), degree=1.0)
+        with self.assertRaisesRegex(ValueError, "expected an implication operator, but none found"):
+            activated.membership(0.0)
+
+    def test_aggregated(self):
         pass
 
 

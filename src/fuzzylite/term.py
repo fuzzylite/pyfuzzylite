@@ -19,9 +19,10 @@ from bisect import bisect
 from math import cos, exp, fabs, inf, isnan, nan, pi
 from typing import Dict, List, Union
 
-import fuzzylite.engine
-import fuzzylite.exporter
-import fuzzylite.operation as op
+from .engine import Engine
+from .exporter import FllExporter
+from .norm import SNorm, TNorm
+from .operation import Operation as Op
 
 
 class Term(object):
@@ -64,20 +65,31 @@ class Term(object):
           :return the representation of the term in FuzzyLite Language
           @see FllExporter
         """
-        return fuzzylite.exporter.FllExporter().term(self)
+        return FllExporter().term(self)
 
     def parameters(self) -> str:
         """
-          Returns the takes_parameters to configure the term. The takes_parameters are
+          Returns the parameters to configure the term. The parameters are
           separated by spaces. If there is one additional parameter, the
           parameter will be considered as the height of the term; otherwise,
           the height will be set to @f$1.0@f$
-          :return the takes_parameters to configure the term (@see Term::configure())
+          :return the parameters to configure the term (@see Term::configure())
          """
-        return op.str_(self.height) if self.height != 1.0 else ""
+        return self._parameters()
 
     def _parameters(self, *args):
-        return " ".join(op.str_(x) for x in args if x is not None)
+        """
+        Concatenates the parameters given, and the height if it is different from 1.0 or None
+        :param args: is the parameters to configure the term
+        :return: the parameters concatenated and an optional height at the end
+        """
+        result = ""
+        if args:
+            result = " ".join(Op.str(x) for x in args)
+        if self.height and self.height != 1.0:
+            if args: result += " "
+            result += Op.str(self.height)
+        return result
 
     def configure(self, parameters: str) -> None:
         """
@@ -87,7 +99,7 @@ class Term(object):
           the height will be set to @f$1.0@f$
           :param parameters is the takes_parameters to configure the term
         """
-        pass
+        raise NotImplementedError()
 
     def membership(self, x) -> float:
         """
@@ -95,9 +107,9 @@ class Term(object):
           :param x
           :return the has_membership function value @f$\mu(x)@f$
         """
-        return nan
+        raise NotImplementedError()
 
-    def update_reference(self, engine: fuzzylite.engine.Engine) -> None:
+    def update_reference(self, engine: Engine) -> None:
         """
           Updates the references (if any) to point to the current engine (useful
           when cloning engines or creating terms within Importer objects
@@ -135,9 +147,42 @@ class Term(object):
             x = start + i * dx
             y = self.membership(x)
             if bounded_mf:
-                y = op.bound(y, 0.0, 1.0)
+                y = Op.bound(y, 0.0, 1.0)
             result.xy.append(Discrete.Pair(x, y))
         return result
+
+
+class Activated(Term):
+    __slots__ = "term", "degree", "implication"
+
+    def __init__(self, term: Term = None, degree: float = 1.0, implication: TNorm = None):
+        super().__init__()
+        self.term = term
+        self.degree = degree
+        self.implication = implication
+
+    def __str__(self):
+        if self.implication:
+            return "%s (%s, %s)" % (FllExporter().norm(self.implication), Op.str(self.degree),
+                                    self.term.name if self.term else "none")
+        else:
+            return "(%s*%s)" % (Op.str(self.degree), self.term.name if self.term else "none")
+
+    def membership(self, x: float):
+        if isnan(x): return nan
+        if not self.term: raise ValueError("expected a term to activate, but none found")
+        if not self.implication: raise ValueError("expected an implication operator, but none found")
+        return self.implication.compute(self.term.membership(x), self.degree)
+
+    def parameters(self):
+        exporter = FllExporter()
+        return "%s %s %s" % (Op.str(self.degree), exporter.norm(self.implication),
+                             exporter.term(self.term) if self.term else "none")
+
+
+class Aggregated(Term):
+    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan, aggregation: SNorm = None):
+        pass
 
 
 class Bell(Term):
@@ -150,13 +195,11 @@ class Bell(Term):
         self.slope = slope
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         return self.height * (1.0 / (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope))))
 
     def parameters(self) -> str:
-        return super()._parameters(self.center, self.width, self.slope,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.center, self.width, self.slope)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -173,8 +216,7 @@ class Binary(Term):
         self.direction = direction
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if self.direction > self.start and x >= self.start:
             return self.height * 1.0
@@ -185,8 +227,7 @@ class Binary(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
-        return super()._parameters(self.start, self.direction,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.start, self.direction)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -203,8 +244,7 @@ class Concave(Term):
         self.end = end
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if self.inflection <= self.end:  # Concave increasing
             if x < self.end:
@@ -225,8 +265,7 @@ class Concave(Term):
         return (i - e) / self.membership(activation_degree) + 2 * e - i
 
     def parameters(self) -> str:
-        return super()._parameters(self.inflection, self.end,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.inflection, self.end)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -264,8 +303,7 @@ class Cosine(Term):
         self.width = width
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if x < self.center - 0.5 * self.width or x > self.center + 0.5 * self.width:
             return self.height * 0.0
@@ -273,8 +311,7 @@ class Cosine(Term):
         return self.height * (0.5 * (1.0 + cos(2.0 / self.width * pi * (x - self.center))))
 
     def parameters(self) -> str:
-        return super()._parameters(self.center, self.width,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -330,8 +367,7 @@ class Discrete(Term):
         return iter(self.xy)
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if not self.xy:
             raise ValueError()
@@ -350,15 +386,14 @@ class Discrete(Term):
 
         upper_bound = self.xy[index]
 
-        return self.height * op.scale(x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y)
+        return self.height * Op.scale(x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y)
 
     def tsukamoto(self, activation_degree: float, minimum: float, maximum: float):
         # todo: approximate tsukamoto
         pass
 
     def parameters(self) -> str:
-        return super()._parameters(*Discrete.values_from(self.xy),
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(*Discrete.values_from(self.xy))
 
     def configure(self, parameters: str) -> None:
         values = [float(x) for x in parameters.split()]
@@ -414,14 +449,12 @@ class Gaussian(Term):
         self.standard_deviation = standard_deviation
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         return self.height * exp((-(x - self.mean) * (x - self.mean)) /
                                  (2.0 * self.standard_deviation * self.standard_deviation))
 
     def parameters(self) -> str:
-        return super()._parameters(self.mean, self.standard_deviation,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.mean, self.standard_deviation)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -441,8 +474,7 @@ class GaussianProduct(Term):
         self.standard_deviation_b = standard_deviation_b
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         a = b = 1.0
 
@@ -458,8 +490,7 @@ class GaussianProduct(Term):
 
     def parameters(self) -> str:
         return super()._parameters(self.mean_a, self.standard_deviation_a,
-                                   self.mean_b, self.standard_deviation_b,
-                                   self.height if self.height != 1.0 else None)
+                                   self.mean_b, self.standard_deviation_b)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -483,8 +514,7 @@ class PiShape(Term):
         self.bottom_right = bottom_right
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if x <= self.bottom_left:
             s_shape = 0.0
@@ -508,8 +538,7 @@ class PiShape(Term):
 
     def parameters(self) -> str:
         return super()._parameters(self.bottom_left, self.top_left,
-                                   self.top_right, self.bottom_right,
-                                   self.height if self.height != 1.0 else None)
+                                   self.top_right, self.bottom_right)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -526,8 +555,7 @@ class Ramp(Term):
         self.end = end
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if self.start == self.end:
             return self.height * 0.0
@@ -552,11 +580,10 @@ class Ramp(Term):
     def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
         if isnan(activation_degree):
             return nan
-        return op.scale(activation_degree, 0.0, self.height * 1.0, self.start, self.end)
+        return Op.scale(activation_degree, 0.0, self.height * 1.0, self.start, self.end)
 
     def parameters(self) -> str:
-        return super()._parameters(self.start, self.end,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -573,8 +600,7 @@ class Rectangle(Term):
         self.end = end
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if self.start <= x <= self.end:
             return self.height * 1.0
@@ -582,8 +608,7 @@ class Rectangle(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
-        return super()._parameters(self.start, self.end,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -601,8 +626,7 @@ class SShape(Term):
         self.end = end
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if x <= self.start:
             return self.height * 0.0
@@ -619,8 +643,7 @@ class SShape(Term):
         return True
 
     def parameters(self) -> str:
-        return super()._parameters(self.start, self.end,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -638,16 +661,14 @@ class Sigmoid(Term):
         self.slope = slope
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         return self.height * 1.0 / (1.0 + exp(-self.slope * (x - self.inflection)))
 
     def is_monotonic(self) -> bool:
         return True
 
     def parameters(self) -> str:
-        return super()._parameters(self.inflection, self.slope,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.inflection, self.slope)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -667,8 +688,7 @@ class SigmoidDifference(Term):
         self.right = right
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         a = 1.0 / (1.0 + exp(-self.rising * (x - self.left)))
         b = 1.0 / (1.0 + exp(-self.falling * (x - self.right)))
@@ -676,9 +696,7 @@ class SigmoidDifference(Term):
         return self.height * fabs(a - b)
 
     def parameters(self) -> str:
-        return super()._parameters(self.left, self.rising,
-                                   self.falling, self.right,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -698,8 +716,7 @@ class SigmoidProduct(Term):
         self.right = right
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         a = 1.0 + exp(-self.rising * (x - self.left))
         b = 1.0 + exp(-self.falling * (x - self.right))
@@ -707,9 +724,7 @@ class SigmoidProduct(Term):
         return self.height * 1.0 / (a * b)
 
     def parameters(self) -> str:
-        return super()._parameters(self.left, self.rising,
-                                   self.falling, self.right,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -726,13 +741,11 @@ class Spike(Term):
         self.width = slope
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         return self.height * exp(-fabs(10.0 / self.width * (x - self.center)))
 
     def parameters(self) -> str:
-        return super()._parameters(self.center, self.width,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -753,8 +766,7 @@ class Trapezoid(Term):
         self.vertex_d = vertex_d
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         # TODO: check in fuzzylite and jfuzzylite
 
         if x <= self.vertex_a or x >= self.vertex_d:
@@ -776,9 +788,7 @@ class Trapezoid(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
-        return super()._parameters(self.vertex_a, self.vertex_b,
-                                   self.vertex_c, self.vertex_d,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -798,8 +808,7 @@ class Triangle(Term):
         self.vertex_c = vertex_c
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
         # TODO: check in fuzzylite and jfuzzylite
 
         if x <= self.vertex_a or x >= self.vertex_c:
@@ -817,8 +826,7 @@ class Triangle(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
-        return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -836,8 +844,7 @@ class ZShape(Term):
         self.end = end
 
     def membership(self, x: float) -> float:
-        if isnan(x):
-            return nan
+        if isnan(x): return nan
 
         if x <= self.start:
             return self.height * 1.0
@@ -854,8 +861,7 @@ class ZShape(Term):
         return True
 
     def parameters(self) -> str:
-        return super()._parameters(self.start, self.end,
-                                   self.height if self.height != 1.0 else None)
+        return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
@@ -864,4 +870,10 @@ class ZShape(Term):
 
 
 class Function(Term):
-    pass
+    __slots__ = "variables",
+
+    def load(self, formula: str) -> None:
+        raise NotImplemented()
+
+    def evaluate(self) -> float:
+        raise NotImplemented()
