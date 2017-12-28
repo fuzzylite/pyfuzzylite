@@ -15,17 +15,15 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from fuzzylite.term import Function
-
 
 class Norm(object):
     def compute(self, a: float, b: float) -> float:
-        from math import nan
-        return nan
+        raise NotImplementedError()
 
 
 class TNorm(Norm):
-    pass
+    def compute(self, a: float, b: float) -> float:
+        raise NotImplementedError()
 
 
 class AlgebraicProduct(TNorm):
@@ -69,6 +67,7 @@ class TNormFunction(TNorm):
     __slots__ = "f"
 
     def __init__(self, formula: str):
+        from fuzzylite.term import Function
         self.f = Function()
         self.f.load(formula)
 
@@ -79,7 +78,8 @@ class TNormFunction(TNorm):
 
 
 class SNorm(Norm):
-    pass
+    def compute(self, a: float, b: float) -> float:
+        raise NotImplementedError()
 
 
 class AlgebraicSum(SNorm):
@@ -133,6 +133,7 @@ class SNormFunction(SNorm):
     __slots__ = "f"
 
     def __init__(self, formula: str):
+        from fuzzylite.term import Function
         self.f = Function()
         self.f.load(formula)
 
