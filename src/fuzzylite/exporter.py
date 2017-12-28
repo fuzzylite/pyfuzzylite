@@ -15,9 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import fuzzylite.operation as op
-import fuzzylite.rule
-import fuzzylite.term
+from .operation import Operation as Op
+from .rule import Rule
 
 
 class Exporter(object):
@@ -32,7 +31,10 @@ class FllExporter(Exporter):
         self.separator = separator
 
     def term(self, term) -> str:
-        return "term: %s %s %s" % (op.valid_name(term.name), term.__class__.__name__, term.parameters())
+        return "term: %s %s %s" % (Op.valid_name(term.name), term.__class__.__name__, term.parameters())
 
-    def rule(self, rule: fuzzylite.rule.Rule) -> str:
+    def norm(self, norm) -> str:
+        return type(norm).__name__ if norm else "none"
+
+    def rule(self, rule: Rule) -> str:
         return "rule: %s" % rule.text
