@@ -474,6 +474,58 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0}, height=0.5)
 
+    def test_linear(self):
+        engine = Engine(inputs=[InputVariable("A"), InputVariable("B"), InputVariable("C")])
+        engine.input["A"].value = 0
+        engine.input["B"].value = 1
+        engine.input["C"].value = 2
+
+        TermAssert(self, Linear("linear", [1, 2], engine=engine)) \
+            .exports_to("term: linear Linear 1.000 2.000") \
+            .is_not_monotonic() \
+            .configured_as("1.0 2.0 3") \
+            .exports_to("term: linear Linear 1.000 2.000 3.000") \
+            .has_memberships({-0.5: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
+                              -0.4: 8,
+                              -0.25: 8,
+                              -0.1: 8,
+                              0.0: 8,
+                              0.1: 8,
+                              0.25: 8,
+                              0.4: 8,
+                              0.5: 8,
+                              nan: 8,
+                              inf: 8,
+                              -inf: 8}) \
+            .configured_as("1 2 3 5") \
+            .exports_to("term: linear Linear 1.000 2.000 3.000 5.000") \
+            .has_memberships({-0.5: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
+                              -0.4: 13,
+                              -0.25: 13,
+                              -0.1: 13,
+                              0.0: 13,
+                              0.1: 13,
+                              0.25: 13,
+                              0.4: 13,
+                              0.5: 13,
+                              nan: 13,
+                              inf: 13,
+                              -inf: 13}) \
+            .configured_as("1 2 3 5 8") \
+            .exports_to("term: linear Linear 1.000 2.000 3.000 5.000 8.000") \
+            .has_memberships({-0.5: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
+                              -0.4: 13,
+                              -0.25: 13,
+                              -0.1: 13,
+                              0.0: 13,
+                              0.1: 13,
+                              0.25: 13,
+                              0.4: 13,
+                              0.5: 13,
+                              nan: 13,
+                              inf: 13,
+                              -inf: 13})
+
     def test_pi_shape(self):
         TermAssert(self, PiShape("pi_shape")) \
             .exports_to("term: pi_shape PiShape nan nan nan nan") \

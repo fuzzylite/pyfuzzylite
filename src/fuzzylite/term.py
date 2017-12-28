@@ -76,7 +76,7 @@ class Term(object):
           the height will be set to @f$1.0@f$
           :return the parameters to configure the term (@see Term::configure())
          """
-        raise NotImplementedError()
+        return self._parameters()
 
     def _parameters(self, *args):
         """
@@ -99,7 +99,7 @@ class Term(object):
           the height will be set to @f$1.0@f$
           :param parameters is the takes_parameters to configure the term
         """
-        raise NotImplementedError()
+        pass
 
     def membership(self, x) -> float:
         """
@@ -176,12 +176,6 @@ class Activated(Term):
         logging.debug("%s: %s" % (Op.str(result), str(self)))
         return result
 
-    def configure(self, parameters: str) -> None:
-        pass
-
-    def parameters(self) -> str:
-        return ""
-
 
 class Aggregated(Term):
     __slots__ = "terms", "minimum", "maximum", "aggregation"
@@ -238,12 +232,6 @@ class Aggregated(Term):
                 maximum_activation = activation.degree
                 result = activation
         return result
-
-    def configure(self, parameters: str) -> None:
-        pass
-
-    def parameters(self) -> str:
-        return ""
 
 
 class Bell(Term):
@@ -560,7 +548,36 @@ class GaussianProduct(Term):
 
 
 class Linear(Term):
-    pass
+    __slots__ = "coefficients", "engine"
+
+    def __init__(self, name: str = "", coefficients: List[float] = None, engine: Engine = None):
+        super().__init__(name)
+        self.coefficients = [c for c in coefficients] if coefficients else []
+        self.engine = engine
+
+    def membership(self, _):
+        if not self.engine:
+            raise ValueError("expected the reference to an engine, but found none")
+
+        result = 0
+        number_of_coefficients = len(self.coefficients)
+        input_variables = self.engine.input
+        for i, input_variable in enumerate(input_variables.values()):
+            if i < number_of_coefficients:
+                result += self.coefficients[i] * input_variable.value
+        if number_of_coefficients > len(input_variables):
+            result += self.coefficients[len(input_variables)]
+
+        return result
+
+    def configure(self, parameters: str):
+        self.coefficients = [float(p) for p in parameters.split()]
+
+    def parameters(self):
+        return self._parameters(*self.coefficients)
+
+    def update_reference(self, engine: Engine):
+        self.engine = engine
 
 
 class PiShape(Term):
