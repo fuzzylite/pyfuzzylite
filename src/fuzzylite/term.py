@@ -837,17 +837,20 @@ class Trapezoid(Term):
     def __init__(self, name="", vertex_a=nan, vertex_b=nan,
                  vertex_c=nan, vertex_d=nan, height=1.0):
         super().__init__(name, height)
-        # todo: constructor with two takes_parameters
         self.vertex_a = vertex_a
         self.vertex_b = vertex_b
         self.vertex_c = vertex_c
         self.vertex_d = vertex_d
+        if isnan(vertex_c) and isnan(vertex_d):
+            self.vertex_d = vertex_b
+            range = self.vertex_d - self.vertex_a
+            self.vertex_b = self.vertex_a + range * 1.0 / 5.0
+            self.vertex_c = self.vertex_a + range * 4.0 / 5.0
 
     def membership(self, x: float) -> float:
         if isnan(x): return nan
-        # TODO: check in fuzzylite and jfuzzylite
 
-        if x <= self.vertex_a or x >= self.vertex_d:
+        if x < self.vertex_a or x > self.vertex_d:
             return self.height * 0.0
 
         if x < self.vertex_b:
@@ -880,25 +883,30 @@ class Triangle(Term):
     def __init__(self, name="", vertex_a=nan, vertex_b=nan,
                  vertex_c=nan, height=1.0):
         super().__init__(name, height)
-        # todo: constructor with two takes_parameters
         self.vertex_a = vertex_a
         self.vertex_b = vertex_b
         self.vertex_c = vertex_c
+        if isnan(vertex_c):
+            self.vertex_b = 0.5 * (vertex_a + vertex_b)
+            self.vertex_c = vertex_b
 
     def membership(self, x: float) -> float:
         if isnan(x): return nan
-        # TODO: check in fuzzylite and jfuzzylite
 
-        if x <= self.vertex_a or x >= self.vertex_c:
+        if x < self.vertex_a or x > self.vertex_c:
             return self.height * 0.0
 
         if x < self.vertex_b:
+            if self.vertex_a == -inf:
+                return self.height * 1.0
             return self.height * (x - self.vertex_a) / (self.vertex_b - self.vertex_a)
 
         if x == self.vertex_b:
             return self.height * 1.0
 
         if x > self.vertex_b:
+            if self.vertex_c == inf:
+                return self.height * 1.0
             return self.height * (self.vertex_c - x) / (self.vertex_c - self.vertex_b)
 
         return self.height * 0.0

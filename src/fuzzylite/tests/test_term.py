@@ -480,7 +480,7 @@ class TestTerm(unittest.TestCase):
         engine.input["B"].value = 1
         engine.input["C"].value = 2
 
-        TermAssert(self, Linear("linear", [1, 2], engine=engine)) \
+        TermAssert(self, Linear("linear", [1, 2], engine)) \
             .exports_to("term: linear Linear 1.000 2.000") \
             .is_not_monotonic() \
             .configured_as("1.0 2.0 3") \
@@ -825,6 +825,9 @@ class TestTerm(unittest.TestCase):
                               -inf: 0.0}, height=0.5)
 
     def test_trapezoid(self):
+        TermAssert(self, Trapezoid("trapezoid", 0.0, 1.0)).exports_to(
+            "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000")
+
         TermAssert(self, Trapezoid("trapezoid")) \
             .exports_to("term: trapezoid Trapezoid nan nan nan nan") \
             .takes_parameters(4) \
@@ -856,9 +859,39 @@ class TestTerm(unittest.TestCase):
                               0.5: 0.000,
                               nan: nan,
                               inf: 0.0,
-                              -inf: 0.0}, height=0.5)
+                              -inf: 0.0}, height=0.5) \
+            .configured_as("-0.400 -0.400 0.100 0.400") \
+            .exports_to("term: trapezoid Trapezoid -0.400 -0.400 0.100 0.400") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 1.000,
+                              -0.25: 1.000,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 0.500,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.400 -0.100 0.400 0.400") \
+            .exports_to("term: trapezoid Trapezoid -0.400 -0.100 0.400 0.400") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.5,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 1.000,
+                              0.4: 1.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
 
     def test_triangle(self):
+        TermAssert(self, Triangle("triangle", 0.0, 1.0)).exports_to("term: triangle Triangle 0.000 0.500 1.000")
+
         TermAssert(self, Triangle("triangle")) \
             .exports_to("term: triangle Triangle nan nan nan") \
             .takes_parameters(3) \
@@ -890,7 +923,49 @@ class TestTerm(unittest.TestCase):
                               0.5: 0.000,
                               nan: nan,
                               inf: 0.0,
-                              -inf: 0.0}, height=0.5)
+                              -inf: 0.0}, height=0.5) \
+            .configured_as("-0.500 0.000 0.500") \
+            .exports_to("term: triangle Triangle -0.500 0.000 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.19999999999999996,
+                              -0.25: 0.5,
+                              -0.1: 0.8,
+                              0.0: 1.000,
+                              0.1: 0.8,
+                              0.25: 0.5,
+                              0.4: 0.19999999999999996,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.500 -0.500 0.500") \
+            .exports_to("term: triangle Triangle -0.500 -0.500 0.500") \
+            .has_memberships({-0.5: 1.000,
+                              -0.4: 0.900,
+                              -0.25: 0.75,
+                              -0.1: 0.6,
+                              0.0: 0.5,
+                              0.1: 0.4,
+                              0.25: 0.25,
+                              0.4: 0.09999999999999998,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
+            .configured_as("-0.500 0.500 0.500") \
+            .exports_to("term: triangle Triangle -0.500 0.500 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.09999999999999998,
+                              -0.25: 0.25,
+                              -0.1: 0.4,
+                              0.0: 0.5,
+                              0.1: 0.6,
+                              0.25: 0.75,
+                              0.4: 0.900,
+                              0.5: 1.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
 
     def test_z_shape(self):
         TermAssert(self, ZShape("z_shape")) \
