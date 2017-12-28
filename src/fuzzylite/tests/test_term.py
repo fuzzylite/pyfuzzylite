@@ -108,6 +108,86 @@ class TestTerm(unittest.TestCase):
                           0.8: 0.19999999999999996,
                           1.0: 0.0})
 
+    def test_activated(self):
+        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
+            .exports_to("AlgebraicProduct(1.000,activated)") \
+            .is_not_monotonic() \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.37500000000000006,
+                              -0.1: 0.7500000000000001,
+                              0.0: 1.000,
+                              0.1: 0.7500000000000001,
+                              0.25: 0.37500000000000006,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
+
+        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
+            .exports_to("AlgebraicProduct(0.500,activated)") \
+            .is_not_monotonic() \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.18750000000000003,
+                              -0.1: 0.37500000000000006,
+                              0.0: 0.5,
+                              0.1: 0.37500000000000006,
+                              0.25: 0.18750000000000003,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
+
+        activated = Activated()
+        self.assertEqual(str(activated), "(1.000*none)")
+        self.assertEqual(isnan(activated.membership(nan)), True, "when x=%f" % nan)
+        activated.configure("")
+
+        with self.assertRaisesRegex(ValueError, "expected a term to activate, but none found"):
+            activated.membership(0.0)
+
+        activated = Activated(Triangle("x", 0, 1), degree=1.0)
+        with self.assertRaisesRegex(ValueError, "expected an implication operator, but none found"):
+            activated.membership(0.0)
+
+    def test_aggregated(self):
+        aggregated = Aggregated("fuzzy_output", -1.0, 1.0, Maximum())
+        low = Triangle("LOW", -1.000, -0.500, 0.000)
+        medium = Triangle("MEDIUM", -0.500, 0.000, 0.500)
+        aggregated.terms.extend([Activated(low, 0.6, Minimum()), Activated(medium, 0.4, Minimum())])
+
+        TermAssert(self, aggregated) \
+            .exports_to("fuzzy_output: Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]") \
+            .is_not_monotonic() \
+            .has_memberships({-0.5: 0.6,
+                              -0.4: 0.6,
+                              -0.25: 0.5,
+                              -0.1: 0.4,
+                              0.0: 0.4,
+                              0.1: 0.4,
+                              0.25: 0.4,
+                              0.4: 0.19999999999999996,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0})
+
+        self.assertEqual(aggregated.activation_degree(low), 0.6)
+        self.assertEqual(aggregated.activation_degree(medium), 0.4)
+
+        self.assertEqual(aggregated.highest_activated_term().term, low)
+
+        aggregated.terms.append(Activated(low, 0.4))
+        aggregated.aggregation = UnboundedSum()
+        self.assertEqual(aggregated.activation_degree(low), 0.6 + 0.4)
+
+        aggregated.aggregation = None
+        with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but none found"):
+            aggregated.membership(0.0)
+
     def test_bell(self):
         TermAssert(self, Bell("bell")) \
             .exports_to("term: bell Bell nan nan nan") \
@@ -795,56 +875,7 @@ class TestTerm(unittest.TestCase):
                               -inf: 1.0}, height=0.5)
 
     def test_function(self):
-        pass
-
-    def test_activated(self):
-        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
-            .exports_to("AlgebraicProduct (1.000, activated)") \
-            .is_not_monotonic() \
-            .has_memberships({-0.5: 0.000,
-                              -0.4: 0.000,
-                              -0.25: 0.37500000000000006,
-                              -0.1: 0.7500000000000001,
-                              0.0: 1.000,
-                              0.1: 0.7500000000000001,
-                              0.25: 0.37500000000000006,
-                              0.4: 0.000,
-                              0.5: 0.000,
-                              nan: nan,
-                              inf: 0.0,
-                              -inf: 0.0})
-
-        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
-            .exports_to("AlgebraicProduct (0.500, activated)") \
-            .is_not_monotonic() \
-            .has_memberships({-0.5: 0.000,
-                              -0.4: 0.000,
-                              -0.25: 0.18750000000000003,
-                              -0.1: 0.37500000000000006,
-                              0.0: 0.5,
-                              0.1: 0.37500000000000006,
-                              0.25: 0.18750000000000003,
-                              0.4: 0.000,
-                              0.5: 0.000,
-                              nan: nan,
-                              inf: 0.0,
-                              -inf: 0.0})
-
-        activated = Activated()
-        self.assertEqual(str(activated), "(1.000*none)")
-        self.assertEqual(isnan(activated.membership(nan)), True, "when x=%f" % nan)
-
-        with self.assertRaisesRegex(NotImplementedError, ""):
-            activated.configure("")
-
-        with self.assertRaisesRegex(ValueError, "expected a term to activate, but none found"):
-            activated.membership(0.0)
-
-        activated = Activated(Triangle("x", 0, 1), degree=1.0)
-        with self.assertRaisesRegex(ValueError, "expected an implication operator, but none found"):
-            activated.membership(0.0)
-
-    def test_aggregated(self):
+        # todo
         pass
 
 

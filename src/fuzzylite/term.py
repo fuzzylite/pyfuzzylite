@@ -15,6 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import logging
 from bisect import bisect
 from math import cos, exp, fabs, inf, isnan, nan, pi
 from typing import Dict, List, Union
@@ -75,7 +76,7 @@ class Term(object):
           the height will be set to @f$1.0@f$
           :return the parameters to configure the term (@see Term::configure())
          """
-        return self._parameters()
+        raise NotImplementedError()
 
     def _parameters(self, *args):
         """
@@ -83,13 +84,12 @@ class Term(object):
         :param args: is the parameters to configure the term
         :return: the parameters concatenated and an optional height at the end
         """
-        result = ""
+        result = []
         if args:
-            result = " ".join(Op.str(x) for x in args)
+            result.extend([Op.str(x) for x in args])
         if self.height and self.height != 1.0:
-            if args: result += " "
-            result += Op.str(self.height)
-        return result
+            result.append(Op.str(self.height))
+        return " ".join(result)
 
     def configure(self, parameters: str) -> None:
         """
@@ -163,8 +163,8 @@ class Activated(Term):
 
     def __str__(self):
         if self.implication:
-            return "%s (%s, %s)" % (FllExporter().norm(self.implication), Op.str(self.degree),
-                                    self.term.name if self.term else "none")
+            return "%s(%s,%s)" % (FllExporter().norm(self.implication), Op.str(self.degree),
+                                  self.term.name if self.term else "none")
         else:
             return "(%s*%s)" % (Op.str(self.degree), self.term.name if self.term else "none")
 
@@ -172,17 +172,78 @@ class Activated(Term):
         if isnan(x): return nan
         if not self.term: raise ValueError("expected a term to activate, but none found")
         if not self.implication: raise ValueError("expected an implication operator, but none found")
-        return self.implication.compute(self.term.membership(x), self.degree)
+        result = self.implication.compute(self.term.membership(x), self.degree)
+        logging.debug("%s: %s" % (Op.str(result), str(self)))
+        return result
 
-    def parameters(self):
-        exporter = FllExporter()
-        return "%s %s %s" % (Op.str(self.degree), exporter.norm(self.implication),
-                             exporter.term(self.term) if self.term else "none")
+    def configure(self, parameters: str) -> None:
+        pass
+
+    def parameters(self) -> str:
+        return ""
 
 
 class Aggregated(Term):
+    __slots__ = "terms", "minimum", "maximum", "aggregation"
+
     def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan, aggregation: SNorm = None):
+        super().__init__(name)
+        self.terms = []
+        self.minimum = minimum
+        self.maximum = maximum
+        self.aggregation = aggregation
+
+    def __str__(self):
+        result = [self.name + ":", self.__class__.__name__]
+
+        activated = [str(term) for term in self.terms]
+        if self.aggregation:
+            result.append("%s[%s]" % (FllExporter().norm(self.aggregation), ",".join(activated)))
+        else:
+            result.append("[%s]" % "+".join(activated))
+
+        return " ".join(result)
+
+    def range(self):
+        return self.maximum - self.minimum
+
+    def membership(self, x):
+        if isnan(x): return nan
+        if self.terms and not self.aggregation:
+            raise ValueError("expected an aggregation operator, but none found")
+
+        result = 0.0
+        for term in self.terms:
+            result = self.aggregation.compute(result, term.membership(x))
+        logging.debug("%s: %s" % (Op.str(result), str(self)))
+        return result
+
+    def activation_degree(self, term: Term) -> float:
+        result = 0.0
+
+        for activation in self.terms:
+            if activation.term == term:
+                if self.aggregation:
+                    result = self.aggregation.compute(result, activation.degree)
+                else:
+                    result += activation.degree
+
+        return result
+
+    def highest_activated_term(self) -> Activated:
+        result = None
+        maximum_activation = -inf
+        for activation in self.terms:
+            if activation.degree > maximum_activation:
+                maximum_activation = activation.degree
+                result = activation
+        return result
+
+    def configure(self, parameters: str) -> None:
         pass
+
+    def parameters(self) -> str:
+        return ""
 
 
 class Bell(Term):
