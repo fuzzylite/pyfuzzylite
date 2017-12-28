@@ -1001,8 +1001,12 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 1.0}, height=0.5)
 
+    @unittest.skip("Testing of Function")
     def test_function(self):
-        # todo
+        pass
+
+    @unittest.skip("Testing of Tsukamoto")
+    def test_tsukamoto(self):
         pass
 
 
