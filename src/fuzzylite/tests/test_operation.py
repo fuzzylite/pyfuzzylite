@@ -18,6 +18,7 @@
 import math
 import unittest
 
+import fuzzylite as fl
 from fuzzylite.operation import Operation as Op
 
 
@@ -28,21 +29,24 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(Op.valid_name("abc123_.ABC"), "abc123_.ABC")
         self.assertEqual(Op.valid_name("      "), "unnamed")
 
-    def test_str_(self):
-        self.assertEqual(Op.str_(0.3), "0.300")
-        self.assertEqual(Op.str_(-0.3), "-0.300")
-        self.assertEqual(Op.str_(3), "3.000")
-        self.assertEqual(Op.str_(3.0001), "3.000")
+    def test_str(self):
+        fl.DECIMALS = 3
+        self.assertEqual(Op.str(0.3), "0.300")
+        self.assertEqual(Op.str(-0.3), "-0.300")
+        self.assertEqual(Op.str(3), "3.000")
+        self.assertEqual(Op.str(3.0001), "3.000")
 
-        self.assertEqual(Op.str_(math.inf), "inf")
-        self.assertEqual(Op.str_(-math.inf), "-inf")
-        self.assertEqual(Op.str_(math.nan), "nan")
+        self.assertEqual(Op.str(math.inf), "inf")
+        self.assertEqual(Op.str(-math.inf), "-inf")
+        self.assertEqual(Op.str(math.nan), "nan")
 
-        Op.decimals = 5
-        self.assertEqual(Op.str_(0.3), "0.30000")
+        fl.DECIMALS = 5
+        self.assertEqual(Op.str(0.3), "0.30000")
 
-        Op.decimals = 0
-        self.assertEqual(Op.str_(0.3), "0")
+        fl.DECIMALS = 0
+        self.assertEqual(Op.str(0.3), "0")
+
+        fl.DECIMALS = 3
 
     def test_scale(self):
         self.assertEqual(Op.scale(0, 0, 1, -10, 10), -10.0)

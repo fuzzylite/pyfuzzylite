@@ -15,14 +15,12 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import fuzzylite as fl
 
 class Operation(object):
     '''
     Operation
     '''
-
-    '''Decimals'''
-    decimals = 3
 
     def valid_name(name: str) -> str:
         result = ''.join([x for x in name if x in ("_", ".") or x.isalnum()])
@@ -31,7 +29,7 @@ class Operation(object):
     @staticmethod
     def str(x) -> str:
         # todo: if x is float, int or str
-        return ("{:.%sf}" % Operation.decimals).format(x)
+        return ("{:.%sf}" % fl.DECIMALS).format(x)
 
     def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float, to_maximum: float) -> float:
         return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum) + to_minimum
