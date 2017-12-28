@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.6"
+
+install:
+  - pip install .
+  - pip install -r requirements.txt
+
+script:
+  - pytest
+
+notifications:
+  email:
+    recipients:
+      - jcrada@fuzzylite.com
+    on_success: always
+    on_failure: always
