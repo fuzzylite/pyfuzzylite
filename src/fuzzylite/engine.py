@@ -14,5 +14,12 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+
 class Engine(object):
-    pass
+    __slots__ = "input", "output", "rule"
+
+    def __init__(self, inputs=None, outputs=None, rules=None):
+        self.input = {iv.name: iv for iv in inputs} if inputs else {}
+        self.output = {ov.name: ov for ov in outputs} if outputs else {}
+        self.rule = []

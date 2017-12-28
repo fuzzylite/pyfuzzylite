@@ -17,9 +17,7 @@
 
 import unittest
 
-from fuzzylite.exporter import FllExporter
-from fuzzylite.rule import Rule
-from fuzzylite.term import Term
+from fuzzylite import *
 
 
 class TestFllExporter(unittest.TestCase):
@@ -27,6 +25,18 @@ class TestFllExporter(unittest.TestCase):
         print("Testing FllExporter")
         self.assertEqual(FllExporter().term(Term("X", 1.0)), "term: X Term ")
         self.assertEqual(FllExporter().rule(Rule("if x then y")), "rule: if x then y")
+
+    def test_variables(self):
+        self.assertEqual(FllExporter().input_variable(Variable("name", terms=[Triangle("A"), Trapezoid("B")])),
+                         "\n".join([
+                             "InputVariable: name",
+                             "  description: ",
+                             "  enabled: true",
+                             "  range: -inf inf",
+                             "  lock-range: true",
+                             "  term: A Triangle nan nan nan",
+                             "  term: B Trapezoid nan nan nan nan",
+                         ]))
 
 
 if __name__ == '__main__':

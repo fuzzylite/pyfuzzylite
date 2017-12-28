@@ -15,9 +15,31 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+from math import inf, nan
+from typing import List
+
+from .exporter import FllExporter
+from .term import Term
+
 
 class Variable(object):
-    pass
+    __slots__ = "name", "description", "terms", "value", "minimum", "maximum", "enabled", "lock_range"
+
+    def __init__(self, name: str = "", minimum: float = -inf, maximum: float = inf, terms: List[Term] = None):
+        self.name = name
+        self.description = ""
+        self.terms = [term for term in terms] if terms else []
+        self.value = nan
+        self.minimum = minimum
+        self.maximum = maximum
+        self.enabled = True
+        self.lock_range = False
+
+    def range(self) -> float:
+        return self.maximum - self.minimum
+
+    def __str__(self):
+        return FllExporter().variable(self)
 
 
 class InputVariable(Variable):

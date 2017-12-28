@@ -16,7 +16,6 @@
 """
 
 from .operation import Operation as Op
-from .rule import Rule
 
 
 class Exporter(object):
@@ -30,11 +29,21 @@ class FllExporter(Exporter):
         self.indent = indent
         self.separator = separator
 
-    def term(self, term) -> str:
+    def input_variable(self, iv: 'InputVariable'):
+        result = [f"InputVariable: {iv.name}",
+                  f"{self.indent}description: {iv.description}",
+                  f"{self.indent}enabled: {str(iv.enabled).lower()}",
+                  f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
+                  f"{self.indent}lock-range: {str(iv.enabled).lower()}",
+                  *[f"{self.indent}{str(term)}" for term in iv.terms]
+                  ]
+        return self.separator.join(result)
+
+    def term(self, term: 'Term') -> str:
         return "term: %s %s %s" % (Op.valid_name(term.name), term.__class__.__name__, term.parameters())
 
-    def norm(self, norm) -> str:
+    def norm(self, norm: 'Norm') -> str:
         return type(norm).__name__ if norm else "none"
 
-    def rule(self, rule: Rule) -> str:
+    def rule(self, rule: 'Rule') -> str:
         return "rule: %s" % rule.text
