@@ -40,7 +40,8 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
-        return "term: %s %s %s" % (Op.valid_name(term.name), term.__class__.__name__, term.parameters())
+        result = ["term:", Op.valid_name(term.name), term.__class__.__name__, term.parameters()]
+        return " ".join(result)
 
     def norm(self, norm: 'Norm') -> str:
         return type(norm).__name__ if norm else "none"

@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name='pyfuzzylite',
+    name='fuzzylite',
     version='7.0',
     packages=['fuzzylite'],
     package_dir={'': 'src'},
