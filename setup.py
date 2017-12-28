@@ -19,12 +19,13 @@ setup(
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Software Development :: Libraries'
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'License :: Other/Proprietary License',
-        'Programming Language :: Python :: 3.6'
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Software Development :: Libraries',
     ],
     python_requires='>=3.6',
 )
