@@ -4,7 +4,7 @@ setup(
     name='pyfuzzylite',
     version='7.0',
     packages=['fuzzylite'],
-    package_dir={'': '.'},
+    package_dir={'fuzzylite': '.'},
     url='https://fuzzylite.com/python',
     license='FuzzyLite License',
     author='Juan Rada-Vilela, PhD',
