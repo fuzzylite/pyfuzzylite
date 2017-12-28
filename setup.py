@@ -1,10 +1,10 @@
 from distutils.core import setup
 
 setup(
-    name='fuzzylite',
+    name='pyfuzzylite',
     version='7.0',
     packages=['fuzzylite'],
-    package_dir={'': 'src'},
+    package_dir={'': '.'},
     url='https://fuzzylite.com/python',
     license='FuzzyLite License',
     author='Juan Rada-Vilela, PhD',
