@@ -15,6 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import platform
 import unittest
 from typing import Callable
 
@@ -57,8 +58,13 @@ class TermAssert(object):
     def has_membership(self, x: float, mf: float):
         if isnan(mf):
             self.test.assertEqual(isnan(self.actual.membership(x)), True, "when x=%.3f" % x)
-        else:
+            return self
+        # TODO: Find out why we get different values in different platforms
+        # compare against exact values on Mac OSX
+        if platform.system() == 'Darwin':
             self.test.assertEqual(self.actual.membership(x), mf, "when x=%.3f" % x)
+        else:  # use approximate values in other platforms
+            self.test.assertAlmostEqual(self.actual.membership(x), mf, places=15, msg="when x=%.3f" % x)
         return self
 
     def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0):
