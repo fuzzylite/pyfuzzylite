@@ -3,10 +3,15 @@ python:
   - "3.6"
 
 install:
-  - pip install .
+  - pip install tox-travis
 
 script:
-  - pytest
+  - tox
+  - coverage run --source=fuzzylite setup.py test
+  - coverage report -m
+
+after_success:
+  - coveralls
 
 notifications:
   email:

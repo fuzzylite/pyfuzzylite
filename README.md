@@ -14,9 +14,9 @@ By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
-| Branch | Status  |
-|--------|---------|
-|[master](https://github.com/fuzzylite/pyfuzzylite/tree/master) |[![Build Status](https://travis-ci.org/fuzzylite/pyfuzzylite.svg?branch=master)](https://travis-ci.org/fuzzylite/pyfuzzylite) 
+| Branch | Status  | Coverage |
+|--------|---------|----------|
+|[master](https://github.com/fuzzylite/pyfuzzylite/tree/master) |[![Build Status](https://travis-ci.org/fuzzylite/pyfuzzylite.svg?branch=master)](https://travis-ci.org/fuzzylite/pyfuzzylite) |[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=master)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=master) 
 
 
 ***
