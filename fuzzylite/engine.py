@@ -15,11 +15,66 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+from enum import Enum, auto
+from typing import Iterable, Tuple
+
+from .activation import Activation
+from .defuzzifier import Defuzzifier
+from .exporter import FllExporter
+from .norm import SNorm, TNorm
+from .rule import RuleBlock
+from .variable import InputVariable, OutputVariable
+
 
 class Engine(object):
-    __slots__ = "input", "output", "rule"
+    __slots__ = "name", "description", "inputs", "outputs", "blocks",
 
-    def __init__(self, inputs=None, outputs=None, rules=None):
-        self.input = {iv.name: iv for iv in inputs} if inputs else {}
-        self.output = {ov.name: ov for ov in outputs} if outputs else {}
-        self.rule = []
+    def __init__(self, name: str = "",
+                 description: str = "",
+                 inputs: Iterable[InputVariable] = None,
+                 outputs: Iterable[OutputVariable] = None,
+                 blocks: Iterable[RuleBlock] = None):
+        self.name = name
+        self.description = description
+        self.inputs = list()
+        self.outputs = list()
+        self.blocks = list()
+        if inputs:
+            self.inputs.extend(inputs)
+        if outputs:
+            self.outputs.extend(outputs)
+        if blocks:
+            self.blocks.extend(blocks)
+
+    def __str__(self):
+        return FllExporter().engine(self)
+
+    def configure(self, conjunction: TNorm = None, disjunction: SNorm = None,
+                  implication: TNorm = None, aggregation: SNorm = None,
+                  defuzzifier: Defuzzifier = None, activation: Activation = None):
+
+        pass
+
+    def is_ready(self) -> Tuple[bool, str]:
+        pass
+
+    def process(self) -> None:
+        pass
+
+    def restart(self) -> None:
+        pass
+
+    class Type(Enum):
+        Mamdani = auto(),
+        Larsen = auto(),
+        TakagiSugeno = auto(),
+        Tsukamoto = auto(),
+        InverseTsukamoto = auto(),
+        Hybrid = auto(),
+        Unknown = auto()
+
+    def infer_type(self) -> Tuple[Type, 'reason']:
+        pass
+
+    def variables(self):
+        return [*self.inputs, *self.outputs]
