@@ -18,9 +18,8 @@
 import logging
 from bisect import bisect
 from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import Dict, List, Union
+from typing import Dict, Iterable, List, Union
 
-from .engine import Engine
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .operation import Operation as Op
@@ -86,7 +85,7 @@ class Term(object):
         """
         result = []
         if args:
-            result.extend([Op.str(x) for x in args])
+            result.extend(map(Op.str, args))
         if self.height and self.height != 1.0:
             result.append(Op.str(self.height))
         return " ".join(result)
@@ -109,7 +108,7 @@ class Term(object):
         """
         raise NotImplementedError()
 
-    def update_reference(self, engine: Engine) -> None:
+    def update_reference(self, engine: 'Engine') -> None:
         """
           Updates the references (if any) to point to the current engine (useful
           when cloning engines or creating terms within Importer objects
@@ -190,7 +189,7 @@ class Aggregated(Term):
     def __str__(self):
         result = [self.name + ":", self.__class__.__name__]
 
-        activated = [str(term) for term in self.terms]
+        activated = map(str, self.terms)
         if self.aggregation:
             result.append("%s[%s]" % (FllExporter().norm(self.aggregation), ",".join(activated)))
         else:
@@ -201,7 +200,7 @@ class Aggregated(Term):
     def range(self):
         return self.maximum - self.minimum
 
-    def membership(self, x):
+    def membership(self, x) -> float:
         if isnan(x): return nan
         if self.terms and not self.aggregation:
             raise ValueError("expected an aggregation operator, but none found")
@@ -232,6 +231,9 @@ class Aggregated(Term):
                 maximum_activation = activation.degree
                 result = activation
         return result
+
+    def clear(self) -> None:
+        self.terms.clear()
 
 
 class Bell(Term):
@@ -550,9 +552,11 @@ class GaussianProduct(Term):
 class Linear(Term):
     __slots__ = "coefficients", "engine"
 
-    def __init__(self, name: str = "", coefficients: List[float] = None, engine: Engine = None):
+    def __init__(self, name: str = "", coefficients: Iterable[float] = None, engine: 'Engine' = None):
         super().__init__(name)
-        self.coefficients = [c for c in coefficients] if coefficients else []
+        self.coefficients = list()
+        if coefficients:
+            self.coefficients.extend(coefficients)
         self.engine = engine
 
     def membership(self, _):
@@ -561,8 +565,8 @@ class Linear(Term):
 
         result = 0
         number_of_coefficients = len(self.coefficients)
-        input_variables = self.engine.input
-        for i, input_variable in enumerate(input_variables.values()):
+        input_variables = self.engine.inputs
+        for i, input_variable in enumerate(input_variables):
             if i < number_of_coefficients:
                 result += self.coefficients[i] * input_variable.value
         if number_of_coefficients > len(input_variables):
@@ -576,7 +580,7 @@ class Linear(Term):
     def parameters(self):
         return self._parameters(*self.coefficients)
 
-    def update_reference(self, engine: Engine):
+    def update_reference(self, engine: 'Engine'):
         self.engine = engine
 
 
