@@ -62,3 +62,6 @@ class FuzzyConsequent(object):
 
     def fire(self, strength, activation):
         raise NotImplementedError('fire')
+
+class RuleBlock(object):
+    pass
