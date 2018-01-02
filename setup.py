@@ -18,7 +18,7 @@ class PyTest(Command):
         test_loader = unittest.TestLoader()
         test_suite = test_loader.discover('tests', pattern='test_*.py')
         result = unittest.TextTestRunner().run(test_suite)
-        raise SystemExit(result)
+        raise SystemExit(0 if result.wasSuccessful() else 1)
 
 
 setup(
