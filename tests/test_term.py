@@ -100,6 +100,11 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(str(Term("xxx", 0.5)), "term: xxx Term 0.500")
         self.assertEqual(Term().is_monotonic(), False)
 
+        with self.assertRaisesRegex(NotImplementedError, ""):
+            Term().membership(nan)
+        with self.assertRaisesRegex(NotImplementedError, ""):
+            Term().tsukamoto(nan, nan, nan)
+
         discrete_triangle = Triangle("triangle", -1, 0, 1).discretize(-1, 1, 10)
         self.assertEqual(Discrete.dict_from(discrete_triangle.xy),
                          {-1.0: 0.0,
@@ -180,6 +185,7 @@ class TestTerm(unittest.TestCase):
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0})
+        self.assertEqual(str(aggregated), "fuzzy_output: Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]")
 
         self.assertEqual(aggregated.activation_degree(low), 0.6)
         self.assertEqual(aggregated.activation_degree(medium), 0.4)
@@ -191,8 +197,12 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(aggregated.activation_degree(low), 0.6 + 0.4)
 
         aggregated.aggregation = None
+        self.assertEqual(str(aggregated),
+                         "fuzzy_output: Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]")
         with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but none found"):
             aggregated.membership(0.0)
+
+        self.assertEqual(aggregated.range(), 2.0)
 
     def test_bell(self):
         TermAssert(self, Bell("bell")) \
@@ -404,13 +414,23 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0}, height=0.5)
 
+        xy = Discrete("name", Discrete.pairs_from("0 1 2 3 4 5 6 7".split()))
+        self.assertSequenceEqual(xy.x(), (0, 2, 4, 6))
+        self.assertSequenceEqual(xy.y(), (1, 3, 5, 7))
+
         self.assertEqual(Discrete.pairs_from([]), [])
         self.assertEqual(Discrete.values_from(Discrete.pairs_from([1, 2, 3, 4])), [1, 2, 3, 4])
         self.assertEqual(Discrete.values_from(Discrete.pairs_from({1: 2, 3: 4})), [1, 2, 3, 4])
 
-        with self.assertRaisesRegex(ValueError,
-                                    r"not enough values to unpack \(expected even number, got 3\)"):
+        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected even number, got 3\)"):
             Discrete.pairs_from([1, 2, 3])
+
+        term = Discrete()
+        with self.assertRaisesRegex(ValueError, r"expected a list of \(x,y\)-pairs, but found none"):
+            term.membership(0.0)
+        with self.assertRaisesRegex(ValueError, r"expected a list of \(x,y\)-pairs, but found none"):
+            term.xy = None
+            term.membership(0.0)
 
     def test_gaussian(self):
         TermAssert(self, Gaussian("gaussian")) \
@@ -486,7 +506,15 @@ class TestTerm(unittest.TestCase):
         engine.inputs[1].value = 1
         engine.inputs[2].value = 2
 
-        TermAssert(self, Linear("linear", [1, 2], engine)) \
+        with self.assertRaisesRegex(ValueError, r"expected the reference to an engine, but found none"):
+            Linear().membership(nan)
+
+        linear = Linear("linear", [1, 2])
+        self.assertEqual(linear.engine, None)
+        linear.update_reference(engine)
+        self.assertEqual(linear.engine, engine)
+
+        TermAssert(self, linear) \
             .exports_fll("term: linear Linear 1.000 2.000") \
             .is_not_monotonic() \
             .configured_as("1.0 2.0 3") \
@@ -548,6 +576,7 @@ class TestTerm(unittest.TestCase):
                               0.25: 0.9444444444444444,
                               0.4: 0.7777777777777777,
                               0.5: 0.6049382716049383,
+                              0.95: 0.00617283950617285,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0}) \
@@ -562,6 +591,7 @@ class TestTerm(unittest.TestCase):
                               0.25: 0.9444444444444444,
                               0.4: 0.7777777777777777,
                               0.5: 0.6049382716049383,
+                              0.95: 0.00617283950617285,
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0}, height=0.5)
@@ -571,6 +601,20 @@ class TestTerm(unittest.TestCase):
             .exports_fll("term: ramp Ramp nan nan") \
             .takes_parameters(2) \
             .is_monotonic() \
+            .configured_as("1 1") \
+            .exports_fll("term: ramp Ramp 1.000 1.000") \
+            .has_memberships({-0.5: 0.0,
+                              -0.4: 0.0,
+                              -0.25: 0.0,
+                              -0.1: 0.0,
+                              0.0: 0.0,
+                              0.1: 0.0,
+                              0.25: 0.0,
+                              0.4: 0.0,
+                              0.5: 0.0,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 0.0}) \
             .configured_as("-0.250 0.750") \
             .exports_fll("term: ramp Ramp -0.250 0.750") \
             .has_memberships({-0.5: 0.0,
@@ -893,7 +937,35 @@ class TestTerm(unittest.TestCase):
                               0.5: 0.000,
                               nan: nan,
                               inf: 0.0,
-                              -inf: 0.0})
+                              -inf: 0.0}) \
+            .configured_as("-inf -0.100 0.100 .4") \
+            .exports_fll("term: trapezoid Trapezoid -inf -0.100 0.100 0.400") \
+            .has_memberships({-0.5: 1.000,
+                              -0.4: 1.000,
+                              -0.25: 1.000,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 0.500,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 1.0}) \
+            .configured_as("-.4 -0.100 0.100 inf .5") \
+            .exports_fll("term: trapezoid Trapezoid -0.400 -0.100 0.100 inf 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.500,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 1.000,
+                              0.4: 1.000,
+                              0.5: 1.000,
+                              nan: nan,
+                              inf: 1.0,
+                              -inf: 0.0}, height=0.5)
 
     def test_triangle(self):
         TermAssert(self, Triangle("triangle", 0.0, 1.0)).exports_fll("term: triangle Triangle 0.000 0.500 1.000")
@@ -971,7 +1043,35 @@ class TestTerm(unittest.TestCase):
                               0.5: 1.000,
                               nan: nan,
                               inf: 0.0,
-                              -inf: 0.0})
+                              -inf: 0.0}) \
+            .configured_as("-inf 0.000 0.400") \
+            .exports_fll("term: triangle Triangle -inf 0.000 0.400") \
+            .has_memberships({-0.5: 1.000,
+                              -0.4: 1.000,
+                              -0.25: 1.000,
+                              -0.1: 1.000,
+                              0.0: 1.000,
+                              0.1: 0.7500000000000001,
+                              0.25: 0.37500000000000006,
+                              0.4: 0.000,
+                              0.5: 0.000,
+                              nan: nan,
+                              inf: 0.0,
+                              -inf: 1.000}) \
+            .configured_as("-0.400 0.000 inf .5") \
+            .exports_fll("term: triangle Triangle -0.400 0.000 inf 0.500") \
+            .has_memberships({-0.5: 0.000,
+                              -0.4: 0.000,
+                              -0.25: 0.37500000000000006,
+                              -0.1: 0.7500000000000001,
+                              0.0: 1.000,
+                              0.1: 1.000,
+                              0.25: 1.000,
+                              0.4: 1.000,
+                              0.5: 1.000,
+                              nan: nan,
+                              inf: 1.000,
+                              -inf: 0.0}, height=0.5)
 
     def test_z_shape(self):
         TermAssert(self, ZShape("z_shape")) \

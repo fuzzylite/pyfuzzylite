@@ -410,9 +410,11 @@ class Discrete(Term):
 
     __slots__ = "xy"
 
-    def __init__(self, name="", xy: [Pair] = None, height=1.0):
+    def __init__(self, name="", xy: Iterable[Pair] = None, height=1.0):
         super().__init__(name, height)
-        self.xy = xy if xy else []
+        self.xy = list()
+        if xy:
+            self.xy.extend(xy)
 
     def __iter__(self):
         return iter(self.xy)
@@ -421,7 +423,7 @@ class Discrete(Term):
         if isnan(x): return nan
 
         if not self.xy:
-            raise ValueError()
+            raise ValueError("expected a list of (x,y)-pairs, but found none")
 
         if x <= self.xy[0].x:
             return self.height * self.xy[0].y
@@ -457,10 +459,10 @@ class Discrete(Term):
         self.xy = Discrete.pairs_from(values)
 
     def x(self):
-        return (pair.x for pair in self.xy)
+        return tuple(pair.x for pair in self.xy)
 
     def y(self):
-        return (pair.y for pair in self.xy)
+        return tuple(pair.y for pair in self.xy)
 
     def sort(self):
         Discrete.sort_pairs(self.xy)
@@ -472,12 +474,12 @@ class Discrete(Term):
     @staticmethod
     def pairs_from(values: Union[List[float], Dict[float, float]]) -> [Pair]:
         if isinstance(values, dict):
-            return [Discrete.Pair(x, y) for x, y in values.items()]
+            return [Discrete.Pair(float(x), float(y)) for x, y in values.items()]
 
         if len(values) % 2 != 0:
             raise ValueError("not enough values to unpack (expected even number, got %i) in %s" % (len(values), values))
 
-        return [Discrete.Pair(values[i], values[i + 1]) for i in range(0, len(values) - 1, 2)]
+        return [Discrete.Pair(float(values[i]), float(values[i + 1])) for i in range(0, len(values) - 1, 2)]
 
     @staticmethod
     def values_from(pairs: [Pair]) -> [float]:
