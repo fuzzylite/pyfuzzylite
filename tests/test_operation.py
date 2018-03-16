@@ -33,7 +33,7 @@ class TestOperation(unittest.TestCase):
         fl.DECIMALS = 3
         self.assertEqual(Op.str(0.3), "0.300")
         self.assertEqual(Op.str(-0.3), "-0.300")
-        self.assertEqual(Op.str(3), "3.000")
+        self.assertEqual(Op.str(3), "3")
         self.assertEqual(Op.str(3.0001), "3.000")
 
         self.assertEqual(Op.str(math.inf), "inf")
