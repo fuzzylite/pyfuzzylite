@@ -179,12 +179,15 @@ class Activated(Term):
 class Aggregated(Term):
     __slots__ = "terms", "minimum", "maximum", "aggregation"
 
-    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan, aggregation: SNorm = None):
+    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan, aggregation: SNorm = None,
+                 terms: Iterable[Term] = None):
         super().__init__(name)
-        self.terms = []
         self.minimum = minimum
         self.maximum = maximum
         self.aggregation = aggregation
+        self.terms = []
+        if terms:
+            self.terms.extend(terms)
 
     def __str__(self):
         result = [self.name + ":", self.__class__.__name__]
@@ -412,7 +415,7 @@ class Discrete(Term):
 
     def __init__(self, name="", xy: Iterable[Pair] = None, height=1.0):
         super().__init__(name, height)
-        self.xy = list()
+        self.xy = []
         if xy:
             self.xy.extend(xy)
 
@@ -556,7 +559,7 @@ class Linear(Term):
 
     def __init__(self, name: str = "", coefficients: Iterable[float] = None, engine: 'Engine' = None):
         super().__init__(name)
-        self.coefficients = list()
+        self.coefficients = []
         if coefficients:
             self.coefficients.extend(coefficients)
         self.engine = engine
@@ -701,41 +704,6 @@ class Rectangle(Term):
 
 
 # TODO: Tsukamoto
-class SShape(Term):
-    __slots__ = "start", "end"
-
-    def __init__(self, name="", start=nan, end=nan, height=1.0):
-        super().__init__(name, height)
-        self.start = start
-        self.end = end
-
-    def membership(self, x: float) -> float:
-        if isnan(x): return nan
-
-        if x <= self.start:
-            return self.height * 0.0
-
-        if x <= 0.5 * (self.start + self.end):
-            return self.height * 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
-
-        if x < self.end:
-            return self.height * (1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2)
-
-        return self.height * 1.0
-
-    def is_monotonic(self) -> bool:
-        return True
-
-    def parameters(self) -> str:
-        return super()._parameters(self.start, self.end)
-
-    def configure(self, parameters: str) -> None:
-        values = tuple(float(x) for x in parameters.split())
-        self.start, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
-
-
-# TODO: Tsukamoto
 class Sigmoid(Term):
     __slots__ = "inflection", "slope"
 
@@ -834,6 +802,41 @@ class Spike(Term):
     def configure(self, parameters: str) -> None:
         values = tuple(float(x) for x in parameters.split())
         self.center, self.width = values[0:2]
+        self.height = 1.0 if len(values) == 2 else values[-1]
+
+
+# TODO: Tsukamoto
+class SShape(Term):
+    __slots__ = "start", "end"
+
+    def __init__(self, name="", start=nan, end=nan, height=1.0):
+        super().__init__(name, height)
+        self.start = start
+        self.end = end
+
+    def membership(self, x: float) -> float:
+        if isnan(x): return nan
+
+        if x <= self.start:
+            return self.height * 0.0
+
+        if x <= 0.5 * (self.start + self.end):
+            return self.height * 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
+
+        if x < self.end:
+            return self.height * (1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2)
+
+        return self.height * 1.0
+
+    def is_monotonic(self) -> bool:
+        return True
+
+    def parameters(self) -> str:
+        return super()._parameters(self.start, self.end)
+
+    def configure(self, parameters: str) -> None:
+        values = tuple(float(x) for x in parameters.split())
+        self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
 

@@ -105,7 +105,9 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, ""):
             Term().tsukamoto(nan, nan, nan)
 
-        discrete_triangle = Triangle("triangle", -1, 0, 1).discretize(-1, 1, 10)
+        Term().update_reference(None)  # does nothing, for test coverage
+
+        discrete_triangle = Triangle("triangle", -1.0, 0.0, 1.0).discretize(-1, 1, 10)
         self.assertEqual(Discrete.dict_from(discrete_triangle.xy),
                          {-1.0: 0.0,
                           -0.8: 0.19999999999999996,
@@ -509,7 +511,7 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"expected the reference to an engine, but found none"):
             Linear().membership(nan)
 
-        linear = Linear("linear", [1, 2])
+        linear = Linear("linear", [1.0, 2.0])
         self.assertEqual(linear.engine, None)
         linear.update_reference(engine)
         self.assertEqual(linear.engine, engine)
@@ -1109,6 +1111,8 @@ class TestTerm(unittest.TestCase):
 
     @unittest.skip("Testing of Function")
     def test_function(self):
+        # http://www.bestcode.com/html/evaluate_math_expressions_pyth.html
+        # https://www.geeksforgeeks.org/eval-in-python/
         pass
 
     @unittest.skip("Testing of Tsukamoto")
