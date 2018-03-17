@@ -36,7 +36,7 @@ class Variable(object):
         self.enabled = True
         self.lock_range = False
         self._value = nan
-        self.terms = list()
+        self.terms = []
         if terms:
             self.terms.extend(terms)
 
@@ -64,7 +64,7 @@ class Variable(object):
         del self._value
 
     def fuzzify(self, x: float) -> str:
-        result = list()
+        result = []
         for term in self.terms:
             fx = nan
             try:
@@ -199,7 +199,7 @@ class OutputVariable(Variable):
         self.previous_value = nan
 
     def fuzzy_value(self):
-        result = list()
+        result = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
 

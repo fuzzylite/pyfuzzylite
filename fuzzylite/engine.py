@@ -36,9 +36,9 @@ class Engine(object):
                  blocks: Iterable[RuleBlock] = None):
         self.name = name
         self.description = description
-        self.inputs = list()
-        self.outputs = list()
-        self.blocks = list()
+        self.inputs = []
+        self.outputs = []
+        self.blocks = []
         if inputs:
             self.inputs.extend(inputs)
         if outputs:
