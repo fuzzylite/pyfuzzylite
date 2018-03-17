@@ -155,17 +155,18 @@ class Activated(Term):
     __slots__ = "term", "degree", "implication"
 
     def __init__(self, term: Term = None, degree: float = 1.0, implication: TNorm = None):
-        super().__init__()
+        super().__init__("_")
         self.term = term
         self.degree = degree
         self.implication = implication
 
-    def __str__(self):
+    def parameters(self):
+        name = self.term.name if self.term else "none"
         if self.implication:
-            return "%s(%s,%s)" % (FllExporter().norm(self.implication), Op.str(self.degree),
-                                  self.term.name if self.term else "none")
+            result = "%s(%s,%s)" % (FllExporter().norm(self.implication), Op.str(self.degree), name)
         else:
-            return "(%s*%s)" % (Op.str(self.degree), self.term.name if self.term else "none")
+            result = "(%s*%s)" % (Op.str(self.degree), name)
+        return result
 
     def membership(self, x: float):
         if isnan(x): return nan
@@ -189,10 +190,9 @@ class Aggregated(Term):
         if terms:
             self.terms.extend(terms)
 
-    def __str__(self):
-        result = [self.name + ":", self.__class__.__name__]
-
-        activated = map(str, self.terms)
+    def parameters(self):
+        result = []
+        activated = [term.parameters() for term in self.terms]
         if self.aggregation:
             result.append("%s[%s]" % (FllExporter().norm(self.aggregation), ",".join(activated)))
         else:

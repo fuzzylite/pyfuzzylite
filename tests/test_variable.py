@@ -18,26 +18,10 @@
 import unittest
 
 from fuzzylite import *
+from tests.assert_component import ComponentAssert
 
 
-class VariableAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: Variable):
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
-
-    def has_name(self, name: str):
-        self.test.assertEqual(self.actual.name, name)
-        return self
-
-    def has_description(self, description: str):
-        self.test.assertEqual(self.actual.description, description)
-        return self
-
-    def exports_fll(self, fll: str):
-        self.test.assertEqual(FllExporter().variable(self.actual), fll)
-        return self
-
+class VariableAssert(ComponentAssert):
     def fuzzy_values(self, fuzzification: Dict[float, str]):
         for x in fuzzification:
             self.test.assertEqual(self.actual.fuzzify(x), fuzzification[x], f"when x={x}")
@@ -59,8 +43,8 @@ class TestVariable(unittest.TestCase):
             "  range: -inf inf",
             "  lock-range: true"
         ]))
-        VariableAssert(self, Variable("name", "description", -1, 1,
-                                      [Triangle('A', -1, 1), Triangle('B', -10, 10)])) \
+        VariableAssert(self, Variable("name", "description", -1.0, 1.0,
+                                      [Triangle('A', -1.0, 1.0), Triangle('B', -10.0, 10.0)])) \
             .exports_fll("\n".join([
             "Variable: name",
             "  description: description",
@@ -93,9 +77,9 @@ class TestVariable(unittest.TestCase):
 
     def test_fuzzify(self):
         VariableAssert(self, Variable("name", "description", -1.0, 1.0,
-                                      [Triangle('Low', -1, -1, 0),
-                                       Triangle('Medium', -0.5, 0, 0.5),
-                                       Triangle('High', 0, 1, 1)])) \
+                                      [Triangle('Low', -1.0, -1.0, 0.0),
+                                       Triangle('Medium', -0.5, 0.0, 0.5),
+                                       Triangle('High', 0.0, 1.0, 1.0)])) \
             .fuzzy_values(
             {-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
              -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
@@ -111,9 +95,9 @@ class TestVariable(unittest.TestCase):
              })
 
     def test_highest_membership(self):
-        low, medium, high = (Triangle('Low', -1, -.5, 0),
-                             Triangle('Medium', -0.5, 0, 0.5),
-                             Triangle('High', 0, .5, 1))
+        low, medium, high = (Triangle('Low', -1.0, -.5, 0.0),
+                             Triangle('Medium', -0.5, 0.0, 0.5),
+                             Triangle('High', 0.0, .5, 1.0))
         VariableAssert(self, Variable("name", "description", -1.0, 1.0, [low, medium, high])) \
             .highest_memberships(
             {-1.00: (0.0, None),
@@ -158,8 +142,8 @@ class TestInputVariable(unittest.TestCase):
             "  range: -inf inf",
             "  lock-range: true"
         ]))
-        InputVariableAssert(self, InputVariable("name", "description", -1, 1,
-                                                [Triangle('A', -1, 1), Triangle('B', -10, 10)])) \
+        InputVariableAssert(self, InputVariable("name", "description", -1.0, 1.0,
+                                                [Triangle('A', -1.0, 1.0), Triangle('B', -10.0, 10.0)])) \
             .exports_fll("\n".join([
             "InputVariable: name",
             "  description: description",
@@ -172,9 +156,9 @@ class TestInputVariable(unittest.TestCase):
 
     def test_fuzzy_value(self):
         InputVariableAssert(self, InputVariable("name", "description", -1.0, 1.0,
-                                                [Triangle('Low', -1, -1, 0),
-                                                 Triangle('Medium', -0.5, 0, 0.5),
-                                                 Triangle('High', 0, 1, 1)])) \
+                                                [Triangle('Low', -1.0, -1.0, 0.0),
+                                                 Triangle('Medium', -0.5, 0.0, 0.5),
+                                                 Triangle('High', 0.0, 1.0, 1.0)])) \
             .fuzzy_values(
             {-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
              -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
@@ -222,8 +206,8 @@ class TestOutputVariable(unittest.TestCase):
             "  default: nan",
             "  lock-previous: false"
         ]))
-        OutputVariableAssert(self, OutputVariable("name", "description", -1, 1,
-                                                  [Triangle('A', -1, 1), Triangle('B', -10, 10)])) \
+        OutputVariableAssert(self, OutputVariable("name", "description", -1.0, 1.0,
+                                                  [Triangle('A', -1.0, 1.0), Triangle('B', -10.0, 10.0)])) \
             .exports_fll("\n".join([
             "OutputVariable: name",
             "  description: description",
@@ -239,9 +223,9 @@ class TestOutputVariable(unittest.TestCase):
         ]))
 
     def test_fuzzy_value(self):
-        low, medium, high = [Triangle('Low', -1, -1, 0),
-                             Triangle('Medium', -0.5, 0, 0.5),
-                             Triangle('High', 0, 1, 1)]
+        low, medium, high = [Triangle('Low', -1.0, -1.0, 0.0),
+                             Triangle('Medium', -0.5, 0.0, 0.5),
+                             Triangle('High', 0.0, 1.0, 1.0)]
         OutputVariableAssert(self, OutputVariable("name", "description", -1.0, 1.0, [low, medium, high])) \
             .fuzzy_values({tuple(): "0.000/Low + 0.000/Medium + 0.000/High",
                            tuple([Activated(low, 0.5)]): "0.500/Low + 0.000/Medium + 0.000/High",
@@ -249,9 +233,9 @@ class TestOutputVariable(unittest.TestCase):
                                   Activated(high, -0.1)]): "-1.000/Low - 0.500/Medium - 0.100/High"})
 
     def test_clear(self):
-        low, medium, high = [Triangle('Low', -1, -1, 0),
-                             Triangle('Medium', -0.5, 0, 0.5),
-                             Triangle('High', 0, 1, 1)]
+        low, medium, high = [Triangle('Low', -1.0, -1.0, 0.0),
+                             Triangle('Medium', -0.5, 0.0, 0.5),
+                             Triangle('High', 0.0, 1.0, 1.0)]
         variable = OutputVariable("name", "description", -1.0, 1.0, [low, medium, high])
         variable.value = 0.0
         variable.previous_value = -1.0
@@ -273,7 +257,7 @@ class TestOutputVariable(unittest.TestCase):
 
         self.assertEqual(variable.value, 0.0)
         self.assertEqual(variable.previous_value, -1.0)
-        self.assertSequenceEqual([str(term) for term in variable.fuzzy.terms],
+        self.assertSequenceEqual([term.parameters() for term in variable.fuzzy.terms],
                                  ["(0.500*Low)", "(0.500*Medium)", "(0.500*High)"])
         variable.clear()
         self.assertEqual(isnan(variable.value), True)
@@ -281,9 +265,9 @@ class TestOutputVariable(unittest.TestCase):
         self.assertSequenceEqual(variable.fuzzy.terms, [])
 
     def test_defuzzify_invalid(self):
-        low, medium, high = [Triangle('Low', -1, -1, 0),
-                             Triangle('Medium', -0.5, 0, 0.5),
-                             Triangle('High', 0, 1, 1)]
+        low, medium, high = [Triangle('Low', -1.0, -1.0, 0.0),
+                             Triangle('Medium', -0.5, 0.0, 0.5),
+                             Triangle('High', 0.0, 1.0, 1.0)]
         variable = OutputVariable("name", "description", -1.0, 1.0, [low, medium, high])
         variable.default_value = 0.123
         variable.enabled = False
@@ -320,7 +304,7 @@ class TestOutputVariable(unittest.TestCase):
         self.assertEqual(variable.previous_value, 0.1)
         self.assertEqual(variable.value, 0.1)
 
-        #tests exception on defuzzification
+        # tests exception on defuzzification
         variable.fuzzy.terms.extend([Activated(term) for term in variable.terms])
         variable.lock_previous_value = False
         variable.value = 0.4
@@ -339,9 +323,6 @@ class TestOutputVariable(unittest.TestCase):
             variable.defuzzify()
         self.assertEqual(variable.previous_value, 0.5)
         self.assertEqual(variable.value, 0.6)
-
-
-
 
 
 if __name__ == '__main__':

@@ -20,16 +20,12 @@ import unittest
 from typing import Callable
 
 from fuzzylite import *
+from tests.assert_component import ComponentAssert
 
 
-class TermAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: Term):
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
-
+class TermAssert(ComponentAssert):
     def has_name(self, name: str, height: float = 1.0):
-        self.test.assertEqual(self.actual.name, name)
+        super().has_name(name)
         self.test.assertEqual(self.actual.height, height)
         return self
 
@@ -45,10 +41,6 @@ class TermAssert(object):
 
     def is_not_monotonic(self):
         self.test.assertEqual(self.actual.is_monotonic(), False)
-        return self
-
-    def exports_fll(self, fll: str):
-        self.test.assertEqual(str(self.actual), fll)
         return self
 
     def configured_as(self, parameters: str):
@@ -122,8 +114,8 @@ class TestTerm(unittest.TestCase):
                           1.0: 0.0})
 
     def test_activated(self):
-        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
-            .exports_fll("AlgebraicProduct(1.000,activated)") \
+        TermAssert(self, Activated(Triangle("triangle", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
+            .exports_fll("term: _ Activated AlgebraicProduct(1.000,triangle)") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.000,
                               -0.4: 0.000,
@@ -138,8 +130,8 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0})
 
-        TermAssert(self, Activated(Triangle("activated", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
-            .exports_fll("AlgebraicProduct(0.500,activated)") \
+        TermAssert(self, Activated(Triangle("triangle", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
+            .exports_fll("term: _ Activated AlgebraicProduct(0.500,triangle)") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.000,
                               -0.4: 0.000,
@@ -155,7 +147,7 @@ class TestTerm(unittest.TestCase):
                               -inf: 0.0})
 
         activated = Activated()
-        self.assertEqual(str(activated), "(1.000*none)")
+        self.assertEqual(str(activated), "term: _ Activated (1.000*none)")
         self.assertEqual(isnan(activated.membership(nan)), True, "when x=%f" % nan)
         activated.configure("")
 
@@ -173,7 +165,7 @@ class TestTerm(unittest.TestCase):
         aggregated.terms.extend([Activated(low, 0.6, Minimum()), Activated(medium, 0.4, Minimum())])
 
         TermAssert(self, aggregated) \
-            .exports_fll("fuzzy_output: Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]") \
+            .exports_fll("term: fuzzy_output Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.6,
                               -0.4: 0.6,
@@ -187,7 +179,6 @@ class TestTerm(unittest.TestCase):
                               nan: nan,
                               inf: 0.0,
                               -inf: 0.0})
-        self.assertEqual(str(aggregated), "fuzzy_output: Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]")
 
         self.assertEqual(aggregated.activation_degree(low), 0.6)
         self.assertEqual(aggregated.activation_degree(medium), 0.4)
@@ -199,8 +190,9 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(aggregated.activation_degree(low), 0.6 + 0.4)
 
         aggregated.aggregation = None
-        self.assertEqual(str(aggregated),
-                         "fuzzy_output: Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]")
+        TermAssert(self, aggregated) \
+            .exports_fll("term: fuzzy_output Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]")
+
         with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but none found"):
             aggregated.membership(0.0)
 
@@ -378,7 +370,7 @@ class TestTerm(unittest.TestCase):
 
     def test_discrete(self):
         TermAssert(self, Discrete("discrete")) \
-            .exports_fll("term: discrete Discrete ") \
+            .exports_fll("term: discrete Discrete") \
             .is_not_monotonic() \
             .configured_as("0 1 8 9 4 5 2 3 6 7") \
             .exports_fll("term: discrete Discrete 0.000 1.000 8.000 9.000 4.000 5.000 2.000 3.000 6.000 7.000") \
