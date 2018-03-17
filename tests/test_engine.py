@@ -18,22 +18,10 @@
 import unittest
 
 from fuzzylite import *
+from tests.assert_component import ComponentAssert
 
 
-class EngineAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: Engine):
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
-
-    def has_name(self, name):
-        self.test.assertEqual(self.actual.name, name)
-        return self
-
-    def has_description(self, description):
-        self.test.assertEqual(self.actual.description, description)
-        return self
-
+class EngineAssert(ComponentAssert):
     def has_type(self, expected: Engine.Type):
         type = self.actual.infer_type()
         self.test.assertEqual(type, expected,
@@ -99,4 +87,21 @@ class TestEngine(unittest.TestCase):
 
         names = ["X", "Y", "Z"]
         for i, iv in enumerate(flc.inputs):
+            self.assertEqual(iv.name, names[i])
+
+    def test_outputs(self):
+        flc = Engine("name", "description", [],
+                     [OutputVariable("A"), OutputVariable("B")])
+        EngineAssert(self, flc) \
+            .has_name("name").has_description("description") \
+            .has_n_outputs(2).has_outputs_named(["A", "B"])
+
+        flc.outputs = []
+        EngineAssert(self, flc).has_n_outputs(0).has_outputs_named([])
+
+        flc.outputs = [OutputVariable("X"), OutputVariable("Y"), OutputVariable("Z")]
+        EngineAssert(self, flc).has_n_outputs(3).has_outputs_named(["X", "Y", "Z"])
+
+        names = ["X", "Y", "Z"]
+        for i, iv in enumerate(flc.outputs):
             self.assertEqual(iv.name, names[i])

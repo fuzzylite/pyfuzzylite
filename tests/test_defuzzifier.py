@@ -18,18 +18,10 @@
 import unittest
 
 from fuzzylite import *
+from tests.assert_component import ComponentAssert
 
 
-class DefuzzifierAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: Defuzzifier):
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
-
-    def exports_fll(self, fll: str):
-        self.test.assertEqual(str(self.actual), fll)
-        return self
-
+class DefuzzifierAssert(ComponentAssert):
     def configured_as(self, parameters: str):
         self.actual.configure(parameters)
         return self
@@ -127,10 +119,10 @@ class TestDefuzzifier(unittest.TestCase):
         self.assertEqual(defuzzifier.infer_type(Triangle()), WeightedDefuzzifier.Type.Tsukamoto)
 
     def test_weighted_average(self):
-        DefuzzifierAssert(self, str(WeightedAverage())).exports_fll("WeightedAverage Automatic")
-        DefuzzifierAssert(self, str(WeightedAverage("TakagiSugeno"))).exports_fll("WeightedAverage TakagiSugeno")
+        DefuzzifierAssert(self, WeightedAverage()).exports_fll("WeightedAverage Automatic")
+        DefuzzifierAssert(self, WeightedAverage("TakagiSugeno")).exports_fll("WeightedAverage TakagiSugeno")
         with self.assertRaises(KeyError):
-            DefuzzifierAssert(self, str(WeightedAverage("SugenoTakagi")))
+            DefuzzifierAssert(self, WeightedAverage("SugenoTakagi"))
 
         defuzzifier = WeightedAverage()
         defuzzifier.type = None
@@ -179,8 +171,8 @@ class TestDefuzzifier(unittest.TestCase):
                           })
 
     def test_weighted_sum(self):
-        DefuzzifierAssert(self, str(WeightedSum())).exports_fll("WeightedSum Automatic")
-        DefuzzifierAssert(self, str(WeightedSum("TakagiSugeno"))).exports_fll("WeightedSum TakagiSugeno")
+        DefuzzifierAssert(self, WeightedSum()).exports_fll("WeightedSum Automatic")
+        DefuzzifierAssert(self, WeightedSum("TakagiSugeno")).exports_fll("WeightedSum TakagiSugeno")
         with self.assertRaises(KeyError):
             DefuzzifierAssert(self, str(WeightedSum("SugenoTakagi")))
 
