@@ -19,8 +19,12 @@ from math import sqrt
 
 
 class Hedge(object):
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__.lower()
+
     def hedge(self, x: float) -> float:
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class Any(Hedge):
@@ -56,4 +60,4 @@ class Very(Hedge):
 class HedgeFunction(Hedge):
     # todo implement
     def hedge(self, x: float) -> float:
-        raise NotImplemented()
+        raise NotImplementedError()

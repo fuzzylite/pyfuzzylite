@@ -28,6 +28,9 @@ class HedgeAssert(object):
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
+    def has_name(self, name: str):
+        self.test.assertEqual(self.actual.name, name)
+
     def evaluates(self, az: Dict[float, float]):
         for a, z in az.items():
             if isnan(z):
@@ -40,6 +43,7 @@ class HedgeAssert(object):
 class TestHedge(unittest.TestCase):
     def test_any(self):
         HedgeAssert(self, Any()) \
+            .has_name("any") \
             .evaluates({-1.0: 1.0,
                         -0.5: 1.0,
                         0.00: 1.0,
@@ -53,6 +57,7 @@ class TestHedge(unittest.TestCase):
 
     def test_extremely(self):
         HedgeAssert(self, Extremely()) \
+            .has_name("extremely") \
             .evaluates({-1.0: 2.0,
                         -0.5: 0.5,
                         0.00: 0.0,
@@ -66,6 +71,7 @@ class TestHedge(unittest.TestCase):
 
     def test_not(self):
         HedgeAssert(self, Not()) \
+            .has_name("not") \
             .evaluates({-1.0: 2.0,
                         -0.5: 1.5,
                         0.00: 1.0,
@@ -86,6 +92,7 @@ class TestHedge(unittest.TestCase):
             HedgeAssert(self, Seldom()).evaluates({-inf: nan})
 
         HedgeAssert(self, Seldom()) \
+            .has_name("seldom") \
             .evaluates({0.00: 0.0,
                         0.25: 0.3535533905932738,
                         0.50: 0.5,
@@ -101,6 +108,7 @@ class TestHedge(unittest.TestCase):
             HedgeAssert(self, Somewhat()).evaluates({-inf: nan})
 
         HedgeAssert(self, Somewhat()) \
+            .has_name("somewhat") \
             .evaluates({0.00: 0.0,
                         0.25: 0.5,
                         0.50: 0.7071067811865476,
@@ -111,6 +119,7 @@ class TestHedge(unittest.TestCase):
 
     def test_very(self):
         HedgeAssert(self, Very()) \
+            .has_name("very") \
             .evaluates({-1.0: 1.0,
                         -0.5: 0.25,
                         0.00: 0.0,
@@ -125,4 +134,5 @@ class TestHedge(unittest.TestCase):
     @unittest.skip
     def test_function(self):
         HedgeAssert(self, HedgeFunction()) \
+            .has_name("function") \
             .evaluates({})
