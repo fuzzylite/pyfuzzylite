@@ -17,6 +17,10 @@
 
 
 class Norm(object):
+    @property
+    def class_name(self):
+        return self.__class__.__name__
+    
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
 
@@ -64,7 +68,7 @@ class NilpotentMinimum(TNorm):
 
 
 class TNormFunction(TNorm):
-    __slots__ = "f"
+    __slots__ = ["f"]
 
     def __init__(self, formula: str):
         from fuzzylite.term import Function
@@ -130,7 +134,7 @@ class UnboundedSum(SNorm):
 
 
 class SNormFunction(SNorm):
-    __slots__ = "f"
+    __slots__ = ["f"]
 
     def __init__(self, formula: str):
         from fuzzylite.term import Function
