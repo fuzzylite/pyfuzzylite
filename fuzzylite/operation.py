@@ -15,6 +15,9 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import inspect
+from typing import Callable
+
 import fuzzylite as fl
 
 
@@ -43,3 +46,10 @@ class Operation(object):
         if x > maximum: return maximum
         if x < minimum: return minimum
         return x
+
+    @staticmethod
+    def arity_of(self, method: Callable):
+        if not method:
+            raise ValueError("expected a method or function, but found none")
+        return len([parameter for parameter in inspect.signature(self.method).parameters.values()
+                    if parameter.default == inspect.Parameter.empty])
