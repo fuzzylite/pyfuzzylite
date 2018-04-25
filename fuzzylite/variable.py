@@ -25,7 +25,7 @@ from .term import Aggregated
 
 
 class Variable(object):
-    __slots__ = "name", "description", "minimum", "maximum", "enabled", "lock_range", "_value", "terms"
+    __slots__ = ["name", "description", "minimum", "maximum", "enabled", "lock_range", "_value", "terms"]
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf, maximum: float = inf,
                  terms: Iterable['Term'] = None):
@@ -58,10 +58,6 @@ class Variable(object):
     @value.setter
     def value(self, value):
         self._value = Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
-
-    @value.deleter
-    def value(self):
-        del self._value
 
     def fuzzify(self, x: float) -> str:
         result = []
@@ -104,7 +100,7 @@ class InputVariable(Variable):
 
 
 class OutputVariable(Variable):
-    __slots__ = "fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value"
+    __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value"]
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf, maximum: float = inf,
                  terms: Iterable['Term'] = None):
