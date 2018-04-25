@@ -23,6 +23,10 @@ from .term import Aggregated, Constant, Function, Linear, Term
 
 
 class Defuzzifier(object):
+    @property
+    def class_name(self):
+        return self.__class__.__name__
+
     def configure(self, parameters: str):
         raise NotImplementedError()
 
@@ -34,15 +38,15 @@ class Defuzzifier(object):
 
 
 class IntegralDefuzzifier(Defuzzifier):
-    __slots__ = "resolution"
+    __slots__ = ["resolution"]
 
     default_resolution = 100
 
-    def __init__(self, resolution):
-        self.resolution = resolution if resolution else IntegralDefuzzifier.default_resolution
+    def __init__(self):
+        self.resolution = IntegralDefuzzifier.default_resolution
 
     def __str__(self):
-        return f"{self.__class__.__name__} {self.parameters()}"
+        return f"{self.name} {self.parameters()}"
 
     def configure(self, parameters: str):
         if parameters:
@@ -55,9 +59,9 @@ class IntegralDefuzzifier(Defuzzifier):
         raise NotImplementedError()
 
 
-class BiSector(IntegralDefuzzifier):
-    def __init__(self, resolution=None):
-        super().__init__(resolution)
+class Bisector(IntegralDefuzzifier):
+    def __init__(self):
+        super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not isfinite(minimum + maximum):
@@ -86,8 +90,8 @@ class BiSector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-    def __init__(self, resolution=None):
-        super().__init__(resolution)
+    def __init__(self):
+        super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not isfinite(minimum + maximum):
@@ -103,19 +107,34 @@ class Centroid(IntegralDefuzzifier):
         return x_centroid / area
 
 
+# TODO: Implement
+class LargestOfMaximum(IntegralDefuzzifier):
+    pass
+
+
+# TODO: Implement
+class MeanOfMaximum(IntegralDefuzzifier):
+    pass
+
+
+# TODO: Implement
+class SmallestOfMaximum(IntegralDefuzzifier):
+    pass
+
+
 class WeightedDefuzzifier(Defuzzifier):
-    __slots__ = "type"
+    __slots__ = ["type"]
 
     class Type(Enum):
         Automatic = auto(),
         TakagiSugeno = auto(),
         Tsukamoto = auto()
 
-    def __init__(self, type_name: str):
-        self.type = WeightedDefuzzifier.Type[type_name] if type_name else WeightedDefuzzifier.Type.Automatic
+    def __init__(self):
+        self.type = WeightedDefuzzifier.Type.Automatic
 
     def __str__(self):
-        return f"{self.__class__.__name__} {self.parameters()}"
+        return f"{self.name} {self.parameters()}"
 
     def configure(self, parameters: str):
         if parameters:
@@ -134,8 +153,8 @@ class WeightedDefuzzifier(Defuzzifier):
 
 
 class WeightedAverage(WeightedDefuzzifier):
-    def __init__(self, defuzz_type: str = None):
-        super().__init__(defuzz_type)
+    def __init__(self):
+        super().__init__()
 
     def defuzzify(self, fuzzy_output: Aggregated, *_):
         if not fuzzy_output.terms:
@@ -166,8 +185,8 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-    def __init__(self, defuzz_type: str = None):
-        super().__init__(defuzz_type)
+    def __init__(self):
+        super().__init__()
 
     def defuzzify(self, fuzzy_output: Aggregated, *_):
         if not fuzzy_output.terms:
