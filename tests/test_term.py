@@ -17,7 +17,6 @@
 
 import platform
 import unittest
-from typing import Callable
 
 from fuzzylite import *
 from tests.assert_component import ComponentAssert
@@ -870,7 +869,7 @@ class TestTerm(unittest.TestCase):
 
     def test_trapezoid(self):
         TermAssert(self, Trapezoid("trapezoid", 0.0, 1.0)).exports_fll(
-            "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000")
+                "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000")
 
         TermAssert(self, Trapezoid("trapezoid")) \
             .exports_fll("term: trapezoid Trapezoid nan nan nan nan") \
@@ -1110,6 +1109,21 @@ class TestTerm(unittest.TestCase):
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self):
         pass
+
+
+class TestFunction(unittest.TestCase):
+    def test_element(self):
+        element = Function.Element("function", "math function()", Function.Element.Type.Function,
+                                   None, 0, 0, -1)
+        self.assertEqual(str(element), "Element: name='function', description='math function()', "
+                                       "element_type='Type.Function', method='None', arity=0, "
+                                       "precedence=0, associativity=-1")
+
+        element = Function.Element("operator", "math operator", Function.Element.Type.Operator,
+                                   None, 2, 10, 1)
+        self.assertEqual(str(element), "Element: name='operator', description='math operator', "
+                                       "element_type='Type.Operator', method='None', arity=2, "
+                                       "precedence=10, associativity=1")
 
 
 if __name__ == '__main__':
