@@ -16,7 +16,6 @@
 """
 
 import copy
-import inspect
 import logging
 from bisect import bisect
 from enum import Enum, auto
@@ -177,9 +176,13 @@ class Activated(Term):
         return result
 
     def membership(self, x: float):
-        if isnan(x): return nan
-        if not self.term: raise ValueError("expected a term to activate, but none found")
-        if not self.implication: raise ValueError("expected an implication operator, but none found")
+        if isnan(x):
+            return nan
+
+        if not self.term:
+            raise ValueError("expected a term to activate, but none found")
+        if not self.implication:
+            raise ValueError("expected an implication operator, but none found")
         result = self.implication.compute(self.term.membership(x), self.degree)
         logging.debug("%s: %s" % (Op.str(result), str(self)))
         return result
@@ -188,7 +191,8 @@ class Activated(Term):
 class Aggregated(Term):
     __slots__ = ["terms", "minimum", "maximum", "aggregation"]
 
-    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan, aggregation: SNorm = None,
+    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan,
+                 aggregation: SNorm = None,
                  terms: Iterable[Term] = None):
         super().__init__(name)
         self.minimum = minimum
@@ -257,8 +261,10 @@ class Bell(Term):
         self.slope = slope
 
     def membership(self, x: float) -> float:
-        if isnan(x): return nan
-        return self.height * (1.0 / (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope))))
+        if isnan(x):
+            return nan
+        return self.height * (1.0 /
+                              (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width, self.slope)
@@ -310,11 +316,13 @@ class Concave(Term):
 
         if self.inflection <= self.end:  # Concave increasing
             if x < self.end:
-                return self.height * (self.end - self.inflection) / (2.0 * self.end - self.inflection - x)
+                return (self.height * (self.end - self.inflection) /
+                        (2.0 * self.end - self.inflection - x))
 
         else:  # Concave decreasing
             if x > self.end:
-                return self.height * (self.inflection - self.end) / (self.inflection - 2.0 * self.end + x)
+                return (self.height * (self.inflection - self.end) /
+                        (self.inflection - 2.0 * self.end + x))
 
         return self.height * 1.0
 
@@ -396,27 +404,33 @@ class Discrete(Term):
             return "(%s,%s)" % (self.x, self.y)
 
         def __eq__(self, other):
-            if isinstance(other, float): return self.x == other
+            if isinstance(other, float):
+                return self.x == other
             return self.x == other.x
 
         def __ne__(self, other):
-            if isinstance(other, float): return self.x != other
+            if isinstance(other, float):
+                return self.x != other
             return self.x != other.x
 
         def __lt__(self, other):
-            if isinstance(other, float): return self.x < other
+            if isinstance(other, float):
+                return self.x < other
             return self.x < other.x
 
         def __le__(self, other):
-            if isinstance(other, float): return self.x <= other
+            if isinstance(other, float):
+                return self.x <= other
             return self.x <= other.x
 
         def __gt__(self, other):
-            if isinstance(other, float): return self.x > other
+            if isinstance(other, float):
+                return self.x > other
             return self.x > other.x
 
         def __ge__(self, other):
-            if isinstance(other, float): return self.x >= other
+            if isinstance(other, float):
+                return self.x >= other
             return self.x >= other.x
 
     __slots__ = ["xy"]
@@ -431,7 +445,8 @@ class Discrete(Term):
         return iter(self.xy)
 
     def membership(self, x: float) -> float:
-        if isnan(x): return nan
+        if isnan(x):
+            return nan
 
         if not self.xy:
             raise ValueError("expected a list of (x,y)-pairs, but found none")
@@ -488,9 +503,11 @@ class Discrete(Term):
             return [Discrete.Pair(float(x), float(y)) for x, y in values.items()]
 
         if len(values) % 2 != 0:
-            raise ValueError("not enough values to unpack (expected even number, got %i) in %s" % (len(values), values))
+            raise ValueError("not enough values to unpack (expected an even number, "
+                             f"but got {len(values)}) in {values}")
 
-        return [Discrete.Pair(float(values[i]), float(values[i + 1])) for i in range(0, len(values) - 1, 2)]
+        return [Discrete.Pair(float(values[i]), float(values[i + 1])) for i in
+                range(0, len(values) - 1, 2)]
 
     @staticmethod
     def values_from(pairs: [Pair]) -> [float]:
@@ -513,7 +530,8 @@ class Gaussian(Term):
         self.standard_deviation = standard_deviation
 
     def membership(self, x: float) -> float:
-        if isnan(x): return nan
+        if isnan(x):
+            return nan
         return self.height * exp((-(x - self.mean) * (x - self.mean)) /
                                  (2.0 * self.standard_deviation * self.standard_deviation))
 
@@ -538,7 +556,8 @@ class GaussianProduct(Term):
         self.standard_deviation_b = standard_deviation_b
 
     def membership(self, x: float) -> float:
-        if isnan(x): return nan
+        if isnan(x):
+            return nan
 
         a = b = 1.0
 
@@ -565,7 +584,8 @@ class GaussianProduct(Term):
 class Linear(Term):
     __slots__ = ["coefficients", "engine"]
 
-    def __init__(self, name: str = "", coefficients: Iterable[float] = None, engine: 'Engine' = None):
+    def __init__(self, name: str = "", coefficients: Iterable[float] = None,
+                 engine: 'Engine' = None):
         super().__init__(name)
         self.coefficients = []
         if coefficients:
@@ -976,7 +996,8 @@ class Function(Term):
     __slots__ = ["root", "formula", "engine", "variables"]
 
     class Element(object):
-        __slots__ = ["name", "description", "element_type", "method", "arity", "precedence", "associativity"]
+        __slots__ = ["name", "description", "element_type", "method", "arity", "precedence",
+                     "associativity"]
 
         class Type(Enum):
             Operator = auto(),
@@ -1009,12 +1030,14 @@ class Function(Term):
     class Node(object):
         __slots__ = ["element", "variable", "value", "left", "right"]
 
-        def __init__(self):
-            self.element: Function.Element = None
-            self.variable: str = ""
-            self.value: float = nan
-            self.left: Function.Node = None
-            self.right: Function.Node = None
+        def __init__(self, element: 'Function.Element' = None, variable: str = "",
+                     value: float = nan,
+                     left: 'Function.Node' = None, right: 'Function.Node' = None):
+            self.element = element
+            self.variable = variable
+            self.value = value
+            self.left = left
+            self.right = right
 
         def __str__(self):
             if self.element:
@@ -1027,18 +1050,20 @@ class Function(Term):
 
         def clone(self):
             result = copy.copy(self)
-            result.left = copy.copy(self.left)
-            result.right = copy.copy(self.right)
+            if self.element:
+                result.element = result.element.clone()
+            if self.left:
+                result.left = self.left.clone()
+            if self.right:
+                result.right = self.right.clone()
             return result
 
-        def evaluate(self, local_variables: Dict[str, float]):
+        def evaluate(self, local_variables: Dict[str, float] = None) -> float:
             result = nan
-            if self.element and self.element.method:
+            if self.element:
+                if not self.element.method:
+                    raise ValueError(f"expected a method reference, but found none")
                 arity = self.element.arity
-                if arity > 2:
-                    raise ValueError(f"expected method '{self.element.method.__name__}"
-                                     f"{str(inspect.signature(self.element.method))}' to take at most 2 parameters, "
-                                     f"but found {arity} parameters")
                 try:
                     if arity == 0:
                         result = self.element.method()
@@ -1048,13 +1073,13 @@ class Function(Term):
                         result = self.element.method(self.left.evaluate(local_variables),
                                                      self.right.evaluate(local_variables))
                 except Exception as ex:
-                    raise ValueError(f"unexpected error evaluating method '{self.element.method.__name__}"
-                                     f"{str(inspect.signature(self.element.method))}': {repr(ex)}")
+                    raise ValueError(f"error occurred during the evaluation of method "
+                                     f"'{self.element.method.__name__}': {ex}") from ex
             elif self.variable:
-                if not local_variables:
-                    raise ValueError("expected a map of variables and values, but none was provided")
-                if self.variable not in local_variables:
-                    raise ValueError(f"map of variables does not contain '{self.variable}'")
+                if not local_variables or self.variable not in local_variables:
+                    raise ValueError(
+                        f"expected a map of variables containing the value for '{self.variable}', "
+                        f"but the map contains: {local_variables}")
                 result = local_variables[self.variable]
 
             else:
@@ -1090,13 +1115,21 @@ class Function(Term):
             if node.variable:
                 return node.variable
 
-            result = []
+            children = []
             if node.left:
-                result.append(self.infix(node.left))
-            result.append(str(node))
+                children.append(self.infix(node.left))
             if node.right:
-                result.append(self.infix(node.right))
-            return " ".join(result)
+                children.append(self.infix(node.right))
+
+            is_function = (node.element and
+                           node.element.element_type == Function.Element.Type.Function)
+
+            if is_function:
+                result = str(node) + f" ( {' '.join(children)} )"
+            else:  # is operator
+                result = f" {str(node)} ".join(children)
+
+            return result
 
         def postfix(self, node: 'Function.Node' = None):
             if not node:
@@ -1109,9 +1142,9 @@ class Function(Term):
 
             result = []
             if node.left:
-                result.append(self.infix(node.left))
+                result.append(self.postfix(node.left))
             if node.right:
-                result.append(self.infix(node.right))
+                result.append(self.postfix(node.right))
             result.append(str(node))
             return " ".join(result)
 
@@ -1137,28 +1170,27 @@ class Function(Term):
 
     @staticmethod
     def create(name: str, formula: str, engine: 'Engine') -> 'Function':
-        result = Function(name)
-        result.load(formula, engine)
+        result = Function(name, formula, engine)
+        result.load()
         return result
 
-    def membership(self, x):
+    def membership(self, x) -> float:
         if not self.is_loaded():
-            raise ValueError(f"function '{self.formula}' is not loaded")
+            raise RuntimeError(f"function '{self.formula}' is not loaded")
 
         if self.engine:
-            self.variables.update({variable.name: variable.value for variable in self.engine.inputs()})
-            self.variables.update({variable.name: variable.value for variable in self.engine.outputs()})
+            self.variables.update(
+                {variable.name: variable.value for variable in self.engine.inputs()})
+            self.variables.update(
+                {variable.name: variable.value for variable in self.engine.outputs()})
 
         self.variables['x'] = x
 
         return self.evaluate(self.variables)
 
-    def evaluate(self) -> float:
-        return self.evaluate(self.variables)
-
-    def evaluate(self, variables: Dict[str, float]) -> float:
+    def evaluate(self, variables: Dict[str, float] = None) -> float:
         if not self.is_loaded():
-            raise ValueError("evaluation failed because function is not loaded")
+            raise RuntimeError("evaluation failed because function is not loaded")
         return self.root.evaluate(variables)
 
     def is_loaded(self) -> bool:
@@ -1169,10 +1201,4 @@ class Function(Term):
         self.variables.clear()
 
     def load(self):
-        self.load(self.formula)
-
-    def load(self, formula: str) -> None:
-        self.load(formula, self.engine)
-
-    def load(self, formula: str, engine: 'Engine'):
         pass

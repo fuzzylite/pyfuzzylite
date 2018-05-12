@@ -15,11 +15,13 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import math
+import operator
 import platform
 import unittest
 
 from fuzzylite import *
-from tests.assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert, BaseAssert
 
 
 class TermAssert(ComponentAssert):
@@ -55,7 +57,8 @@ class TermAssert(ComponentAssert):
         if platform.system() == 'Darwin':
             self.test.assertEqual(self.actual.membership(x), mf, "when x=%.3f" % x)
         else:  # use approximate values in other platforms
-            self.test.assertAlmostEqual(self.actual.membership(x), mf, places=15, msg="when x=%.3f" % x)
+            self.test.assertAlmostEqual(self.actual.membership(x), mf, places=15,
+                                        msg="when x=%.3f" % x)
         return self
 
     def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0):
@@ -66,7 +69,8 @@ class TermAssert(ComponentAssert):
     def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0):
         self.test.assertEqual(self.actual.is_monotonic(), True)
         if isnan(mf):
-            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True, "when x=%.3f" % x)
+            self.test.assertEqual(isnan(self.actual.tsukamoto(x, minimum, maximum)), True,
+                                  "when x=%.3f" % x)
         else:
             self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, "when x=%.3f" % x)
         return self
@@ -113,7 +117,8 @@ class TestTerm(unittest.TestCase):
                           1.0: 0.0})
 
     def test_activated(self):
-        TermAssert(self, Activated(Triangle("triangle", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
+        TermAssert(self,
+                   Activated(Triangle("triangle", -0.400, 0.000, 0.400), 1.0, AlgebraicProduct())) \
             .exports_fll("term: _ Activated AlgebraicProduct(1.000,triangle)") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.000,
@@ -129,7 +134,8 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0})
 
-        TermAssert(self, Activated(Triangle("triangle", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
+        TermAssert(self,
+                   Activated(Triangle("triangle", -0.400, 0.000, 0.400), 0.5, AlgebraicProduct())) \
             .exports_fll("term: _ Activated AlgebraicProduct(0.500,triangle)") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.000,
@@ -164,7 +170,8 @@ class TestTerm(unittest.TestCase):
         aggregated.terms.extend([Activated(low, 0.6, Minimum()), Activated(medium, 0.4, Minimum())])
 
         TermAssert(self, aggregated) \
-            .exports_fll("term: fuzzy_output Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]") \
+            .exports_fll(
+            "term: fuzzy_output Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]") \
             .is_not_monotonic() \
             .has_memberships({-0.5: 0.6,
                               -0.4: 0.6,
@@ -190,7 +197,8 @@ class TestTerm(unittest.TestCase):
 
         aggregated.aggregation = None
         TermAssert(self, aggregated) \
-            .exports_fll("term: fuzzy_output Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]")
+            .exports_fll(
+            "term: fuzzy_output Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]")
 
         with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but none found"):
             aggregated.membership(0.0)
@@ -372,14 +380,18 @@ class TestTerm(unittest.TestCase):
             .exports_fll("term: discrete Discrete") \
             .is_not_monotonic() \
             .configured_as("0 1 8 9 4 5 2 3 6 7") \
-            .exports_fll("term: discrete Discrete 0.000 1.000 8.000 9.000 4.000 5.000 2.000 3.000 6.000 7.000") \
+            .exports_fll(
+            "term: discrete Discrete 0.000 1.000 8.000 9.000 4.000 5.000 2.000 3.000 6.000 7.000") \
             .apply(Discrete.sort) \
-            .exports_fll("term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000") \
+            .exports_fll(
+            "term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000") \
             .configured_as("0 1 8 9 4 5 2 3 6 7 0.5") \
             .apply(Discrete.sort) \
-            .exports_fll("term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000 0.500") \
+            .exports_fll(
+            "term: discrete Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000 0.500") \
             .configured_as(" -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000") \
-            .exports_fll("term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000") \
+            .exports_fll(
+            "term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000") \
             .has_memberships({-0.5: 0.0,
                               -0.4: 0.3999999999999999,
                               -0.25: 1.0,
@@ -393,7 +405,8 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0}) \
             .configured_as(" -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.5") \
-            .exports_fll("term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.500") \
+            .exports_fll(
+            "term: discrete Discrete -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.500") \
             .has_memberships({-0.5: 0.0,
                               -0.4: 0.3999999999999999,
                               -0.25: 1.0,
@@ -415,13 +428,16 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(Discrete.values_from(Discrete.pairs_from([1, 2, 3, 4])), [1, 2, 3, 4])
         self.assertEqual(Discrete.values_from(Discrete.pairs_from({1: 2, 3: 4})), [1, 2, 3, 4])
 
-        with self.assertRaisesRegex(ValueError, r"not enough values to unpack \(expected even number, got 3\)"):
+        with self.assertRaisesRegex(ValueError,
+                                    r"not enough values to unpack \(expected even number, got 3\)"):
             Discrete.pairs_from([1, 2, 3])
 
         term = Discrete()
-        with self.assertRaisesRegex(ValueError, r"expected a list of \(x,y\)-pairs, but found none"):
+        with self.assertRaisesRegex(ValueError,
+                                    r"expected a list of \(x,y\)-pairs, but found none"):
             term.membership(0.0)
-        with self.assertRaisesRegex(ValueError, r"expected a list of \(x,y\)-pairs, but found none"):
+        with self.assertRaisesRegex(ValueError,
+                                    r"expected a list of \(x,y\)-pairs, but found none"):
             term.xy = None
             term.membership(0.0)
 
@@ -499,7 +515,8 @@ class TestTerm(unittest.TestCase):
         engine.inputs[1].value = 1
         engine.inputs[2].value = 2
 
-        with self.assertRaisesRegex(ValueError, r"expected the reference to an engine, but found none"):
+        with self.assertRaisesRegex(ValueError,
+                                    r"expected the reference to an engine, but found none"):
             Linear().membership(nan)
 
         linear = Linear("linear", [1.0, 2.0])
@@ -785,7 +802,8 @@ class TestTerm(unittest.TestCase):
                               inf: 0.0,
                               -inf: 0.0}) \
             .configured_as("-0.25 25.00 50.00 0.25 0.5") \
-            .exports_fll("term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500") \
+            .exports_fll(
+            "term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500") \
             .has_memberships({-0.5: 0.0019267346633274238,
                               -0.4: 0.022977369910017923,
                               -0.25: 0.49999999998611205,
@@ -869,7 +887,7 @@ class TestTerm(unittest.TestCase):
 
     def test_trapezoid(self):
         TermAssert(self, Trapezoid("trapezoid", 0.0, 1.0)).exports_fll(
-                "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000")
+            "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000")
 
         TermAssert(self, Trapezoid("trapezoid")) \
             .exports_fll("term: trapezoid Trapezoid nan nan nan nan") \
@@ -961,7 +979,8 @@ class TestTerm(unittest.TestCase):
                               -inf: 0.0}, height=0.5)
 
     def test_triangle(self):
-        TermAssert(self, Triangle("triangle", 0.0, 1.0)).exports_fll("term: triangle Triangle 0.000 0.500 1.000")
+        TermAssert(self, Triangle("triangle", 0.0, 1.0)).exports_fll(
+            "term: triangle Triangle 0.000 0.500 1.000")
 
         TermAssert(self, Triangle("triangle")) \
             .exports_fll("term: triangle Triangle nan nan nan") \
@@ -1111,6 +1130,34 @@ class TestTerm(unittest.TestCase):
         pass
 
 
+class FunctionNodeAssert(BaseAssert):
+    def prefix_is(self, prefix: str):
+        self.test.assertEqual(self.actual.prefix(), prefix)
+        return self
+
+    def infix_is(self, infix: str):
+        self.test.assertEqual(self.actual.infix(), infix)
+        return self
+
+    def postfix_is(self, postfix: str):
+        self.test.assertEqual(self.actual.postfix(), postfix)
+        return self
+
+    def to_string_is(self, expected: str):
+        self.test.assertEqual(str(self.actual), expected)
+        return self
+
+    def evaluates_to(self, value: float, variables: Dict[str, float] = None):
+        self.test.assertAlmostEqual(self.actual.evaluate(variables), value, places=15,
+                                    msg="when value is %.3f" % value)
+        return self
+
+    def fails_to_evaluate(self, exception: Exception, message: str):
+        with self.test.assertRaisesRegex(exception, message):
+            self.actual.evaluate()
+        return self
+
+
 class TestFunction(unittest.TestCase):
     def test_element(self):
         element = Function.Element("function", "math function()", Function.Element.Type.Function,
@@ -1120,10 +1167,118 @@ class TestFunction(unittest.TestCase):
                                        "precedence=0, associativity=-1")
 
         element = Function.Element("operator", "math operator", Function.Element.Type.Operator,
-                                   None, 2, 10, 1)
+                                   operator.add, 2, 10, 1)
         self.assertEqual(str(element), "Element: name='operator', description='math operator', "
-                                       "element_type='Type.Operator', method='None', arity=2, "
+                                       "element_type='Type.Operator', "
+                                       "method='<built-in function add>', arity=2, "
                                        "precedence=10, associativity=1")
+
+        self.assertEqual(str(element), str(element.clone()))
+
+    def test_node_evaluation(self):
+        FunctionNodeAssert(self, Function.Node(
+            element=Function.Element("undefined", "undefined method", None)
+        )).fails_to_evaluate(ValueError, "expected a method reference, but found none")
+
+        node_mult = Function.Node(
+            element=Function.Element("*", "multiplication", Function.Element.Type.Operator,
+                                     operator.mul, 2, 80),
+            left=Function.Node(value=3.0),
+            right=Function.Node(value=4.0)
+        )
+        FunctionNodeAssert(self, node_mult) \
+            .postfix_is("3.000 4.000 *") \
+            .prefix_is("* 3.000 4.000") \
+            .infix_is("3.000 * 4.000") \
+            .evaluates_to(12.0)
+
+        node_sin = Function.Node(
+            element=Function.Element("sin", "sine", Function.Element.Type.Function,
+                                     math.sin, 1),
+            left=node_mult
+        )
+        FunctionNodeAssert(self, node_sin) \
+            .postfix_is("3.000 4.000 * sin") \
+            .prefix_is("sin * 3.000 4.000") \
+            .infix_is("sin ( 3.000 * 4.000 )") \
+            .evaluates_to(-0.5365729180004349)
+
+        node_pow = Function.Node(
+            element=Function.Element("pow", "pow", Function.Element.Type.Function,
+                                     math.pow, 2),
+            left=node_sin,
+            right=Function.Node(variable="two")
+        )
+
+        FunctionNodeAssert(self, node_pow) \
+            .postfix_is("3.000 4.000 * sin two pow") \
+            .prefix_is("pow sin * 3.000 4.000 two") \
+            .infix_is("pow ( sin ( 3.000 * 4.000 ) two )") \
+            .fails_to_evaluate(ValueError,
+                               "expected a map of variables containing the value for 'two', "
+                               "but the map contains: None") \
+            .evaluates_to(0.28791049633150145, {'two': 2})
+
+        node_sum = Function.Node(
+            element=Function.Element("+", "sum", Function.Element.Type.Operator,
+                                     operator.add, 2, 90),
+            left=node_pow,
+            right=node_pow
+        )
+
+        FunctionNodeAssert(self, node_sum) \
+            .postfix_is("3.000 4.000 * sin two pow 3.000 4.000 * sin two pow +") \
+            .prefix_is("+ pow sin * 3.000 4.000 two pow sin * 3.000 4.000 two") \
+            .infix_is("pow ( sin ( 3.000 * 4.000 ) two ) + pow ( sin ( 3.000 * 4.000 ) two )") \
+            .evaluates_to(0.5758209926630029, {'two': 2})
+
+    def test_node_deep_clone(self):
+        node_mult = Function.Node(
+            element=Function.Element("*", "multiplication", Function.Element.Type.Operator,
+                                     operator.mul, 2, 80),
+            left=Function.Node(value=3.0),
+            right=Function.Node(value=4.0)
+        )
+        node_sin = Function.Node(
+            element=Function.Element("sin", "sine", Function.Element.Type.Function,
+                                     math.sin, 1),
+            left=node_mult
+        )
+        FunctionNodeAssert(self, node_sin) \
+            .infix_is("sin ( 3.000 * 4.000 )") \
+            .evaluates_to(-0.5365729180004349)
+
+        clone = node_sin.clone()
+
+        FunctionNodeAssert(self, clone) \
+            .infix_is("sin ( 3.000 * 4.000 )") \
+            .evaluates_to(-0.5365729180004349)
+
+        # if we change the original object
+        node_sin.left.element.name = "?"
+        # the clone cannot be affected
+        FunctionNodeAssert(self, clone) \
+            .infix_is("sin ( 3.000 * 4.000 )") \
+            .evaluates_to(-0.5365729180004349)
+
+    def test_node_str(self):
+        FunctionNodeAssert(self, Function.Node(
+            element=Function.Element("+", "sum", None))) \
+            .to_string_is("+")
+        FunctionNodeAssert(self, Function.Node(
+            element=Function.Element("+", "sum", None), variable="x")) \
+            .to_string_is("+")
+        FunctionNodeAssert(self, Function.Node(
+            element=Function.Element("+", "sum", None), variable="x", value="1")) \
+            .to_string_is("+")
+
+        FunctionNodeAssert(self, Function.Node(variable="x")) \
+            .to_string_is("x")
+        FunctionNodeAssert(self, Function.Node(variable="x", value="1.0")) \
+            .to_string_is("x")
+
+        FunctionNodeAssert(self, Function.Node(value="1")) \
+            .to_string_is("1")
 
 
 if __name__ == '__main__':
