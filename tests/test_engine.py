@@ -105,3 +105,7 @@ class TestEngine(unittest.TestCase):
         names = ["X", "Y", "Z"]
         for i, iv in enumerate(flc.outputs):
             self.assertEqual(iv.name, names[i])
+
+
+if __name__ == '__main__':
+    unittest.main()

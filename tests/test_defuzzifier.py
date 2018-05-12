@@ -50,13 +50,13 @@ class TestDefuzzifier(unittest.TestCase):
             Defuzzifier().defuzzify(None, nan, nan)
 
     def test_integral_defuzzifier(self):
-        DefuzzifierAssert(self, IntegralDefuzzifier(100)) \
+        DefuzzifierAssert(self, IntegralDefuzzifier()) \
             .exports_fll("IntegralDefuzzifier 100") \
             .has_parameters("100") \
             .configured_as("300") \
             .exports_fll("IntegralDefuzzifier 300")
         with self.assertRaises(NotImplementedError):
-            IntegralDefuzzifier(nan).defuzzify(None, nan, nan)
+            IntegralDefuzzifier().defuzzify(None, nan, nan)
 
     @unittest.skip("Need to manually compute bisectors of triangles")
     def test_bisector(self):
@@ -68,15 +68,15 @@ class TestDefuzzifier(unittest.TestCase):
 
         DefuzzifierAssert(self, Bisector()) \
             .defuzzifies(
-            {
-                Triangle("", -1, -1, 0): -0.5,
-                Triangle("", -1, 1, 2): 0.0,
-                Triangle("", 0, 0, 3): 0.5,
-                Aggregated("", 0, 1, Maximum(),
-                           [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
-                            Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
-                : 0.7200552486187846
-            }, -1, 0)
+                {
+                    Triangle("", -1, -1, 0): -0.5,
+                    Triangle("", -1, 1, 2): 0.0,
+                    Triangle("", 0, 0, 3): 0.5,
+                    Aggregated("", 0, 1, Maximum(),
+                               [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
+                                Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
+                    : 0.7200552486187846
+                }, -1, 0)
 
     def test_centroid(self):
         DefuzzifierAssert(self, Centroid()) \
@@ -87,21 +87,20 @@ class TestDefuzzifier(unittest.TestCase):
 
         DefuzzifierAssert(self, Centroid()) \
             .defuzzifies(
-            {
-                Triangle("", -1, 0): -0.5,
-                Triangle("", -1, 1): 0.0,
-                Triangle("", 0, 1): 0.5,
-                Aggregated("", 0, 1, Maximum(),
-                           [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
-                            Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
-                : 0.6900552486187845
-            }, -1, 1)
+                {
+                    Triangle("", -1, 0): -0.5,
+                    Triangle("", -1, 1): 0.0,
+                    Triangle("", 0, 1): 0.5,
+                    Aggregated("", 0, 1, Maximum(),
+                               [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
+                                Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
+                    : 0.6900552486187845
+                }, -1, 1)
 
     def test_weighted_defuzzifier(self):
-        self.assertEqual(WeightedDefuzzifier(None).type, WeightedDefuzzifier.Type.Automatic)
-        self.assertEqual(WeightedDefuzzifier("TakagiSugeno").type, WeightedDefuzzifier.Type.TakagiSugeno)
+        self.assertEqual(WeightedDefuzzifier().type, WeightedDefuzzifier.Type.Automatic)
 
-        defuzzifier = WeightedDefuzzifier(None)
+        defuzzifier = WeightedDefuzzifier()
         defuzzifier.configure("TakagiSugeno")
         self.assertEqual(defuzzifier.type, WeightedDefuzzifier.Type.TakagiSugeno)
 
@@ -120,9 +119,11 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_weighted_average(self):
         DefuzzifierAssert(self, WeightedAverage()).exports_fll("WeightedAverage Automatic")
-        DefuzzifierAssert(self, WeightedAverage("TakagiSugeno")).exports_fll("WeightedAverage TakagiSugeno")
+        DefuzzifierAssert(self, WeightedAverage()) \
+            .configured_as("TakagiSugeno") \
+            .exports_fll("WeightedAverage TakagiSugeno")
         with self.assertRaises(KeyError):
-            DefuzzifierAssert(self, WeightedAverage("SugenoTakagi"))
+            WeightedAverage().configure("SugenoTakagi")
 
         defuzzifier = WeightedAverage()
         defuzzifier.type = None
@@ -150,7 +151,8 @@ class TestDefuzzifier(unittest.TestCase):
                                             Activated(Constant("", -3.0), 0.5),
                                             ]): -1.0
                           })
-        DefuzzifierAssert(self, WeightedAverage("Tsukamoto")) \
+        DefuzzifierAssert(self, WeightedAverage()) \
+            .configured_as("Tsukamoto") \
             .defuzzifies({Aggregated(): nan,
                           Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
                                             Activated(Constant("", 2.0), 1.0),
@@ -172,9 +174,11 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_weighted_sum(self):
         DefuzzifierAssert(self, WeightedSum()).exports_fll("WeightedSum Automatic")
-        DefuzzifierAssert(self, WeightedSum("TakagiSugeno")).exports_fll("WeightedSum TakagiSugeno")
+        DefuzzifierAssert(self, WeightedSum()) \
+            .configured_as("TakagiSugeno") \
+            .exports_fll("WeightedSum TakagiSugeno")
         with self.assertRaises(KeyError):
-            DefuzzifierAssert(self, str(WeightedSum("SugenoTakagi")))
+            WeightedSum().configure("SugenoTakagi")
 
         defuzzifier = WeightedSum()
         defuzzifier.type = None
@@ -202,7 +206,8 @@ class TestDefuzzifier(unittest.TestCase):
                                             Activated(Constant("", -3.0), 0.5),
                                             ]): -2.5
                           })
-        DefuzzifierAssert(self, WeightedSum("Tsukamoto")) \
+        DefuzzifierAssert(self, WeightedSum()) \
+            .configured_as("Tsukamoto") \
             .defuzzifies({Aggregated(): nan,
                           Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
                                             Activated(Constant("", 2.0), 1.0),

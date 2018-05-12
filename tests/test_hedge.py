@@ -20,17 +20,10 @@ from math import inf, isnan, nan
 from typing import Dict
 
 from fuzzylite.hedge import *
+from tests.assert_component import ComponentAssert
 
 
-class HedgeAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: Hedge):
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
-
-    def has_name(self, name: str):
-        self.test.assertEqual(self.actual.name, name)
-
+class HedgeAssert(ComponentAssert):
     def evaluates(self, az: Dict[float, float]):
         for a, z in az.items():
             if isnan(z):
@@ -136,3 +129,7 @@ class TestHedge(unittest.TestCase):
         HedgeAssert(self, HedgeFunction()) \
             .has_name("function") \
             .evaluates({})
+
+
+if __name__ == '__main__':
+    unittest.main()

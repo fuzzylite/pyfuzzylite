@@ -20,12 +20,14 @@ import unittest
 from fuzzylite.exporter import FllExporter
 
 
-class ComponentAssert(object):
+class BaseAssert(object):
     def __init__(self, test: unittest.TestCase, actual: object):
         self.test = test
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
+
+class ComponentAssert(BaseAssert):
     def has_name(self, name: str):
         self.test.assertEqual(self.actual.name, name)
         return self

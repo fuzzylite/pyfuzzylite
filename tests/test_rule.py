@@ -54,13 +54,9 @@ class TestRuleBlock(unittest.TestCase):
                  "  rule: if b then y",
                  ]))
 
-class TestExpression(unittest.TestCase):
-    def test_expression(self):
-        with self.assertRaises(NotImplementedError):
-            Expression().type()
 
+class TestExpression(unittest.TestCase):
     def test_proposition(self):
-        self.assertEqual(Proposition().type(), Expression.Type.Proposition)
         self.assertEqual(str(Proposition()), "? is ?")
 
         proposition = Proposition()
@@ -71,7 +67,6 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(str(proposition), "variable is very term")
 
     def test_operator(self):
-        self.assertEqual(Operator().type(), Expression.Type.Operator)
         self.assertEqual(Operator().name, "")
 
         operator = Operator()
@@ -79,6 +74,32 @@ class TestExpression(unittest.TestCase):
         operator.left = "left"
         operator.right = "right"
         self.assertEqual(str(operator), "operator")
+
+
+class RuleAssert(ComponentAssert):
+    def parser_fails(self, text, exception=SyntaxError, regex=""):
+        with self.test.assertRaisesRegex(exception, regex):
+            self.actual.text = text
+        return self
+
+    def has_text(self, text: str):
+        self.test.assertEqual(self.actual.text, text)
+        return self
+
+
+class TestRule(unittest.TestCase):
+    def test_rule_parser_exceptions(self):
+        RuleAssert(self, Rule()) \
+            .parser_fails("", SyntaxError, "expected an if-then rule") \
+            .parser_fails("then", SyntaxError, "expected keyword 'if'") \
+            .parser_fails("if", SyntaxError, "expected keyword 'then'") \
+            .parser_fails("if then", SyntaxError, "expected an antecedent in rule") \
+            .parser_fails("if antecedent then", SyntaxError, "expected a consequent in rule") \
+            .parser_fails("if antecedent then consequent with", SyntaxError, "expected the rule weight") \
+            .parser_fails("if antecedent then consequent with 1.0 extra", SyntaxError, "unexpected token 'extra'")
+
+    def test_rule_parser_exceptions(self):
+        RuleAssert(self, Rule()) \
 
 
 

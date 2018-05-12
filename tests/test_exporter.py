@@ -27,15 +27,15 @@ class TestFllExporter(unittest.TestCase):
 
     def test_variables(self):
         self.assertEqual(FllExporter().input_variable(Variable("name", terms=[Triangle("A"), Trapezoid("B")])),
-                         "\n".join([
-                             "InputVariable: name",
-                             "  description: ",
-                             "  enabled: true",
-                             "  range: -inf inf",
-                             "  lock-range: true",
-                             "  term: A Triangle nan nan nan",
-                             "  term: B Trapezoid nan nan nan nan",
-                         ]))
+                         "\n".join(
+                                 ["InputVariable: name",
+                                  "  description: ",
+                                  "  enabled: true",
+                                  "  range: -inf inf",
+                                  "  lock-range: true",
+                                  "  term: A Triangle nan nan nan",
+                                  "  term: B Trapezoid nan nan nan nan",
+                                  ]))
 
 
 if __name__ == '__main__':
