@@ -17,14 +17,15 @@
 
 import logging
 from math import nan
-from typing import Iterable
+from typing import Iterable, List
 
 from .exporter import FllExporter
+from .fuzzylite import FuzzyLite
 from .hedge import Any
 from .norm import SNorm, TNorm
 from .operation import Operation as Op
 from .variable import InputVariable, OutputVariable
-
+from .term import Function
 
 class Expression(object):
     pass
@@ -70,11 +71,23 @@ class Antecedent(object):
     __slots__ = ["text", "expression"]
 
     def __init__(self):
-        self.text = ""
-        self.expression = None
+        self.text: str = ""
+        self.expression: Expression = None
 
     def is_loaded(self) -> bool:
         return bool(self.expression)
+
+    def unload(self):
+        self.expression = None
+
+    def load(self, engine: 'Engine'):
+        if FuzzyLite.is_debugging():
+            logging.debug(f"Antecedent: {antecedent}")
+        self.unload()
+        if not self.text:
+            raise ValueError("expected the antecedent of a rule, but found none")
+        # Function().po
+
 
     def activation_degree(self, conjunction: TNorm, disjunction: SNorm) -> float:
         if not self.is_loaded():
@@ -119,35 +132,40 @@ class Antecedent(object):
             if operator.name == Rule.AND:
                 if not conjunction:
                     raise ValueError(f"rule requires a conjunction operator: '{self.text}'")
-                return conjunction.compute(self._activation_degree(conjunction, disjunction, operator.left),
-                                           self._activation_degree(conjunction, disjunction, operator.right))
+                return conjunction.compute(
+                    self._activation_degree(conjunction, disjunction, operator.left),
+                    self._activation_degree(conjunction, disjunction, operator.right))
 
             if operator.name == Rule.OR:
                 if not disjunction:
                     raise ValueError(f"rule requires a disjunction operator: '{self.text}'")
-                return disjunction.compute(self._activation_degree(conjunction, disjunction, operator.left),
-                                           self._activation_degree(conjunction, disjunction, operator.right))
+                return disjunction.compute(
+                    self._activation_degree(conjunction, disjunction, operator.left),
+                    self._activation_degree(conjunction, disjunction, operator.right))
 
             raise ValueError(f"operator <{operator.name}> not recognized")
 
         raise ValueError(f"expected a Proposition or an Operator, but found <{str(node)}>")
 
-    def unload(self):
-        self.expression = None
-
-    def load(self, engine: 'Engine'):
-        self.load(self.text, engine)
-
-    def load(self, antecedent: str, engine: 'Engine'):
-        logging.debug(f"Antecedent: {antecedent}")
-        self.unload()
-        self.text = antecedent
-        if not antecedent:
-            raise ValueError("expected the antecedent of a rule, but found none")
-
 
 class Consequent(object):
-    pass
+    __slots__ = ["text", "conclusions"]
+
+    def __init__(self):
+        self.text: str = ""
+        self.conclusions: List[Proposition] = []
+
+    def is_loaded(self) -> bool:
+        return bool(self.conclusions)
+
+    def unload(self):
+        self.conclusions.clear()
+
+    def load(self, engine: 'Engine'):
+        pass
+
+    def modify(self, activation_degree: float, implication: TNorm):
+        pass
 
 
 class Rule(object):
@@ -161,13 +179,17 @@ class Rule(object):
     WITH = 'with'
 
     def __init__(self):
-        self.enabled = True
-        self.weight = 1.0
-        self.activation_degree = 0.0
-        self.triggered = False
-        self.antecedent = None
-        self.consequent = None
+        self.enabled: bool = True
+        self.weight: float = 1.0
+        self.activation_degree: float = 0.0
+        self.triggered: bool = False
+        self.antecedent: Antecedent = Antecedent()
+        self.consequent: Consequent = Consequent()
 
+    def __str__(self):
+        return FllExporter().rule(self)
+
+    @property
     def text(self) -> str:
         result = [Rule.IF]
         if self.antecedent:
@@ -180,47 +202,105 @@ class Rule(object):
             result.append(Op.str(self.weight))
         return " ".join(result)
 
+    @text.setter
+    def text(self, text: str):
+        comment_index = text.find("#")
+        rule = text if comment_index == -1 else text[0:comment_index]
+
+        antecedent = []
+        consequent = []
+        weight = 1.0
+        s_none, s_if, s_then, s_with, s_end = range(5)
+        state = s_none
+        for token in rule.split():
+            if state == s_none:
+                if token == Rule.IF:
+                    state = s_if
+                else:
+                    raise SyntaxError(
+                        f"expected keyword '{Rule.IF}', but found '{token}' in rule: {text}")
+            elif state == s_if:
+                if token == Rule.THEN:
+                    state = s_then
+                else:
+                    antecedent.append(token)
+            elif state == s_then:
+                if token == Rule.WITH:
+                    state = s_with
+                else:
+                    consequent.append(token)
+            elif state == s_with:
+                weight = float(token)
+                state = s_end
+            elif state == s_end:
+                raise SyntaxError(f"unexpected token '{token}' at the end of rule")
+            else:
+                raise SyntaxError(f"unexpected state '{state}' in finite state machine")
+
+        if state == s_none:
+            raise SyntaxError(f"expected an if-then rule, but found '{text}'")
+        if state == s_if:
+            raise SyntaxError(f"expected keyword '{Rule.THEN}' in rule '{text}'")
+        if state == s_with:
+            raise SyntaxError(f"expected the rule weight in rule '{text}'")
+
+        if not antecedent:
+            raise SyntaxError(f"expected an antecedent in rule '{text}'")
+        if not consequent:
+            raise SyntaxError(f"expected a consequent in rule '{text}'")
+
+        self.antecedent.text = " ".join(antecedent)
+        self.consequent.text = " ".join(consequent)
+        self.weight = weight
+
     def deactivate(self):
-        pass
+        self.activation_degree = 0.0
+        self.triggered = False
 
     def activate_with(self, conjunction: TNorm, disjunction: SNorm):
         pass
 
     def trigger(self, implication: TNorm):
-        pass
-
-    def is_triggered(self) -> bool:
-        return False
+        if not self.is_loaded():
+            raise RuntimeError(
+                f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
+        if self.enabled and Op.gt(self.activation_degree, 0.0):
+            if FuzzyLite.is_debugging():
+                FuzzyLite.logger().debug(
+                    f"[triggering with {Op.str(self.activation_degree)}] {str(self)}")
+            self.consequent.modify(self.activation_degree, implication)
+            self.triggered = True
 
     def is_loaded(self) -> bool:
-        return (self.antecedent and self.consequent and
-                self.antecedent.is_loaded() and self.consequent.is_loaded())
+        return self.antecedent.is_loaded() and self.consequent.is_loaded()
 
     def unload(self) -> None:
         self.deactivate()
-        if self.antecedent: self.antecedent.unload()
-        if self.consequent: self.consequent.unload()
+        self.antecedent.unload()
+        self.consequent.unload()
 
-    def load(self, rule: str, engine: "Engine"):
-        pass
-
-    def load(self, rule: str):
-        pass
+    def load(self, engine: 'Engine'):
+        self.deactivate()
+        self.antecedent.load(engine)
+        self.consequent.load(engine)
 
     @staticmethod
-    def parse(text: str, engine: "Engine") -> "Rule":
+    def parse(text: str, engine: 'Engine' = None) -> 'Rule':
         rule = Rule()
-        rule.load(text, engine)
+        rule.text = text
+        if engine:
+            rule.load(engine)
         return rule
 
 
 class RuleBlock(object):
-    __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication", "activation", "rules"]
+    __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
+                 "activation", "rules"]
 
     def __init__(self, name: str = "", description: str = "", enabled: bool = True,
                  conjunction: TNorm = None, disjunction: SNorm = None,
-                 implication: TNorm = None, activation: "Activation" = None,
-                 rules: Iterable["Rule"] = None):
+                 implication: TNorm = None, activation: 'Activation' = None,
+                 rules: Iterable[Rule] = None):
         self.name = name
         self.description = description
         self.enabled = enabled
