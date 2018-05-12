@@ -202,6 +202,6 @@ class OutputVariable(Variable):
             if not result:
                 result.append("%s/%s" % (Op.str(degree), term.name))
             else:
-                result.append(" %s %s/%s" % ("+" if isnan(degree) or degree >= 0.0 else "-",
+                result.append(" %s %s/%s" % ("+" if isnan(degree) or degree >= 0 else "-",
                                              Op.str(fabs(degree)), term.name))
         return "".join(result)

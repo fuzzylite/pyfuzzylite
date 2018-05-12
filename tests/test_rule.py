@@ -41,7 +41,8 @@ class TestRuleBlock(unittest.TestCase):
         RuleBlockAssert(self, RuleBlock("rb", "a ruleblock", enabled=False,
                                         conjunction=TNorm(), disjunction=SNorm(),
                                         implication=TNorm(), activation=Activation(),
-                                        rules=[Rule("if a then z"), Rule("if b then y")])) \
+                                        rules=[Rule.parse("if a then z"),
+                                               Rule.parse("if b then y")])) \
             .exports_fll("\n".join(
                 ["RuleBlock: rb",
                  "  description: a ruleblock",

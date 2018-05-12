@@ -18,6 +18,7 @@
 import math
 import operator
 import platform
+import re
 import unittest
 
 from fuzzylite import *
@@ -428,16 +429,16 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(Discrete.values_from(Discrete.pairs_from([1, 2, 3, 4])), [1, 2, 3, 4])
         self.assertEqual(Discrete.values_from(Discrete.pairs_from({1: 2, 3: 4})), [1, 2, 3, 4])
 
-        with self.assertRaisesRegex(ValueError,
-                                    r"not enough values to unpack \(expected even number, got 3\)"):
+        with self.assertRaisesRegex(ValueError, re.escape("not enough values to unpack "
+                                                          "(expected an even number, but got 3)")):
             Discrete.pairs_from([1, 2, 3])
 
         term = Discrete()
-        with self.assertRaisesRegex(ValueError,
-                                    r"expected a list of \(x,y\)-pairs, but found none"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected a list of (x,y)-pairs, but found none")):
             term.membership(0.0)
-        with self.assertRaisesRegex(ValueError,
-                                    r"expected a list of \(x,y\)-pairs, but found none"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected a list of (x,y)-pairs, but found none")):
             term.xy = None
             term.membership(0.0)
 
@@ -516,7 +517,7 @@ class TestTerm(unittest.TestCase):
         engine.inputs[2].value = 2
 
         with self.assertRaisesRegex(ValueError,
-                                    r"expected the reference to an engine, but found none"):
+                                    "expected the reference to an engine, but found none"):
             Linear().membership(nan)
 
         linear = Linear("linear", [1.0, 2.0])

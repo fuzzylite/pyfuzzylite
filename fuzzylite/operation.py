@@ -20,11 +20,46 @@ from typing import Callable
 
 import fuzzylite as fl
 
+# TODO convert to module or static object
 
 class Operation(object):
     '''
     Operation
     '''
+
+    @staticmethod
+    def eq(a: float, b: float, abs_tol: float = None):
+        return (a == b or
+                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                (a != a and b != b))
+
+    @staticmethod
+    def gt(a: float, b: float, abs_tol: float = None):
+        return not (a == b or
+                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                    (a != a and b != b)
+                    ) and a > b
+
+    @staticmethod
+    def ge(a: float, b: float, abs_tol: float = None):
+        return (a == b or
+                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                (a != a and b != b)
+                or a > b)
+
+    @staticmethod
+    def le(a: float, b: float, abs_tol: float = None):
+        return (a == b or
+                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                (a != a and b != b)
+                or a < b)
+
+    @staticmethod
+    def lt(a: float, b: float, abs_tol: float = None):
+        return not (a == b or
+                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                    (a != a and b != b)
+                    ) and a < b
 
     @staticmethod
     def valid_name(name: str) -> str:
@@ -38,8 +73,10 @@ class Operation(object):
         return str(x)
 
     @staticmethod
-    def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float, to_maximum: float) -> float:
-        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum) + to_minimum
+    def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float,
+              to_maximum: float) -> float:
+        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
+            x - from_minimum) + to_minimum
 
     @staticmethod
     def bound(x: float, minimum: float, maximum: float):

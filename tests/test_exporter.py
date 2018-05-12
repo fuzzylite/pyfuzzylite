@@ -23,7 +23,7 @@ from fuzzylite import *
 class TestFllExporter(unittest.TestCase):
     def test_to_string(self):
         self.assertEqual(FllExporter().term(Term("X", 1.0)), "term: X Term")
-        self.assertEqual(FllExporter().rule(Rule("if x then y")), "rule: if x then y")
+        self.assertEqual(FllExporter().rule(Rule.parse("if x then y")), "rule: if x then y")
 
     def test_variables(self):
         self.assertEqual(FllExporter().input_variable(Variable("name", terms=[Triangle("A"), Trapezoid("B")])),

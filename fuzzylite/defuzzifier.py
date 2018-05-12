@@ -46,7 +46,7 @@ class IntegralDefuzzifier(Defuzzifier):
         self.resolution = IntegralDefuzzifier.default_resolution
 
     def __str__(self):
-        return f"{self.name} {self.parameters()}"
+        return f"{self.class_name} {self.parameters()}"
 
     def configure(self, parameters: str):
         if parameters:
@@ -134,7 +134,7 @@ class WeightedDefuzzifier(Defuzzifier):
         self.type = WeightedDefuzzifier.Type.Automatic
 
     def __str__(self):
-        return f"{self.name} {self.parameters()}"
+        return f"{self.class_name} {self.parameters()}"
 
     def configure(self, parameters: str):
         if parameters:

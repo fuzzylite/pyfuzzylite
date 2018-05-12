@@ -23,7 +23,7 @@ class Exporter(object):
 
 
 class FllExporter(Exporter):
-    __slots__ = "indent", "separator",
+    __slots__ = ["indent", "separator"]
 
     def __init__(self, indent="  ", separator="\n"):
         self.indent = indent
