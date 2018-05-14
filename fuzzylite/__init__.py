@@ -15,7 +15,6 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-
 # TODO: Find out better practices for these global variables...
 DECIMALS = 3
 MACHEPS = 1e-6
@@ -25,6 +24,7 @@ from .defuzzifier import *
 from .engine import *
 from .exporter import *
 from .factory import *
+from .fuzzylite import FuzzyLite
 from .hedge import *
 from .importer import *
 from .norm import *
@@ -32,9 +32,3 @@ from .operation import *
 from .rule import *
 from .term import *
 from .variable import *
-
-class FuzzyLite(object):
-    def is_debugging(self) -> bool:
-        return False
-
-fl = FuzzyLite()

@@ -20,6 +20,7 @@ from typing import Callable
 
 import fuzzylite as fl
 
+
 # TODO convert to module or static object
 
 class Operation(object):
@@ -32,6 +33,12 @@ class Operation(object):
         return (a == b or
                 abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
                 (a != a and b != b))
+
+    @staticmethod
+    def neq(a: float, b: float, abs_tol: float = None):
+        return not (a == b or
+                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
+                    (a != a and b != b))
 
     @staticmethod
     def gt(a: float, b: float, abs_tol: float = None):
@@ -62,14 +69,22 @@ class Operation(object):
                     ) and a < b
 
     @staticmethod
+    def logical_and(a: float, b: float):
+        return 1.0 if Operation.eq(a, 1.0) and Operation.eq(b, 1.0) else 0.0
+
+    @staticmethod
+    def logical_or(a: float, b: float):
+        return 1.0 if Operation.eq(a, 1.0) or Operation.eq(b, 1.0) else 0.0
+
+    @staticmethod
     def valid_name(name: str) -> str:
         result = ''.join([x for x in name if x in ("_", ".") or x.isalnum()])
         return result if result else "unnamed"
 
     @staticmethod
-    def str(x) -> str:
+    def str(x, decimals: float = None) -> str:
         if isinstance(x, float):
-            return ("{:.%sf}" % fl.DECIMALS).format(x)
+            return ("{:.%sf}" % (decimals if decimals else fl.DECIMALS)).format(x)
         return str(x)
 
     @staticmethod
@@ -80,13 +95,15 @@ class Operation(object):
 
     @staticmethod
     def bound(x: float, minimum: float, maximum: float):
-        if x > maximum: return maximum
-        if x < minimum: return minimum
+        if x > maximum:
+            return maximum
+        if x < minimum:
+            return minimum
         return x
 
     @staticmethod
-    def arity_of(self, method: Callable):
-        if not method:
-            raise ValueError("expected a method or function, but found none")
-        return len([parameter for parameter in inspect.signature(self.method).parameters.values()
-                    if parameter.default == inspect.Parameter.empty])
+    def arity_of(method: Callable):
+        signature = inspect.signature(method)
+        required_parameters = [parameter for parameter in signature.parameters.values()
+                               if parameter.default == inspect.Parameter.empty]
+        return len(required_parameters)

@@ -15,7 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from enum import Enum, auto
+from enum import Enum
 from typing import Iterable, Tuple
 
 from .activation import Activation
@@ -65,13 +65,7 @@ class Engine(object):
         pass
 
     class Type(Enum):
-        Mamdani = auto(),
-        Larsen = auto(),
-        TakagiSugeno = auto(),
-        Tsukamoto = auto(),
-        InverseTsukamoto = auto(),
-        Hybrid = auto(),
-        Unknown = auto()
+        Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
 
     def infer_type(self) -> Tuple[Type, 'reason']:
         pass

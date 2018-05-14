@@ -15,7 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from enum import Enum, auto
+from enum import Enum
 from math import isfinite, nan
 
 from .operation import Operation as Op
@@ -126,9 +126,7 @@ class WeightedDefuzzifier(Defuzzifier):
     __slots__ = ["type"]
 
     class Type(Enum):
-        Automatic = auto(),
-        TakagiSugeno = auto(),
-        Tsukamoto = auto()
+        Automatic, TakagiSugeno, Tsukamoto = range(3)
 
     def __init__(self):
         self.type = WeightedDefuzzifier.Type.Automatic

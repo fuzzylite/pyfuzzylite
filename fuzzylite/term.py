@@ -15,10 +15,9 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import copy
 import logging
 from bisect import bisect
-from enum import Enum, auto
+from enum import Enum
 from math import cos, exp, fabs, inf, isnan, nan, pi
 from typing import Callable, Dict, Iterable, List, Union
 
@@ -1000,8 +999,7 @@ class Function(Term):
                      "associativity"]
 
         class Type(Enum):
-            Operator = auto(),
-            Function = auto()
+            Operator, Function = range(2)
 
         def __init__(self, name: str, description: str, element_type: 'Function.Element.Type',
                      method: Callable[[], float] = None, arity: int = 0, precedence: int = 0,
@@ -1010,7 +1008,7 @@ class Function(Term):
             self.description = description
             self.element_type = element_type
             self.method = method
-            self.arity = arity
+            self.arity = Op.arity_of(method) if method and arity < 0 else arity
             self.precedence = precedence
             self.associativity = associativity
 
@@ -1023,9 +1021,6 @@ class Function(Term):
                       f"precedence={self.precedence}",
                       f"associativity={self.associativity}"]
             return "%s: %s" % (self.__class__.__name__, ", ".join(result))
-
-        def clone(self):
-            return copy.copy(self)
 
     class Node(object):
         __slots__ = ["element", "variable", "value", "left", "right"]
@@ -1046,16 +1041,6 @@ class Function(Term):
                 result = self.variable
             else:
                 result = Op.str(self.value)
-            return result
-
-        def clone(self):
-            result = copy.copy(self)
-            if self.element:
-                result.element = result.element.clone()
-            if self.left:
-                result.left = self.left.clone()
-            if self.right:
-                result.right = self.right.clone()
             return result
 
         def evaluate(self, local_variables: Dict[str, float] = None) -> float:

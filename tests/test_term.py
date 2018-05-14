@@ -15,8 +15,6 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import math
-import operator
 import platform
 import re
 import unittest
@@ -1174,16 +1172,16 @@ class TestFunction(unittest.TestCase):
                                        "method='<built-in function add>', arity=2, "
                                        "precedence=10, associativity=1")
 
-        self.assertEqual(str(element), str(element.clone()))
+        self.assertEqual(str(element), str(copy.deepcopy(element)))
 
     def test_node_evaluation(self):
         FunctionNodeAssert(self, Function.Node(
             element=Function.Element("undefined", "undefined method", None)
         )).fails_to_evaluate(ValueError, "expected a method reference, but found none")
 
+        functions = FunctionFactory()
         node_mult = Function.Node(
-            element=Function.Element("*", "multiplication", Function.Element.Type.Operator,
-                                     operator.mul, 2, 80),
+            element=functions.copy("*"),
             left=Function.Node(value=3.0),
             right=Function.Node(value=4.0)
         )
@@ -1194,8 +1192,7 @@ class TestFunction(unittest.TestCase):
             .evaluates_to(12.0)
 
         node_sin = Function.Node(
-            element=Function.Element("sin", "sine", Function.Element.Type.Function,
-                                     math.sin, 1),
+            element=functions.copy("sin"),
             left=node_mult
         )
         FunctionNodeAssert(self, node_sin) \
@@ -1205,8 +1202,7 @@ class TestFunction(unittest.TestCase):
             .evaluates_to(-0.5365729180004349)
 
         node_pow = Function.Node(
-            element=Function.Element("pow", "pow", Function.Element.Type.Function,
-                                     math.pow, 2),
+            element=functions.copy("pow"),
             left=node_sin,
             right=Function.Node(variable="two")
         )
@@ -1221,8 +1217,7 @@ class TestFunction(unittest.TestCase):
             .evaluates_to(0.28791049633150145, {'two': 2})
 
         node_sum = Function.Node(
-            element=Function.Element("+", "sum", Function.Element.Type.Operator,
-                                     operator.add, 2, 90),
+            element=functions.copy("+"),
             left=node_pow,
             right=node_pow
         )
@@ -1233,7 +1228,7 @@ class TestFunction(unittest.TestCase):
             .infix_is("pow ( sin ( 3.000 * 4.000 ) two ) + pow ( sin ( 3.000 * 4.000 ) two )") \
             .evaluates_to(0.5758209926630029, {'two': 2})
 
-    def test_node_deep_clone(self):
+    def test_node_deep_copy(self):
         node_mult = Function.Node(
             element=Function.Element("*", "multiplication", Function.Element.Type.Operator,
                                      operator.mul, 2, 80),
@@ -1249,16 +1244,16 @@ class TestFunction(unittest.TestCase):
             .infix_is("sin ( 3.000 * 4.000 )") \
             .evaluates_to(-0.5365729180004349)
 
-        clone = node_sin.clone()
+        node_copy = copy.deepcopy(node_sin)
 
-        FunctionNodeAssert(self, clone) \
+        FunctionNodeAssert(self, node_copy) \
             .infix_is("sin ( 3.000 * 4.000 )") \
             .evaluates_to(-0.5365729180004349)
 
         # if we change the original object
         node_sin.left.element.name = "?"
-        # the clone cannot be affected
-        FunctionNodeAssert(self, clone) \
+        # the copy cannot be affected
+        FunctionNodeAssert(self, node_copy) \
             .infix_is("sin ( 3.000 * 4.000 )") \
             .evaluates_to(-0.5365729180004349)
 

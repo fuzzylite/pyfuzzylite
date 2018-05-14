@@ -17,8 +17,8 @@
 
 import logging
 
-class _FuzzyLite(object):
 
+class _FuzzyLite(object):
     def __init__(self):
         logging.basicConfig(level=logging.INFO,
                             format='%(asctime)s - %(name)-20s - %(levelname)s - %(message)s')
@@ -28,8 +28,6 @@ class _FuzzyLite(object):
 
     def is_debugging(self) -> bool:
         return False
-
-
 
 
 FuzzyLite = _FuzzyLite()
