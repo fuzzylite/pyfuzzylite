@@ -1,4 +1,6 @@
-from distutils.core import Command, setup
+from distutils.core import Command
+
+import setuptools
 
 import fuzzylite
 
@@ -24,11 +26,12 @@ class PyTest(Command):
 
 
 library = fuzzylite.Library()
-setup(
+setuptools.setup(
     name=library.name,
     version=library.version,
     description=library.description,
     long_description=long_description,
+    long_description_content_type='text/markdown',
     keywords='fuzzy logic control',
     url='https://github.com/fuzzylite/pyfuzzylite',
     author=library.author,
@@ -36,8 +39,7 @@ setup(
     maintainer=library.author,
     maintainer_email=library.author_email,
     license=library.license,
-    packages=['fuzzylite'],
-    package_dir={'fuzzylite': '.'},
+    packages=setuptools.find_packages(),
     platforms=['OS Independent'],
     provides='pyfuzzylite',
     classifiers=[

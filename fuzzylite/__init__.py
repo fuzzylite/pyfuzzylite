@@ -31,6 +31,8 @@ from .rule import *
 from .term import *
 from .variable import *
 
+name = "fuzzylite"
+
 __library_global: Library = None
 __library_thread: threading.local = None
 
