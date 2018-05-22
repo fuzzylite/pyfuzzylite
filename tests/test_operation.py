@@ -18,7 +18,7 @@
 import math
 import unittest
 
-import fuzzylite as fl
+import fuzzylite
 from fuzzylite.operation import Operation as Op
 
 
@@ -30,7 +30,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(Op.valid_name("      "), "unnamed")
 
     def test_str(self):
-        fl.DECIMALS = 3
+        fuzzylite.library().decimals = 3
         self.assertEqual(Op.str(0.3), "0.300")
         self.assertEqual(Op.str(-0.3), "-0.300")
         self.assertEqual(Op.str(3), "3")
@@ -40,13 +40,13 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(Op.str(-math.inf), "-inf")
         self.assertEqual(Op.str(math.nan), "nan")
 
-        fl.DECIMALS = 5
+        fuzzylite.library().decimals = 5
         self.assertEqual(Op.str(0.3), "0.30000")
 
-        fl.DECIMALS = 0
+        fuzzylite.library().decimals = 0
         self.assertEqual(Op.str(0.3), "0")
 
-        fl.DECIMALS = 3
+        fuzzylite.library().decimals = 3
 
     def test_scale(self):
         self.assertEqual(Op.scale(0, 0, 1, -10, 10), -10.0)

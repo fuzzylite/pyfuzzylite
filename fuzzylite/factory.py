@@ -138,12 +138,12 @@ class FunctionFactory(CopyFactory):
         function_type = Function.Element.Type.Function
 
         functions = [
-            Function.Element("gt", "Greater than (>)", function_type, Op.gt,arity=2),
-            Function.Element("ge", "Greater than or equal to (>=)", function_type, Op.ge,arity=2),
-            Function.Element("eq", "Equal to (==)", function_type, Op.eq,arity=2),
-            Function.Element("neq", "Not equal to (!=)", function_type, Op.neq,arity=2),
-            Function.Element("le", "Less than or equal to (<=)", function_type, Op.le,arity=2),
-            Function.Element("lt", "Less than (>)", function_type, Op.lt,arity=2),
+            Function.Element("gt", "Greater than (>)", function_type, Op.gt, arity=2),
+            Function.Element("ge", "Greater than or equal to (>=)", function_type, Op.ge, arity=2),
+            Function.Element("eq", "Equal to (==)", function_type, Op.eq, arity=2),
+            Function.Element("neq", "Not equal to (!=)", function_type, Op.neq, arity=2),
+            Function.Element("le", "Less than or equal to (<=)", function_type, Op.le, arity=2),
+            Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
 
             Function.Element("min", "Minimum", function_type, min, arity=2),
             Function.Element("max", "Maximum", function_type, max, arity=2),
@@ -232,3 +232,24 @@ class TermFactory(ConstructionFactory):
                  Spike, SShape, Trapezoid, Triangle, ZShape]
         for term in terms:
             self.constructors[term().class_name] = term
+
+
+class FactoryManager(object):
+    __slots__ = ["tnorm_factory", "snorm_factory", "activation_factory", "defuzzifier_factory",
+                 "term_factory", "hedge_factory", "function_factory"]
+
+    def __init__(self,
+                 tnorm_factory: TNormFactory = TNormFactory(),
+                 snorm_factory: SNormFactory = SNormFactory(),
+                 activation_factory: ActivationFactory = ActivationFactory(),
+                 defuzzifier_factory: DefuzzifierFactory = DefuzzifierFactory(),
+                 term_factory: TermFactory = TermFactory(),
+                 hedge_factory: HedgeFactory = HedgeFactory(),
+                 function_factory: FunctionFactory = FunctionFactory()):
+        self.tnorm_factory = tnorm_factory
+        self.snorm_factory = snorm_factory
+        self.activation_factory = activation_factory
+        self.defuzzifier_factory = defuzzifier_factory
+        self.term_factory = term_factory
+        self.hedge_factory = hedge_factory
+        self.function_factory = function_factory

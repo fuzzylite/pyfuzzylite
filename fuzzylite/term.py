@@ -22,10 +22,9 @@ from math import cos, exp, fabs, inf, isnan, nan, pi
 from typing import Callable, Dict, Iterable, List, Union
 
 from .exporter import FllExporter
-from .fuzzylite import FuzzyLite
 from .norm import SNorm, TNorm
 from .operation import Operation as Op
-
+import fuzzylite
 
 class Term(object):
     """
@@ -107,7 +106,7 @@ class Term(object):
         pass
 
     def membership(self, x) -> float:
-        """
+        r"""
           Computes the has_membership function value at @f$x@f$
           :param x
           :return the has_membership function value @f$\mu(x)@f$
@@ -123,7 +122,7 @@ class Term(object):
         pass
 
     def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
-        """
+        r"""
           For monotonic terms, computes the tsukamoto value of the term for the
           given activation degree @f$\alpha@f$, that is,
           @f$ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
@@ -1070,8 +1069,8 @@ class Function(Term):
             else:
                 result = self.value
 
-            if FuzzyLite.is_debugging():
-                FuzzyLite.logger().debug("%s = %s" % (self.postfix(), Op.str(result)))
+            if fuzzylite.library().debugging:
+                fuzzylite.logger.debug("%s = %s" % (self.postfix(), Op.str(result)))
 
             return result
 
@@ -1133,12 +1132,15 @@ class Function(Term):
             result.append(str(node))
             return " ".join(result)
 
-    def __init__(self, name: str = "", formula: str = "", engine: 'Engine' = None):
+    def __init__(self, name: str = "", formula: str = "", engine: 'Engine' = None,
+                 variables: Dict[str, float] = None):
         super().__init__(name)
         self.root: Function.Node = None
         self.formula = formula
         self.engine = engine
         self.variables: Dict[str, float] = {}
+        if variables:
+            self.variables.update(variables)
 
     def parameters(self) -> str:
         return self.formula

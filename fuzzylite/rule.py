@@ -14,18 +14,16 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-
-import logging
 from math import nan
 from typing import Iterable, List
 
+import fuzzylite
 from .exporter import FllExporter
-from .fuzzylite import FuzzyLite
 from .hedge import Any
 from .norm import SNorm, TNorm
 from .operation import Operation as Op
 from .variable import InputVariable, OutputVariable
-from .term import Function
+
 
 class Expression(object):
     pass
@@ -81,13 +79,11 @@ class Antecedent(object):
         self.expression = None
 
     def load(self, engine: 'Engine'):
-        if FuzzyLite.is_debugging():
-            logging.debug(f"Antecedent: {antecedent}")
+        if fuzzylite.library().debugging:
+            fuzzylite.library().logger.debug(f"Antecedent: {antecedent}")
         self.unload()
         if not self.text:
             raise ValueError("expected the antecedent of a rule, but found none")
-        # Function().po
-
 
     def activation_degree(self, conjunction: TNorm, disjunction: SNorm) -> float:
         if not self.is_loaded():
@@ -265,8 +261,8 @@ class Rule(object):
             raise RuntimeError(
                 f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
         if self.enabled and Op.gt(self.activation_degree, 0.0):
-            if FuzzyLite.is_debugging():
-                FuzzyLite.logger().debug(
+            if fuzzylite.library().debugging:
+                fuzzylite.library().logger.debug(
                     f"[triggering with {Op.str(self.activation_degree)}] {str(self)}")
             self.consequent.modify(self.activation_degree, implication)
             self.triggered = True

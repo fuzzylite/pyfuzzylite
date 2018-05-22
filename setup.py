@@ -1,5 +1,7 @@
 from distutils.core import Command, setup
 
+import fuzzylite
+
 with open('README.md') as file:
     long_description = file.read()
 
@@ -21,24 +23,25 @@ class PyTest(Command):
         raise SystemExit(0 if result.wasSuccessful() else 1)
 
 
+library = fuzzylite.Library()
 setup(
-    name='pyfuzzylite',
-    version='7.0',
-    description='a fuzzy logic control in Python',
+    name=library.name,
+    version=library.version,
+    description=library.description,
     long_description=long_description,
     keywords='fuzzy logic control',
     url='https://github.com/fuzzylite/pyfuzzylite',
-    author='Juan Rada-Vilela, PhD',
-    author_email='jcrada@fuzzylite.com',
-    maintainer='Juan Rada-Vilela, PhD',
-    maintainer_email='jcrada@fuzzylite.com',
-    license='GNU General Public License 3',
+    author=library.author,
+    author_email=library.author_email,
+    maintainer=library.author,
+    maintainer_email=library.author_email,
+    license=library.license,
     packages=['fuzzylite'],
     package_dir={'fuzzylite': '.'},
     platforms=['OS Independent'],
     provides='pyfuzzylite',
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',

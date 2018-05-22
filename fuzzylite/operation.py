@@ -18,7 +18,7 @@
 import inspect
 from typing import Callable
 
-import fuzzylite as fl
+import fuzzylite
 
 
 # TODO convert to module or static object
@@ -29,43 +29,49 @@ class Operation(object):
     '''
 
     @staticmethod
-    def eq(a: float, b: float, abs_tol: float = None):
-        return (a == b or
-                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                (a != a and b != b))
+    def eq(a: float, b: float, absolute_tolerance: float = None):
+        return (a == b
+                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                 if not absolute_tolerance else absolute_tolerance)
+                or (a != a and b != b))
 
     @staticmethod
-    def neq(a: float, b: float, abs_tol: float = None):
-        return not (a == b or
-                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                    (a != a and b != b))
+    def neq(a: float, b: float, absolute_tolerance: float = None):
+        return not (a == b
+                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                     if not absolute_tolerance else absolute_tolerance)
+                    or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, abs_tol: float = None):
-        return not (a == b or
-                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                    (a != a and b != b)
+    def gt(a: float, b: float, absolute_tolerance: float = None):
+        return not (a == b
+                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                     if not absolute_tolerance else absolute_tolerance)
+                    or (a != a and b != b)
                     ) and a > b
 
     @staticmethod
-    def ge(a: float, b: float, abs_tol: float = None):
-        return (a == b or
-                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                (a != a and b != b)
+    def ge(a: float, b: float, absolute_tolerance: float = None):
+        return (a == b
+                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                 if not absolute_tolerance else absolute_tolerance)
+                or (a != a and b != b)
                 or a > b)
 
     @staticmethod
-    def le(a: float, b: float, abs_tol: float = None):
-        return (a == b or
-                abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                (a != a and b != b)
+    def le(a: float, b: float, absolute_tolerance: float = None):
+        return (a == b
+                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                 if not absolute_tolerance else absolute_tolerance)
+                or (a != a and b != b)
                 or a < b)
 
     @staticmethod
-    def lt(a: float, b: float, abs_tol: float = None):
-        return not (a == b or
-                    abs(a - b) < (fl.MACHEPS if not abs_tol else abs_tol) or
-                    (a != a and b != b)
+    def lt(a: float, b: float, absolute_tolerance: float = None):
+        return not (a == b
+                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                                     if not absolute_tolerance else absolute_tolerance)
+                    or (a != a and b != b)
                     ) and a < b
 
     @staticmethod
@@ -84,14 +90,14 @@ class Operation(object):
     @staticmethod
     def str(x, decimals: float = None) -> str:
         if isinstance(x, float):
-            return ("{:.%sf}" % (decimals if decimals else fl.DECIMALS)).format(x)
+            return ("{:.%sf}" % (decimals if decimals else fuzzylite.library().decimals)).format(x)
         return str(x)
 
     @staticmethod
     def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float,
               to_maximum: float) -> float:
         return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
-            x - from_minimum) + to_minimum
+                x - from_minimum) + to_minimum
 
     @staticmethod
     def bound(x: float, minimum: float, maximum: float):
