@@ -39,7 +39,7 @@ class Library(object):
 
     @property
     def license(self):
-        return "FuzzyLite License"
+        return "GNU General Public License v3.0"
 
     @property
     def description(self) -> str:
