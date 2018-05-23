@@ -149,8 +149,8 @@ class TestFactory(unittest.TestCase):
                                  })
 
     def test_copy_factory(self):
-        assert_that = FactoryAssert(self, CopyFactory())
-        assert_that.has_class_name("CopyFactory").copies_exactly({})
+        assert_that = FactoryAssert(self, CloningFactory())
+        assert_that.has_class_name("CloningFactory").copies_exactly({})
 
         class Example(object):
             def __init__(self, value):

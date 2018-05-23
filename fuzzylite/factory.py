@@ -45,7 +45,7 @@ class ConstructionFactory(object):
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
-class CopyFactory(object):
+class CloningFactory(object):
     __slots__ = ["objects"]
 
     def __init__(self):
@@ -84,7 +84,7 @@ class DefuzzifierFactory(ConstructionFactory):
             #     raise NotImplementedError()
 
 
-class FunctionFactory(CopyFactory):
+class FunctionFactory(CloningFactory):
     def __init__(self):
         super().__init__()
         self._register_operators()
