@@ -15,94 +15,99 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import math
+import re
 import unittest
+from typing import Dict
 
-from fuzzylite import *
-from tests.assert_component import ComponentAssert
+import fuzzylite as fl
+from .assert_component import ComponentAssert
 
 
 class DefuzzifierAssert(ComponentAssert):
-    def configured_as(self, parameters: str):
+    def configured_as(self, parameters: str) -> 'DefuzzifierAssert':
         self.actual.configure(parameters)
         return self
 
-    def has_parameters(self, parameters: str):
+    def has_parameters(self, parameters: str) -> 'DefuzzifierAssert':
         self.test.assertEqual(self.actual.parameters(), parameters)
         return self
 
-    def defuzzifies(self, terms: Dict[Term, float], minimum=-inf, maximum=inf):
+    def defuzzifies(self, terms: Dict[fl.Term, float], minimum: float = -math.inf,
+                    maximum: float = math.inf) -> 'DefuzzifierAssert':
         for term, result in terms.items():
-            if isnan(result):
-                self.test.assertEqual(isnan(self.actual.defuzzify(term, minimum, maximum)), True, f"for {str(term)}")
+            if math.isnan(result):
+                self.test.assertEqual(math.isnan(self.actual.defuzzify(term, minimum, maximum)),
+                                      True, f"for {str(term)}")
             else:
-                self.test.assertAlmostEqual(self.actual.defuzzify(term, minimum, maximum), result, places=15,
-                                            msg=f"for {str(term)}")
-        return result
+                self.test.assertAlmostEqual(self.actual.defuzzify(term, minimum, maximum), result,
+                                            places=15, msg=f"for {str(term)}")
+        return self
 
 
 class TestDefuzzifier(unittest.TestCase):
-    def test_defuzzifier(self):
+    def test_defuzzifier(self) -> None:
         with self.assertRaises(NotImplementedError):
-            Defuzzifier().configure("")
+            fl.Defuzzifier().configure("")
         with self.assertRaises(NotImplementedError):
-            Defuzzifier().parameters()
+            fl.Defuzzifier().parameters()
         with self.assertRaises(NotImplementedError):
-            Defuzzifier().defuzzify(None, nan, nan)
+            fl.Defuzzifier().defuzzify(None, math.nan, math.nan)
 
-    def test_integral_defuzzifier(self):
-        DefuzzifierAssert(self, IntegralDefuzzifier()) \
+    def test_integral_defuzzifier(self) -> None:
+        DefuzzifierAssert(self, fl.IntegralDefuzzifier()) \
             .exports_fll("IntegralDefuzzifier 100") \
             .has_parameters("100") \
             .configured_as("300") \
             .exports_fll("IntegralDefuzzifier 300")
         with self.assertRaises(NotImplementedError):
-            IntegralDefuzzifier().defuzzify(None, nan, nan)
+            fl.IntegralDefuzzifier().defuzzify(None, math.nan, math.nan)
 
     @unittest.skip("Need to manually compute bisectors of triangles")
-    def test_bisector(self):
-        DefuzzifierAssert(self, Bisector()) \
+    def test_bisector(self) -> None:
+        DefuzzifierAssert(self, fl.Bisector()) \
             .exports_fll("BiSector 100") \
             .has_parameters("100") \
             .configured_as("200") \
             .exports_fll("BiSector 200")
 
-        DefuzzifierAssert(self, Bisector()) \
+        DefuzzifierAssert(self, fl.Bisector()) \
             .defuzzifies(
-                {
-                    Triangle("", -1, -1, 0): -0.5,
-                    Triangle("", -1, 1, 2): 0.0,
-                    Triangle("", 0, 0, 3): 0.5,
-                    Aggregated("", 0, 1, Maximum(),
-                               [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
-                                Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
-                    : 0.7200552486187846
-                }, -1, 0)
+            {
+                fl.Triangle("", -1, -1, 0): -0.5,
+                fl.Triangle("", -1, 1, 2): 0.0,
+                fl.Triangle("", 0, 0, 3): 0.5,
+                fl.Aggregated("", 0, 1, fl.Maximum(), [
+                    fl.Activated(fl.Triangle("Medium", 0.25, 0.5, 0.75), 0.2, fl.Minimum()),
+                    fl.Activated(fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum())
+                ]): 0.7200552486187846
+            }, -1, 0)
 
-    def test_centroid(self):
-        DefuzzifierAssert(self, Centroid()) \
+    def test_centroid(self) -> None:
+        DefuzzifierAssert(self, fl.Centroid()) \
             .exports_fll("Centroid 100") \
             .has_parameters("100") \
             .configured_as("200") \
             .exports_fll("Centroid 200")
 
-        DefuzzifierAssert(self, Centroid()) \
+        DefuzzifierAssert(self, fl.Centroid()) \
             .defuzzifies(
-                {
-                    Triangle("", -1, 0): -0.5,
-                    Triangle("", -1, 1): 0.0,
-                    Triangle("", 0, 1): 0.5,
-                    Aggregated("", 0, 1, Maximum(),
-                               [Activated(Triangle("Medium", 0.25, 0.5, 0.75), 0.2, Minimum()),
-                                Activated(Triangle("High", 0.5, 0.75, 1.0), 0.8, Minimum())])
-                    : 0.6900552486187845
-                }, -1, 1)
+            {
+                fl.Triangle("", -1, 0): -0.5,
+                fl.Triangle("", -1, 1): 0.0,
+                fl.Triangle("", 0, 1): 0.5,
+                fl.Aggregated("", 0, 1, fl.Maximum(), [
+                    fl.Activated(fl.Triangle("Medium", 0.25, 0.5, 0.75), 0.2, fl.Minimum()),
+                    fl.Activated(fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum())
+                ]): 0.6900552486187845
+            }, -1, 1)
 
-    def test_weighted_defuzzifier(self):
-        self.assertEqual(WeightedDefuzzifier().type, WeightedDefuzzifier.Type.Automatic)
+    def test_weighted_defuzzifier(self) -> None:
+        self.assertEqual(fl.WeightedDefuzzifier().type, fl.WeightedDefuzzifier.Type.Automatic)
 
-        defuzzifier = WeightedDefuzzifier()
+        defuzzifier = fl.WeightedDefuzzifier()
         defuzzifier.configure("TakagiSugeno")
-        self.assertEqual(defuzzifier.type, WeightedDefuzzifier.Type.TakagiSugeno)
+        self.assertEqual(defuzzifier.type, fl.WeightedDefuzzifier.Type.TakagiSugeno)
 
         defuzzifier.type = None
         defuzzifier.configure("")
@@ -112,119 +117,123 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.configure("ABC")
 
         with self.assertRaises(NotImplementedError):
-            defuzzifier.defuzzify(None, nan, nan)
+            defuzzifier.defuzzify(None, math.nan, math.nan)
 
-        self.assertEqual(defuzzifier.infer_type(Constant()), WeightedDefuzzifier.Type.TakagiSugeno)
-        self.assertEqual(defuzzifier.infer_type(Triangle()), WeightedDefuzzifier.Type.Tsukamoto)
+        self.assertEqual(defuzzifier.infer_type(fl.Constant()),
+                         fl.WeightedDefuzzifier.Type.TakagiSugeno)
+        self.assertEqual(defuzzifier.infer_type(fl.Triangle()),
+                         fl.WeightedDefuzzifier.Type.Tsukamoto)
 
-    def test_weighted_average(self):
-        DefuzzifierAssert(self, WeightedAverage()).exports_fll("WeightedAverage Automatic")
-        DefuzzifierAssert(self, WeightedAverage()) \
+    def test_weighted_average(self) -> None:
+        DefuzzifierAssert(self, fl.WeightedAverage()).exports_fll("WeightedAverage Automatic")
+        DefuzzifierAssert(self, fl.WeightedAverage()) \
             .configured_as("TakagiSugeno") \
             .exports_fll("WeightedAverage TakagiSugeno")
         with self.assertRaises(KeyError):
-            WeightedAverage().configure("SugenoTakagi")
+            fl.WeightedAverage().configure("SugenoTakagi")
 
-        defuzzifier = WeightedAverage()
+        defuzzifier = fl.WeightedAverage()
         defuzzifier.type = None
         with self.assertRaisesRegex(ValueError, "expected a type of defuzzifier, but found none"):
-            defuzzifier.defuzzify(Aggregated(terms=[None]))
-        with self.assertRaisesRegex(AttributeError, "'Triangle' object has no attribute 'terms'"):
-            defuzzifier.defuzzify(Triangle())
+            defuzzifier.defuzzify(fl.Aggregated(terms=[None]))
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>")):
+            defuzzifier.defuzzify(fl.Triangle())
 
-        DefuzzifierAssert(self, WeightedAverage()) \
-            .defuzzifies({Aggregated(): nan,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 2.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 0.5),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 2.0,
-                          Aggregated(terms=[Activated(Constant("", -1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 0.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", -3.0), 0.5),
-                                            ]): -1.0
+        DefuzzifierAssert(self, fl.WeightedAverage()) \
+            .defuzzifies({fl.Aggregated(): math.nan,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 2.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 0.5),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 2.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", -1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 0.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", -3.0), 0.5),
+                                               ]): -1.0
                           })
-        DefuzzifierAssert(self, WeightedAverage()) \
+        DefuzzifierAssert(self, fl.WeightedAverage()) \
             .configured_as("Tsukamoto") \
-            .defuzzifies({Aggregated(): nan,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 2.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 0.5),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 2.0,
-                          Aggregated(terms=[Activated(Constant("", -1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 0.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", -3.0), 0.5),
-                                            ]): -1.0
+            .defuzzifies({fl.Aggregated(): math.nan,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 2.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 0.5),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 2.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", -1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 0.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", -3.0), 0.5),
+                                               ]): -1.0
                           })
 
-    def test_weighted_sum(self):
-        DefuzzifierAssert(self, WeightedSum()).exports_fll("WeightedSum Automatic")
-        DefuzzifierAssert(self, WeightedSum()) \
+    def test_weighted_sum(self) -> None:
+        DefuzzifierAssert(self, fl.WeightedSum()).exports_fll("WeightedSum Automatic")
+        DefuzzifierAssert(self, fl.WeightedSum()) \
             .configured_as("TakagiSugeno") \
             .exports_fll("WeightedSum TakagiSugeno")
         with self.assertRaises(KeyError):
-            WeightedSum().configure("SugenoTakagi")
+            fl.WeightedSum().configure("SugenoTakagi")
 
-        defuzzifier = WeightedSum()
+        defuzzifier = fl.WeightedSum()
         defuzzifier.type = None
         with self.assertRaisesRegex(ValueError, "expected a type of defuzzifier, but found none"):
-            defuzzifier.defuzzify(Aggregated(terms=[None]))
-        with self.assertRaisesRegex(AttributeError, "'Triangle' object has no attribute 'terms'"):
-            defuzzifier.defuzzify(Triangle())
+            defuzzifier.defuzzify(fl.Aggregated(terms=[None]))
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>")):
+            defuzzifier.defuzzify(fl.Triangle())
 
-        DefuzzifierAssert(self, WeightedSum()) \
-            .defuzzifies({Aggregated(): nan,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 6.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 0.5),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 5.0,
-                          Aggregated(terms=[Activated(Constant("", -1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 0.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", -3.0), 0.5),
-                                            ]): -2.5
+        DefuzzifierAssert(self, fl.WeightedSum()) \
+            .defuzzifies({fl.Aggregated(): math.nan,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 6.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 0.5),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 5.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", -1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 0.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", -3.0), 0.5),
+                                               ]): -2.5
                           })
-        DefuzzifierAssert(self, WeightedSum()) \
+        DefuzzifierAssert(self, fl.WeightedSum()) \
             .configured_as("Tsukamoto") \
-            .defuzzifies({Aggregated(): nan,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 6.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", 2.0), 0.5),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 5.0,
-                          Aggregated(terms=[Activated(Constant("", -1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", 3.0), 1.0),
-                                            ]): 0.0,
-                          Aggregated(terms=[Activated(Constant("", 1.0), 1.0),
-                                            Activated(Constant("", -2.0), 1.0),
-                                            Activated(Constant("", -3.0), 0.5),
-                                            ]): -2.5
+            .defuzzifies({fl.Aggregated(): math.nan,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 6.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", 2.0), 0.5),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 5.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", -1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", 3.0), 1.0),
+                                               ]): 0.0,
+                          fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
+                                               fl.Activated(fl.Constant("", -2.0), 1.0),
+                                               fl.Activated(fl.Constant("", -3.0), 0.5),
+                                               ]): -2.5
                           })
 
 

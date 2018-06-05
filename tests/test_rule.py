@@ -16,9 +16,10 @@
 """
 
 import unittest
+from typing import Type
 
-from fuzzylite import *
-from tests.assert_component import ComponentAssert
+import fuzzylite as fl
+from .assert_component import ComponentAssert
 
 
 class RuleBlockAssert(ComponentAssert):
@@ -26,51 +27,55 @@ class RuleBlockAssert(ComponentAssert):
 
 
 class TestRuleBlock(unittest.TestCase):
-    def test_constructor(self):
-        RuleBlockAssert(self, RuleBlock()) \
-            .exports_fll("\n".join(
-                ["RuleBlock: ",
-                 "  description: ",
-                 "  enabled: true",
-                 "  conjunction: none",
-                 "  disjunction: none",
-                 "  implication: none",
-                 "  activation: none",
-                 ]))
+    def test_constructor(self) -> None:
+        RuleBlockAssert(self, fl.RuleBlock()) \
+            .exports_fll(
+            "\n".join(
+                [
+                    "RuleBlock: ",
+                    "  description: ",
+                    "  enabled: true",
+                    "  conjunction: none",
+                    "  disjunction: none",
+                    "  implication: none",
+                    "  activation: none",
+                ]))
 
-        RuleBlockAssert(self, RuleBlock("rb", "a ruleblock", enabled=False,
-                                        conjunction=TNorm(), disjunction=SNorm(),
-                                        implication=TNorm(), activation=Activation(),
-                                        rules=[Rule.parse("if a then z"),
-                                               Rule.parse("if b then y")])) \
-            .exports_fll("\n".join(
-                ["RuleBlock: rb",
-                 "  description: a ruleblock",
-                 "  enabled: false",
-                 "  conjunction: TNorm",
-                 "  disjunction: SNorm",
-                 "  implication: TNorm",
-                 "  activation: Activation",
-                 "  rule: if a then z",
-                 "  rule: if b then y",
-                 ]))
+        RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock", enabled=False,
+                                           conjunction=fl.TNorm(), disjunction=fl.SNorm(),
+                                           implication=fl.TNorm(), activation=fl.Activation(),
+                                           rules=[fl.Rule.parse("if a then z"),
+                                                  fl.Rule.parse("if b then y")])) \
+            .exports_fll(
+            "\n".join(
+                [
+                    "RuleBlock: rb",
+                    "  description: a ruleblock",
+                    "  enabled: false",
+                    "  conjunction: TNorm",
+                    "  disjunction: SNorm",
+                    "  implication: TNorm",
+                    "  activation: Activation",
+                    "  rule: if a then z",
+                    "  rule: if b then y",
+                ]))
 
 
 class TestExpression(unittest.TestCase):
-    def test_proposition(self):
-        self.assertEqual(str(Proposition()), "? is ?")
+    def test_proposition(self) -> None:
+        self.assertEqual(str(fl.Proposition()), "? is ?")
 
-        proposition = Proposition()
-        proposition.variable = Variable("variable")
-        proposition.hedges = [Very()]
-        proposition.term = Term("term")
+        proposition = fl.Proposition()
+        proposition.variable = fl.Variable("variable")
+        proposition.hedges = [fl.Very()]
+        proposition.term = fl.Term("term")
 
         self.assertEqual(str(proposition), "variable is very term")
 
-    def test_operator(self):
-        self.assertEqual(Operator().name, "")
+    def test_operator(self) -> None:
+        self.assertEqual(fl.Operator().name, "")
 
-        operator = Operator()
+        operator = fl.Operator()
         operator.name = "operator"
         operator.left = "left"
         operator.right = "right"
@@ -78,30 +83,29 @@ class TestExpression(unittest.TestCase):
 
 
 class RuleAssert(ComponentAssert):
-    def parser_fails(self, text, exception=SyntaxError, regex=""):
+    def parser_fails(self, text: str, exception: Type[Exception] = SyntaxError,
+                     regex: str = "") -> 'RuleAssert':
         with self.test.assertRaisesRegex(exception, regex):
             self.actual.text = text
         return self
 
-    def has_text(self, text: str):
+    def has_text(self, text: str) -> 'RuleAssert':
         self.test.assertEqual(self.actual.text, text)
         return self
 
 
 class TestRule(unittest.TestCase):
-    def test_rule_parser_exceptions(self):
-        RuleAssert(self, Rule()) \
+    def test_rule_parser_exceptions(self) -> None:
+        RuleAssert(self, fl.Rule()) \
             .parser_fails("", SyntaxError, "expected an if-then rule") \
             .parser_fails("then", SyntaxError, "expected keyword 'if'") \
             .parser_fails("if", SyntaxError, "expected keyword 'then'") \
             .parser_fails("if then", SyntaxError, "expected an antecedent in rule") \
             .parser_fails("if antecedent then", SyntaxError, "expected a consequent in rule") \
-            .parser_fails("if antecedent then consequent with", SyntaxError, "expected the rule weight") \
-            .parser_fails("if antecedent then consequent with 1.0 extra", SyntaxError, "unexpected token 'extra'")
-
-    def test_rule_parser_exceptions(self):
-        RuleAssert(self, Rule()) \
-
+            .parser_fails("if antecedent then consequent with", SyntaxError,
+                          "expected the rule weight") \
+            .parser_fails("if antecedent then consequent with 1.0 extra", SyntaxError,
+                          "unexpected token 'extra'")
 
 
 if __name__ == '__main__':

@@ -18,22 +18,22 @@
 import unittest
 from typing import *
 
-from fuzzylite import *
-from tests.assert_component import BaseAssert, ComponentAssert
+import fuzzylite as fl
+from .assert_component import BaseAssert, ComponentAssert
 
 
 class FactoryAssert(ComponentAssert):
-    def has_class_name(self, name: str):
+    def has_class_name(self, name: str) -> 'FactoryAssert':
         self.test.assertEqual(self.actual.class_name, name)
         return self
 
-    def constructs_exactly(self, name_type: Dict[str, type]):
+    def constructs_exactly(self, name_type: Dict[str, type]) -> 'FactoryAssert':
         self.test.assertDictEqual(name_type, self.actual.constructors)
         for name, clazz in name_type.items():
             self.test.assertEqual(type(self.actual.construct(name)), clazz)
         return self
 
-    def copies_exactly(self, name_instance: Dict[str, object]):
+    def copies_exactly(self, name_instance: Dict[str, object]) -> 'FactoryAssert':
         self.test.assertSetEqual(set(self.actual.objects.keys()), set(name_instance.keys()))
         for name, instance in name_instance.items():
             self.test.assertEqual(str(self.actual.copy(name)), str(instance))
@@ -42,10 +42,11 @@ class FactoryAssert(ComponentAssert):
 
 
 class FunctionFactoryAssert(BaseAssert):
-    def contains_exactly(self, elements: Set[str], element_type: Function.Element.Type = None):
-        if element_type == Function.Element.Type.Operator:
+    def contains_exactly(self, elements: Set[str],
+                         element_type: fl.Function.Element.Type = None) -> 'FactoryAssert':
+        if element_type == fl.Function.Element.Type.Operator:
             self.test.assertSetEqual(self.actual.operators(), elements)
-        elif element_type == Function.Element.Type.Function:
+        elif element_type == fl.Function.Element.Type.Function:
             self.test.assertSetEqual(self.actual.functions(), elements)
         else:
             self.test.assertSetEqual(set(self.actual.objects.keys()), elements)
@@ -53,26 +54,26 @@ class FunctionFactoryAssert(BaseAssert):
             # self.test.assertEqual(key, element.method.__name__)
         return self
 
-    def operation_is(self, operation_value: Dict[Tuple[str, Tuple[float]], float]):
+    def operation_is(self, operation_value: Dict[Tuple[str, Sequence[float]], float]) \
+            -> 'FunctionFactoryAssert':
         for operation, expected_value in operation_value.items():
             name = operation[0]
             args = operation[1]
             element = self.actual.objects[name]
             value = element.method(*args)
-            message = f"{name}({', '.join([Op.str(x) for x in args])})"
-            self.test.assertAlmostEqual(expected_value, value, places=15,
-                                        msg=f"{message} == {Op.str(value)}, "
-                                            f"but expected {message} == {Op.str(expected_value)}")
+            message = f"expected {name}({', '.join([fl.Op.str(x) for x in args])}) to result in " \
+                      f"{fl.Op.str(expected_value)}, but got {fl.Op.str(value)}"
+            self.test.assertAlmostEqual(expected_value, value, places=15, msg=message)
         return self
 
 
 class TestFactory(unittest.TestCase):
-    def test_construction_factory(self):
-        assert_that = FactoryAssert(self, ConstructionFactory())
+    def test_construction_factory(self) -> None:
+        assert_that = FactoryAssert(self, fl.ConstructionFactory())
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
 
         class Example(object):
-            def __str__(self):
+            def __str__(self) -> str:
                 return "instance of Example"
 
         assert_that.actual.constructors["example"] = Example
@@ -81,86 +82,89 @@ class TestFactory(unittest.TestCase):
 
         self.assertEqual(str(assert_that.actual.construct("example")), "instance of Example")
 
-    def test_activation_factory(self):
-        FactoryAssert(self, ActivationFactory()) \
+    def test_activation_factory(self) -> None:
+        FactoryAssert(self, fl.ActivationFactory()) \
             .has_class_name("ActivationFactory") \
             .constructs_exactly(
-            {"": type(None), "First": First, "General": General, "Highest": Highest, "Last": Last,
-             "Lowest": Lowest, "Proportional": Proportional, "Threshold": Threshold})
+            {"": type(None), "First": fl.First, "General": fl.General, "Highest": fl.Highest,
+             "Last": fl.Last, "Lowest": fl.Lowest, "Proportional": fl.Proportional,
+             "Threshold": fl.Threshold})
 
-    def test_defuzzifier_factory(self):
-        FactoryAssert(self, DefuzzifierFactory()) \
+    def test_defuzzifier_factory(self) -> None:
+        FactoryAssert(self, fl.DefuzzifierFactory()) \
             .has_class_name("DefuzzifierFactory") \
             .constructs_exactly({"": type(None),
-                                 "Bisector": Bisector, "Centroid": Centroid,
-                                 "LargestOfMaximum": LargestOfMaximum,
-                                 "MeanOfMaximum": MeanOfMaximum,
-                                 "SmallestOfMaximum": SmallestOfMaximum,
-                                 "WeightedAverage": WeightedAverage, "WeightedSum": WeightedSum
+                                 "Bisector": fl.Bisector, "Centroid": fl.Centroid,
+                                 "LargestOfMaximum": fl.LargestOfMaximum,
+                                 "MeanOfMaximum": fl.MeanOfMaximum,
+                                 "SmallestOfMaximum": fl.SmallestOfMaximum,
+                                 "WeightedAverage": fl.WeightedAverage,
+                                 "WeightedSum": fl.WeightedSum
                                  })
 
-    def test_hedge_factory(self):
-        FactoryAssert(self, HedgeFactory()) \
+    def test_hedge_factory(self) -> None:
+        FactoryAssert(self, fl.HedgeFactory()) \
             .has_class_name("HedgeFactory") \
             .constructs_exactly({"": type(None),
-                                 "any": Any, "extremely": Extremely, "not": Not, "seldom": Seldom,
-                                 "somewhat": Somewhat, "very": Very
+                                 "any": fl.Any, "extremely": fl.Extremely, "not": fl.Not,
+                                 "seldom": fl.Seldom,
+                                 "somewhat": fl.Somewhat, "very": fl.Very
                                  })
 
-    def test_snorm_factory(self):
-        FactoryAssert(self, SNormFactory()) \
+    def test_snorm_factory(self) -> None:
+        FactoryAssert(self, fl.SNormFactory()) \
             .has_class_name("SNormFactory") \
             .constructs_exactly({"": type(None),
-                                 "AlgebraicSum": AlgebraicSum, "BoundedSum": BoundedSum,
-                                 "DrasticSum": DrasticSum,
-                                 "EinsteinSum": EinsteinSum, "HamacherSum": HamacherSum,
-                                 "Maximum": Maximum,
-                                 "NilpotentMaximum": NilpotentMaximum,
-                                 "NormalizedSum": NormalizedSum,
-                                 "UnboundedSum": UnboundedSum
+                                 "AlgebraicSum": fl.AlgebraicSum, "BoundedSum": fl.BoundedSum,
+                                 "DrasticSum": fl.DrasticSum,
+                                 "EinsteinSum": fl.EinsteinSum, "HamacherSum": fl.HamacherSum,
+                                 "Maximum": fl.Maximum,
+                                 "NilpotentMaximum": fl.NilpotentMaximum,
+                                 "NormalizedSum": fl.NormalizedSum,
+                                 "UnboundedSum": fl.UnboundedSum
                                  })
 
-    def test_tnorm_factory(self):
-        FactoryAssert(self, TNormFactory()) \
+    def test_tnorm_factory(self) -> None:
+        FactoryAssert(self, fl.TNormFactory()) \
             .has_class_name("TNormFactory") \
             .constructs_exactly({"": type(None),
-                                 "AlgebraicProduct": AlgebraicProduct,
-                                 "BoundedDifference": BoundedDifference,
-                                 "DrasticProduct": DrasticProduct,
-                                 "EinsteinProduct": EinsteinProduct,
-                                 "HamacherProduct": HamacherProduct, "Minimum": Minimum,
-                                 "NilpotentMinimum": NilpotentMinimum
+                                 "AlgebraicProduct": fl.AlgebraicProduct,
+                                 "BoundedDifference": fl.BoundedDifference,
+                                 "DrasticProduct": fl.DrasticProduct,
+                                 "EinsteinProduct": fl.EinsteinProduct,
+                                 "HamacherProduct": fl.HamacherProduct, "Minimum": fl.Minimum,
+                                 "NilpotentMinimum": fl.NilpotentMinimum
                                  })
 
-    def test_term_factory(self):
-        FactoryAssert(self, TermFactory()) \
+    def test_term_factory(self) -> None:
+        FactoryAssert(self, fl.TermFactory()) \
             .has_class_name("TermFactory") \
             .constructs_exactly({"": type(None),
-                                 "Bell": Bell, "Binary": Binary, "Concave": Concave,
-                                 "Constant": Constant,
-                                 "Cosine": Cosine, "Discrete": Discrete, "Function": Function,
-                                 "Gaussian": Gaussian,
-                                 "GaussianProduct": GaussianProduct, "Linear": Linear,
-                                 "PiShape": PiShape, "Ramp": Ramp,
-                                 "Rectangle": Rectangle, "Sigmoid": Sigmoid,
-                                 "SigmoidDifference": SigmoidDifference,
-                                 "SigmoidProduct": SigmoidProduct, "Spike": Spike, "SShape": SShape,
-                                 "Trapezoid": Trapezoid, "Triangle": Triangle, "ZShape": ZShape
+                                 "Bell": fl.Bell, "Binary": fl.Binary, "Concave": fl.Concave,
+                                 "Constant": fl.Constant,
+                                 "Cosine": fl.Cosine, "Discrete": fl.Discrete,
+                                 "Function": fl.Function,
+                                 "Gaussian": fl.Gaussian,
+                                 "GaussianProduct": fl.GaussianProduct, "Linear": fl.Linear,
+                                 "PiShape": fl.PiShape, "Ramp": fl.Ramp,
+                                 "Rectangle": fl.Rectangle, "Sigmoid": fl.Sigmoid,
+                                 "SigmoidDifference": fl.SigmoidDifference,
+                                 "SigmoidProduct": fl.SigmoidProduct, "Spike": fl.Spike,
+                                 "SShape": fl.SShape,
+                                 "Trapezoid": fl.Trapezoid, "Triangle": fl.Triangle,
+                                 "ZShape": fl.ZShape
                                  })
 
-    def test_copy_factory(self):
-        assert_that = FactoryAssert(self, CloningFactory())
+    def test_copy_factory(self) -> None:
+        assert_that = FactoryAssert(self, fl.CloningFactory())
         assert_that.has_class_name("CloningFactory").copies_exactly({})
 
         class Example(object):
-            def __init__(self, value):
+            def __init__(self, value: str) -> None:
                 self.property = value
 
-            def __str__(self):
+            def __str__(self) -> str:
                 return f"Example({str(self.property)})"
-
-            def clone(self):
-                return copy.copy(self)
 
         assert_that.actual.objects["example"] = Example("Clone of Example")
         assert_that.copies_exactly({"example": Example("Clone of Example")})
@@ -168,15 +172,15 @@ class TestFactory(unittest.TestCase):
 
 
 class TestFunctionFactory(unittest.TestCase):
-    def test_factory_matches_keys_and_names(self):
-        for key, element in FunctionFactory().objects.items():
+    def test_factory_matches_keys_and_names(self) -> None:
+        for key, element in fl.FunctionFactory().objects.items():
             self.assertEqual(key, element.name)
             # if it is a function, the name should be contained in
             # in the methods name
-            if element.element_type == Function.Element.Type.Function:
+            if element.element_type == fl.Function.Element.Type.Function:
                 self.assertIn(key, element.method.__name__)
 
-    def test_arity(self):
+    def test_arity(self) -> None:
         acceptable: Dict[Type[Exception], Set[str]] = {
             ZeroDivisionError: {"%", "/", "fmod", "^"},
             ValueError: {"acos", "acosh", "asin", "atanh", "fmod",
@@ -185,7 +189,7 @@ class TestFunctionFactory(unittest.TestCase):
 
         errors = []
 
-        def evaluate(function_element: Function.Element, parameters: List[float]):
+        def evaluate(function_element: fl.Function.Element, parameters: List[float]) -> None:
             try:
                 function_element.method(*parameters)
             except Exception as ex:
@@ -198,13 +202,13 @@ class TestFunctionFactory(unittest.TestCase):
         from random import Random
         random = Random()
 
-        for element in FunctionFactory().objects.values():
+        for element in fl.FunctionFactory().objects.values():
             if element.arity == 0:
                 evaluate(element, [])
             else:
                 for i in range(1000):
-                    a = Op.scale(random.randint(0, 100), 0, 100, -10, 10)
-                    b = Op.scale(random.randint(0, 100), 0, 100, -10, 10)
+                    a = fl.Op.scale(random.randint(0, 100), 0, 100, -10, 10)
+                    b = fl.Op.scale(random.randint(0, 100), 0, 100, -10, 10)
                     if element.arity == 1:
                         evaluate(element, [a])
                         evaluate(element, [b])
@@ -216,20 +220,20 @@ class TestFunctionFactory(unittest.TestCase):
 
         self.assertListEqual([], errors)
 
-    def test_factory_contains_exactly(self):
-        FunctionFactoryAssert(self, FunctionFactory()) \
+    def test_factory_contains_exactly(self) -> None:
+        FunctionFactoryAssert(self, fl.FunctionFactory()) \
             .contains_exactly(
             {'!', '~', '^', '*', '/', '%', '+', '-', 'and', 'or'},
-            Function.Element.Type.Operator) \
+            fl.Function.Element.Type.Operator) \
             .contains_exactly(
             {'abs', 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil',
              'cos', 'cosh', 'eq', 'exp', 'fabs', 'floor', 'fmod', 'ge', 'gt', 'le',
              'log', 'log10', 'log1p', 'lt', 'max', 'min', 'neq', 'pow', 'round', 'sin',
              'sinh', 'sqrt', 'tan', 'tanh'},
-            Function.Element.Type.Function)
+            fl.Function.Element.Type.Function)
 
-    def test_function_operators(self):
-        FunctionFactoryAssert(self, FunctionFactory()) \
+    def test_function_operators(self) -> None:
+        FunctionFactoryAssert(self, fl.FunctionFactory()) \
             .operation_is(
             {
                 ("!", (0,)): 1, ("!", (1,)): 0,
@@ -244,8 +248,8 @@ class TestFunctionFactory(unittest.TestCase):
                 ("or", (1, 0)): 1, ("or", (0, 0)): 0,
             })
 
-    @unittest.skip("Until Function is ready")
-    def test_function_precedence(self):
+    @unittest.skip("Until fl.Function is ready")
+    def test_function_precedence(self) -> None:
         pass
 
 

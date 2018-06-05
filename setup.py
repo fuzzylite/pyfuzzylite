@@ -1,23 +1,23 @@
-from distutils.core import Command
-
-import setuptools
+from distutils.core import Command, setup
 
 import fuzzylite
+
+# TODO: https://setuptools.readthedocs.io/en/latest/setuptools.html
 
 with open('README.md') as file:
     long_description = file.read()
 
 
 class PyTest(Command):
-    user_options = []
+    # user_options: List[str] = []
 
-    def initialize_options(self):
+    def initialize_options(self) -> None:
         pass
 
-    def finalize_options(self):
+    def finalize_options(self) -> None:
         pass
 
-    def run(self):
+    def run(self) -> None:
         import unittest
         test_loader = unittest.TestLoader()
         test_suite = test_loader.discover('tests', pattern='test_*.py')
@@ -25,23 +25,23 @@ class PyTest(Command):
         raise SystemExit(0 if result.wasSuccessful() else 1)
 
 
-library = fuzzylite.Library()
-setuptools.setup(
-    name=library.name,
-    version=library.version,
-    description=library.description,
+setup(
+    name=fuzzylite.library.name,
+    version=fuzzylite.library.version,
+    description=fuzzylite.library.description,
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords='fuzzy logic control',
     url='https://github.com/fuzzylite/pyfuzzylite',
-    author=library.author,
-    author_email=library.author_email,
-    maintainer=library.author,
-    maintainer_email=library.author_email,
-    license=library.license,
-    packages=setuptools.find_packages(),
+    author=fuzzylite.library.author,
+    author_email=fuzzylite.library.author_email,
+    maintainer=fuzzylite.library.author,
+    maintainer_email=fuzzylite.library.author_email,
+    license=fuzzylite.library.license,
+    packages=['fuzzylite'],
+    package_dir={'fuzzylite': '.'},
     platforms=['OS Independent'],
-    provides='pyfuzzylite',
+    provides=['pyfuzzylite'],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

@@ -14,15 +14,22 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+import typing
 from math import nan
-from typing import Iterable, List
+from typing import Iterable, List, Optional, Type
 
-import fuzzylite
 from .exporter import FllExporter
 from .hedge import Any
 from .norm import SNorm, TNorm
-from .operation import Operation as Op
+from .operation import Op
 from .variable import InputVariable, OutputVariable
+
+if typing.TYPE_CHECKING:
+    from .activation import Activation
+    from .engine import Engine
+    from .hedge import Hedge
+    from .term import Term
+    from .variable import Variable
 
 
 class Expression(object):
@@ -30,14 +37,14 @@ class Expression(object):
 
 
 class Proposition(Expression):
-    __slots__ = ["variable", "hedges", "term"]
+    __slots__ = ("variable", "hedges", "term")
 
-    def __init__(self):
-        self.variable = None
-        self.hedges = []
-        self.term = None
+    def __init__(self) -> None:
+        self.variable: Variable = None
+        self.hedges: List[Hedge] = []
+        self.term: Term = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = []
 
         result.append(self.variable.name if self.variable else "?")
@@ -54,33 +61,33 @@ class Proposition(Expression):
 
 
 class Operator(Expression):
-    __slots__ = ["name", "left", "right"]
+    __slots__ = ("name", "left", "right")
 
-    def __init__(self):
-        self.name = ""
-        self.left = None
-        self.right = None
+    def __init__(self) -> None:
+        self.name: str = ""
+        self.left: Optional[Expression] = None
+        self.right: Optional[Expression] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Antecedent(object):
-    __slots__ = ["text", "expression"]
+    __slots__ = ("text", "expression")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.text: str = ""
-        self.expression: Expression = None
+        self.expression: Optional[Expression] = None
 
     def is_loaded(self) -> bool:
         return bool(self.expression)
 
-    def unload(self):
+    def unload(self) -> None:
         self.expression = None
 
-    def load(self, engine: 'Engine'):
-        if fuzzylite.library().debugging:
-            fuzzylite.library().logger.debug(f"Antecedent: {antecedent}")
+    def load(self, engine: 'Engine') -> None:
+        # if fuzzylite.library().debugging:
+        #     fuzzylite.library().logger.debug(f"Antecedent: {antecedent}")
         self.unload()
         if not self.text:
             raise ValueError("expected the antecedent of a rule, but found none")
@@ -91,12 +98,16 @@ class Antecedent(object):
 
         return self._activation_degree(conjunction, disjunction, self.expression)
 
-    def _activation_degree(self, conjunction: TNorm, disjunction: SNorm, node: Expression):
+    def _activation_degree(self, conjunction: TNorm, disjunction: SNorm,
+                           node: Optional[Expression]) -> float:
         if not node:
             raise ValueError("expected an expression node, but found none")
 
         if isinstance(node, Proposition):
             proposition = node
+            if not proposition.variable:
+                raise ValueError(f"expected a variable in proposition {proposition}, "
+                                 "but found none")
             if not proposition.variable.enabled:
                 return 0.0
 
@@ -145,27 +156,27 @@ class Antecedent(object):
 
 
 class Consequent(object):
-    __slots__ = ["text", "conclusions"]
+    __slots__ = ("text", "conclusions")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.text: str = ""
         self.conclusions: List[Proposition] = []
 
     def is_loaded(self) -> bool:
         return bool(self.conclusions)
 
-    def unload(self):
+    def unload(self) -> None:
         self.conclusions.clear()
 
-    def load(self, engine: 'Engine'):
+    def load(self, engine: 'Engine') -> None:
         pass
 
-    def modify(self, activation_degree: float, implication: TNorm):
+    def modify(self, activation_degree: float, implication: Optional[TNorm]) -> None:
         pass
 
 
 class Rule(object):
-    __slots__ = ["enabled", "weight", "activation_degree", "triggered", "antecedent", "consequent"]
+    __slots__ = ("enabled", "weight", "activation_degree", "triggered", "antecedent", "consequent")
 
     IF = 'if'
     IS = 'is'
@@ -174,7 +185,7 @@ class Rule(object):
     OR = 'or'
     WITH = 'with'
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.enabled: bool = True
         self.weight: float = 1.0
         self.activation_degree: float = 0.0
@@ -182,7 +193,7 @@ class Rule(object):
         self.antecedent: Antecedent = Antecedent()
         self.consequent: Consequent = Consequent()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return FllExporter().rule(self)
 
     @property
@@ -199,7 +210,7 @@ class Rule(object):
         return " ".join(result)
 
     @text.setter
-    def text(self, text: str):
+    def text(self, text: str) -> None:
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
 
@@ -249,21 +260,21 @@ class Rule(object):
         self.consequent.text = " ".join(consequent)
         self.weight = weight
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         self.activation_degree = 0.0
         self.triggered = False
 
-    def activate_with(self, conjunction: TNorm, disjunction: SNorm):
+    def activate_with(self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]) -> float:
         pass
 
-    def trigger(self, implication: TNorm):
+    def trigger(self, implication: Optional[TNorm]) -> None:
         if not self.is_loaded():
             raise RuntimeError(
                 f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
         if self.enabled and Op.gt(self.activation_degree, 0.0):
-            if fuzzylite.library().debugging:
-                fuzzylite.library().logger.debug(
-                    f"[triggering with {Op.str(self.activation_degree)}] {str(self)}")
+            # if fuzzylite.library().debugging:
+            #     fuzzylite.library().logger.debug(
+            #         f"[triggering with {Op.str(self.activation_degree)}] {str(self)}")
             self.consequent.modify(self.activation_degree, implication)
             self.triggered = True
 
@@ -275,7 +286,7 @@ class Rule(object):
         self.antecedent.unload()
         self.consequent.unload()
 
-    def load(self, engine: 'Engine'):
+    def load(self, engine: 'Engine') -> None:
         self.deactivate()
         self.antecedent.load(engine)
         self.consequent.load(engine)
@@ -290,13 +301,13 @@ class Rule(object):
 
 
 class RuleBlock(object):
-    __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
-                 "activation", "rules"]
+    __slots__ = ("name", "description", "enabled", "conjunction", "disjunction", "implication",
+                 "activation", "rules")
 
     def __init__(self, name: str = "", description: str = "", enabled: bool = True,
-                 conjunction: TNorm = None, disjunction: SNorm = None,
-                 implication: TNorm = None, activation: 'Activation' = None,
-                 rules: Iterable[Rule] = None):
+                 conjunction: Optional[TNorm] = None, disjunction: Optional[SNorm] = None,
+                 implication: Optional[TNorm] = None, activation: Optional['Activation'] = None,
+                 rules: Iterable[Rule] = None) -> None:
         self.name = name
         self.description = description
         self.enabled = enabled
@@ -304,18 +315,18 @@ class RuleBlock(object):
         self.disjunction = disjunction
         self.implication = implication
         self.activation = activation
-        self.rules = []
+        self.rules: List[Rule] = []
         if rules:
             self.rules.extend(rules)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return FllExporter().rule_block(self)
 
-    def unload_rules(self):
+    def unload_rules(self) -> None:
         pass
 
-    def load_rules(self):
+    def load_rules(self) -> None:
         pass
 
-    def reload_rules(self):
+    def reload_rules(self) -> None:
         pass

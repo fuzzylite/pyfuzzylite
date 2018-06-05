@@ -19,23 +19,23 @@ import unittest
 from math import inf, isnan, nan
 from typing import Dict
 
-from fuzzylite.hedge import *
-from tests.assert_component import ComponentAssert
+import fuzzylite as fl
+from .assert_component import ComponentAssert
 
 
 class HedgeAssert(ComponentAssert):
-    def evaluates(self, az: Dict[float, float]):
+    def evaluates(self, az: Dict[float, float]) -> 'HedgeAssert':
         for a, z in az.items():
             if isnan(z):
-                self.test.assertEqual(isnan(self.actual.hedge(a)), True, "when x=%f" % (a))
+                self.test.assertEqual(isnan(self.actual.hedge(a)), True, f"when x={a}")
             else:
-                self.test.assertEqual(self.actual.hedge(a), z, "when x=%f" % (a))
+                self.test.assertEqual(self.actual.hedge(a), z, f"when x={a}")
         return self
 
 
 class TestHedge(unittest.TestCase):
-    def test_any(self):
-        HedgeAssert(self, Any()) \
+    def test_any(self) -> None:
+        HedgeAssert(self, fl.Any()) \
             .has_name("any") \
             .evaluates({-1.0: 1.0,
                         -0.5: 1.0,
@@ -48,8 +48,8 @@ class TestHedge(unittest.TestCase):
                         -inf: 1.0,
                         nan: 1.0})
 
-    def test_extremely(self):
-        HedgeAssert(self, Extremely()) \
+    def test_extremely(self) -> None:
+        HedgeAssert(self, fl.Extremely()) \
             .has_name("extremely") \
             .evaluates({-1.0: 2.0,
                         -0.5: 0.5,
@@ -62,8 +62,8 @@ class TestHedge(unittest.TestCase):
                         -inf: inf,
                         nan: nan})
 
-    def test_not(self):
-        HedgeAssert(self, Not()) \
+    def test_not(self) -> None:
+        HedgeAssert(self, fl.Not()) \
             .has_name("not") \
             .evaluates({-1.0: 2.0,
                         -0.5: 1.5,
@@ -76,15 +76,15 @@ class TestHedge(unittest.TestCase):
                         -inf: inf,
                         nan: nan})
 
-    def test_seldom(self):
+    def test_seldom(self) -> None:
         with self.assertRaisesRegex(ValueError,
                                     r"math domain error"):
-            HedgeAssert(self, Seldom()).evaluates({-1.0: nan})
-            HedgeAssert(self, Seldom()).evaluates({-0.5: nan})
-            HedgeAssert(self, Seldom()).evaluates({inf: nan})
-            HedgeAssert(self, Seldom()).evaluates({-inf: nan})
+            HedgeAssert(self, fl.Seldom()).evaluates({-1.0: nan})
+            HedgeAssert(self, fl.Seldom()).evaluates({-0.5: nan})
+            HedgeAssert(self, fl.Seldom()).evaluates({inf: nan})
+            HedgeAssert(self, fl.Seldom()).evaluates({-inf: nan})
 
-        HedgeAssert(self, Seldom()) \
+        HedgeAssert(self, fl.Seldom()) \
             .has_name("seldom") \
             .evaluates({0.00: 0.0,
                         0.25: 0.3535533905932738,
@@ -93,14 +93,14 @@ class TestHedge(unittest.TestCase):
                         1.00: 1.0,
                         nan: nan})
 
-    def test_somewhat(self):
+    def test_somewhat(self) -> None:
         with self.assertRaisesRegex(ValueError,
                                     r"math domain error"):
-            HedgeAssert(self, Somewhat()).evaluates({-1.0: nan})
-            HedgeAssert(self, Somewhat()).evaluates({-0.5: nan})
-            HedgeAssert(self, Somewhat()).evaluates({-inf: nan})
+            HedgeAssert(self, fl.Somewhat()).evaluates({-1.0: nan})
+            HedgeAssert(self, fl.Somewhat()).evaluates({-0.5: nan})
+            HedgeAssert(self, fl.Somewhat()).evaluates({-inf: nan})
 
-        HedgeAssert(self, Somewhat()) \
+        HedgeAssert(self, fl.Somewhat()) \
             .has_name("somewhat") \
             .evaluates({0.00: 0.0,
                         0.25: 0.5,
@@ -110,8 +110,8 @@ class TestHedge(unittest.TestCase):
                         inf: inf,
                         nan: nan})
 
-    def test_very(self):
-        HedgeAssert(self, Very()) \
+    def test_very(self) -> None:
+        HedgeAssert(self, fl.Very()) \
             .has_name("very") \
             .evaluates({-1.0: 1.0,
                         -0.5: 0.25,
@@ -124,9 +124,9 @@ class TestHedge(unittest.TestCase):
                         -inf: inf,
                         nan: nan})
 
-    @unittest.skip
-    def test_function(self):
-        HedgeAssert(self, HedgeFunction()) \
+    @unittest.skip("For evaluation")
+    def test_function(self) -> None:
+        HedgeAssert(self, fl.HedgeFunction()) \
             .has_name("function") \
             .evaluates({})
 

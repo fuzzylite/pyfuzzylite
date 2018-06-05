@@ -15,12 +15,17 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fuzzylite.engine import Engine
+
 
 class Norm(object):
     @property
-    def class_name(self):
+    def class_name(self)-> str:
         return self.__class__.__name__
-    
+
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
 
@@ -68,12 +73,12 @@ class NilpotentMinimum(TNorm):
 
 
 class TNormFunction(TNorm):
-    __slots__ = ["f"]
+    __slots__ = ("f",)
 
-    def __init__(self, formula: str):
+    def __init__(self, formula: str, engine: 'Engine' = None) -> None:
         from fuzzylite.term import Function
-        self.f = Function()
-        self.f.load(formula)
+        self.f = Function(self.class_name, formula, engine)
+        self.f.load()
 
     def compute(self, a: float, b: float) -> float:
         self.f.variables['a'] = a
@@ -134,12 +139,12 @@ class UnboundedSum(SNorm):
 
 
 class SNormFunction(SNorm):
-    __slots__ = ["f"]
+    __slots__ = ("f",)
 
-    def __init__(self, formula: str):
+    def __init__(self, formula: str, engine: 'Engine' = None) -> None:
         from fuzzylite.term import Function
-        self.f = Function()
-        self.f.load(formula)
+        self.f = Function(self.class_name, formula, engine)
+        self.f.load()
 
     def compute(self, a: float, b: float) -> float:
         self.f.variables['a'] = a

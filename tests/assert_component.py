@@ -16,27 +16,30 @@
 """
 
 import unittest
+from typing import Generic, TypeVar
 
 from fuzzylite.exporter import FllExporter
 
+T = TypeVar('T')
 
-class BaseAssert(object):
-    def __init__(self, test: unittest.TestCase, actual: object):
+
+class BaseAssert(Generic[T]):
+    def __init__(self, test: unittest.TestCase, actual: T) -> None:
         self.test = test
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
 
 class ComponentAssert(BaseAssert):
-    def has_name(self, name: str):
+    def has_name(self, name: str) -> 'ComponentAssert':
         self.test.assertEqual(self.actual.name, name)
         return self
 
-    def has_description(self, description: str):
+    def has_description(self, description: str) -> 'ComponentAssert':
         self.test.assertEqual(self.actual.description, description)
         return self
 
-    def exports_fll(self, fll: str):
+    def exports_fll(self, fll: str) -> 'ComponentAssert':
         self.test.assertEqual(FllExporter().to_string(self.actual), fll)
         self.test.assertEqual(str(self.actual), fll)
         return self

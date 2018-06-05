@@ -16,29 +16,29 @@
 """
 
 from enum import Enum
-from typing import Iterable, Tuple
+from typing import Iterable, List, Tuple
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
-from .variable import InputVariable, OutputVariable
+from .variable import InputVariable, OutputVariable, Variable
 
 
 class Engine(object):
-    __slots__ = ["name", "description", "inputs", "outputs", "blocks"]
+    __slots__ = ("name", "description", "inputs", "outputs", "blocks")
 
     def __init__(self, name: str = "",
                  description: str = "",
                  inputs: Iterable[InputVariable] = None,
                  outputs: Iterable[OutputVariable] = None,
-                 blocks: Iterable[RuleBlock] = None):
+                 blocks: Iterable[RuleBlock] = None) -> None:
         self.name = name
         self.description = description
-        self.inputs = []
-        self.outputs = []
-        self.blocks = []
+        self.inputs: List[InputVariable] = []
+        self.outputs: List[OutputVariable] = []
+        self.blocks: List[RuleBlock] = []
         if inputs:
             self.inputs.extend(inputs)
         if outputs:
@@ -46,12 +46,12 @@ class Engine(object):
         if blocks:
             self.blocks.extend(blocks)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return FllExporter().engine(self)
 
     def configure(self, conjunction: TNorm = None, disjunction: SNorm = None,
                   implication: TNorm = None, aggregation: SNorm = None,
-                  defuzzifier: Defuzzifier = None, activation: Activation = None):
+                  defuzzifier: Defuzzifier = None, activation: Activation = None) -> None:
 
         pass
 
@@ -67,8 +67,8 @@ class Engine(object):
     class Type(Enum):
         Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
 
-    def infer_type(self) -> Tuple[Type, 'reason']:
+    def infer_type(self) -> Tuple[Type, str]:
         pass
 
-    def variables(self):
+    def variables(self) -> List[Variable]:
         return [*self.inputs, *self.outputs]

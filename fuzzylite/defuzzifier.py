@@ -15,22 +15,22 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from enum import Enum
-from math import isfinite, nan
+import enum
+from math import nan, isfinite
 
-from .operation import Operation as Op
+from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
 
 
 class Defuzzifier(object):
     @property
-    def class_name(self):
+    def class_name(self) -> str:
         return self.__class__.__name__
 
-    def configure(self, parameters: str):
+    def configure(self, parameters: str) -> None:
         raise NotImplementedError()
 
-    def parameters(self):
+    def parameters(self) -> str:
         raise NotImplementedError()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
@@ -38,21 +38,21 @@ class Defuzzifier(object):
 
 
 class IntegralDefuzzifier(Defuzzifier):
-    __slots__ = ["resolution"]
+    __slots__ = ("resolution",)
 
     default_resolution = 100
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.resolution = IntegralDefuzzifier.default_resolution
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.class_name} {self.parameters()}"
 
-    def configure(self, parameters: str):
+    def configure(self, parameters: str) -> None:
         if parameters:
             self.resolution = int(parameters)
 
-    def parameters(self):
+    def parameters(self) -> str:
         return Op.str(self.resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
@@ -60,7 +60,7 @@ class IntegralDefuzzifier(Defuzzifier):
 
 
 class Bisector(IntegralDefuzzifier):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
@@ -90,7 +90,7 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
@@ -123,42 +123,47 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 
 
 class WeightedDefuzzifier(Defuzzifier):
-    __slots__ = ["type"]
+    __slots__ = ("type",)
 
-    class Type(Enum):
+    class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.type = WeightedDefuzzifier.Type.Automatic
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.class_name} {self.parameters()}"
 
-    def configure(self, parameters: str):
+    def configure(self, parameters: str) -> None:
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
 
-    def parameters(self):
+    def parameters(self) -> str:
         return self.type.name if self.type else ""
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         raise NotImplementedError()
 
-    def infer_type(self, term: Term):
+    def infer_type(self, term: Term) -> 'WeightedDefuzzifier.Type':
         if isinstance(term, (Constant, Linear, Function)):
             return WeightedDefuzzifier.Type.TakagiSugeno
         return WeightedDefuzzifier.Type.Tsukamoto
 
 
 class WeightedAverage(WeightedDefuzzifier):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def defuzzify(self, fuzzy_output: Aggregated, *_):
-        if not fuzzy_output.terms:
-            return nan
+    def defuzzify(self, fuzzy_output: Term,
+                  unused_minimum: float = nan, unused_maximum: float = nan) -> float:
+        if not isinstance(fuzzy_output, Aggregated):
+            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
+
         if not self.type:
             raise ValueError("expected a type of defuzzifier, but found none")
+
+        if not fuzzy_output.terms:
+            return nan
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
@@ -183,14 +188,19 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def defuzzify(self, fuzzy_output: Aggregated, *_):
-        if not fuzzy_output.terms:
-            return nan
+    def defuzzify(self, fuzzy_output: Term,
+                  unused_minimum: float = nan, unused_maximum: float = nan) -> float:
+        if not isinstance(fuzzy_output, Aggregated):
+            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
+
         if not self.type:
             raise ValueError("expected a type of defuzzifier, but found none")
+
+        if not fuzzy_output.terms:
+            return nan
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:

@@ -18,51 +18,50 @@
 import math
 import unittest
 
-import fuzzylite
-from fuzzylite.operation import Operation as Op
+import fuzzylite as fl
 
 
 class TestOperation(unittest.TestCase):
-    def test_validName(self):
-        self.assertEqual(Op.valid_name("  xx  "), "xx")  # trims
-        self.assertEqual(Op.valid_name("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")
-        self.assertEqual(Op.valid_name("abc123_.ABC"), "abc123_.ABC")
-        self.assertEqual(Op.valid_name("      "), "unnamed")
+    def test_validName(self) -> None:
+        self.assertEqual(fl.Op.valid_name("  xx  "), "xx")  # trims
+        self.assertEqual(fl.Op.valid_name("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")
+        self.assertEqual(fl.Op.valid_name("abc123_.ABC"), "abc123_.ABC")
+        self.assertEqual(fl.Op.valid_name("      "), "unnamed")
 
-    def test_str(self):
-        fuzzylite.library().decimals = 3
-        self.assertEqual(Op.str(0.3), "0.300")
-        self.assertEqual(Op.str(-0.3), "-0.300")
-        self.assertEqual(Op.str(3), "3")
-        self.assertEqual(Op.str(3.0001), "3.000")
+    def test_str(self) -> None:
+        fl.library.decimals = 3
+        self.assertEqual(fl.Op.str(0.3), "0.300")
+        self.assertEqual(fl.Op.str(-0.3), "-0.300")
+        self.assertEqual(fl.Op.str(3), "3")
+        self.assertEqual(fl.Op.str(3.0001), "3.000")
 
-        self.assertEqual(Op.str(math.inf), "inf")
-        self.assertEqual(Op.str(-math.inf), "-inf")
-        self.assertEqual(Op.str(math.nan), "nan")
+        self.assertEqual(fl.Op.str(math.inf), "inf")
+        self.assertEqual(fl.Op.str(-math.inf), "-inf")
+        self.assertEqual(fl.Op.str(math.nan), "nan")
 
-        fuzzylite.library().decimals = 5
-        self.assertEqual(Op.str(0.3), "0.30000")
+        fl.library.decimals = 5
+        self.assertEqual(fl.Op.str(0.3), "0.30000")
 
-        fuzzylite.library().decimals = 0
-        self.assertEqual(Op.str(0.3), "0")
+        fl.library.decimals = 0
+        self.assertEqual(fl.Op.str(0.3), "0")
 
-        fuzzylite.library().decimals = 3
+        fl.library.decimals = 3
 
-    def test_scale(self):
-        self.assertEqual(Op.scale(0, 0, 1, -10, 10), -10.0)
-        self.assertEqual(Op.scale(.5, 0, 1, -10, 10), 0.0)
-        self.assertEqual(Op.scale(1, 0, 1, -10, 10), 10)
+    def test_scale(self) -> None:
+        self.assertEqual(fl.Op.scale(0, 0, 1, -10, 10), -10.0)
+        self.assertEqual(fl.Op.scale(.5, 0, 1, -10, 10), 0.0)
+        self.assertEqual(fl.Op.scale(1, 0, 1, -10, 10), 10)
 
-        self.assertEqual(Op.scale(0, 0, 1, 0, 10), 0.0)
-        self.assertEqual(Op.scale(.5, 0, 1, 0, 10), 5.0)
-        self.assertEqual(Op.scale(1, 0, 1, 0, 10), 10)
+        self.assertEqual(fl.Op.scale(0, 0, 1, 0, 10), 0.0)
+        self.assertEqual(fl.Op.scale(.5, 0, 1, 0, 10), 5.0)
+        self.assertEqual(fl.Op.scale(1, 0, 1, 0, 10), 10)
 
-        self.assertEqual(Op.scale(-1, 0, 1, 0, 10), -10.0)
-        self.assertEqual(Op.scale(2, 0, 1, 0, 10), 20)
+        self.assertEqual(fl.Op.scale(-1, 0, 1, 0, 10), -10.0)
+        self.assertEqual(fl.Op.scale(2, 0, 1, 0, 10), 20)
 
-        self.assertEqual(math.isnan(Op.scale(math.nan, 0, 1, 0, 10)), True)
-        self.assertEqual(Op.scale(math.inf, 0, 1, 0, 10), math.inf)
-        self.assertEqual(Op.scale(-math.inf, 0, 1, 0, 10), -math.inf)
+        self.assertEqual(math.isnan(fl.Op.scale(math.nan, 0, 1, 0, 10)), True)
+        self.assertEqual(fl.Op.scale(math.inf, 0, 1, 0, 10), math.inf)
+        self.assertEqual(fl.Op.scale(-math.inf, 0, 1, 0, 10), -math.inf)
 
 
 if __name__ == '__main__':

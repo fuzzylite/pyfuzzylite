@@ -18,51 +18,61 @@
 import copy
 import math
 import operator
-from typing import Set
+from typing import Set, Callable, Dict, Generic, TypeVar
 
-from .activation import *
-from .defuzzifier import *
-from .hedge import *
-from .norm import *
+from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
+from .defuzzifier import (Defuzzifier, Bisector, Centroid, LargestOfMaximum, MeanOfMaximum,
+                          SmallestOfMaximum, WeightedAverage, WeightedSum)
+from .hedge import Hedge, Any, Extremely, Not, Seldom, Somewhat, Very
+from .norm import (TNorm, AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
+                   HamacherProduct, Minimum, NilpotentMinimum,
+                   SNorm, AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
+                   Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum)
+from .operation import Op
 from .rule import Rule
-from .term import *
+from .term import (Term, Bell, Binary, Concave, Constant, Cosine, Discrete,
+                   Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
+                   Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
+                   Spike, SShape, Trapezoid, Triangle, ZShape)
+
+T = TypeVar('T')
 
 
-class ConstructionFactory(object):
-    __slots__ = ["constructors"]
+class ConstructionFactory(Generic[T]):
+    __slots__ = ("constructors",)
 
-    def __init__(self):
-        self.constructors: Dict[str, function] = {}
+    def __init__(self) -> None:
+        self.constructors: Dict[str, Callable[[], T]] = {}
 
     @property
-    def class_name(self):
+    def class_name(self) -> str:
         return self.__class__.__name__
 
-    def construct(self, key: str) -> object:
+    def construct(self, key: str) -> T:
         if key in self.constructors:
             if self.constructors[key]:
                 return self.constructors[key]()
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
-class CloningFactory(object):
-    __slots__ = ["objects"]
+class CloningFactory(Generic[T]):
+    __slots__ = ("objects",)
 
-    def __init__(self):
-        self.objects: Dict[str, object] = {}
+    def __init__(self) -> None:
+        self.objects: Dict[str, T] = {}
 
     @property
-    def class_name(self):
+    def class_name(self) -> str:
         return self.__class__.__name__
 
-    def copy(self, key: str):
+    def copy(self, key: str) -> T:
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
         raise ValueError(f"object with key '{key}' not found in {self.class_name}")
 
 
-class ActivationFactory(ConstructionFactory):
-    def __init__(self):
+class ActivationFactory(ConstructionFactory[Activation]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -70,8 +80,8 @@ class ActivationFactory(ConstructionFactory):
             self.constructors[activation().class_name] = activation
 
 
-class DefuzzifierFactory(ConstructionFactory):
-    def __init__(self):
+class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -84,13 +94,13 @@ class DefuzzifierFactory(ConstructionFactory):
             #     raise NotImplementedError()
 
 
-class FunctionFactory(CloningFactory):
-    def __init__(self):
+class FunctionFactory(CloningFactory[Function.Element]):
+    def __init__(self) -> None:
         super().__init__()
         self._register_operators()
         self._register_functions()
 
-    def _register_operators(self):
+    def _register_operators(self) -> None:
         operator_type = Function.Element.Type.Operator
         operators = [
             # p = 100  #  priority
@@ -134,7 +144,7 @@ class FunctionFactory(CloningFactory):
         for op in operators:
             self.objects[op.name] = op
 
-    def _register_functions(self):
+    def _register_functions(self) -> None:
         function_type = Function.Element.Type.Function
 
         functions = [
@@ -179,18 +189,18 @@ class FunctionFactory(CloningFactory):
             self.objects[f.name] = f
 
     def operators(self) -> Set[str]:
-        result = set(key for key, op in self.objects.items() if
-                     op.element_type == Function.Element.Type.Operator)
+        result = set(key for key, prototype in self.objects.items() if
+                     prototype.element_type == Function.Element.Type.Operator)
         return result
 
     def functions(self) -> Set[str]:
-        result = set(key for key, op in self.objects.items() if
-                     op.element_type == Function.Element.Type.Function)
+        result = set(key for key, prototype in self.objects.items() if
+                     prototype.element_type == Function.Element.Type.Function)
         return result
 
 
-class HedgeFactory(ConstructionFactory):
-    def __init__(self):
+class HedgeFactory(ConstructionFactory[Hedge]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -199,8 +209,8 @@ class HedgeFactory(ConstructionFactory):
             self.constructors[hedge().name] = hedge
 
 
-class SNormFactory(ConstructionFactory):
-    def __init__(self):
+class SNormFactory(ConstructionFactory[SNorm]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -210,8 +220,8 @@ class SNormFactory(ConstructionFactory):
             self.constructors[snorm().class_name] = snorm
 
 
-class TNormFactory(ConstructionFactory):
-    def __init__(self):
+class TNormFactory(ConstructionFactory[TNorm]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -221,8 +231,8 @@ class TNormFactory(ConstructionFactory):
             self.constructors[tnorm().class_name] = tnorm
 
 
-class TermFactory(ConstructionFactory):
-    def __init__(self):
+class TermFactory(ConstructionFactory[Term]):
+    def __init__(self) -> None:
         super().__init__()
         self.constructors[""] = type(None)
 
@@ -235,8 +245,8 @@ class TermFactory(ConstructionFactory):
 
 
 class FactoryManager(object):
-    __slots__ = ["tnorm_factory", "snorm_factory", "activation_factory", "defuzzifier_factory",
-                 "term_factory", "hedge_factory", "function_factory"]
+    __slots__ = ("tnorm_factory", "snorm_factory", "activation_factory", "defuzzifier_factory",
+                 "term_factory", "hedge_factory", "function_factory")
 
     def __init__(self,
                  tnorm_factory: TNormFactory = TNormFactory(),
@@ -245,7 +255,7 @@ class FactoryManager(object):
                  defuzzifier_factory: DefuzzifierFactory = DefuzzifierFactory(),
                  term_factory: TermFactory = TermFactory(),
                  hedge_factory: HedgeFactory = HedgeFactory(),
-                 function_factory: FunctionFactory = FunctionFactory()):
+                 function_factory: FunctionFactory = FunctionFactory()) -> None:
         self.tnorm_factory = tnorm_factory
         self.snorm_factory = snorm_factory
         self.activation_factory = activation_factory

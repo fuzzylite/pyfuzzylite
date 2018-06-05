@@ -16,71 +16,71 @@
 """
 
 import inspect
-from typing import Callable
+from typing import Callable, Text, Union
 
 import fuzzylite
 
 
-# TODO convert to module or static object
+# TODO convert to module or static object?
 
 class Operation(object):
-    '''
+    """
     Operation
-    '''
+    """
 
     @staticmethod
-    def eq(a: float, b: float, absolute_tolerance: float = None):
+    def eq(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return (a == b
-                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
                 or (a != a and b != b))
 
     @staticmethod
-    def neq(a: float, b: float, absolute_tolerance: float = None):
+    def neq(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
                     or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, absolute_tolerance: float = None):
+    def gt(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
                     or (a != a and b != b)
                     ) and a > b
 
     @staticmethod
-    def ge(a: float, b: float, absolute_tolerance: float = None):
+    def ge(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return (a == b
-                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
                 or (a != a and b != b)
                 or a > b)
 
     @staticmethod
-    def le(a: float, b: float, absolute_tolerance: float = None):
+    def le(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return (a == b
-                or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
                 or (a != a and b != b)
                 or a < b)
 
     @staticmethod
-    def lt(a: float, b: float, absolute_tolerance: float = None):
+    def lt(a: float, b: float, absolute_tolerance: float = None) -> bool:
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library().absolute_tolerance
+                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
                     or (a != a and b != b)
                     ) and a < b
 
     @staticmethod
-    def logical_and(a: float, b: float):
-        return 1.0 if Operation.eq(a, 1.0) and Operation.eq(b, 1.0) else 0.0
+    def logical_and(a: float, b: float) -> bool:
+        return Operation.eq(a, 1.0) and Operation.eq(b, 1.0)
 
     @staticmethod
-    def logical_or(a: float, b: float):
-        return 1.0 if Operation.eq(a, 1.0) or Operation.eq(b, 1.0) else 0.0
+    def logical_or(a: float, b: float) -> bool:
+        return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
 
     @staticmethod
     def valid_name(name: str) -> str:
@@ -88,9 +88,11 @@ class Operation(object):
         return result if result else "unnamed"
 
     @staticmethod
-    def str(x, decimals: float = None) -> str:
+    def str(x: Union[float, object], decimals: int = None) -> Text:
+        if not decimals:
+            decimals = fuzzylite.library.decimals
         if isinstance(x, float):
-            return ("{:.%sf}" % (decimals if decimals else fuzzylite.library().decimals)).format(x)
+            return f"{x:.{decimals}f}"
         return str(x)
 
     @staticmethod
@@ -100,7 +102,7 @@ class Operation(object):
                 x - from_minimum) + to_minimum
 
     @staticmethod
-    def bound(x: float, minimum: float, maximum: float):
+    def bound(x: float, minimum: float, maximum: float) -> float:
         if x > maximum:
             return maximum
         if x < minimum:
@@ -108,8 +110,11 @@ class Operation(object):
         return x
 
     @staticmethod
-    def arity_of(method: Callable):
+    def arity_of(method: Callable) -> int:
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]
         return len(required_parameters)
+
+
+Op = Operation

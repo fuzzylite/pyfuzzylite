@@ -15,7 +15,19 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from .operation import Operation as Op
+import typing
+from typing import Optional
+
+from .operation import Op
+
+if typing.TYPE_CHECKING:
+    from .activation import Activation
+    from .defuzzifier import Defuzzifier
+    from .engine import Engine
+    from .norm import Norm
+    from .rule import Rule, RuleBlock
+    from .term import Term
+    from .variable import InputVariable, OutputVariable, Variable
 
 
 class Exporter(object):
@@ -23,13 +35,13 @@ class Exporter(object):
 
 
 class FllExporter(Exporter):
-    __slots__ = ["indent", "separator"]
+    __slots__ = ("indent", "separator")
 
-    def __init__(self, indent="  ", separator="\n"):
+    def __init__(self, indent: str = "  ", separator: str = "\n") -> None:
         self.indent = indent
         self.separator = separator
 
-    def to_string(self, instance: object):
+    def to_string(self, instance: object) -> str:
         from .engine import Engine
         if isinstance(instance, Engine):
             return self.engine(instance)
@@ -116,22 +128,23 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
-        result = ["term:", Op.valid_name(term.name), term.__class__.__name__]
+        result = ["term:", Op.valid_name(term.name), term.class_name]
         parameters = term.parameters()
         if parameters:
             result.append(parameters)
         return " ".join(result)
 
-    def norm(self, norm: 'Norm') -> str:
-        return type(norm).__name__ if norm else "none"
+    def norm(self, norm: Optional['Norm']) -> str:
+        return norm.class_name if norm else "none"
 
-    def activation(self, activation: 'Activation') -> str:
-        return type(activation).__name__ if activation else "none"
+    def activation(self, activation: Optional['Activation']) -> str:
+        return activation.class_name if activation else "none"
 
-    def defuzzifier(self, defuzzifier: 'Defuzzifier') -> str:
-        if not defuzzifier: return "none"
+    def defuzzifier(self, defuzzifier: Optional['Defuzzifier']) -> str:
+        if not defuzzifier:
+            return "none"
         from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
-        result = [defuzzifier.__class__.__name__]
+        result = [defuzzifier.class_name]
         if isinstance(defuzzifier, IntegralDefuzzifier):
             result.append(str(defuzzifier.resolution))
         elif isinstance(defuzzifier, WeightedDefuzzifier):
@@ -139,4 +152,4 @@ class FllExporter(Exporter):
         return " ".join(result)
 
     def rule(self, rule: 'Rule') -> str:
-        return "rule: %s" % rule.text
+        return f"rule: {rule.text}"

@@ -11,7 +11,7 @@
  You should have received a copy of the FuzzyLite License along with
  pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
+ pyfuzzylite is a trademark of FuzzyLite Limited.
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
@@ -22,8 +22,8 @@ from .factory import FactoryManager
 
 class Library(object):
 
-    def __init__(self, decimals=3, absolute_tolerance=1e-6,
-                 factory_manager=FactoryManager()):
+    def __init__(self, decimals: int = 3, absolute_tolerance: float = 1e-6,
+                 factory_manager: FactoryManager = FactoryManager()) -> None:
         self.decimals = decimals
         self.absolute_tolerance = absolute_tolerance
         self.factory_manager = factory_manager
@@ -38,7 +38,7 @@ class Library(object):
         return "7.0"
 
     @property
-    def license(self):
+    def license(self) -> str:
         return "GNU General Public License v3.0"
 
     @property
@@ -46,21 +46,147 @@ class Library(object):
         return "a fuzzy logic control in Python"
 
     @property
-    def author(self):
+    def author(self) -> str:
         return "Juan Rada-Vilela, Ph.D."
 
     @property
-    def author_email(self):
+    def author_email(self) -> str:
         return "jcrada@fuzzylite.com"
 
     @property
-    def company(self):
+    def company(self) -> str:
         return "FuzzyLite Limited"
 
     @property
-    def website(self):
+    def website(self) -> str:
         return "https://www.fuzzylite.com/"
 
     @property
     def debugging(self) -> bool:
         return self.logger.level == logging.DEBUG
+
+    @property
+    def summary(self) -> str:
+        result = ("""# pyfuzzylite: A Fuzzy Logic Control Library in Python
+
+##  Introduction
+
+**`fuzzylite`** is a free and open-source fuzzy logic control library programmed in C++ for multiple platforms (e.g., Windows, Linux, Mac, iOS).
+**`jfuzzylite`** is the equivalent `fuzzylite` library for Java and Android platforms.
+**`pyfuzzylite`** is the equivalent `fuzzylite` library for Python.
+**`QtFuzzyLite 6`** is (very likely) the best application available to easily design and directly operate fuzzy logic controllers in real time.  
+
+If you are going to cite us in your article, please do so as:  
+`Juan Rada-Vilela. fuzzylite: a fuzzy logic control library, 2017\. URL http://www.fuzzylite.com/`
+or using BibTeX as:
+```bibtex
+    @misc{fl::fuzzylite,
+     author={Juan Rada-Vilela},
+     title={fuzzylite: a fuzzy logic control library},
+     url={http://www.fuzzylite.com},
+     year={2017}}
+```
+
+##  License of the FuzzyLite Libraries
+
+The FuzzyLite Libraries, namely **`fuzzylite 6.0`** and **`jfuzzylite 6.0`**, are licensed under the [**GNU General Public License (GPL) 3.0**](https://www.gnu.org/licenses/gpl.html) and under a **paid license for commercial purposes**. If you are using them under the GPL license, please consider purchasing a license of **QtFuzzyLite** to support the development of the libraries. If you want a commercial license of `fuzzylite`, `jfuzzylite`, or `pyfuzzylite`, please contact [sales@fuzzylite.com](mailto:sales@fuzzylite.com).
+
+## Features
+
+The FuzzyLite Libraries have the following features:  
+**(6) Controllers**: Mamdani, Takagi-Sugeno, Larsen, Tsukamoto, Inverse Tsukamoto, Hybrids
+
+**(21) Linguistic terms**: (4) _Basic_: triangle, trapezoid, rectangle, discrete.  
+(9) _Extended_: bell, cosine, gaussian, gaussian product, pi-shape, sigmoid difference, sigmoid product, spike.  
+(5) _Edges_: binary, concave, ramp, sigmoid, s-shape, z-shape.  
+(3) _Functions_: constant, linear, function.
+
+**(7) Activation methods**: general, proportional, threshold, first, last, lowest, highest.
+
+**(8) Conjunction and Implication (T-Norms)**: minimum, algebraic product, bounded difference, drastic product, einstein product, hamacher product, nilpotent minimum, function.
+
+**(10) Disjunction and Aggregation (S-Norms)**: maximum, algebraic sum, bounded sum, drastic sum, einstein sum, hamacher sum, nilpotent maximum, normalized sum, unbounded sum, function.
+
+**(7) Defuzzifiers**: (5) _Integral_: centroid, bisector, smallest of maximum, largest of maximum, mean of maximum.  
+(2) _Weighted_: weighted average, weighted sum.
+
+**(7) Hedges**: any, not, extremely, seldom, somewhat, very, function.
+
+**(3) Importers**: FuzzyLite Language `fll`, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+
+**(7) Exporters**: `C++`, `Java`, FuzzyLite Language `fll`, FuzzyLite Dataset `fld`, `R` script, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+
+**(30+) Examples** of Mamdani, Takagi-Sugeno, Tsukamoto, and Hybrid controllers from `fuzzylite`, Octave, and Matlab, each included in the following formats: `C++`, `Java`, `fll`, `fld`, `R`, `fis`, and `fcl`.
+
+In addition, you can easily:
+
+*   Create your own classes inheriting from `fuzzylite`, register them in the factories, and incorporate them to operate in `fuzzylite`.
+*   Utilize multiple rule blocks within a single engine, each containing any number of (possibly weighted) rule, and different conjunction, disjunction and activation operators.
+*   Write inference rules just naturally, e.g., `"if obstacle is left then steer is right"`.
+*   Return a default output value, lock the output values to be within specific ranges, lock the previous valid output value when no rules are activated.
+*   Explore the function space of your controller.
+*   Utilize the entire library across multiple threads as it is thread-safe.
+*   Download the sources, documentation, and binaries for the major platforms in the [**Downloads**](www.fuzzylite.com/downloads) tab.""")
+        return result
+
+#
+# __library_global: Optional[Library] = None
+# __library_thread: Optional[threading.local] = None
+#
+#
+# def __global_library() -> Library:
+#     global __library_global, __library_thread
+#
+#     if not __library_global:
+#         __library_global = Library()
+#
+#     if __library_thread:
+#         if 'library' in vars(__library_thread):
+#             del __library_thread.library
+#         __library_thread = None
+#
+#     return __library_global
+#
+#
+# def __thread_local_library() -> Library:
+#     global __library_global, __library_thread
+#
+#     if not __library_thread:
+#         __library_thread = threading.local()
+#
+#     if 'library' not in vars(__library_thread):
+#         __library_thread.library = Library()
+#
+#     if __library_global:
+#         __library_global = None
+#
+#     return __library_thread.library
+#
+#
+# library = __global_library
+#
+#
+# class StorageMode(enum.Enum):
+#     GLOBAL, THREAD_LOCAL = range(2)
+#
+#
+# def set_storage_mode(mode: StorageMode) -> None:
+#     global library
+#     if mode == StorageMode.GLOBAL:
+#         library = __global_library
+#     elif mode == StorageMode.THREAD_LOCAL:
+#         library = __thread_local_library
+#     else:
+#         raise ValueError(f"unexpected storage mode: {mode}")
+#     library()
+#
+#
+# def get_storage_mode() -> StorageMode:
+#     global library
+#     if library == __global_library:
+#         result = StorageMode.GLOBAL
+#     elif library == __thread_local_library:
+#         result = StorageMode.THREAD_LOCAL
+#     else:
+#         raise ValueError(f"unexpected storage mode: {library}")
+#     return result

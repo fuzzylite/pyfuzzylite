@@ -15,29 +15,29 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from .operation import Operation as Op
+from .operation import Op
 from .rule import RuleBlock
 
 
 class Activation(object):
     @property
-    def class_name(self):
+    def class_name(self) -> str:
         return self.__class__.__name__
 
-    def activate(self, rule_block: RuleBlock):
+    def activate(self, rule_block: RuleBlock) -> None:
         raise NotImplementedError()
 
     def parameters(self) -> str:
         return ""
 
-    def configure(self, parameters: str):
+    def configure(self, parameters: str) -> None:
         pass
 
 
 class First(Activation):
-    __slots__ = ["number_of_rules", "threshold"]
+    __slots__ = ("number_of_rules", "threshold")
 
-    def __init__(self, number_of_rules: int = 1, threshold: float = 0.0):
+    def __init__(self, number_of_rules: int = 1, threshold: float = 0.0) -> None:
         self.number_of_rules = number_of_rules
         self.threshold = threshold
 
@@ -51,12 +51,12 @@ class First(Activation):
         values = parameters.split()
         required = 2
         if len(values) < required:
-            raise ValueError(f"activation <{self.__class__.__name__}> requires {required} parameters, "
+            raise ValueError(f"activation <{self.class_name}> requires {required} parameters, "
                              f"but only {len(values)} were provided")
         self.number_of_rules = int(values[0])
         self.threshold = float(values[1])
 
-    def activate(self, rule_block: RuleBlock):
+    def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
         implication = rule_block.implication
@@ -67,15 +67,15 @@ class First(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if (activated < self.number_of_rules and
-                            activation_degree > 0.0 and
-                            activation_degree >= self.threshold):
+                if (activated < self.number_of_rules
+                        and activation_degree > 0.0
+                        and activation_degree >= self.threshold):
                     rule.trigger(implication)
                     activated += 1
 
 
 class General(Activation):
-    def activate(self, rule_block: RuleBlock):
+    def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
         implication = rule_block.implication

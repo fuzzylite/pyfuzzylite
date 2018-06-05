@@ -17,25 +17,27 @@
 
 import unittest
 
-from fuzzylite import *
+import fuzzylite as fl
 
 
 class TestFllExporter(unittest.TestCase):
-    def test_to_string(self):
-        self.assertEqual(FllExporter().term(Term("X", 1.0)), "term: X Term")
-        self.assertEqual(FllExporter().rule(Rule.parse("if x then y")), "rule: if x then y")
+    def test_to_string(self) -> None:
+        self.assertEqual(fl.FllExporter().term(fl.Term("X", 1.0)), "term: X Term")
+        self.assertEqual(fl.FllExporter().rule(fl.Rule.parse("if x then y")), "rule: if x then y")
 
-    def test_variables(self):
-        self.assertEqual(FllExporter().input_variable(Variable("name", terms=[Triangle("A"), Trapezoid("B")])),
-                         "\n".join(
-                                 ["InputVariable: name",
-                                  "  description: ",
-                                  "  enabled: true",
-                                  "  range: -inf inf",
-                                  "  lock-range: true",
-                                  "  term: A Triangle nan nan nan",
-                                  "  term: B Trapezoid nan nan nan nan",
-                                  ]))
+    def test_variables(self) -> None:
+        self.assertEqual(fl.FllExporter().input_variable(
+            fl.Variable("name", terms=[fl.Triangle("A"), fl.Trapezoid("B")])),
+            "\n".join(
+                ["InputVariable: name",
+                 "  description: ",
+                 "  enabled: true",
+                 "  range: -inf inf",
+                 "  lock-range: true",
+                 "  term: A Triangle nan nan nan",
+                 "  term: B Trapezoid nan nan nan nan",
+                 ])
+        )
 
 
 if __name__ == '__main__':
