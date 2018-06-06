@@ -15,15 +15,15 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from typing import TYPE_CHECKING
+import typing
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from fuzzylite.engine import Engine
 
 
 class Norm(object):
     @property
-    def class_name(self)-> str:
+    def class_name(self) -> str:
         return self.__class__.__name__
 
     def compute(self, a: float, b: float) -> float:

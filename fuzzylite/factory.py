@@ -18,7 +18,7 @@
 import copy
 import math
 import operator
-from typing import Set, Callable, Dict, Generic, TypeVar
+import typing
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Defuzzifier, Bisector, Centroid, LargestOfMaximum, MeanOfMaximum,
@@ -35,14 +35,14 @@ from .term import (Term, Bell, Binary, Concave, Constant, Cosine, Discrete,
                    Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
                    Spike, SShape, Trapezoid, Triangle, ZShape)
 
-T = TypeVar('T')
+T = typing.TypeVar('T')
 
 
-class ConstructionFactory(Generic[T]):
+class ConstructionFactory(typing.Generic[T]):
     __slots__ = ("constructors",)
 
     def __init__(self) -> None:
-        self.constructors: Dict[str, Callable[[], T]] = {}
+        self.constructors: typing.Dict[str, typing.Callable[[], T]] = {}
 
     @property
     def class_name(self) -> str:
@@ -55,11 +55,11 @@ class ConstructionFactory(Generic[T]):
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
-class CloningFactory(Generic[T]):
+class CloningFactory(typing.Generic[T]):
     __slots__ = ("objects",)
 
     def __init__(self) -> None:
-        self.objects: Dict[str, T] = {}
+        self.objects: typing.Dict[str, T] = {}
 
     @property
     def class_name(self) -> str:
@@ -188,12 +188,12 @@ class FunctionFactory(CloningFactory[Function.Element]):
         for f in functions:
             self.objects[f.name] = f
 
-    def operators(self) -> Set[str]:
+    def operators(self) -> typing.Set[str]:
         result = set(key for key, prototype in self.objects.items() if
                      prototype.element_type == Function.Element.Type.Operator)
         return result
 
-    def functions(self) -> Set[str]:
+    def functions(self) -> typing.Set[str]:
         result = set(key for key, prototype in self.objects.items() if
                      prototype.element_type == Function.Element.Type.Function)
         return result

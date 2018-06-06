@@ -15,8 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from enum import Enum
-from typing import Iterable, List, Tuple
+import enum
+import typing
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -31,14 +31,14 @@ class Engine(object):
 
     def __init__(self, name: str = "",
                  description: str = "",
-                 inputs: Iterable[InputVariable] = None,
-                 outputs: Iterable[OutputVariable] = None,
-                 blocks: Iterable[RuleBlock] = None) -> None:
+                 inputs: typing.Iterable[InputVariable] = None,
+                 outputs: typing.Iterable[OutputVariable] = None,
+                 blocks: typing.Iterable[RuleBlock] = None) -> None:
         self.name = name
         self.description = description
-        self.inputs: List[InputVariable] = []
-        self.outputs: List[OutputVariable] = []
-        self.blocks: List[RuleBlock] = []
+        self.inputs: typing.List[InputVariable] = []
+        self.outputs: typing.List[OutputVariable] = []
+        self.blocks: typing.List[RuleBlock] = []
         if inputs:
             self.inputs.extend(inputs)
         if outputs:
@@ -55,7 +55,7 @@ class Engine(object):
 
         pass
 
-    def is_ready(self) -> Tuple[bool, str]:
+    def is_ready(self) -> typing.Tuple[bool, str]:
         pass
 
     def process(self) -> None:
@@ -64,11 +64,11 @@ class Engine(object):
     def restart(self) -> None:
         pass
 
-    class Type(Enum):
+    class Type(enum.Enum):
         Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
 
-    def infer_type(self) -> Tuple[Type, str]:
+    def infer_type(self) -> typing.Tuple[Type, str]:
         pass
 
-    def variables(self) -> List[Variable]:
+    def variables(self) -> typing.List[Variable]:
         return [*self.inputs, *self.outputs]

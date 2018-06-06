@@ -16,7 +16,7 @@
 """
 
 import inspect
-from typing import Callable, Text, Union
+import typing
 
 import fuzzylite
 
@@ -88,7 +88,7 @@ class Operation(object):
         return result if result else "unnamed"
 
     @staticmethod
-    def str(x: Union[float, object], decimals: int = None) -> Text:
+    def str(x: typing.Union[float, object], decimals: int = None) -> typing.Text:
         if not decimals:
             decimals = fuzzylite.library.decimals
         if isinstance(x, float):
@@ -110,7 +110,7 @@ class Operation(object):
         return x
 
     @staticmethod
-    def arity_of(method: Callable) -> int:
+    def arity_of(method: typing.Callable) -> int:
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]

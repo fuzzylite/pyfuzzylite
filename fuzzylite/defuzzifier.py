@@ -16,7 +16,8 @@
 """
 
 import enum
-from math import nan, isfinite
+import math
+from math import nan
 
 from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
@@ -64,7 +65,7 @@ class Bisector(IntegralDefuzzifier):
         super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        if not isfinite(minimum + maximum):
+        if not math.isfinite(minimum + maximum):
             return nan
         resolution = self.resolution
         dx = (maximum - minimum) / resolution
@@ -94,7 +95,7 @@ class Centroid(IntegralDefuzzifier):
         super().__init__()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        if not isfinite(minimum + maximum):
+        if not math.isfinite(minimum + maximum):
             return nan
         resolution = self.resolution
         dx = (maximum - minimum) / resolution

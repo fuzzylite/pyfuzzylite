@@ -16,8 +16,8 @@
 """
 
 import typing
-from math import fabs, inf, isfinite, isnan, nan
-from typing import Iterable, List, Optional, Tuple
+import math
+from math import inf, isnan, nan
 
 from .exporter import FllExporter
 from .norm import SNorm
@@ -34,7 +34,7 @@ class Variable(object):
                  "enabled", "lock_range", "_value", "terms")
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: Iterable['Term'] = None) -> None:
+                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
         self.name = name
         self.description = description
         self.minimum = minimum
@@ -42,7 +42,7 @@ class Variable(object):
         self.enabled = True
         self.lock_range = False
         self._value = nan
-        self.terms: List[Term] = []
+        self.terms: typing.List[Term] = []
         if terms:
             self.terms.extend(terms)
 
@@ -50,11 +50,11 @@ class Variable(object):
         return FllExporter().variable(self)
 
     @property
-    def range(self) -> Tuple[float, float]:
+    def range(self) -> typing.Tuple[float, float]:
         return self.minimum, self.maximum
 
     @range.setter
-    def range(self, min_max: Tuple[float, float]) -> None:
+    def range(self, min_max: typing.Tuple[float, float]) -> None:
         self.minimum, self.maximum = min_max
 
     @property
@@ -66,7 +66,7 @@ class Variable(object):
         self._value = Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
 
     def fuzzify(self, x: float) -> str:
-        result: List[str] = []
+        result: typing.List[str] = []
         for term in self.terms:
             fx = nan
             try:
@@ -81,8 +81,8 @@ class Variable(object):
 
         return "".join(result)
 
-    def highest_membership(self, x: float) -> Tuple[float, Optional['Term']]:
-        result: Tuple[float, Optional[Term]] = (0.0, None)
+    def highest_membership(self, x: float) -> typing.Tuple[float, typing.Optional['Term']]:
+        result: typing.Tuple[float, typing.Optional[Term]] = (0.0, None)
         for term in self.terms:
             y = nan
             try:
@@ -98,7 +98,7 @@ class InputVariable(Variable):
     __slots__ = ()
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: Iterable['Term'] = None) -> None:
+                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
         super().__init__(name, description, minimum, maximum, terms)
 
     def __str__(self) -> str:
@@ -112,7 +112,7 @@ class OutputVariable(Variable):
     __slots__ = ("fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value")
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: Iterable['Term'] = None) -> None:
+                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
@@ -153,7 +153,7 @@ class OutputVariable(Variable):
         self.fuzzy.maximum = value
 
     @property
-    def aggregation(self) -> Optional[SNorm]:
+    def aggregation(self) -> typing.Optional[SNorm]:
         return self.fuzzy.aggregation
 
     @aggregation.setter
@@ -163,7 +163,7 @@ class OutputVariable(Variable):
     def defuzzify(self) -> None:
         if not self.enabled:
             return
-        if isfinite(self.value):
+        if math.isfinite(self.value):
             self.previous_value = self.value
 
         result = nan
@@ -205,7 +205,7 @@ class OutputVariable(Variable):
         self.previous_value = nan
 
     def fuzzy_value(self) -> str:
-        result: List[str] = []
+        result: typing.List[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
 
@@ -213,5 +213,5 @@ class OutputVariable(Variable):
                 result.append("{0}/{1}".format(Op.str(degree), term.name))
             else:
                 result.append(" {0} {1}/{2}".format("+" if isnan(degree) or degree >= 0 else "-",
-                                                    Op.str(fabs(degree)), term.name))
+                                                    Op.str(math.fabs(degree)), term.name))
         return "".join(result)

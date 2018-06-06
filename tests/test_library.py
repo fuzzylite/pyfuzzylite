@@ -15,11 +15,9 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import threading
 import unittest
 
 import fuzzylite
-from fuzzylite.operation import Op
 
 
 class TestLibrary(unittest.TestCase):
@@ -65,6 +63,38 @@ class TestLibrary(unittest.TestCase):
     #     self.assertListEqual(["20.320", "20.319820000"], thread_results)
     #
     #     self.assertEqual(Op.str(20.31982), "20.319820")
+    def test_library_exports_dir(self) -> None:
+        expected = {'Activated', 'Activation', 'ActivationFactory', 'Aggregated',
+                    'AlgebraicProduct', 'AlgebraicSum', 'Antecedent', 'Any', 'Bell', 'Binary',
+                    'Bisector', 'BoundedDifference', 'BoundedSum', 'Centroid', 'CloningFactory',
+                    'Concave', 'Consequent', 'Constant', 'ConstructionFactory', 'Cosine',
+                    'Defuzzifier', 'DefuzzifierFactory', 'Discrete', 'DrasticProduct', 'DrasticSum',
+                    'EinsteinProduct', 'EinsteinSum', 'Engine', 'Exporter', 'Expression',
+                    'Extremely', 'FactoryManager', 'First', 'FllExporter', 'Function',
+                    'FunctionFactory', 'Gaussian', 'GaussianProduct', 'General', 'HamacherProduct',
+                    'HamacherSum', 'Hedge', 'HedgeFactory', 'HedgeFunction', 'Highest',
+                    'InputVariable', 'IntegralDefuzzifier', 'LargestOfMaximum', 'Last', 'Library',
+                    'Linear', 'Lowest', 'Maximum', 'MeanOfMaximum', 'Minimum', 'NilpotentMaximum',
+                    'NilpotentMinimum', 'Norm', 'NormalizedSum', 'Not', 'Op', 'Operation',
+                    'Operator', 'OutputVariable', 'PiShape', 'Proportional', 'Proposition', 'Ramp',
+                    'Rectangle', 'Rule', 'RuleBlock', 'SNorm', 'SNormFactory', 'SNormFunction',
+                    'SShape', 'Seldom', 'Sigmoid', 'SigmoidDifference', 'SigmoidProduct',
+                    'SmallestOfMaximum', 'Somewhat', 'Spike', 'T', 'TNorm', 'TNormFactory',
+                    'TNormFunction', 'Term', 'TermFactory', 'Threshold', 'Trapezoid', 'Triangle',
+                    'UnboundedSum', 'Variable', 'Very', 'WeightedAverage', 'WeightedDefuzzifier',
+                    'WeightedSum', 'ZShape', '__annotations__', '__builtins__', '__cached__',
+                    '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
+                    '__spec__', '__version__', 'activation', 'bisect', 'copy', 'defuzzifier',
+                    'engine', 'enum', 'exporter', 'factory', 'fuzzylite', 'hedge', 'importer',
+                    'inf', 'inspect', 'isnan', 'library', 'logging', 'math', 'nan', 'norm',
+                    'operation', 'operator', 'rule', 'term', 'typing', 'variable'}
+
+        self.assertSetEqual(set(dir(fuzzylite)), expected)
+
+    def test_library_vars(self) -> None:
+        self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
+        self.assertEqual(fuzzylite.__version__, "7.0")
+        self.assertEqual(fuzzylite.__doc__, fuzzylite.Library().summary)
 
 
 if __name__ == '__main__':

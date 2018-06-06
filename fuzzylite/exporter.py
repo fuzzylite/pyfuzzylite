@@ -16,7 +16,6 @@
 """
 
 import typing
-from typing import Optional
 
 from .operation import Op
 
@@ -134,13 +133,13 @@ class FllExporter(Exporter):
             result.append(parameters)
         return " ".join(result)
 
-    def norm(self, norm: Optional['Norm']) -> str:
+    def norm(self, norm: typing.Optional['Norm']) -> str:
         return norm.class_name if norm else "none"
 
-    def activation(self, activation: Optional['Activation']) -> str:
+    def activation(self, activation: typing.Optional['Activation']) -> str:
         return activation.class_name if activation else "none"
 
-    def defuzzifier(self, defuzzifier: Optional['Defuzzifier']) -> str:
+    def defuzzifier(self, defuzzifier: typing.Optional['Defuzzifier']) -> str:
         if not defuzzifier:
             return "none"
         from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier

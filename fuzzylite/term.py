@@ -15,12 +15,12 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import bisect
+import enum
 import logging
+import math
 import typing
-from bisect import bisect
-from enum import Enum
-from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import Callable, Dict, Iterable, List, Union, Optional
+from math import inf, isnan, nan
 
 import fuzzylite
 from .exporter import FllExporter
@@ -93,7 +93,7 @@ class Term(object):
         :param args: is the parameters to configure the term
         :return: the parameters concatenated and an optional height at the end
         """
-        result: List[str] = []
+        result: typing.List[str] = []
         if args:
             result.extend(map(Op.str, args))
         if self.height and self.height != 1.0:
@@ -166,7 +166,7 @@ class Activated(Term):
     __slots__ = ("term", "degree", "implication")
 
     def __init__(self, term: Term, degree: float = 1.0,
-                 implication: Optional[TNorm] = None) -> None:
+                 implication: typing.Optional[TNorm] = None) -> None:
         super().__init__("_")
         self.term = term
         self.degree = degree
@@ -198,12 +198,13 @@ class Aggregated(Term):
     __slots__ = ("terms", "minimum", "maximum", "aggregation")
 
     def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan,
-                 aggregation: Optional[SNorm] = None, terms: Iterable[Activated] = None) -> None:
+                 aggregation: typing.Optional[SNorm] = None,
+                 terms: typing.Iterable[Activated] = None) -> None:
         super().__init__(name)
         self.minimum = minimum
         self.maximum = maximum
         self.aggregation = aggregation
-        self.terms: List[Activated] = []
+        self.terms: typing.List[Activated] = []
         if terms:
             self.terms.extend(terms)
 
@@ -245,7 +246,7 @@ class Aggregated(Term):
 
         return result
 
-    def highest_activated_term(self) -> Optional[Activated]:
+    def highest_activated_term(self) -> typing.Optional[Activated]:
         result = None
         maximum_activation = -inf
         for activation in self.terms:
@@ -272,7 +273,8 @@ class Bell(Term):
         if isnan(x):
             return nan
         return self.height * (1.0 /
-                              (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope))))
+                              (1.0 + (math.fabs((x - self.center) / self.width) ** (
+                                          2.0 * self.slope))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width, self.slope)
@@ -392,7 +394,8 @@ class Cosine(Term):
         if x < self.center - 0.5 * self.width or x > self.center + 0.5 * self.width:
             return self.height * 0.0
 
-        return self.height * (0.5 * (1.0 + cos(2.0 / self.width * pi * (x - self.center))))
+        return self.height * (
+                    0.5 * (1.0 + math.cos(2.0 / self.width * math.pi * (x - self.center))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width)
@@ -425,35 +428,36 @@ class Discrete(Term):
                 return self.x != other.x
             return self.x != other
 
-        def __lt__(self, other: Union[float, 'Discrete.Pair']) -> bool:
+        def __lt__(self, other: typing.Union[float, 'Discrete.Pair']) -> bool:
             if isinstance(other, float):
                 return self.x < other
             return self.x < other.x
 
-        def __le__(self, other: Union[float, 'Discrete.Pair']) -> bool:
+        def __le__(self, other: typing.Union[float, 'Discrete.Pair']) -> bool:
             if isinstance(other, float):
                 return self.x <= other
             return self.x <= other.x
 
-        def __gt__(self, other: Union[float, 'Discrete.Pair']) -> bool:
+        def __gt__(self, other: typing.Union[float, 'Discrete.Pair']) -> bool:
             if isinstance(other, float):
                 return self.x > other
             return self.x > other.x
 
-        def __ge__(self, other: Union[float, 'Discrete.Pair']) -> bool:
+        def __ge__(self, other: typing.Union[float, 'Discrete.Pair']) -> bool:
             if isinstance(other, float):
                 return self.x >= other
             return self.x >= other.x
 
     __slots__ = ("xy",)
 
-    def __init__(self, name: str = "", xy: Iterable[Pair] = None, height: float = 1.0) -> None:
+    def __init__(self, name: str = "", xy: typing.Iterable[Pair] = None,
+                 height: float = 1.0) -> None:
         super().__init__(name, height)
-        self.xy: List[Discrete.Pair] = []
+        self.xy: typing.List[Discrete.Pair] = []
         if xy:
             self.xy.extend(xy)
 
-    def __iter__(self) -> Iterable['Discrete.Pair']:
+    def __iter__(self) -> typing.Iterable['Discrete.Pair']:
         return iter(self.xy)
 
     def membership(self, x: float) -> float:
@@ -469,7 +473,7 @@ class Discrete(Term):
         if x >= self.xy[-1].x:
             return self.height * self.xy[-1].y
 
-        index = bisect(self.xy, x)
+        index = bisect.bisect(self.xy, x)
 
         lower_bound = self.xy[index - 1]
         if x == lower_bound.x:
@@ -496,21 +500,22 @@ class Discrete(Term):
 
         self.xy = Discrete.pairs_from(values)
 
-    def x(self) -> Iterable[float]:
+    def x(self) -> typing.Iterable[float]:
         return (pair.x for pair in self.xy)
 
-    def y(self) -> Iterable[float]:
+    def y(self) -> typing.Iterable[float]:
         return (pair.y for pair in self.xy)
 
     def sort(self) -> None:
         Discrete.sort_pairs(self.xy)
 
     @staticmethod
-    def sort_pairs(xy: List['Discrete.Pair']) -> None:
+    def sort_pairs(xy: typing.List['Discrete.Pair']) -> None:
         xy.sort(key=lambda pair: pair.x)
 
     @staticmethod
-    def pairs_from(values: Union[List[float], Dict[float, float]]) -> List['Discrete.Pair']:
+    def pairs_from(values: typing.Union[typing.List[float], typing.Dict[float, float]]) -> \
+            typing.List['Discrete.Pair']:
         if isinstance(values, dict):
             return [Discrete.Pair(float(x), float(y)) for x, y in values.items()]
 
@@ -524,14 +529,14 @@ class Discrete(Term):
 
     # TODO: More pythonic?
     @staticmethod
-    def values_from(pairs: List['Discrete.Pair']) -> List[float]:
-        result: List[float] = []
+    def values_from(pairs: typing.List['Discrete.Pair']) -> typing.List[float]:
+        result: typing.List[float] = []
         for xy in pairs:
             result.extend([xy.x, xy.y])
         return result
 
     @staticmethod
-    def dict_from(pairs: List['Discrete.Pair']) -> Dict[float, float]:
+    def dict_from(pairs: typing.List['Discrete.Pair']) -> typing.Dict[float, float]:
         return {pair.x: pair.y for pair in pairs}
 
 
@@ -547,8 +552,8 @@ class Gaussian(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp((-(x - self.mean) * (x - self.mean)) /
-                                 (2.0 * self.standard_deviation * self.standard_deviation))
+        return self.height * math.exp((-(x - self.mean) * (x - self.mean)) /
+                                      (2.0 * self.standard_deviation * self.standard_deviation))
 
     def parameters(self) -> str:
         return super()._parameters(self.mean, self.standard_deviation)
@@ -578,11 +583,11 @@ class GaussianProduct(Term):
         a = b = 1.0
 
         if x < self.mean_a:
-            a = exp((-(x - self.mean_a) * (x - self.mean_a)) /
+            a = math.exp((-(x - self.mean_a) * (x - self.mean_a)) /
                     (2.0 * self.standard_deviation_a * self.standard_deviation_a))
 
         if x > self.mean_b:
-            b = exp((-(x - self.mean_b) * (x - self.mean_b)) /
+            b = math.exp((-(x - self.mean_b) * (x - self.mean_b)) /
                     (2.0 * self.standard_deviation_b * self.standard_deviation_b))
 
         return self.height * a * b
@@ -600,10 +605,10 @@ class GaussianProduct(Term):
 class Linear(Term):
     __slots__ = ("coefficients", "engine")
 
-    def __init__(self, name: str = "", coefficients: Iterable[float] = None,
+    def __init__(self, name: str = "", coefficients: typing.Iterable[float] = None,
                  engine: 'Engine' = None) -> None:
         super().__init__(name)
-        self.coefficients: List[float] = []
+        self.coefficients: typing.List[float] = []
         if coefficients:
             self.coefficients.extend(coefficients)
         self.engine = engine
@@ -765,7 +770,7 @@ class Sigmoid(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * 1.0 / (1.0 + exp(-self.slope * (x - self.inflection)))
+        return self.height * 1.0 / (1.0 + math.exp(-self.slope * (x - self.inflection)))
 
     def is_monotonic(self) -> bool:
         return True
@@ -794,10 +799,10 @@ class SigmoidDifference(Term):
         if isnan(x):
             return nan
 
-        a = 1.0 / (1.0 + exp(-self.rising * (x - self.left)))
-        b = 1.0 / (1.0 + exp(-self.falling * (x - self.right)))
+        a = 1.0 / (1.0 + math.exp(-self.rising * (x - self.left)))
+        b = 1.0 / (1.0 + math.exp(-self.falling * (x - self.right)))
 
-        return self.height * fabs(a - b)
+        return self.height * math.fabs(a - b)
 
     def parameters(self) -> str:
         return super()._parameters(self.left, self.rising, self.falling, self.right)
@@ -823,8 +828,8 @@ class SigmoidProduct(Term):
         if isnan(x):
             return nan
 
-        a = 1.0 + exp(-self.rising * (x - self.left))
-        b = 1.0 + exp(-self.falling * (x - self.right))
+        a = 1.0 + math.exp(-self.rising * (x - self.left))
+        b = 1.0 + math.exp(-self.falling * (x - self.right))
 
         return self.height * 1.0 / (a * b)
 
@@ -849,7 +854,7 @@ class Spike(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp(-fabs(10.0 / self.width * (x - self.center)))
+        return self.height * math.exp(-math.fabs(10.0 / self.width * (x - self.center)))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width)
@@ -1032,11 +1037,11 @@ class Function(Term):
         __slots__ = ("name", "description", "element_type", "method", "arity", "precedence",
                      "associativity")
 
-        class Type(Enum):
+        class Type(enum.Enum):
             Operator, Function = range(2)
 
         def __init__(self, name: str, description: str, element_type: 'Function.Element.Type',
-                     method: Callable[..., float] = None,
+                     method: typing.Callable[..., float] = None,
                      arity: int = 0, precedence: int = 0,
                      associativity: int = -1) -> None:
             self.name = name
@@ -1062,8 +1067,8 @@ class Function(Term):
 
         def __init__(self, element: 'Function.Element' = None, variable: str = "",
                      value: float = nan,
-                     left: Optional['Function.Node'] = None,
-                     right: Optional['Function.Node'] = None) -> None:
+                     left: typing.Optional['Function.Node'] = None,
+                     right: typing.Optional['Function.Node'] = None) -> None:
             self.element = element
             self.variable = variable
             self.value = value
@@ -1079,7 +1084,7 @@ class Function(Term):
                 result = Op.str(self.value)
             return result
 
-        def evaluate(self, local_variables: Dict[str, float] = None) -> float:
+        def evaluate(self, local_variables: typing.Dict[str, float] = None) -> float:
             result = nan
             if self.element:
                 if not self.element.method:
@@ -1178,12 +1183,12 @@ class Function(Term):
             return " ".join(result)
 
     def __init__(self, name: str = "", formula: str = "", engine: 'Engine' = None,
-                 variables: Dict[str, float] = None) -> None:
+                 variables: typing.Dict[str, float] = None) -> None:
         super().__init__(name)
-        self.root: Optional[Function.Node] = None
+        self.root: typing.Optional[Function.Node] = None
         self.formula = formula
         self.engine = engine
-        self.variables: Dict[str, float] = {}
+        self.variables: typing.Dict[str, float] = {}
         if variables:
             self.variables.update(variables)
 
@@ -1222,7 +1227,7 @@ class Function(Term):
 
         return self.evaluate(self.variables)
 
-    def evaluate(self, variables: Dict[str, float] = None) -> float:
+    def evaluate(self, variables: typing.Dict[str, float] = None) -> float:
         if not self.is_loaded():
             raise RuntimeError("evaluation failed because function is not loaded")
         return self.root.evaluate(variables)  # type: ignore

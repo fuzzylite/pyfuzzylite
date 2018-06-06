@@ -43,7 +43,7 @@ class Library(object):
 
     @property
     def description(self) -> str:
-        return "a fuzzy logic control in Python"
+        return "a fuzzy logic control library in Python"
 
     @property
     def author(self) -> str:

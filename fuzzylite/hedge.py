@@ -15,7 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from math import sqrt
+import math
 
 
 class Hedge(object):
@@ -44,12 +44,12 @@ class Not(Hedge):
 
 class Seldom(Hedge):
     def hedge(self, x: float) -> float:
-        return sqrt(0.5 * x) if x <= 0.5 else (1.0 - sqrt(0.5 * (1.0 - x)))
+        return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
 
 
 class Somewhat(Hedge):
     def hedge(self, x: float) -> float:
-        return sqrt(x)
+        return math.sqrt(x)
 
 
 class Very(Hedge):

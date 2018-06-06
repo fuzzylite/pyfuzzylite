@@ -16,7 +16,6 @@
 """
 import typing
 from math import nan
-from typing import Iterable, List, Optional, Type
 
 from .exporter import FllExporter
 from .hedge import Any
@@ -41,7 +40,7 @@ class Proposition(Expression):
 
     def __init__(self) -> None:
         self.variable: Variable = None
-        self.hedges: List[Hedge] = []
+        self.hedges: typing.List[Hedge] = []
         self.term: Term = None
 
     def __str__(self) -> str:
@@ -65,8 +64,8 @@ class Operator(Expression):
 
     def __init__(self) -> None:
         self.name: str = ""
-        self.left: Optional[Expression] = None
-        self.right: Optional[Expression] = None
+        self.left: typing.Optional[Expression] = None
+        self.right: typing.Optional[Expression] = None
 
     def __str__(self) -> str:
         return self.name
@@ -77,7 +76,7 @@ class Antecedent(object):
 
     def __init__(self) -> None:
         self.text: str = ""
-        self.expression: Optional[Expression] = None
+        self.expression: typing.Optional[Expression] = None
 
     def is_loaded(self) -> bool:
         return bool(self.expression)
@@ -99,7 +98,7 @@ class Antecedent(object):
         return self._activation_degree(conjunction, disjunction, self.expression)
 
     def _activation_degree(self, conjunction: TNorm, disjunction: SNorm,
-                           node: Optional[Expression]) -> float:
+                           node: typing.Optional[Expression]) -> float:
         if not node:
             raise ValueError("expected an expression node, but found none")
 
@@ -160,7 +159,7 @@ class Consequent(object):
 
     def __init__(self) -> None:
         self.text: str = ""
-        self.conclusions: List[Proposition] = []
+        self.conclusions: typing.List[Proposition] = []
 
     def is_loaded(self) -> bool:
         return bool(self.conclusions)
@@ -171,7 +170,7 @@ class Consequent(object):
     def load(self, engine: 'Engine') -> None:
         pass
 
-    def modify(self, activation_degree: float, implication: Optional[TNorm]) -> None:
+    def modify(self, activation_degree: float, implication: typing.Optional[TNorm]) -> None:
         pass
 
 
@@ -264,10 +263,11 @@ class Rule(object):
         self.activation_degree = 0.0
         self.triggered = False
 
-    def activate_with(self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]) -> float:
+    def activate_with(self, conjunction: typing.Optional[TNorm],
+                      disjunction: typing.Optional[SNorm]) -> float:
         pass
 
-    def trigger(self, implication: Optional[TNorm]) -> None:
+    def trigger(self, implication: typing.Optional[TNorm]) -> None:
         if not self.is_loaded():
             raise RuntimeError(
                 f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
@@ -305,9 +305,11 @@ class RuleBlock(object):
                  "activation", "rules")
 
     def __init__(self, name: str = "", description: str = "", enabled: bool = True,
-                 conjunction: Optional[TNorm] = None, disjunction: Optional[SNorm] = None,
-                 implication: Optional[TNorm] = None, activation: Optional['Activation'] = None,
-                 rules: Iterable[Rule] = None) -> None:
+                 conjunction: typing.Optional[TNorm] = None,
+                 disjunction: typing.Optional[SNorm] = None,
+                 implication: typing.Optional[TNorm] = None,
+                 activation: typing.Optional['Activation'] = None,
+                 rules: typing.Iterable[Rule] = None) -> None:
         self.name = name
         self.description = description
         self.enabled = enabled
@@ -315,7 +317,7 @@ class RuleBlock(object):
         self.disjunction = disjunction
         self.implication = implication
         self.activation = activation
-        self.rules: List[Rule] = []
+        self.rules: typing.List[Rule] = []
         if rules:
             self.rules.extend(rules)
 
