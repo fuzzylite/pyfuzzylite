@@ -21,7 +21,7 @@ import unittest
 from typing import Dict
 
 import fuzzylite as fl
-from .assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert
 
 
 class DefuzzifierAssert(ComponentAssert):

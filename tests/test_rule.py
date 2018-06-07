@@ -19,7 +19,7 @@ import unittest
 from typing import Type
 
 import fuzzylite as fl
-from .assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert
 
 
 class RuleBlockAssert(ComponentAssert):

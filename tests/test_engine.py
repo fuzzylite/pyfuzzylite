@@ -18,7 +18,7 @@ import unittest
 from typing import List
 
 import fuzzylite as fl
-from .assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert
 
 
 class EngineAssert(ComponentAssert):

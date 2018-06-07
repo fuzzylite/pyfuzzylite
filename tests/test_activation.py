@@ -19,7 +19,7 @@ import unittest
 from typing import Dict, Tuple
 
 from fuzzylite import Activation, Term
-from .assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert
 
 
 class ActivationAssert(ComponentAssert):

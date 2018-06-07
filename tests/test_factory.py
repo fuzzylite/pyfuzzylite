@@ -19,7 +19,7 @@ import unittest
 from typing import *
 
 import fuzzylite as fl
-from .assert_component import BaseAssert, ComponentAssert
+from tests.assert_component import BaseAssert, ComponentAssert
 
 
 class FactoryAssert(ComponentAssert):

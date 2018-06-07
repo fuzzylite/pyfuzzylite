@@ -25,7 +25,7 @@ import unittest
 from typing import Sequence
 
 import fuzzylite as fl
-from .assert_component import ComponentAssert, BaseAssert
+from tests.assert_component import ComponentAssert, BaseAssert
 
 
 class TermAssert(ComponentAssert):

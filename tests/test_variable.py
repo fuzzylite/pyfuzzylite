@@ -20,7 +20,7 @@ import unittest
 from typing import Dict, Sequence, Tuple
 
 import fuzzylite as fl
-from .assert_component import ComponentAssert
+from tests.assert_component import ComponentAssert
 
 
 class VariableAssert(ComponentAssert):

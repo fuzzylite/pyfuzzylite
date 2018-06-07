@@ -15,20 +15,37 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import io
+from distutils.core import Command, setup
+
+
+class PyTest(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import unittest
+        test_loader = unittest.TestLoader()
+        test_suite = test_loader.discover('tests', pattern='test_*.py')
+        result = unittest.TextTestRunner().run(test_suite)
+        raise SystemExit(0 if result.wasSuccessful() else 1)
 
 
 def setup_package() -> None:
     with io.open('README.md', encoding='utf-8') as file:
         long_description = file.read()
 
-    from distutils.core import setup
     setup(
         name="pyfuzzylite",
         version="7.0",
         description="a fuzzy logic control library in Python",
         long_description=long_description,
         # long_description_content_type='text/markdown',
-        keywords=['fuzzy logic control', 'artificial intelligence'],
+        keywords=['fuzzy logic control', 'soft computing', 'artificial intelligence'],
         url='https://www.fuzzylite.com/python/',
         download_url='https://www.fuzzylite.com/downloads/',
         # project_urls={
@@ -64,6 +81,7 @@ def setup_package() -> None:
             'Topic :: Scientific/Engineering :: Mathematics',
             'Topic :: Software Development :: Libraries',
         ],
+        cmdclass={'test': PyTest},
         # zip_safe=True
     )
 
