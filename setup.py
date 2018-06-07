@@ -15,28 +15,28 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import io
-from distutils.core import setup
 
 
 def setup_package() -> None:
     with io.open('README.md', encoding='utf-8') as file:
         long_description = file.read()
 
+    from distutils.core import setup
     setup(
         name="pyfuzzylite",
         version="7.0",
         description="a fuzzy logic control library in Python",
         long_description=long_description,
-        long_description_content_type='text/markdown',
+        # long_description_content_type='text/markdown',
         keywords=['fuzzy logic control', 'artificial intelligence'],
         url='https://www.fuzzylite.com/python/',
         download_url='https://www.fuzzylite.com/downloads/',
-        project_urls={
-            'Home': 'https://www.fuzzylite.com/',
-            'Documentation': 'https://www.fuzzylite.com/documentation',
-            'Bug Tracker': 'https://github.com/fuzzylite/pyfuzzylite/issues',
-            'Source Code': 'https://github.com/fuzzylite/pyfuzzylite',
-        },
+        # project_urls={
+        #     'Home': 'https://www.fuzzylite.com/',
+        #     'Documentation': 'https://www.fuzzylite.com/documentation',
+        #     'Bug Tracker': 'https://github.com/fuzzylite/pyfuzzylite/issues',
+        #     'Source Code': 'https://github.com/fuzzylite/pyfuzzylite',
+        # },
         author="Juan Rada-Vilela, Ph.D.",
         author_email="jcrada@fuzzylite.com",
         maintainer="Juan Rada-Vilela, Ph.D.",
@@ -64,7 +64,7 @@ def setup_package() -> None:
             'Topic :: Scientific/Engineering :: Mathematics',
             'Topic :: Software Development :: Libraries',
         ],
-        zip_safe=True
+        # zip_safe=True
     )
 
 
