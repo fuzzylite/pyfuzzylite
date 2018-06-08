@@ -16,24 +16,31 @@
 """
 
 import unittest
-from typing import *
+from typing import Dict, Sequence, Tuple, List, Type, Set, Union
 
 import fuzzylite as fl
-from tests.assert_component import BaseAssert, ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class FactoryAssert(ComponentAssert):
+class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory, fl.CloningFactory]]):
+
     def has_class_name(self, name: str) -> 'FactoryAssert':
         self.test.assertEqual(self.actual.class_name, name)
         return self
 
     def constructs_exactly(self, name_type: Dict[str, type]) -> 'FactoryAssert':
+        if not isinstance(self.actual, fl.ConstructionFactory):
+            raise ValueError(f"expected an instance of {fl.ConstructionFactory}, "
+                             f"but got {self.actual}")
         self.test.assertDictEqual(name_type, self.actual.constructors)
         for name, clazz in name_type.items():
             self.test.assertEqual(type(self.actual.construct(name)), clazz)
         return self
 
     def copies_exactly(self, name_instance: Dict[str, object]) -> 'FactoryAssert':
+        if not isinstance(self.actual, fl.CloningFactory):
+            raise ValueError(f"expected an instance of {fl.CloningFactory}, "
+                             f"but got {self.actual}")
         self.test.assertSetEqual(set(self.actual.objects.keys()), set(name_instance.keys()))
         for name, instance in name_instance.items():
             self.test.assertEqual(str(self.actual.copy(name)), str(instance))
@@ -41,9 +48,9 @@ class FactoryAssert(ComponentAssert):
         return self
 
 
-class FunctionFactoryAssert(BaseAssert):
+class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
     def contains_exactly(self, elements: Set[str],
-                         element_type: fl.Function.Element.Type = None) -> 'FactoryAssert':
+                         element_type: fl.Function.Element.Type = None) -> 'FunctionFactoryAssert':
         if element_type == fl.Function.Element.Type.Operator:
             self.test.assertSetEqual(self.actual.operators(), elements)
         elif element_type == fl.Function.Element.Type.Function:
@@ -69,18 +76,19 @@ class FunctionFactoryAssert(BaseAssert):
 
 class TestFactory(unittest.TestCase):
     def test_construction_factory(self) -> None:
-        assert_that = FactoryAssert(self, fl.ConstructionFactory())
+        actual: fl.ConstructionFactory = fl.ConstructionFactory()
+        assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
 
         class Example(object):
             def __str__(self) -> str:
                 return "instance of Example"
 
-        assert_that.actual.constructors["example"] = Example
+        actual.constructors["example"] = Example
 
         assert_that.constructs_exactly({"example": Example})
 
-        self.assertEqual(str(assert_that.actual.construct("example")), "instance of Example")
+        self.assertEqual(str(actual.construct("example")), "instance of Example")
 
     def test_activation_factory(self) -> None:
         FactoryAssert(self, fl.ActivationFactory()) \
@@ -156,7 +164,8 @@ class TestFactory(unittest.TestCase):
                                  })
 
     def test_copy_factory(self) -> None:
-        assert_that = FactoryAssert(self, fl.CloningFactory())
+        actual: fl.CloningFactory = fl.CloningFactory()
+        assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("CloningFactory").copies_exactly({})
 
         class Example(object):
@@ -166,9 +175,11 @@ class TestFactory(unittest.TestCase):
             def __str__(self) -> str:
                 return f"Example({str(self.property)})"
 
-        assert_that.actual.objects["example"] = Example("Clone of Example")
+        actual.objects["example"] = Example("Clone of Example")
+
         assert_that.copies_exactly({"example": Example("Clone of Example")})
-        self.assertEqual(assert_that.actual.copy("example").property, "Clone of Example")
+
+        self.assertEqual(actual.copy("example").property, "Clone of Example")
 
 
 class TestFunctionFactory(unittest.TestCase):

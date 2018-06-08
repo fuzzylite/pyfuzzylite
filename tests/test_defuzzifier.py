@@ -21,10 +21,11 @@ import unittest
 from typing import Dict
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class DefuzzifierAssert(ComponentAssert):
+class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
+
     def configured_as(self, parameters: str) -> 'DefuzzifierAssert':
         self.actual.configure(parameters)
         return self

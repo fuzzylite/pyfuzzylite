@@ -19,10 +19,10 @@ import unittest
 from typing import Type
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class RuleBlockAssert(ComponentAssert):
+class RuleBlockAssert(BaseAssert[fl.RuleBlock]):
     pass
 
 
@@ -77,12 +77,13 @@ class TestExpression(unittest.TestCase):
 
         operator = fl.Operator()
         operator.name = "operator"
-        operator.left = "left"
-        operator.right = "right"
+        operator.left = fl.Expression()
+        operator.right = None
         self.assertEqual(str(operator), "operator")
 
 
-class RuleAssert(ComponentAssert):
+class RuleAssert(BaseAssert[fl.Rule]):
+
     def parser_fails(self, text: str, exception: Type[Exception] = SyntaxError,
                      regex: str = "") -> 'RuleAssert':
         with self.test.assertRaisesRegex(exception, regex):

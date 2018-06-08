@@ -18,10 +18,11 @@ import unittest
 from typing import List
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class EngineAssert(ComponentAssert):
+class EngineAssert(BaseAssert[fl.Engine]):
+
     def has_type(self, expected: fl.Engine.Type) -> 'EngineAssert':
         type = self.actual.infer_type()
         self.test.assertEqual(type, expected,

@@ -20,10 +20,11 @@ import unittest
 from typing import Dict, Sequence, Tuple
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class VariableAssert(ComponentAssert):
+class VariableAssert(BaseAssert[fl.Variable]):
+ 
     def fuzzy_values(self, fuzzification: Dict[float, str]) -> 'VariableAssert':
         for x in fuzzification:
             self.test.assertEqual(self.actual.fuzzify(x), fuzzification[x], f"when x={x}")
@@ -120,11 +121,7 @@ class TestVariable(unittest.TestCase):
              })
 
 
-class InputVariableAssert(VariableAssert):
-    def __init__(self, test: unittest.TestCase, actual: fl.InputVariable) -> None:
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
+class InputVariableAssert(BaseAssert[fl.InputVariable]):
 
     def exports_fll(self, fll: str) -> 'InputVariableAssert':
         self.test.assertEqual(fl.FllExporter().input_variable(self.actual), fll)
@@ -181,18 +178,15 @@ class TestInputVariable(unittest.TestCase):
              })
 
 
-class OutputVariableAssert(VariableAssert):
-    def __init__(self, test: unittest.TestCase, actual: fl.OutputVariable) -> None:
-        self.test = test
-        self.actual = actual
-        self.test.maxDiff = None  # show all differences
+class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
 
     def exports_fll(self, fll: str) -> 'OutputVariableAssert':
         self.test.assertEqual(fl.FllExporter().output_variable(self.actual), fll)
         return self
 
     def activated_values(self,
-                         fuzzification: Dict[Sequence[fl.Activated], str]) -> 'OutputVariableAssert':
+                         fuzzification: Dict[
+                             Sequence[fl.Activated], str]) -> 'OutputVariableAssert':
         for x in fuzzification:
             self.actual.fuzzy.terms.clear()
             self.actual.fuzzy.terms.extend(x)
@@ -331,8 +325,10 @@ class TestOutputVariable(unittest.TestCase):
 
         defuzzifier = fl.Defuzzifier()
         from unittest.mock import MagicMock
-        defuzzifier.defuzzify = MagicMock(
-            side_effect=ValueError("mocking exception during defuzzification"))
+        setattr(defuzzifier, 'defuzzify', MagicMock(
+            side_effect=ValueError("mocking exception during defuzzification")))
+        # defuzzifier.defuzzify = MagicMock(
+        #     side_effect=ValueError("mocking exception during defuzzification"))
         variable.defuzzifier = defuzzifier
         variable.default_value = 0.6
         with self.assertRaisesRegex(ValueError, "mocking exception during defuzzification"):

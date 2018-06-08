@@ -20,10 +20,11 @@ from math import inf, isnan, nan
 from typing import Dict
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert
+from tests.assert_component import BaseAssert
 
 
-class HedgeAssert(ComponentAssert):
+class HedgeAssert(BaseAssert[fl.Hedge]):
+
     def evaluates(self, az: Dict[float, float]) -> 'HedgeAssert':
         for a, z in az.items():
             if isnan(z):

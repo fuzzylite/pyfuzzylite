@@ -16,9 +16,9 @@
 """
 
 import unittest
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any
 
-from fuzzylite.exporter import FllExporter
+import fuzzylite as fl
 
 T = TypeVar('T')
 
@@ -29,17 +29,19 @@ class BaseAssert(Generic[T]):
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
-
-class ComponentAssert(BaseAssert):
-    def has_name(self, name: str) -> 'ComponentAssert':
-        self.test.assertEqual(self.actual.name, name)
-        return self
-
-    def has_description(self, description: str) -> 'ComponentAssert':
-        self.test.assertEqual(self.actual.description, description)
-        return self
-
-    def exports_fll(self, fll: str) -> 'ComponentAssert':
-        self.test.assertEqual(FllExporter().to_string(self.actual), fll)
+    def exports_fll(self, fll: str) -> Any:
+        self.test.assertEqual(fl.FllExporter().to_string(self.actual), fll)
         self.test.assertEqual(str(self.actual), fll)
+        return self
+
+    def has_name(self, name: str) -> Any:
+        self.test.assertTrue(hasattr(self.actual, "name"),
+                             f"{type(self.actual)} does not have a 'name' attribute")
+        self.test.assertEqual(getattr(self.actual, "name"), name)
+        return self
+
+    def has_description(self, description: str) -> Any:
+        self.test.assertTrue(hasattr(self.actual, "description"),
+                             f"{type(self.actual)} does not have a 'description' attribute")
+        self.test.assertEqual(getattr(self.actual, "description"), description)
         return self

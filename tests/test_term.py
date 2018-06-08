@@ -25,12 +25,12 @@ import unittest
 from typing import Sequence
 
 import fuzzylite as fl
-from tests.assert_component import ComponentAssert, BaseAssert
+from tests.assert_component import  BaseAssert
 
 
-class TermAssert(ComponentAssert):
+class TermAssert(BaseAssert[fl.Term]):
     def has_name(self, name: str, height: float = 1.0) -> 'TermAssert':
-        super().has_name(name)
+        self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
         return self
 
@@ -1285,15 +1285,15 @@ class TestFunction(unittest.TestCase):
             element=fl.Function.Element("+", "sum", None), variable="x")) \
             .to_string_is("+")
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("+", "sum", None), variable="x", value="1")) \
+            element=fl.Function.Element("+", "sum", None), variable="x", value=1)) \
             .to_string_is("+")
 
         FunctionNodeAssert(self, fl.Function.Node(variable="x")) \
             .to_string_is("x")
-        FunctionNodeAssert(self, fl.Function.Node(variable="x", value="1.0")) \
+        FunctionNodeAssert(self, fl.Function.Node(variable="x", value=1.0)) \
             .to_string_is("x")
 
-        FunctionNodeAssert(self, fl.Function.Node(value="1")) \
+        FunctionNodeAssert(self, fl.Function.Node(value=1)) \
             .to_string_is("1")
 
 

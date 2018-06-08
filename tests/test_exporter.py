@@ -27,7 +27,7 @@ class TestFllExporter(unittest.TestCase):
 
     def test_variables(self) -> None:
         self.assertEqual(fl.FllExporter().input_variable(
-            fl.Variable("name", terms=[fl.Triangle("A"), fl.Trapezoid("B")])),
+            fl.InputVariable("name", terms=[fl.Triangle("A"), fl.Trapezoid("B")])),
             "\n".join(
                 ["InputVariable: name",
                  "  description: ",
