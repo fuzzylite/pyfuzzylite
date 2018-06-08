@@ -230,7 +230,7 @@ class Aggregated(Term):
 
         result = 0.0
         for term in self.terms:
-            result = self.aggregation.compute(result, term.membership(x))  # type: ignore
+            result = self.aggregation.compute(result, term.membership(x))
         logging.debug(f"{Op.str(result)}: {str(self)}")
         return result
 
@@ -274,7 +274,7 @@ class Bell(Term):
             return nan
         return self.height * (1.0 /
                               (1.0 + (math.fabs((x - self.center) / self.width) ** (
-                                          2.0 * self.slope))))
+                                      2.0 * self.slope))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width, self.slope)
@@ -395,7 +395,7 @@ class Cosine(Term):
             return self.height * 0.0
 
         return self.height * (
-                    0.5 * (1.0 + math.cos(2.0 / self.width * math.pi * (x - self.center))))
+                0.5 * (1.0 + math.cos(2.0 / self.width * math.pi * (x - self.center))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width)
@@ -513,8 +513,11 @@ class Discrete(Term):
     def sort_pairs(xy: typing.List['Discrete.Pair']) -> None:
         xy.sort(key=lambda pair: pair.x)
 
+    Floatable = typing.TypeVar("Floatable", typing.SupportsFloat, str, bytes)
+
     @staticmethod
-    def pairs_from(values: typing.Union[typing.List[float], typing.Dict[float, float]]) -> \
+    def pairs_from(
+            values: typing.Union[typing.Sequence[Floatable], typing.Dict[Floatable, Floatable]]) -> \
             typing.List['Discrete.Pair']:
         if isinstance(values, dict):
             return [Discrete.Pair(float(x), float(y)) for x, y in values.items()]
@@ -584,11 +587,11 @@ class GaussianProduct(Term):
 
         if x < self.mean_a:
             a = math.exp((-(x - self.mean_a) * (x - self.mean_a)) /
-                    (2.0 * self.standard_deviation_a * self.standard_deviation_a))
+                         (2.0 * self.standard_deviation_a * self.standard_deviation_a))
 
         if x > self.mean_b:
             b = math.exp((-(x - self.mean_b) * (x - self.mean_b)) /
-                    (2.0 * self.standard_deviation_b * self.standard_deviation_b))
+                         (2.0 * self.standard_deviation_b * self.standard_deviation_b))
 
         return self.height * a * b
 
@@ -1230,7 +1233,7 @@ class Function(Term):
     def evaluate(self, variables: typing.Dict[str, float] = None) -> float:
         if not self.is_loaded():
             raise RuntimeError("evaluation failed because function is not loaded")
-        return self.root.evaluate(variables)  # type: ignore
+        return self.root.evaluate(variables)
 
     def is_loaded(self) -> bool:
         return bool(self.root)

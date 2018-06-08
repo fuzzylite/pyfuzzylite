@@ -103,53 +103,51 @@ class Antecedent(object):
             raise ValueError("expected an expression node, but found none")
 
         if isinstance(node, Proposition):
-            proposition = node
-            if not proposition.variable:
-                raise ValueError(f"expected a variable in proposition {proposition}, "
+            if not node.variable:
+                raise ValueError(f"expected a variable in proposition {node}, "
                                  "but found none")
-            if not proposition.variable.enabled:
+            if not node.variable.enabled:
                 return 0.0
 
-            if proposition.hedges:
+            if node.hedges:
                 # if last hedge is "Any", apply hedges in reverse order and return degree
-                if isinstance(proposition.hedges[-1], Any):
+                if isinstance(node.hedges[-1], Any):
                     result = nan
-                    for hedge in reversed(proposition.hedges):
+                    for hedge in reversed(node.hedges):
                         result = hedge.hedge(result)
                     return result
 
             result = nan
-            if isinstance(proposition.variable, InputVariable):
-                result = node.term.membership(proposition.variable.value)
-            elif isinstance(proposition.variable, OutputVariable):
-                result = node.variable.fuzzy.activation_degree(proposition.term)
+            if isinstance(node.variable, InputVariable):
+                result = node.term.membership(node.variable.value)
+            elif isinstance(node.variable, OutputVariable):
+                result = node.variable.fuzzy.activation_degree(node.term)
 
-            if proposition.hedges:
-                for hedge in reversed(proposition.hedges):
+            if node.hedges:
+                for hedge in reversed(node.hedges):
                     result = hedge.hedge(result)
 
             return result
 
         if isinstance(node, Operator):
-            operator = node
-            if not (operator.left and operator.right):
+            if not (node.left and node.right):
                 raise ValueError("expected left and right operands")
 
-            if operator.name == Rule.AND:
+            if node.name == Rule.AND:
                 if not conjunction:
                     raise ValueError(f"rule requires a conjunction operator: '{self.text}'")
                 return conjunction.compute(
-                    self._activation_degree(conjunction, disjunction, operator.left),
-                    self._activation_degree(conjunction, disjunction, operator.right))
+                    self._activation_degree(conjunction, disjunction, node.left),
+                    self._activation_degree(conjunction, disjunction, node.right))
 
-            if operator.name == Rule.OR:
+            if node.name == Rule.OR:
                 if not disjunction:
                     raise ValueError(f"rule requires a disjunction operator: '{self.text}'")
                 return disjunction.compute(
-                    self._activation_degree(conjunction, disjunction, operator.left),
-                    self._activation_degree(conjunction, disjunction, operator.right))
+                    self._activation_degree(conjunction, disjunction, node.left),
+                    self._activation_degree(conjunction, disjunction, node.right))
 
-            raise ValueError(f"operator <{operator.name}> not recognized")
+            raise ValueError(f"operator <{node.name}> not recognized")
 
         raise ValueError(f"expected a Proposition or an Operator, but found <{str(node)}>")
 

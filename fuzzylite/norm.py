@@ -75,7 +75,7 @@ class NilpotentMinimum(TNorm):
 class TNormFunction(TNorm):
     __slots__ = ("f",)
 
-    def __init__(self, formula: str, engine: 'Engine' = None) -> None:
+    def __init__(self, formula: str, engine: typing.Optional['Engine'] = None) -> None:
         from fuzzylite.term import Function
         self.f = Function(self.class_name, formula, engine)
         self.f.load()
@@ -141,7 +141,7 @@ class UnboundedSum(SNorm):
 class SNormFunction(SNorm):
     __slots__ = ("f",)
 
-    def __init__(self, formula: str, engine: 'Engine' = None) -> None:
+    def __init__(self, formula: str, engine: typing.Optional['Engine'] = None) -> None:
         from fuzzylite.term import Function
         self.f = Function(self.class_name, formula, engine)
         self.f.load()

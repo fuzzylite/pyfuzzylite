@@ -35,6 +35,7 @@ from .term import (Term, Bell, Binary, Concave, Constant, Cosine, Discrete,
                    Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
                    Spike, SShape, Trapezoid, Triangle, ZShape)
 
+# TODO: Not too keen on having classes extending Generic[T]
 T = typing.TypeVar('T')
 
 
