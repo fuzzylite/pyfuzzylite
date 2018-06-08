@@ -19,6 +19,7 @@ from distutils.core import Command, setup
 
 
 class PyTest(Command):
+    user_options = []
 
     def initialize_options(self) -> None:
         pass
@@ -80,7 +81,7 @@ def setup_package() -> None:
             'Topic :: Scientific/Engineering :: Mathematics',
             'Topic :: Software Development :: Libraries',
         ],
-        # cmdclass={'test': PyTest},
+        cmdclass={'test': PyTest},
         # zip_safe=True
     )
 
