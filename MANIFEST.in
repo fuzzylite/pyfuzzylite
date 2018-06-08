@@ -2,3 +2,8 @@ include AUTHOR
 include LICENSE
 include README.md
 include THANKS
+include *.in
+include *.png
+include COPYING
+recursive-include fuzzylite *.py
+recursive-include tests *.py
