@@ -9,10 +9,10 @@ branches:
 
 matrix:
   include:
-    - python: 3.7
     - python: 3.6
-    - python: 3.5
-    - python: 3.4
+# Not supported
+#    - python: 3.5
+#    - python: 3.4
 
 install:
   - pip install tox-travis coveralls
