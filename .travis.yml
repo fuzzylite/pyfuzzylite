@@ -1,20 +1,28 @@
 language: python
-python:
-  - "3.6"
 
 git:
   depth: 1
+
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    - python: 3.7
+    - python: 3.6
+    - python: 3.5
+    - python: 3.4
 
 install:
   - pip install tox-travis coveralls
 
 script:
+  - python --version
   - tox -v -c setup.cfg
-  - coverage run --source=fuzzylite setup.py test
-  - coverage report -m
 
 after_success:
-  - coveralls
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then coveralls; fi
 
 notifications:
   email:
