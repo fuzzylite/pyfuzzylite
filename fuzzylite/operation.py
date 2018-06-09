@@ -30,8 +30,13 @@ class Operation(object):
 
     @staticmethod
     def eq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        reveal_type(absolute_tolerance)
         if absolute_tolerance is None:
             absolute_tolerance = fuzzylite.library.absolute_tolerance
+        reveal_type(fuzzylite.library)
+        reveal_type(fuzzylite.library.absolute_tolerance)
+        reveal_type(absolute_tolerance)
+        reveal_type(abs(a - b))
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b))
