@@ -73,13 +73,13 @@ class TestExpression(unittest.TestCase):
         self.assertEqual(str(proposition), "variable is very term")
 
     def test_operator(self) -> None:
-        self.assertEqual(fl.Operator().name, "")
+        self.assertEqual("", fl.Operator().name)
 
         operator = fl.Operator()
-        operator.name = "operator"
-        operator.left = fl.Expression()
-        operator.right = None
-        self.assertEqual(str(operator), "operator")
+        operator.name = "AND"
+        operator.left = fl.Proposition()
+        operator.right = fl.Proposition()
+        self.assertEqual("? is ? AND ? is ?", str(operator))
 
 
 class RuleAssert(BaseAssert[fl.Rule]):

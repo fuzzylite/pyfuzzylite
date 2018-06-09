@@ -24,24 +24,32 @@ from .operation import Op
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:
-    from .activation import Activation
+    from .activation import Activation  # noqa: F401
     from .engine import Engine
     from .hedge import Hedge
-    from .term import Term
-    from .variable import Variable
+    from .term import Term  # noqa: F401
+    from .variable import Variable  # noqa: F401
 
 
 class Expression(object):
-    pass
+
+    def activation_degree(self,
+                          conjunction: typing.Optional[TNorm] = None,
+                          disjunction: typing.Optional[SNorm] = None) -> float:
+        raise NotImplementedError()
 
 
 class Proposition(Expression):
     __slots__ = ("variable", "hedges", "term")
 
-    def __init__(self) -> None:
-        self.variable: typing.Optional[Variable] = None
+    def __init__(self, variable: typing.Optional['Variable'] = None,
+                 hedges: typing.Optional[typing.Iterable['Hedge']] = None,
+                 term: typing.Optional['Term'] = None) -> None:
+        self.variable = variable
         self.hedges: typing.List[Hedge] = []
-        self.term: typing.Optional[Term] = None
+        if hedges:
+            self.hedges.extend(hedges)
+        self.term = term
 
     def __str__(self) -> str:
         result = []
@@ -58,6 +66,37 @@ class Proposition(Expression):
 
         return " ".join(result)
 
+    def activation_degree(self,
+                          conjunction: typing.Optional[TNorm] = None,
+                          disjunction: typing.Optional[SNorm] = None) -> float:
+        if not self.variable:
+            raise ValueError(f"expected a variable in proposition {self}, but found none")
+        if not self.variable.enabled:
+            return 0.0
+
+        if self.hedges:
+            # if last hedge is "Any", apply hedges in reverse order and return degree
+            if isinstance(self.hedges[-1], Any):
+                result = nan
+                for hedge in reversed(self.hedges):
+                    result = hedge.hedge(result)
+                return result
+
+        if not self.term:
+            raise ValueError(f"expected a term in proposition {self}, but found none")
+
+        result = nan
+        if isinstance(self.variable, InputVariable):
+            result = self.term.membership(self.variable.value)
+        elif isinstance(self.variable, OutputVariable):
+            result = self.variable.fuzzy.activation_degree(self.term)
+
+        if self.hedges:
+            for hedge in reversed(self.hedges):
+                result = hedge.hedge(result)
+
+        return result
+
 
 class Operator(Expression):
     __slots__ = ("name", "left", "right")
@@ -68,7 +107,29 @@ class Operator(Expression):
         self.right: typing.Optional[Expression] = None
 
     def __str__(self) -> str:
-        return self.name
+        return " ".join([str(self.left), self.name, str(self.right)])
+
+    def activation_degree(self,
+                          conjunction: typing.Optional[TNorm] = None,
+                          disjunction: typing.Optional[SNorm] = None) -> float:
+        if not (self.left and self.right):
+            raise ValueError("expected left and right operands")
+
+        if self.name == Rule.AND:
+            if not conjunction:
+                raise ValueError(f"rule requires a conjunction operator: '{str(self)}'")
+            return conjunction.compute(
+                self.left.activation_degree(conjunction, disjunction),
+                self.right.activation_degree(conjunction, disjunction))
+
+        if self.name == Rule.OR:
+            if not disjunction:
+                raise ValueError(f"rule requires a disjunction operator: '{str(self)}'")
+            return disjunction.compute(
+                self.left.activation_degree(conjunction, disjunction),
+                self.right.activation_degree(conjunction, disjunction))
+
+        raise ValueError(f"operator <{self.name}> not recognized in {str(self)}")
 
 
 class Antecedent(object):
@@ -92,66 +153,9 @@ class Antecedent(object):
             raise ValueError("expected the antecedent of a rule, but found none")
 
     def activation_degree(self, conjunction: TNorm, disjunction: SNorm) -> float:
-        if not self.is_loaded():
+        if not self.expression:
             raise ValueError(f"antecedent <{self.text}> is not loaded")
-
-        return self._activation_degree(conjunction, disjunction, self.expression)
-
-    def _activation_degree(self, conjunction: TNorm, disjunction: SNorm,
-                           node: typing.Optional[Expression]) -> float:
-        if not node:
-            raise ValueError("expected an expression node, but found none")
-
-        if isinstance(node, Proposition):
-            if not node.variable:
-                raise ValueError(f"expected a variable in proposition {node}, but found none")
-            if not node.variable.enabled:
-                return 0.0
-
-            if node.hedges:
-                # if last hedge is "Any", apply hedges in reverse order and return degree
-                if isinstance(node.hedges[-1], Any):
-                    result = nan
-                    for hedge in reversed(node.hedges):
-                        result = hedge.hedge(result)
-                    return result
-
-            if not node.term:
-                raise ValueError(f"expected a term in proposition {node}, but found none")
-
-            result = nan
-            if isinstance(node.variable, InputVariable):
-                result = node.term.membership(node.variable.value)
-            elif isinstance(node.variable, OutputVariable):
-                result = node.variable.fuzzy.activation_degree(node.term)
-
-            if node.hedges:
-                for hedge in reversed(node.hedges):
-                    result = hedge.hedge(result)
-
-            return result
-
-        if isinstance(node, Operator):
-            if not (node.left and node.right):
-                raise ValueError("expected left and right operands")
-
-            if node.name == Rule.AND:
-                if not conjunction:
-                    raise ValueError(f"rule requires a conjunction operator: '{self.text}'")
-                return conjunction.compute(
-                    self._activation_degree(conjunction, disjunction, node.left),
-                    self._activation_degree(conjunction, disjunction, node.right))
-
-            if node.name == Rule.OR:
-                if not disjunction:
-                    raise ValueError(f"rule requires a disjunction operator: '{self.text}'")
-                return disjunction.compute(
-                    self._activation_degree(conjunction, disjunction, node.left),
-                    self._activation_degree(conjunction, disjunction, node.right))
-
-            raise ValueError(f"operator <{node.name}> not recognized")
-
-        raise ValueError(f"expected a Proposition or an Operator, but found <{str(node)}>")
+        return self.expression.activation_degree(conjunction, disjunction)
 
 
 class Consequent(object):
@@ -216,10 +220,10 @@ class Rule(object):
         antecedent = []
         consequent = []
         weight = 1.0
-        s_none, s_if, s_then, s_with, s_end = range(5)
-        state = s_none
+        s_begin, s_if, s_then, s_with, s_end = range(5)
+        state = s_begin
         for token in rule.split():
-            if state == s_none:
+            if state == s_begin:
                 if token == Rule.IF:
                     state = s_if
                 else:
@@ -243,7 +247,7 @@ class Rule(object):
             else:
                 raise SyntaxError(f"unexpected state '{state}' in finite state machine")
 
-        if state == s_none:
+        if state == s_begin:
             raise SyntaxError(f"expected an if-then rule, but found '{text}'")
         if state == s_if:
             raise SyntaxError(f"expected keyword '{Rule.THEN}' in rule '{text}'")
