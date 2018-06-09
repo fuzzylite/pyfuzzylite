@@ -31,9 +31,9 @@ class Engine(object):
 
     def __init__(self, name: str = "",
                  description: str = "",
-                 inputs: typing.Iterable[InputVariable] = None,
-                 outputs: typing.Iterable[OutputVariable] = None,
-                 blocks: typing.Iterable[RuleBlock] = None) -> None:
+                 inputs: typing.Optional[typing.Iterable[InputVariable]] = None,
+                 outputs: typing.Optional[typing.Iterable[OutputVariable]] = None,
+                 blocks: typing.Optional[typing.Iterable[RuleBlock]] = None) -> None:
         self.name = name
         self.description = description
         self.inputs: typing.List[InputVariable] = []
@@ -49,9 +49,12 @@ class Engine(object):
     def __str__(self) -> str:
         return FllExporter().engine(self)
 
-    def configure(self, conjunction: TNorm = None, disjunction: SNorm = None,
-                  implication: TNorm = None, aggregation: SNorm = None,
-                  defuzzifier: Defuzzifier = None, activation: Activation = None) -> None:
+    def configure(self, conjunction: typing.Optional[TNorm] = None,
+                  disjunction: typing.Optional[SNorm] = None,
+                  implication: typing.Optional[TNorm] = None,
+                  aggregation: typing.Optional[SNorm] = None,
+                  defuzzifier: typing.Optional[Defuzzifier] = None,
+                  activation: typing.Optional[Activation] = None) -> None:
 
         pass
 

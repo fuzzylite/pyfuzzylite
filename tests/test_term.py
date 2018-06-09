@@ -25,7 +25,7 @@ import unittest
 from typing import Sequence
 
 import fuzzylite as fl
-from tests.assert_component import  BaseAssert
+from tests.assert_component import BaseAssert
 
 
 class TermAssert(BaseAssert[fl.Term]):
@@ -108,7 +108,8 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, ""):
             fl.Term().tsukamoto(math.nan, math.nan, math.nan)
 
-        fl.Term().update_reference(None)  # does nothing, for test coverage
+        # does nothing, for test coverage
+        fl.Term().update_reference(None)  # type: ignore
 
         discrete_triangle = fl.Triangle("triangle", -1.0, 0.0, 1.0).discretize(-1, 1, 10)
         self.assertEqual(fl.Discrete.dict_from(discrete_triangle.xy),
@@ -163,8 +164,8 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 0.0})
 
-        activated = fl.Activated(None, 1.0)
-        self.assertEqual(str(activated), "term: _ Activated (1.000*none)")
+        activated = fl.Activated(None, 1.0)  # type: ignore
+        self.assertEqual("term: _ Activated (1.000*none)", str(activated))
         self.assertEqual(math.isnan(activated.membership(math.nan)), True, f"when x={math.nan}")
         activated.configure("")
 
@@ -202,7 +203,7 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(aggregated.activation_degree(low), 0.6)
         self.assertEqual(aggregated.activation_degree(medium), 0.4)
 
-        self.assertEqual(aggregated.highest_activated_term().term, low)
+        self.assertEqual(aggregated.highest_activated_term().term, low)  # type: ignore
 
         aggregated.terms.append(fl.Activated(low, 0.4))
         aggregated.aggregation = fl.UnboundedSum()
@@ -453,7 +454,7 @@ class TestTerm(unittest.TestCase):
             term.membership(0.0)
         with self.assertRaisesRegex(ValueError, re.escape(
                 "expected a list of (x,y)-pairs, but found none")):
-            term.xy = None
+            term.xy = []
             term.membership(0.0)
 
     def test_gaussian(self) -> None:
@@ -1165,7 +1166,8 @@ class FunctionNodeAssert(BaseAssert):
         return self
 
     def evaluates_to(self, value: float,
-                     variables: typing.Dict[str, float] = None) -> 'FunctionNodeAssert':
+                     variables: typing.Optional[
+                         typing.Dict[str, float]] = None) -> 'FunctionNodeAssert':
         self.test.assertAlmostEqual(self.actual.evaluate(variables), value, places=15,
                                     msg=f"when value is {value:.3f}")
         return self
@@ -1179,8 +1181,9 @@ class FunctionNodeAssert(BaseAssert):
 
 class TestFunction(unittest.TestCase):
     def test_element(self) -> None:
-        element = fl.Function.Element("function", "math function()",
-                                      fl.Function.Element.Type.Function, None, 0, 0, -1)
+        element = fl.Function.Element("function", "math function()",  # type: ignore
+                                      fl.Function.Element.Type.Function, None, 0, 0,
+                                      -1)
         self.assertEqual(str(element), "Element: name='function', description='math function()', "
                                        "element_type='Type.Function', method='None', arity=0, "
                                        "precedence=0, associativity=-1")
@@ -1196,8 +1199,10 @@ class TestFunction(unittest.TestCase):
 
     def test_node_evaluation(self) -> None:
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("undefined", "undefined method", None)
-        )).fails_to_evaluate(ValueError, "expected a method reference, but found none")
+            element=fl.Function.Element("undefined", "undefined method",  # type: ignore
+                                        fl.Function.Element.Type.Function, None))
+                           ).fails_to_evaluate(ValueError,
+                                               "expected a method reference, but found none")
 
         functions = fl.FunctionFactory()
         node_mult = fl.Function.Node(
@@ -1271,21 +1276,22 @@ class TestFunction(unittest.TestCase):
             .evaluates_to(-0.5365729180004349)
 
         # if we change the original object
-        node_sin.left.element.name = "?"
+        node_sin.left.element.name = "?"  # type: ignore
         # the copy cannot be affected
         FunctionNodeAssert(self, node_copy) \
             .infix_is("sin ( 3.000 * 4.000 )") \
             .evaluates_to(-0.5365729180004349)
 
     def test_node_str(self) -> None:
+        some_type = fl.Function.Element.Type.Operator
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("+", "sum", None))) \
+            element=fl.Function.Element("+", "sum", some_type, sum))) \
             .to_string_is("+")
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("+", "sum", None), variable="x")) \
+            element=fl.Function.Element("+", "sum", some_type, sum), variable="x")) \
             .to_string_is("+")
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("+", "sum", None), variable="x", value=1)) \
+            element=fl.Function.Element("+", "sum", some_type, sum), variable="x", value=1)) \
             .to_string_is("+")
 
         FunctionNodeAssert(self, fl.Function.Node(variable="x")) \

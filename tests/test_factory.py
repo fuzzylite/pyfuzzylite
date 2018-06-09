@@ -16,7 +16,7 @@
 """
 
 import unittest
-from typing import Dict, Sequence, Tuple, List, Type, Set, Union
+from typing import Dict, Sequence, Tuple, List, Type, Set, Union, Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -50,7 +50,8 @@ class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory, fl.CloningFactory]]
 
 class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
     def contains_exactly(self, elements: Set[str],
-                         element_type: fl.Function.Element.Type = None) -> 'FunctionFactoryAssert':
+                         element_type: Optional[
+                             fl.Function.Element.Type] = None) -> 'FunctionFactoryAssert':
         if element_type == fl.Function.Element.Type.Operator:
             self.test.assertSetEqual(self.actual.operators(), elements)
         elif element_type == fl.Function.Element.Type.Function:

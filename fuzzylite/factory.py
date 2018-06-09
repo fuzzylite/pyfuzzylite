@@ -43,13 +43,13 @@ class ConstructionFactory(typing.Generic[T]):
     __slots__ = ("constructors",)
 
     def __init__(self) -> None:
-        self.constructors: typing.Dict[str, typing.Callable[[], T]] = {}
+        self.constructors: typing.Dict[str, typing.Callable[[], typing.Optional[T]]] = {}
 
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
 
-    def construct(self, key: str) -> T:
+    def construct(self, key: str) -> typing.Optional[T]:
         if key in self.constructors:
             if self.constructors[key]:
                 return self.constructors[key]()

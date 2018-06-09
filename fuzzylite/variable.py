@@ -15,8 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import typing
 import math
+import typing
 from math import inf, isnan, nan
 
 from .exporter import FllExporter
@@ -34,7 +34,8 @@ class Variable(object):
                  "enabled", "lock_range", "_value", "terms")
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
+                 maximum: float = inf,
+                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
         self.name = name
         self.description = description
         self.minimum = minimum
@@ -98,7 +99,8 @@ class InputVariable(Variable):
     __slots__ = ()
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
+                 maximum: float = inf,
+                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
         super().__init__(name, description, minimum, maximum, terms)
 
     def __str__(self) -> str:
@@ -112,7 +114,8 @@ class OutputVariable(Variable):
     __slots__ = ("fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value")
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf, terms: typing.Iterable['Term'] = None) -> None:
+                 maximum: float = inf,
+                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
@@ -120,7 +123,7 @@ class OutputVariable(Variable):
         # initialize parent members
         super().__init__(name, description, minimum, maximum, terms)
         # set values of output variable
-        self.defuzzifier: 'Defuzzifier' = None
+        self.defuzzifier: typing.Optional['Defuzzifier'] = None
         self.previous_value: float = nan
         self.default_value: float = nan
         self.lock_previous_value: bool = False

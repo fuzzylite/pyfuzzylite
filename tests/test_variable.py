@@ -17,20 +17,21 @@
 
 import math
 import unittest
-from typing import Dict, Sequence, Tuple
+from typing import Dict, Sequence, Tuple, Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
 
 class VariableAssert(BaseAssert[fl.Variable]):
- 
+
     def fuzzy_values(self, fuzzification: Dict[float, str]) -> 'VariableAssert':
         for x in fuzzification:
             self.test.assertEqual(self.actual.fuzzify(x), fuzzification[x], f"when x={x}")
         return self
 
-    def highest_memberships(self, x_mf: Dict[float, Tuple[float, fl.Term]]) -> 'VariableAssert':
+    def highest_memberships(self,
+                            x_mf: Dict[float, Tuple[float, Optional[fl.Term]]]) -> 'VariableAssert':
         for x in x_mf:
             self.test.assertEqual(self.actual.highest_membership(x), x_mf[x], f"when x={x}")
         return self

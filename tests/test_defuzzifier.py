@@ -15,7 +15,6 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import math
 import re
 import unittest
 from typing import Dict
@@ -34,11 +33,11 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         self.test.assertEqual(self.actual.parameters(), parameters)
         return self
 
-    def defuzzifies(self, terms: Dict[fl.Term, float], minimum: float = -math.inf,
-                    maximum: float = math.inf) -> 'DefuzzifierAssert':
+    def defuzzifies(self, terms: Dict[fl.Term, float], minimum: float = -fl.inf,
+                    maximum: float = fl.inf) -> 'DefuzzifierAssert':
         for term, result in terms.items():
-            if math.isnan(result):
-                self.test.assertEqual(math.isnan(self.actual.defuzzify(term, minimum, maximum)),
+            if fl.isnan(result):
+                self.test.assertEqual(fl.isnan(self.actual.defuzzify(term, minimum, maximum)),
                                       True, f"for {str(term)}")
             else:
                 self.test.assertAlmostEqual(self.actual.defuzzify(term, minimum, maximum), result,
@@ -53,7 +52,7 @@ class TestDefuzzifier(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             fl.Defuzzifier().parameters()
         with self.assertRaises(NotImplementedError):
-            fl.Defuzzifier().defuzzify(None, math.nan, math.nan)
+            fl.Defuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
 
     def test_integral_defuzzifier(self) -> None:
         DefuzzifierAssert(self, fl.IntegralDefuzzifier()) \
@@ -62,7 +61,7 @@ class TestDefuzzifier(unittest.TestCase):
             .configured_as("300") \
             .exports_fll("IntegralDefuzzifier 300")
         with self.assertRaises(NotImplementedError):
-            fl.IntegralDefuzzifier().defuzzify(None, math.nan, math.nan)
+            fl.IntegralDefuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
 
     @unittest.skip("Need to manually compute bisectors of triangles")
     def test_bisector(self) -> None:
@@ -110,7 +109,7 @@ class TestDefuzzifier(unittest.TestCase):
         defuzzifier.configure("TakagiSugeno")
         self.assertEqual(defuzzifier.type, fl.WeightedDefuzzifier.Type.TakagiSugeno)
 
-        defuzzifier.type = None
+        defuzzifier.type = None  # type: ignore
         defuzzifier.configure("")
         self.assertEqual(defuzzifier.type, None)
 
@@ -118,7 +117,7 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.configure("ABC")
 
         with self.assertRaises(NotImplementedError):
-            defuzzifier.defuzzify(None, math.nan, math.nan)
+            defuzzifier.defuzzify(fl.Term(), fl.nan, fl.nan)
 
         self.assertEqual(defuzzifier.infer_type(fl.Constant()),
                          fl.WeightedDefuzzifier.Type.TakagiSugeno)
@@ -134,15 +133,15 @@ class TestDefuzzifier(unittest.TestCase):
             fl.WeightedAverage().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedAverage()
-        defuzzifier.type = None
+        defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(ValueError, "expected a type of defuzzifier, but found none"):
-            defuzzifier.defuzzify(fl.Aggregated(terms=[None]))
+            defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(ValueError, re.escape(
                 "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>")):
             defuzzifier.defuzzify(fl.Triangle())
 
         DefuzzifierAssert(self, fl.WeightedAverage()) \
-            .defuzzifies({fl.Aggregated(): math.nan,
+            .defuzzifies({fl.Aggregated(): fl.nan,
                           fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
                                                fl.Activated(fl.Constant("", 2.0), 1.0),
                                                fl.Activated(fl.Constant("", 3.0), 1.0),
@@ -162,7 +161,7 @@ class TestDefuzzifier(unittest.TestCase):
                           })
         DefuzzifierAssert(self, fl.WeightedAverage()) \
             .configured_as("Tsukamoto") \
-            .defuzzifies({fl.Aggregated(): math.nan,
+            .defuzzifies({fl.Aggregated(): fl.nan,
                           fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
                                                fl.Activated(fl.Constant("", 2.0), 1.0),
                                                fl.Activated(fl.Constant("", 3.0), 1.0),
@@ -190,15 +189,15 @@ class TestDefuzzifier(unittest.TestCase):
             fl.WeightedSum().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedSum()
-        defuzzifier.type = None
+        defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(ValueError, "expected a type of defuzzifier, but found none"):
-            defuzzifier.defuzzify(fl.Aggregated(terms=[None]))
+            defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(ValueError, re.escape(
                 "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>")):
             defuzzifier.defuzzify(fl.Triangle())
 
         DefuzzifierAssert(self, fl.WeightedSum()) \
-            .defuzzifies({fl.Aggregated(): math.nan,
+            .defuzzifies({fl.Aggregated(): fl.nan,
                           fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
                                                fl.Activated(fl.Constant("", 2.0), 1.0),
                                                fl.Activated(fl.Constant("", 3.0), 1.0),
@@ -218,7 +217,7 @@ class TestDefuzzifier(unittest.TestCase):
                           })
         DefuzzifierAssert(self, fl.WeightedSum()) \
             .configured_as("Tsukamoto") \
-            .defuzzifies({fl.Aggregated(): math.nan,
+            .defuzzifies({fl.Aggregated(): fl.nan,
                           fl.Aggregated(terms=[fl.Activated(fl.Constant("", 1.0), 1.0),
                                                fl.Activated(fl.Constant("", 2.0), 1.0),
                                                fl.Activated(fl.Constant("", 3.0), 1.0),

@@ -39,9 +39,9 @@ class Proposition(Expression):
     __slots__ = ("variable", "hedges", "term")
 
     def __init__(self) -> None:
-        self.variable: Variable = None
+        self.variable: typing.Optional[Variable] = None
         self.hedges: typing.List[Hedge] = []
-        self.term: Term = None
+        self.term: typing.Optional[Term] = None
 
     def __str__(self) -> str:
         result = []
@@ -104,8 +104,7 @@ class Antecedent(object):
 
         if isinstance(node, Proposition):
             if not node.variable:
-                raise ValueError(f"expected a variable in proposition {node}, "
-                                 "but found none")
+                raise ValueError(f"expected a variable in proposition {node}, but found none")
             if not node.variable.enabled:
                 return 0.0
 
@@ -116,6 +115,9 @@ class Antecedent(object):
                     for hedge in reversed(node.hedges):
                         result = hedge.hedge(result)
                     return result
+
+            if not node.term:
+                raise ValueError(f"expected a term in proposition {node}, but found none")
 
             result = nan
             if isinstance(node.variable, InputVariable):
@@ -290,7 +292,7 @@ class Rule(object):
         self.consequent.load(engine)
 
     @staticmethod
-    def parse(text: str, engine: 'Engine' = None) -> 'Rule':
+    def parse(text: str, engine: typing.Optional['Engine'] = None) -> 'Rule':
         rule = Rule()
         rule.text = text
         if engine:
@@ -307,7 +309,7 @@ class RuleBlock(object):
                  disjunction: typing.Optional[SNorm] = None,
                  implication: typing.Optional[TNorm] = None,
                  activation: typing.Optional['Activation'] = None,
-                 rules: typing.Iterable[Rule] = None) -> None:
+                 rules: typing.Optional[typing.Iterable[Rule]] = None) -> None:
         self.name = name
         self.description = description
         self.enabled = enabled

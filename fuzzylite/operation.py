@@ -29,21 +29,21 @@ class Operation(object):
     """
 
     @staticmethod
-    def eq(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def eq(a: float, b: float, absolute_tolerance: typing.Optional[float]= None) -> bool:
         return (a == b
                 or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
                 or (a != a and b != b))
 
     @staticmethod
-    def neq(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def neq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         return not (a == b
                     or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
                     or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def gt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         return not (a == b
                     or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
@@ -51,7 +51,7 @@ class Operation(object):
                     ) and a > b
 
     @staticmethod
-    def ge(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def ge(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         return (a == b
                 or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
@@ -59,7 +59,7 @@ class Operation(object):
                 or a > b)
 
     @staticmethod
-    def le(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def le(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         return (a == b
                 or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                  if not absolute_tolerance else absolute_tolerance)
@@ -67,7 +67,7 @@ class Operation(object):
                 or a < b)
 
     @staticmethod
-    def lt(a: float, b: float, absolute_tolerance: float = None) -> bool:
+    def lt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         return not (a == b
                     or abs(a - b) < (fuzzylite.library.absolute_tolerance
                                      if not absolute_tolerance else absolute_tolerance)
@@ -88,7 +88,7 @@ class Operation(object):
         return result if result else "unnamed"
 
     @staticmethod
-    def str(x: typing.Union[float, object], decimals: int = None) -> typing.Text:
+    def str(x: typing.Union[float, object], decimals: typing.Optional[int] = None) -> typing.Text:
         if not decimals:
             decimals = fuzzylite.library.decimals
         if isinstance(x, float):

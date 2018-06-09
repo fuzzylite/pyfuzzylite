@@ -199,7 +199,7 @@ class Aggregated(Term):
 
     def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan,
                  aggregation: typing.Optional[SNorm] = None,
-                 terms: typing.Iterable[Activated] = None) -> None:
+                 terms: typing.Optional[typing.Iterable[Activated]] = None) -> None:
         super().__init__(name)
         self.minimum = minimum
         self.maximum = maximum
@@ -230,7 +230,7 @@ class Aggregated(Term):
 
         result = 0.0
         for term in self.terms:
-            result = self.aggregation.compute(result, term.membership(x))
+            result = self.aggregation.compute(result, term.membership(x))  # type: ignore
         logging.debug(f"{Op.str(result)}: {str(self)}")
         return result
 
@@ -249,10 +249,10 @@ class Aggregated(Term):
     def highest_activated_term(self) -> typing.Optional[Activated]:
         result = None
         maximum_activation = -inf
-        for activation in self.terms:
-            if activation.degree > maximum_activation:
-                maximum_activation = activation.degree
-                result = activation
+        for activated in self.terms:
+            if activated.degree > maximum_activation:
+                maximum_activation = activated.degree
+                result = activated
         return result
 
     def clear(self) -> None:
@@ -450,7 +450,7 @@ class Discrete(Term):
 
     __slots__ = ("xy",)
 
-    def __init__(self, name: str = "", xy: typing.Iterable[Pair] = None,
+    def __init__(self, name: str = "", xy: typing.Optional[typing.Iterable[Pair]] = None,
                  height: float = 1.0) -> None:
         super().__init__(name, height)
         self.xy: typing.List[Discrete.Pair] = []
@@ -608,8 +608,8 @@ class GaussianProduct(Term):
 class Linear(Term):
     __slots__ = ("coefficients", "engine")
 
-    def __init__(self, name: str = "", coefficients: typing.Iterable[float] = None,
-                 engine: 'Engine' = None) -> None:
+    def __init__(self, name: str = "", coefficients: typing.Optional[typing.Iterable[float]] = None,
+                 engine: typing.Optional['Engine'] = None) -> None:
         super().__init__(name)
         self.coefficients: typing.List[float] = []
         if coefficients:
@@ -1044,14 +1044,14 @@ class Function(Term):
             Operator, Function = range(2)
 
         def __init__(self, name: str, description: str, element_type: 'Function.Element.Type',
-                     method: typing.Callable[..., float] = None,
+                     method: typing.Callable[..., float],
                      arity: int = 0, precedence: int = 0,
                      associativity: int = -1) -> None:
             self.name = name
             self.description = description
             self.element_type = element_type
             self.method = method
-            self.arity = Op.arity_of(method) if method and arity < 0 else arity
+            self.arity = Op.arity_of(method) if arity < 0 else arity
             self.precedence = precedence
             self.associativity = associativity
 
@@ -1068,7 +1068,7 @@ class Function(Term):
     class Node(object):
         __slots__ = ("element", "variable", "value", "left", "right")
 
-        def __init__(self, element: 'Function.Element' = None, variable: str = "",
+        def __init__(self, element: typing.Optional['Function.Element'] = None, variable: str = "",
                      value: float = nan,
                      left: typing.Optional['Function.Node'] = None,
                      right: typing.Optional['Function.Node'] = None) -> None:
@@ -1087,7 +1087,8 @@ class Function(Term):
                 result = Op.str(self.value)
             return result
 
-        def evaluate(self, local_variables: typing.Dict[str, float] = None) -> float:
+        def evaluate(self,
+                     local_variables: typing.Optional[typing.Dict[str, float]] = None) -> float:
             result = nan
             if self.element:
                 if not self.element.method:
@@ -1127,7 +1128,7 @@ class Function(Term):
 
             return result
 
-        def prefix(self, node: 'Function.Node' = None) -> str:
+        def prefix(self, node: typing.Optional['Function.Node'] = None) -> str:
             if not node:
                 return self.prefix(self)
 
@@ -1143,7 +1144,7 @@ class Function(Term):
                 result.append(self.prefix(node.right))
             return " ".join(result)
 
-        def infix(self, node: 'Function.Node' = None) -> str:
+        def infix(self, node: typing.Optional['Function.Node'] = None) -> str:
             if not node:
                 return self.infix(self)
 
@@ -1168,7 +1169,7 @@ class Function(Term):
 
             return result
 
-        def postfix(self, node: 'Function.Node' = None) -> str:
+        def postfix(self, node: typing.Optional['Function.Node'] = None) -> str:
             if not node:
                 return self.postfix(self)
 
@@ -1185,8 +1186,8 @@ class Function(Term):
             result.append(str(node))
             return " ".join(result)
 
-    def __init__(self, name: str = "", formula: str = "", engine: 'Engine' = None,
-                 variables: typing.Dict[str, float] = None) -> None:
+    def __init__(self, name: str = "", formula: str = "", engine: typing.Optional['Engine'] = None,
+                 variables: typing.Optional[typing.Dict[str, float]] = None) -> None:
         super().__init__(name)
         self.root: typing.Optional[Function.Node] = None
         self.formula = formula
@@ -1211,7 +1212,7 @@ class Function(Term):
             pass
 
     @staticmethod
-    def create(name: str, formula: str, engine: 'Engine') -> 'Function':
+    def create(name: str, formula: str, engine: typing.Optional['Engine'] = None) -> 'Function':
         result = Function(name, formula, engine)
         result.load()
         return result
@@ -1230,10 +1231,10 @@ class Function(Term):
 
         return self.evaluate(self.variables)
 
-    def evaluate(self, variables: typing.Dict[str, float] = None) -> float:
+    def evaluate(self, variables: typing.Optional[typing.Dict[str, float]] = None) -> float:
         if not self.is_loaded():
             raise RuntimeError("evaluation failed because function is not loaded")
-        return self.root.evaluate(variables)
+        return self.root.evaluate(variables)  # type:ignore
 
     def is_loaded(self) -> bool:
         return bool(self.root)
