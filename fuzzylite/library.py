@@ -22,11 +22,10 @@ from .factory import FactoryManager
 
 class Library(object):
 
-    def __init__(self, decimals: int = 3,
-                 absolute_tolerance: float = 1e-6,
+    def __init__(self, decimals: int = 3, absolute_tolerance: float = 1e-6,
                  factory_manager: FactoryManager = FactoryManager()) -> None:
         self.decimals = decimals
-        self.absolute_tolerance = absolute_tolerance
+        self.absolute_tolerance: float = absolute_tolerance
         self.factory_manager = factory_manager
         self.logger = logging.getLogger("fuzzylite")
 
