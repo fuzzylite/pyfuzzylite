@@ -17,23 +17,22 @@
 
 import copy
 import math
-import operator
 import typing
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
-from .defuzzifier import (Defuzzifier, Bisector, Centroid, LargestOfMaximum, MeanOfMaximum,
+from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
                           SmallestOfMaximum, WeightedAverage, WeightedSum)
-from .hedge import Hedge, Any, Extremely, Not, Seldom, Somewhat, Very
-from .norm import (TNorm, AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
-                   HamacherProduct, Minimum, NilpotentMinimum,
-                   SNorm, AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
-                   Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum)
+from .hedge import Any, Extremely, Hedge, Not, Seldom, Somewhat, Very
+from .norm import (AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
+                   HamacherProduct, Minimum, NilpotentMinimum, TNorm)
+from .norm import (AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
+                   Maximum, NilpotentMaximum, NormalizedSum, SNorm, UnboundedSum)
 from .operation import Op
 from .rule import Rule
-from .term import (Term, Bell, Binary, Concave, Constant, Cosine, Discrete,
+from .term import (Bell, Binary, Concave, Constant, Cosine, Discrete,
                    Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
-                   Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
-                   Spike, SShape, Trapezoid, Triangle, ZShape)
+                   Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
+                   Spike, Term, Trapezoid, Triangle, ZShape)
 
 # TODO: Not too keen on having classes extending Generic[T]
 T = typing.TypeVar('T')
@@ -102,6 +101,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
         self._register_functions()
 
     def _register_operators(self) -> None:
+        import operator
         operator_type = Function.Element.Type.Operator
         operators = [
             # p = 100  #  priority

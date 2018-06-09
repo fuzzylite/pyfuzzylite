@@ -22,7 +22,6 @@ import math
 import typing
 from math import inf, isnan, nan
 
-import fuzzylite
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .operation import Op
@@ -1122,8 +1121,9 @@ class Function(Term):
             else:
                 result = self.value
 
-            if fuzzylite.library.debugging:
-                fuzzylite.library.logger.debug(f"{self.postfix()} = {Op.str(result)}")
+            from . import library
+            if library.debugging:
+                library.logger.debug(f"{self.postfix()} = {Op.str(result)}")
 
             return result
 
@@ -1204,7 +1204,6 @@ class Function(Term):
 
     def update_reference(self, engine: 'Engine') -> None:
         self.engine = engine
-        # noinspection PyBroadException
         try:
             self.load()
         except:  # noqa: E722
@@ -1231,9 +1230,9 @@ class Function(Term):
         return self.evaluate(self.variables)
 
     def evaluate(self, variables: typing.Optional[typing.Dict[str, float]] = None) -> float:
-        if not self.is_loaded():
-            raise RuntimeError("evaluation failed because function is not loaded")
-        return self.root.evaluate(variables)  # type:ignore
+        if not self.root:
+            raise RuntimeError(f"function '{self.formula}' is not loaded")
+        return self.root.evaluate(variables)
 
     def is_loaded(self) -> bool:
         return bool(self.root)

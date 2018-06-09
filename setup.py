@@ -14,11 +14,11 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+import distutils.core
 import io
-from distutils.core import Command, setup
 
 
-class PyTest(Command):
+class PyTest(distutils.core.Command):
     user_options = []
 
     def initialize_options(self) -> None:
@@ -39,7 +39,7 @@ def setup_package() -> None:
     with io.open('README.md', encoding='utf-8') as file:
         long_description = file.read()
 
-    setup(
+    distutils.core.setup(
         name="pyfuzzylite",
         version="7.0",
         description="a fuzzy logic control library in Python",

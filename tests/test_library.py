@@ -85,11 +85,11 @@ class TestLibrary(unittest.TestCase):
                     'WeightedSum', 'ZShape', '__annotations__', '__builtins__', '__cached__',
                     '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
                     '__spec__', '__version__', 'activation', 'bisect', 'copy', 'defuzzifier',
-                    'engine', 'enum', 'exporter', 'factory', 'fuzzylite', 'hedge', 'importer',
-                    'inf', 'inspect', 'isnan', 'library', 'logging', 'math', 'nan', 'norm',
-                    'operation', 'operator', 'rule', 'term', 'typing', 'variable'}
+                    'engine', 'enum', 'exporter', 'factory', 'hedge', 'importer',
+                    'inf', 'isnan', 'library', 'logging', 'math', 'nan', 'norm',
+                    'operation', 'rule', 'term', 'typing', 'variable'}
 
-        self.assertSetEqual(set(dir(fuzzylite)), expected)
+        self.assertSetEqual(expected, set(dir(fuzzylite)))
 
     def test_library_vars(self) -> None:
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")

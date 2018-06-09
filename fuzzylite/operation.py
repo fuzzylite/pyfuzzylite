@@ -15,13 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import inspect
 import typing
 
-import fuzzylite
-
-
-# TODO convert to module or static object?
 
 class Operation(object):
     """
@@ -31,7 +26,8 @@ class Operation(object):
     @staticmethod
     def eq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b))
@@ -39,7 +35,8 @@ class Operation(object):
     @staticmethod
     def neq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b))
@@ -47,7 +44,8 @@ class Operation(object):
     @staticmethod
     def gt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)
@@ -56,7 +54,8 @@ class Operation(object):
     @staticmethod
     def ge(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
@@ -65,7 +64,8 @@ class Operation(object):
     @staticmethod
     def le(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
@@ -74,7 +74,8 @@ class Operation(object):
     @staticmethod
     def lt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            from . import library
+            absolute_tolerance = library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)
@@ -96,7 +97,8 @@ class Operation(object):
     @staticmethod
     def str(x: typing.Union[float, object], decimals: typing.Optional[int] = None) -> typing.Text:
         if not decimals:
-            decimals = fuzzylite.library.decimals
+            from . import library
+            decimals = library.decimals
         if isinstance(x, float):
             return f"{x:.{decimals}f}"
         return str(x)
@@ -117,6 +119,7 @@ class Operation(object):
 
     @staticmethod
     def arity_of(method: typing.Callable) -> int:
+        import inspect
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]
