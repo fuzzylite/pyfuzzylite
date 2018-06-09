@@ -15,7 +15,7 @@ matrix:
 #    - python: 3.4
 
 install:
-  - pip install tox-travis coveralls
+  - pip install coveralls
 
 script:
   - tox -v -c setup.cfg
