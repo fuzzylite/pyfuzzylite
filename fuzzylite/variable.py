@@ -26,7 +26,7 @@ from .term import Aggregated
 
 if typing.TYPE_CHECKING:
     from .term import Term
-    from .defuzzifier import Defuzzifier
+    from .defuzzifier import Defuzzifier  # noqa: F401
 
 
 class Variable(object):

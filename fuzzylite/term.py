@@ -394,8 +394,7 @@ class Cosine(Term):
         if x < self.center - 0.5 * self.width or x > self.center + 0.5 * self.width:
             return self.height * 0.0
 
-        return self.height * (
-                0.5 * (1.0 + math.cos(2.0 / self.width * math.pi * (x - self.center))))
+        return self.height * 0.5 * (1.0 + math.cos(2.0 / self.width * math.pi * (x - self.center)))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width)
@@ -516,8 +515,8 @@ class Discrete(Term):
     Floatable = typing.TypeVar("Floatable", typing.SupportsFloat, str, bytes)
 
     @staticmethod
-    def pairs_from(
-            values: typing.Union[typing.Sequence[Floatable], typing.Dict[Floatable, Floatable]]) -> \
+    def pairs_from(values: typing.Union[typing.Sequence[Floatable],
+                                        typing.Dict[Floatable, Floatable]]) -> \
             typing.List['Discrete.Pair']:
         if isinstance(values, dict):
             return [Discrete.Pair(float(x), float(y)) for x, y in values.items()]

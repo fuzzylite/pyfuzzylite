@@ -15,6 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+# flake8: noqa
+
 import typing
 
 from fuzzylite.activation import *

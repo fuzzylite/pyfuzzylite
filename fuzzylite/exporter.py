@@ -20,10 +20,10 @@ import typing
 from .operation import Op
 
 if typing.TYPE_CHECKING:
-    from .activation import Activation
-    from .defuzzifier import Defuzzifier
+    from .activation import Activation  # noqa: F401
+    from .defuzzifier import Defuzzifier  # noqa: F401
     from .engine import Engine
-    from .norm import Norm
+    from .norm import Norm  # noqa: F401
     from .rule import Rule, RuleBlock
     from .term import Term
     from .variable import InputVariable, OutputVariable, Variable
@@ -57,7 +57,7 @@ class FllExporter(Exporter):
         if isinstance(instance, Term):
             return self.term(instance)
 
-        from .defuzzifier import Defuzzifier
+        from .defuzzifier import Defuzzifier  # noqa: F811
         if isinstance(instance, Defuzzifier):
             return self.defuzzifier(instance)
 
@@ -67,11 +67,11 @@ class FllExporter(Exporter):
         if isinstance(instance, Rule):
             return self.rule(instance)
 
-        from .norm import Norm
+        from .norm import Norm  # noqa: F811
         if isinstance(instance, Norm):
             return self.norm(instance)
 
-        from .activation import Activation
+        from .activation import Activation  # noqa: F811
         if isinstance(instance, Activation):
             return self.activation(instance)
 

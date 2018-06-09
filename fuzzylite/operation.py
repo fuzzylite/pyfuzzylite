@@ -29,48 +29,54 @@ class Operation(object):
     """
 
     @staticmethod
-    def eq(a: float, b: float, absolute_tolerance: typing.Optional[float]= None) -> bool:
+    def eq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return (a == b
-                or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                 if not absolute_tolerance else absolute_tolerance)
+                or abs(a - b) < absolute_tolerance
                 or (a != a and b != b))
 
     @staticmethod
     def neq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                     if not absolute_tolerance else absolute_tolerance)
+                    or abs(a - b) < absolute_tolerance
                     or (a != a and b != b))
 
     @staticmethod
     def gt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                     if not absolute_tolerance else absolute_tolerance)
+                    or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)
                     ) and a > b
 
     @staticmethod
     def ge(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return (a == b
-                or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                 if not absolute_tolerance else absolute_tolerance)
+                or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
                 or a > b)
 
     @staticmethod
     def le(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return (a == b
-                or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                 if not absolute_tolerance else absolute_tolerance)
+                or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
                 or a < b)
 
     @staticmethod
     def lt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        if absolute_tolerance is None:
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
-                    or abs(a - b) < (fuzzylite.library.absolute_tolerance
-                                     if not absolute_tolerance else absolute_tolerance)
+                    or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)
                     ) and a < b
 
@@ -98,8 +104,8 @@ class Operation(object):
     @staticmethod
     def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float,
               to_maximum: float) -> float:
-        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
-                x - from_minimum) + to_minimum
+        return ((to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum)
+                + to_minimum)
 
     @staticmethod
     def bound(x: float, minimum: float, maximum: float) -> float:

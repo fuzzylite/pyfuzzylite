@@ -25,7 +25,7 @@ class Library(object):
     def __init__(self, decimals: int = 3, absolute_tolerance: float = 1e-6,
                  factory_manager: FactoryManager = FactoryManager()) -> None:
         self.decimals = decimals
-        self.absolute_tolerance = absolute_tolerance
+        self.absolute_tolerance: float = absolute_tolerance
         self.factory_manager = factory_manager
         self.logger = logging.getLogger("fuzzylite")
 
@@ -80,16 +80,16 @@ platforms. **`pyfuzzylite`** is the equivalent `fuzzylite` library for Python.
 **`QtFuzzyLite 6`** is (very likely) the best application available to easily
 design and directly operate fuzzy logic controllers in real time.
 
-If you are going to cite us in your article, please do so as: 
+If you are going to cite us in your article, please do so as:
 `Juan Rada-Vilela. fuzzylite: a fuzzy logic control library, 2017. URL
-http://www.fuzzylite.com/` 
+http://www.fuzzylite.com/`
 
-or using BibTeX as: 
-```bibtex 
-@misc{fl::fuzzylite, 
-author={Juan Rada-Vilela}, 
-title={fuzzylite: a fuzzy logic control library}, url={http://www.fuzzylite.com}, 
-year={2017}} 
+or using BibTeX as:
+```bibtex
+@misc{fl::fuzzylite,
+author={Juan Rada-Vilela},
+title={fuzzylite: a fuzzy logic control library}, url={http://www.fuzzylite.com},
+year={2017}}
 ```
 
 ##  License of the FuzzyLite Libraries
@@ -105,7 +105,7 @@ or `pyfuzzylite`, please contact
 
 ## Features
 
-The FuzzyLite Libraries have the following features: 
+The FuzzyLite Libraries have the following features:
 
 **(6) Controllers**: Mamdani, Takagi-Sugeno, Larsen, Tsukamoto, Inverse
 Tsukamoto, Hybrids

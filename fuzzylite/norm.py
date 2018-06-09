@@ -18,7 +18,7 @@
 import typing
 
 if typing.TYPE_CHECKING:
-    from fuzzylite.engine import Engine
+    from fuzzylite.engine import Engine  # noqa: F401
 
 
 class Norm(object):
