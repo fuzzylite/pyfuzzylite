@@ -26,7 +26,7 @@ class Library(object):
     def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
                  factory_manager: Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
-        self.abs_tolerance = abs_tolerance
+        self.abs_tolerance: float = abs_tolerance
         self.factory_manager = factory_manager if factory_manager else FactoryManager()
         self.logger = logging.getLogger("fuzzylite")
 

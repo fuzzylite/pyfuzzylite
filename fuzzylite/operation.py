@@ -33,7 +33,7 @@ class Operation(object):
             # reveal_type(library.abs_tolerance )
             # reveal_type(abs_tolerance)
         return (a == b
-                or abs(a - b) < abs_tolerance  # type: ignore
+                or abs(a - b) < abs_tolerance
                 or (a != a and b != b))
 
     @staticmethod
@@ -42,7 +42,7 @@ class Operation(object):
             from . import lib
             abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < abs_tolerance  # type: ignore
+                    or abs(a - b) < abs_tolerance
                     or (a != a and b != b))
 
     @staticmethod
@@ -51,7 +51,7 @@ class Operation(object):
             from . import lib
             abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < abs_tolerance  # type: ignore
+                    or abs(a - b) < abs_tolerance
                     or (a != a and b != b)
                     ) and a > b
 
@@ -61,7 +61,7 @@ class Operation(object):
             from . import lib
             abs_tolerance = lib.abs_tolerance
         return (a == b
-                or abs(a - b) < abs_tolerance  # type: ignore
+                or abs(a - b) < abs_tolerance
                 or (a != a and b != b)
                 or a > b)
 
@@ -71,7 +71,7 @@ class Operation(object):
             from . import lib
             abs_tolerance = lib.abs_tolerance
         return (a == b
-                or abs(a - b) < abs_tolerance  # type: ignore
+                or abs(a - b) < abs_tolerance
                 or (a != a and b != b)
                 or a < b)
 
@@ -81,7 +81,7 @@ class Operation(object):
             from . import lib
             abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < abs_tolerance  # type: ignore
+                    or abs(a - b) < abs_tolerance
                     or (a != a and b != b)
                     ) and a < b
 
