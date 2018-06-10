@@ -1136,11 +1136,28 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 1.0}, height=0.5)
 
-    @unittest.skip("Testing of Function")
     def test_function(self) -> None:
-        # http://www.bestcode.com/html/evaluate_math_expressions_pyth.html
-        # https://www.geeksforgeeks.org/eval-in-python/
-        pass
+        self.assertEqual("a + b * 1 ( True or True ) / ( False and False )",
+                         fl.Function.format_infix(
+                             f"a+b*1(True {fl.Rule.OR} True)/(False {fl.Rule.AND} False)"))
+        self.assertEqual("sqrt ( a + b * 1 + sin ( pi / 2 ) - ~ 3 )",
+                         fl.Function.format_infix(
+                             f"sqrt(a+b*1+sin(pi/2)-~3)"))
+
+    def test_function_postfix(self) -> None:
+        self.assertEqual("a b +", fl.Function.infix_to_postfix("a+b"))
+        self.assertEqual("a b 2 * +", fl.Function.infix_to_postfix("a+b*2"))
+        self.assertEqual("a b 2 3 ^ * +", fl.Function.infix_to_postfix("a+b*2^3"))
+        self.assertEqual("a b 2 3 ^ * 4 2 - / +", fl.Function.infix_to_postfix("a+b*2^3/(4 - 2)"))
+        self.assertEqual("a b 2 3 ^ * 4 2 - / 3.1416 4 / sin * +",
+                         fl.Function.infix_to_postfix("a+b*2^3/(4 - 2)*sin(3.1416/4)"))
+
+        self.assertEqual("a b ~ +", fl.Function.infix_to_postfix("a+~b"))
+        self.assertEqual("a ~ b ~ *", fl.Function.infix_to_postfix("~a*~b"))
+
+        self.assertEqual("3.1416 4 / sin 3.1416 4 / cos + 3.1416 4 / sin ~ 3.1416 4 / cos ~ - /",
+                         fl.Function.infix_to_postfix("(sin(3.1416/4) + cos(3.1416/4)) / "
+                                                      "(~sin(3.1416/4) - ~cos(3.1416/4))"))
 
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self) -> None:

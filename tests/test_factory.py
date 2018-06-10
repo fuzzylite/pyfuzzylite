@@ -53,9 +53,9 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
                          element_type: Optional[
                              fl.Function.Element.Type] = None) -> 'FunctionFactoryAssert':
         if element_type == fl.Function.Element.Type.Operator:
-            self.test.assertSetEqual(self.actual.operators(), elements)
+            self.test.assertSetEqual(set(self.actual.operators().keys()), elements)
         elif element_type == fl.Function.Element.Type.Function:
-            self.test.assertSetEqual(self.actual.functions(), elements)
+            self.test.assertSetEqual(set(self.actual.functions().keys()), elements)
         else:
             self.test.assertSetEqual(set(self.actual.objects.keys()), elements)
 
@@ -189,7 +189,7 @@ class TestFunctionFactory(unittest.TestCase):
             self.assertEqual(key, element.name)
             # if it is a function, the name should be contained in
             # in the methods name
-            if element.element_type == fl.Function.Element.Type.Function:
+            if element.type == fl.Function.Element.Type.Function:
                 self.assertIn(key, element.method.__name__)
 
     def test_arity(self) -> None:

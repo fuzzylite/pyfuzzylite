@@ -41,8 +41,7 @@ from fuzzylite.operation import Op, Operation
 from fuzzylite.rule import (Rule, Proposition, Operator, RuleBlock, Expression, Antecedent,
                             Consequent)
 from fuzzylite.term import (Activated, Aggregated, Bell, Binary, Concave, Constant, Cosine,
-                            Discrete,
-                            Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
+                            Discrete, Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
                             Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
                             Spike, Term, Trapezoid, Triangle, ZShape)
 from fuzzylite.variable import InputVariable, OutputVariable, Variable

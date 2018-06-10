@@ -18,9 +18,11 @@
 import bisect
 import enum
 import logging
+import re
 import typing
 from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, SupportsFloat, TypeVar, Union
+from typing import (Callable, Deque, Dict, Iterable, List, Optional, Sequence, Set, SupportsFloat,
+                    TypeVar, Union)
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
@@ -1035,19 +1037,19 @@ class Function(Term):
     __slots__ = ("root", "formula", "engine", "variables")
 
     class Element(object):
-        __slots__ = ("name", "description", "element_type", "method", "arity", "precedence",
+        __slots__ = ("name", "description", "type", "method", "arity", "precedence",
                      "associativity")
 
         class Type(enum.Enum):
             Operator, Function = range(2)
 
-        def __init__(self, name: str, description: str, element_type: 'Function.Element.Type',
+        def __init__(self, name: str, description: str, type: 'Function.Element.Type',
                      method: Callable[..., float],
                      arity: int = 0, precedence: int = 0,
                      associativity: int = -1) -> None:
             self.name = name
             self.description = description
-            self.element_type = element_type
+            self.type = type
             self.method = method
             self.arity = Op.arity_of(method) if arity < 0 else arity
             self.precedence = precedence
@@ -1056,12 +1058,18 @@ class Function(Term):
         def __str__(self) -> str:
             result = [f"name='{self.name}'",
                       f"description='{self.description}'",
-                      f"element_type='{str(self.element_type)}'",
+                      f"element_type='{str(self.type)}'",
                       f"method='{str(self.method)}'",
                       f"arity={self.arity}",
                       f"precedence={self.precedence}",
                       f"associativity={self.associativity}"]
             return "{0}: {1}".format(self.__class__.__name__, ", ".join(result))
+
+        def is_function(self) -> bool:
+            return self.type == Function.Element.Type.Function
+
+        def is_operator(self) -> bool:
+            return self.type == Function.Element.Type.Operator
 
     class Node(object):
         __slots__ = ("element", "variable", "value", "left", "right")
@@ -1159,7 +1167,7 @@ class Function(Term):
                 children.append(self.infix(node.right))
 
             is_function = (node.element and
-                           node.element.element_type == Function.Element.Type.Function)
+                           node.element.type == Function.Element.Type.Function)
 
             if is_function:
                 result = str(node) + f" ( {' '.join(children)} )"
@@ -1241,5 +1249,85 @@ class Function(Term):
         self.root = None
         self.variables.clear()
 
+    @staticmethod
+    def format_infix(formula: str) -> str:
+        from . import lib
+        from .factory import FunctionFactory
+        from .rule import Rule
+        factory: FunctionFactory = lib.factory_manager.function
+        operators: Set[str] = set(factory.operators().keys()).union({'(', ')', ','})
+        operators -= {Rule.AND, Rule.OR}
+
+        # sorted to have multi-char operators separated first (eg., && and &)
+        regex = "|".join(re.escape(o) for o in sorted(operators, reverse=True))
+        spaced = re.sub(fr"({regex})", r' \1 ', formula)
+        result = re.sub(r"\s+", " ", spaced).strip()
+        return result
+
+    @staticmethod  # noqa: C901 mccabe complexity=19
+    def infix_to_postfix(formula: str) -> str:
+        formula = Function.format_infix(formula)
+
+        from . import lib
+        from .factory import FunctionFactory
+        factory: FunctionFactory = lib.factory_manager.function
+
+        from collections import deque
+        queue: Deque[str] = deque()
+        stack: List[str] = []
+
+        for token in formula.split():
+            element: Optional[Function.Element] = (factory.objects[token]
+                                                   if token in factory.objects else None)
+            is_operand = not element and token not in {"(", ")", ","}
+
+            if is_operand:
+                queue.append(token)
+
+            elif element and element.is_function():
+                stack.append(token)
+
+            elif token == ',':
+                while stack and stack[-1] != '(':
+                    queue.append(stack.pop())
+                if not stack or stack[-1] != '(':
+                    raise SyntaxError(f"mismatching parentheses in: {formula}")
+
+            elif element and element.is_operator():
+                o1 = element
+                while stack and stack[-1] in factory.objects:
+                    o2 = factory.objects[stack[-1]]
+                    if (o1.associativity < 0 and o1.precedence == o2.precedence
+                            or o1.precedence < o2.precedence):
+                        queue.append(stack.pop())
+                    else:
+                        break
+                stack.append(token)
+
+            elif token == '(':
+                stack.append(token)
+            elif token == ')':
+                while stack and stack[-1] != '(':
+                    queue.append(stack.pop())
+
+                if not stack or stack[-1] != '(':
+                    raise SyntaxError(f"mismatching parentheses in: {formula}")
+
+                stack.pop()  # get rid of "("
+
+                if stack and stack[-1] in factory.objects:
+                    if factory.objects[stack[-1]].is_function():
+                        queue.append(stack.pop())
+            else:
+                raise RuntimeError(f"unexpected error with token: {token}")
+
+        while stack:
+            if stack[-1] in {'(', ')'}:
+                raise SyntaxError(f"mismatching parentheses in: {formula}")
+            queue.append(stack.pop())
+
+        return " ".join(x for x in queue)
+
     def load(self) -> None:
+
         pass

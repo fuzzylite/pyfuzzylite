@@ -17,7 +17,7 @@
 
 import copy
 import math
-from typing import Callable, Dict, Generic, Optional, Set, TypeVar
+from typing import Callable, Dict, Generic, Optional, TypeVar
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
@@ -188,14 +188,14 @@ class FunctionFactory(CloningFactory[Function.Element]):
         for f in functions:
             self.objects[f.name] = f
 
-    def operators(self) -> Set[str]:
-        result = set(key for key, prototype in self.objects.items() if
-                     prototype.element_type == Function.Element.Type.Operator)
+    def operators(self) -> Dict[str, Function.Element]:
+        result = {key: prototype for key, prototype in self.objects.items()
+                  if prototype.is_operator()}
         return result
 
-    def functions(self) -> Set[str]:
-        result = set(key for key, prototype in self.objects.items() if
-                     prototype.element_type == Function.Element.Type.Function)
+    def functions(self) -> Dict[str, Function.Element]:
+        result = {key: prototype for key, prototype in self.objects.items()
+                  if prototype.is_function()}
         return result
 
 

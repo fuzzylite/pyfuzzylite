@@ -25,13 +25,9 @@ class Operation(object):
 
     @staticmethod
     def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        # reveal_type(abs_tolerance)
         if abs_tolerance is None:
-            # reveal_type(lib)
             from . import lib
             abs_tolerance = lib.abs_tolerance
-            # reveal_type(library.abs_tolerance )
-            # reveal_type(abs_tolerance)
         return (a == b
                 or abs(a - b) < abs_tolerance
                 or (a != a and b != b))
