@@ -19,8 +19,8 @@ import bisect
 import enum
 import logging
 import typing
-from math import inf, isnan, nan, fabs, cos, pi, exp
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, SupportsFloat, Union, TypeVar
+from math import cos, exp, fabs, inf, isnan, nan, pi
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, SupportsFloat, TypeVar, Union
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
