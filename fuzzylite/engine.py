@@ -16,7 +16,7 @@
 """
 
 import enum
-import typing
+from typing import Iterable, List, Optional, Tuple
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -31,14 +31,14 @@ class Engine(object):
 
     def __init__(self, name: str = "",
                  description: str = "",
-                 inputs: typing.Optional[typing.Iterable[InputVariable]] = None,
-                 outputs: typing.Optional[typing.Iterable[OutputVariable]] = None,
-                 blocks: typing.Optional[typing.Iterable[RuleBlock]] = None) -> None:
+                 inputs: Optional[Iterable[InputVariable]] = None,
+                 outputs: Optional[Iterable[OutputVariable]] = None,
+                 blocks: Optional[Iterable[RuleBlock]] = None) -> None:
         self.name = name
         self.description = description
-        self.inputs: typing.List[InputVariable] = []
-        self.outputs: typing.List[OutputVariable] = []
-        self.blocks: typing.List[RuleBlock] = []
+        self.inputs: List[InputVariable] = []
+        self.outputs: List[OutputVariable] = []
+        self.blocks: List[RuleBlock] = []
         if inputs:
             self.inputs.extend(inputs)
         if outputs:
@@ -49,16 +49,16 @@ class Engine(object):
     def __str__(self) -> str:
         return FllExporter().engine(self)
 
-    def configure(self, conjunction: typing.Optional[TNorm] = None,
-                  disjunction: typing.Optional[SNorm] = None,
-                  implication: typing.Optional[TNorm] = None,
-                  aggregation: typing.Optional[SNorm] = None,
-                  defuzzifier: typing.Optional[Defuzzifier] = None,
-                  activation: typing.Optional[Activation] = None) -> None:
+    def configure(self, conjunction: Optional[TNorm] = None,
+                  disjunction: Optional[SNorm] = None,
+                  implication: Optional[TNorm] = None,
+                  aggregation: Optional[SNorm] = None,
+                  defuzzifier: Optional[Defuzzifier] = None,
+                  activation: Optional[Activation] = None) -> None:
 
         pass
 
-    def is_ready(self) -> typing.Tuple[bool, str]:
+    def is_ready(self) -> Tuple[bool, str]:
         pass
 
     def process(self) -> None:
@@ -70,8 +70,8 @@ class Engine(object):
     class Type(enum.Enum):
         Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
 
-    def infer_type(self) -> typing.Tuple[Type, str]:
+    def infer_type(self) -> Tuple[Type, str]:
         pass
 
-    def variables(self) -> typing.List[Variable]:
+    def variables(self) -> List[Variable]:
         return [*self.inputs, *self.outputs]

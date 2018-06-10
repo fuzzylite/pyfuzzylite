@@ -15,7 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import typing
+from typing import Callable, Optional, Text, Union
 
 
 class Operation(object):
@@ -24,7 +24,7 @@ class Operation(object):
     """
 
     @staticmethod
-    def eq(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         # reveal_type(abs_tolerance)
         if abs_tolerance is None:
             # reveal_type(lib)
@@ -37,7 +37,7 @@ class Operation(object):
                 or (a != a and b != b))
 
     @staticmethod
-    def neq(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def neq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
             abs_tolerance = lib.abs_tolerance
@@ -46,7 +46,7 @@ class Operation(object):
                     or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def gt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
             abs_tolerance = lib.abs_tolerance
@@ -56,7 +56,7 @@ class Operation(object):
                     ) and a > b
 
     @staticmethod
-    def ge(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def ge(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
             abs_tolerance = lib.abs_tolerance
@@ -66,7 +66,7 @@ class Operation(object):
                 or a > b)
 
     @staticmethod
-    def le(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def le(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
             abs_tolerance = lib.abs_tolerance
@@ -76,7 +76,7 @@ class Operation(object):
                 or a < b)
 
     @staticmethod
-    def lt(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+    def lt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
             abs_tolerance = lib.abs_tolerance
@@ -99,7 +99,7 @@ class Operation(object):
         return result if result else "unnamed"
 
     @staticmethod
-    def str(x: typing.Union[float, object], decimals: typing.Optional[int] = None) -> typing.Text:
+    def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
         if not decimals:
             from . import lib
             decimals = lib.decimals
@@ -122,7 +122,7 @@ class Operation(object):
         return x
 
     @staticmethod
-    def arity_of(method: typing.Callable) -> int:
+    def arity_of(method: Callable) -> int:
         import inspect
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()

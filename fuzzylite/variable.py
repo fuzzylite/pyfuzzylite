@@ -18,6 +18,7 @@
 import math
 import typing
 from math import inf, isnan, nan
+from typing import Iterable, List, Optional, Tuple
 
 from .exporter import FllExporter
 from .norm import SNorm
@@ -35,7 +36,7 @@ class Variable(object):
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,
-                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
+                 terms: Optional[Iterable['Term']] = None) -> None:
         self.name = name
         self.description = description
         self.minimum = minimum
@@ -43,7 +44,7 @@ class Variable(object):
         self.enabled = True
         self.lock_range = False
         self._value = nan
-        self.terms: typing.List[Term] = []
+        self.terms: List[Term] = []
         if terms:
             self.terms.extend(terms)
 
@@ -51,11 +52,11 @@ class Variable(object):
         return FllExporter().variable(self)
 
     @property
-    def range(self) -> typing.Tuple[float, float]:
+    def range(self) -> Tuple[float, float]:
         return self.minimum, self.maximum
 
     @range.setter
-    def range(self, min_max: typing.Tuple[float, float]) -> None:
+    def range(self, min_max: Tuple[float, float]) -> None:
         self.minimum, self.maximum = min_max
 
     @property
@@ -67,7 +68,7 @@ class Variable(object):
         self._value = Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
 
     def fuzzify(self, x: float) -> str:
-        result: typing.List[str] = []
+        result: List[str] = []
         for term in self.terms:
             fx = nan
             try:
@@ -82,8 +83,8 @@ class Variable(object):
 
         return "".join(result)
 
-    def highest_membership(self, x: float) -> typing.Tuple[float, typing.Optional['Term']]:
-        result: typing.Tuple[float, typing.Optional[Term]] = (0.0, None)
+    def highest_membership(self, x: float) -> Tuple[float, Optional['Term']]:
+        result: Tuple[float, Optional[Term]] = (0.0, None)
         for term in self.terms:
             y = nan
             try:
@@ -100,7 +101,7 @@ class InputVariable(Variable):
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,
-                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
+                 terms: Optional[Iterable['Term']] = None) -> None:
         super().__init__(name, description, minimum, maximum, terms)
 
     def __str__(self) -> str:
@@ -115,7 +116,7 @@ class OutputVariable(Variable):
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,
-                 terms: typing.Optional[typing.Iterable['Term']] = None) -> None:
+                 terms: Optional[Iterable['Term']] = None) -> None:
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
@@ -123,7 +124,7 @@ class OutputVariable(Variable):
         # initialize parent members
         super().__init__(name, description, minimum, maximum, terms)
         # set values of output variable
-        self.defuzzifier: typing.Optional['Defuzzifier'] = None
+        self.defuzzifier: Optional['Defuzzifier'] = None
         self.previous_value: float = nan
         self.default_value: float = nan
         self.lock_previous_value: bool = False
@@ -156,7 +157,7 @@ class OutputVariable(Variable):
         self.fuzzy.maximum = value
 
     @property
-    def aggregation(self) -> typing.Optional[SNorm]:
+    def aggregation(self) -> Optional[SNorm]:
         return self.fuzzy.aggregation
 
     @aggregation.setter
@@ -208,7 +209,7 @@ class OutputVariable(Variable):
         self.previous_value = nan
 
     def fuzzy_value(self) -> str:
-        result: typing.List[str] = []
+        result: List[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
 

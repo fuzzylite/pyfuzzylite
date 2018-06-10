@@ -20,9 +20,8 @@ import math
 import operator
 import platform
 import re
-import typing
 import unittest
-from typing import Sequence
+from typing import Callable, Dict, Optional, Sequence, Type
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -66,7 +65,7 @@ class TermAssert(BaseAssert[fl.Term]):
                                         msg=f"when x={x:.3f}")
         return self
 
-    def has_memberships(self, x_mf: typing.Dict[float, float], height: float = 1.0) -> 'TermAssert':
+    def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0) -> 'TermAssert':
         for x in x_mf.keys():
             self.has_membership(x, height * x_mf[x])
         return self
@@ -81,14 +80,14 @@ class TermAssert(BaseAssert[fl.Term]):
             self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, f"when x={x:.3f}")
         return self
 
-    def has_tsukamotos(self, x_mf: typing.Dict[float, float], minimum: float = -1.0,
+    def has_tsukamotos(self, x_mf: Dict[float, float], minimum: float = -1.0,
                        maximum: float = 1.0) -> 'TermAssert':
         for x in x_mf.keys():
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
-    def apply(self, func: typing.Callable[..., None], args: Sequence[str] = (),
-              **keywords: typing.Dict[str, object]) -> 'TermAssert':
+    def apply(self, func: Callable[..., None], args: Sequence[str] = (),
+              **keywords: Dict[str, object]) -> 'TermAssert':
         func(self.actual, *args, **keywords)
         return self
 
@@ -1166,13 +1165,13 @@ class FunctionNodeAssert(BaseAssert):
         return self
 
     def evaluates_to(self, value: float,
-                     variables: typing.Optional[
-                         typing.Dict[str, float]] = None) -> 'FunctionNodeAssert':
+                     variables: Optional[
+                         Dict[str, float]] = None) -> 'FunctionNodeAssert':
         self.test.assertAlmostEqual(self.actual.evaluate(variables), value, places=15,
                                     msg=f"when value is {value:.3f}")
         return self
 
-    def fails_to_evaluate(self, exception: typing.Type[Exception],
+    def fails_to_evaluate(self, exception: Type[Exception],
                           message: str) -> 'FunctionNodeAssert':
         with self.test.assertRaisesRegex(exception, message):
             self.actual.evaluate()

@@ -16,6 +16,7 @@
 """
 
 import typing
+from typing import Optional
 
 if typing.TYPE_CHECKING:
     from fuzzylite.engine import Engine  # noqa: F401
@@ -75,7 +76,7 @@ class NilpotentMinimum(TNorm):
 class TNormFunction(TNorm):
     __slots__ = ("f",)
 
-    def __init__(self, formula: str, engine: typing.Optional['Engine'] = None) -> None:
+    def __init__(self, formula: str, engine: Optional['Engine'] = None) -> None:
         from fuzzylite.term import Function
         self.f = Function(self.class_name, formula, engine)
         self.f.load()
@@ -141,7 +142,7 @@ class UnboundedSum(SNorm):
 class SNormFunction(SNorm):
     __slots__ = ("f",)
 
-    def __init__(self, formula: str, engine: typing.Optional['Engine'] = None) -> None:
+    def __init__(self, formula: str, engine: Optional['Engine'] = None) -> None:
         from fuzzylite.term import Function
         self.f = Function(self.class_name, formula, engine)
         self.f.load()

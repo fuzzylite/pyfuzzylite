@@ -17,7 +17,7 @@
 
 import copy
 import math
-import typing
+from typing import Callable, Dict, Generic, Optional, Set, TypeVar
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
@@ -34,31 +34,31 @@ from .term import (Bell, Binary, Concave, Constant, Cosine, Discrete,
                    Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
                    Spike, Term, Trapezoid, Triangle, ZShape)
 
-T = typing.TypeVar('T')
+T = TypeVar('T')
 
 
-class ConstructionFactory(typing.Generic[T]):
+class ConstructionFactory(Generic[T]):
     __slots__ = ("constructors",)
 
     def __init__(self) -> None:
-        self.constructors: typing.Dict[str, typing.Callable[[], typing.Optional[T]]] = {}
+        self.constructors: Dict[str, Callable[[], Optional[T]]] = {}
 
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
 
-    def construct(self, key: str) -> typing.Optional[T]:
+    def construct(self, key: str) -> Optional[T]:
         if key in self.constructors:
             if self.constructors[key]:
                 return self.constructors[key]()
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
-class CloningFactory(typing.Generic[T]):
+class CloningFactory(Generic[T]):
     __slots__ = ("objects",)
 
     def __init__(self) -> None:
-        self.objects: typing.Dict[str, T] = {}
+        self.objects: Dict[str, T] = {}
 
     @property
     def class_name(self) -> str:
@@ -188,12 +188,12 @@ class FunctionFactory(CloningFactory[Function.Element]):
         for f in functions:
             self.objects[f.name] = f
 
-    def operators(self) -> typing.Set[str]:
+    def operators(self) -> Set[str]:
         result = set(key for key, prototype in self.objects.items() if
                      prototype.element_type == Function.Element.Type.Operator)
         return result
 
-    def functions(self) -> typing.Set[str]:
+    def functions(self) -> Set[str]:
         result = set(key for key, prototype in self.objects.items() if
                      prototype.element_type == Function.Element.Type.Function)
         return result
