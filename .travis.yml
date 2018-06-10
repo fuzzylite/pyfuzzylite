@@ -15,7 +15,7 @@ matrix:
 #    - python: 3.4
 
 install:
-  - pip install coveralls
+  - pip install tox coveralls
 
 script:
   - tox -v -c setup.cfg
