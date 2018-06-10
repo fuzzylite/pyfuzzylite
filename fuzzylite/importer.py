@@ -14,3 +14,7 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+
+class Importer(object):
+    pass

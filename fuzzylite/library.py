@@ -16,17 +16,18 @@
 """
 
 import logging
+import typing
 
 from .factory import FactoryManager
 
 
 class Library(object):
 
-    def __init__(self, decimals: int = 3, absolute_tolerance: float = 1e-6,
-                 factory_manager: FactoryManager = FactoryManager()) -> None:
+    def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
+                 factory_manager: typing.Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
-        self.absolute_tolerance = absolute_tolerance
-        self.factory_manager = factory_manager
+        self.abs_tolerance = abs_tolerance
+        self.factory_manager = factory_manager if factory_manager else FactoryManager()
         self.logger = logging.getLogger("fuzzylite")
 
     @property

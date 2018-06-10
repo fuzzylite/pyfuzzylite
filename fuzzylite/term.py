@@ -1121,9 +1121,9 @@ class Function(Term):
             else:
                 result = self.value
 
-            from . import library
-            if library.debugging:
-                library.logger.debug(f"{self.postfix()} = {Op.str(result)}")
+            from . import lib
+            if lib.debugging:
+                lib.logger.debug(f"{self.postfix()} = {Op.str(result)}")
 
             return result
 

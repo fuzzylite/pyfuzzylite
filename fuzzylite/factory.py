@@ -34,7 +34,6 @@ from .term import (Bell, Binary, Concave, Constant, Cosine, Discrete,
                    Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
                    Spike, Term, Trapezoid, Triangle, ZShape)
 
-# TODO: Not too keen on having classes extending Generic[T]
 T = typing.TypeVar('T')
 
 
@@ -246,21 +245,21 @@ class TermFactory(ConstructionFactory[Term]):
 
 
 class FactoryManager(object):
-    __slots__ = ("tnorm_factory", "snorm_factory", "activation_factory", "defuzzifier_factory",
-                 "term_factory", "hedge_factory", "function_factory")
+    __slots__ = ("tnorm", "snorm", "activation", "defuzzifier",
+                 "term", "hedge", "function")
 
-    def __init__(self,
-                 tnorm_factory: TNormFactory = TNormFactory(),
-                 snorm_factory: SNormFactory = SNormFactory(),
-                 activation_factory: ActivationFactory = ActivationFactory(),
-                 defuzzifier_factory: DefuzzifierFactory = DefuzzifierFactory(),
-                 term_factory: TermFactory = TermFactory(),
-                 hedge_factory: HedgeFactory = HedgeFactory(),
-                 function_factory: FunctionFactory = FunctionFactory()) -> None:
-        self.tnorm_factory = tnorm_factory
-        self.snorm_factory = snorm_factory
-        self.activation_factory = activation_factory
-        self.defuzzifier_factory = defuzzifier_factory
-        self.term_factory = term_factory
-        self.hedge_factory = hedge_factory
-        self.function_factory = function_factory
+    def __init__(self,  # type: ignore
+                 tnorm: TNormFactory = None,
+                 snorm: SNormFactory = None,
+                 activation: ActivationFactory = None,
+                 defuzzifier: DefuzzifierFactory = None,
+                 term: TermFactory = None,
+                 hedge: HedgeFactory = None,
+                 function: FunctionFactory = None) -> None:
+        self.tnorm = tnorm if tnorm else TNormFactory()
+        self.snorm = snorm if snorm else SNormFactory()
+        self.activation = activation if activation else ActivationFactory()
+        self.defuzzifier = defuzzifier if defuzzifier else DefuzzifierFactory()
+        self.term = term if term else TermFactory()
+        self.hedge = hedge if hedge else HedgeFactory()
+        self.function = function if function else FunctionFactory()

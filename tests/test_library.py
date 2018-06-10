@@ -72,22 +72,22 @@ class TestLibrary(unittest.TestCase):
                     'EinsteinProduct', 'EinsteinSum', 'Engine', 'Exporter', 'Expression',
                     'Extremely', 'FactoryManager', 'First', 'FllExporter', 'Function',
                     'FunctionFactory', 'Gaussian', 'GaussianProduct', 'General', 'HamacherProduct',
-                    'HamacherSum', 'Hedge', 'HedgeFactory', 'HedgeFunction', 'Highest',
+                    'HamacherSum', 'Hedge', 'HedgeFactory', 'HedgeFunction', 'Highest', 'Importer',
                     'InputVariable', 'IntegralDefuzzifier', 'LargestOfMaximum', 'Last', 'Library',
                     'Linear', 'Lowest', 'Maximum', 'MeanOfMaximum', 'Minimum', 'NilpotentMaximum',
                     'NilpotentMinimum', 'Norm', 'NormalizedSum', 'Not', 'Op', 'Operation',
                     'Operator', 'OutputVariable', 'PiShape', 'Proportional', 'Proposition', 'Ramp',
                     'Rectangle', 'Rule', 'RuleBlock', 'SNorm', 'SNormFactory', 'SNormFunction',
                     'SShape', 'Seldom', 'Sigmoid', 'SigmoidDifference', 'SigmoidProduct',
-                    'SmallestOfMaximum', 'Somewhat', 'Spike', 'T', 'TNorm', 'TNormFactory',
+                    'SmallestOfMaximum', 'Somewhat', 'Spike', 'TNorm', 'TNormFactory',
                     'TNormFunction', 'Term', 'TermFactory', 'Threshold', 'Trapezoid', 'Triangle',
                     'UnboundedSum', 'Variable', 'Very', 'WeightedAverage', 'WeightedDefuzzifier',
                     'WeightedSum', 'ZShape', '__annotations__', '__builtins__', '__cached__',
                     '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
-                    '__spec__', '__version__', 'activation', 'bisect', 'copy', 'defuzzifier',
-                    'engine', 'enum', 'exporter', 'factory', 'hedge', 'importer',
-                    'inf', 'isnan', 'library', 'logging', 'math', 'nan', 'norm',
-                    'operation', 'rule', 'term', 'typing', 'variable'}
+                    '__spec__', '__version__', 'activation', 'defuzzifier',
+                    'engine', 'exporter', 'factory', 'hedge', 'importer',
+                    'inf', 'isnan', 'lib', 'library', 'nan', 'norm',
+                    'operation', 'rule', 'term', 'variable'}
 
         self.assertSetEqual(expected, set(dir(fuzzylite)))
 

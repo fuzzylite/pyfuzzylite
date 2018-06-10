@@ -29,7 +29,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.valid_name("      "), "unnamed")
 
     def test_str(self) -> None:
-        fl.library.decimals = 3
+        fl.lib.decimals = 3
         self.assertEqual(fl.Op.str(0.3), "0.300")
         self.assertEqual(fl.Op.str(-0.3), "-0.300")
         self.assertEqual(fl.Op.str(3), "3")
@@ -39,13 +39,13 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.str(-math.inf), "-inf")
         self.assertEqual(fl.Op.str(math.nan), "nan")
 
-        fl.library.decimals = 5
+        fl.lib.decimals = 5
         self.assertEqual(fl.Op.str(0.3), "0.30000")
 
-        fl.library.decimals = 0
+        fl.lib.decimals = 0
         self.assertEqual(fl.Op.str(0.3), "0")
 
-        fl.library.decimals = 3
+        fl.lib.decimals = 3
 
     def test_scale(self) -> None:
         self.assertEqual(fl.Op.scale(0, 0, 1, -10, 10), -10.0)

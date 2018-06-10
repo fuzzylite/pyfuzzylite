@@ -24,64 +24,64 @@ class Operation(object):
     """
 
     @staticmethod
-    def eq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        reveal_type(absolute_tolerance)
-        if absolute_tolerance is None:
-            import fuzzylite
-            reveal_type(fuzzylite.library)
-            reveal_type(fuzzylite.library.absolute_tolerance)
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
-            reveal_type(absolute_tolerance)
+    def eq(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        # reveal_type(abs_tolerance)
+        if abs_tolerance is None:
+            # reveal_type(lib)
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
+            # reveal_type(library.abs_tolerance )
+            # reveal_type(abs_tolerance)
         return (a == b
-                or abs(a - b) < absolute_tolerance
+                or abs(a - b) < abs_tolerance  # type: ignore
                 or (a != a and b != b))
 
     @staticmethod
-    def neq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        if absolute_tolerance is None:
-            import fuzzylite
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+    def neq(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        if abs_tolerance is None:
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < absolute_tolerance
+                    or abs(a - b) < abs_tolerance  # type: ignore
                     or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        if absolute_tolerance is None:
-            import fuzzylite
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+    def gt(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        if abs_tolerance is None:
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < absolute_tolerance
+                    or abs(a - b) < abs_tolerance  # type: ignore
                     or (a != a and b != b)
                     ) and a > b
 
     @staticmethod
-    def ge(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        if absolute_tolerance is None:
-            import fuzzylite
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+    def ge(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        if abs_tolerance is None:
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
         return (a == b
-                or abs(a - b) < absolute_tolerance
+                or abs(a - b) < abs_tolerance  # type: ignore
                 or (a != a and b != b)
                 or a > b)
 
     @staticmethod
-    def le(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        if absolute_tolerance is None:
-            import fuzzylite
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+    def le(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        if abs_tolerance is None:
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
         return (a == b
-                or abs(a - b) < absolute_tolerance
+                or abs(a - b) < abs_tolerance  # type: ignore
                 or (a != a and b != b)
                 or a < b)
 
     @staticmethod
-    def lt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
-        if absolute_tolerance is None:
-            import fuzzylite
-            absolute_tolerance = fuzzylite.library.absolute_tolerance
+    def lt(a: float, b: float, abs_tolerance: typing.Optional[float] = None) -> bool:
+        if abs_tolerance is None:
+            from . import lib
+            abs_tolerance = lib.abs_tolerance
         return not (a == b
-                    or abs(a - b) < absolute_tolerance
+                    or abs(a - b) < abs_tolerance  # type: ignore
                     or (a != a and b != b)
                     ) and a < b
 
@@ -101,8 +101,8 @@ class Operation(object):
     @staticmethod
     def str(x: typing.Union[float, object], decimals: typing.Optional[int] = None) -> typing.Text:
         if not decimals:
-            from . import library
-            decimals = library.decimals
+            from . import lib
+            decimals = lib.decimals
         if isinstance(x, float):
             return f"{x:.{decimals}f}"
         return str(x)
