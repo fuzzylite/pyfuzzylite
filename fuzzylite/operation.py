@@ -25,9 +25,13 @@ class Operation(object):
 
     @staticmethod
     def eq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
+        reveal_type(absolute_tolerance)
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            reveal_type(fuzzylite.library)
+            reveal_type(fuzzylite.library.absolute_tolerance)
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
+            reveal_type(absolute_tolerance)
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b))
@@ -35,8 +39,8 @@ class Operation(object):
     @staticmethod
     def neq(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b))
@@ -44,8 +48,8 @@ class Operation(object):
     @staticmethod
     def gt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)
@@ -54,8 +58,8 @@ class Operation(object):
     @staticmethod
     def ge(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
@@ -64,8 +68,8 @@ class Operation(object):
     @staticmethod
     def le(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return (a == b
                 or abs(a - b) < absolute_tolerance
                 or (a != a and b != b)
@@ -74,8 +78,8 @@ class Operation(object):
     @staticmethod
     def lt(a: float, b: float, absolute_tolerance: typing.Optional[float] = None) -> bool:
         if absolute_tolerance is None:
-            from . import library
-            absolute_tolerance = library.absolute_tolerance
+            import fuzzylite
+            absolute_tolerance = fuzzylite.library.absolute_tolerance
         return not (a == b
                     or abs(a - b) < absolute_tolerance
                     or (a != a and b != b)

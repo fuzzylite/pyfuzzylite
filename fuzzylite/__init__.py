@@ -26,7 +26,7 @@ from fuzzylite.exporter import *
 from fuzzylite.factory import *
 from fuzzylite.hedge import *
 from fuzzylite.importer import *
-from fuzzylite.library import *
+from fuzzylite.library_ import *
 from fuzzylite.norm import *
 from fuzzylite.operation import *
 from fuzzylite.rule import *
@@ -34,7 +34,7 @@ from fuzzylite.term import *
 from fuzzylite.variable import *
 
 if typing.TYPE_CHECKING:
-    from fuzzylite.library import Library
+    from fuzzylite.library_ import Library
 
 library: Library = Library()
 __name__ = library.name
