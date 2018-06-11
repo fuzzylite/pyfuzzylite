@@ -1,0 +1,7 @@
+Version 7.0
+===========
+- Postfix output prints left to right operands
+- Expression tree of Function.Node is created right to left such that its output is consistent with
+  printing left to right operands
+- Additional pow operator "**" available for functions
+- Unary plus ".+" and minus ".-" operators for functions

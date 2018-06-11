@@ -194,7 +194,7 @@ class TestFunctionFactory(unittest.TestCase):
 
     def test_arity(self) -> None:
         acceptable: Dict[Type[Exception], Set[str]] = {
-            ZeroDivisionError: {"%", "/", "fmod", "^"},
+            ZeroDivisionError: {"%", "/", "fmod", "^", "**"},
             ValueError: {"acos", "acosh", "asin", "atanh", "fmod",
                          "log", "log10", "log1p", "sqrt", "pow"}
         }
@@ -235,7 +235,7 @@ class TestFunctionFactory(unittest.TestCase):
     def test_factory_contains_exactly(self) -> None:
         FunctionFactoryAssert(self, fl.FunctionFactory()) \
             .contains_exactly(
-            {'!', '~', '^', '*', '/', '%', '+', '-', 'and', 'or'},
+            {'!', '~', '^', '**', '*', '/', '%', '+', '-', '.+', '.-', 'and', 'or'},
             fl.Function.Element.Type.Operator) \
             .contains_exactly(
             {'abs', 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil',

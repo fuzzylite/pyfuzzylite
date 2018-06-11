@@ -1249,27 +1249,32 @@ class Function(Term):
         self.root = None
         self.variables.clear()
 
-    @staticmethod
-    def format_infix(formula: str) -> str:
+    def load(self) -> None:
+        self.root = self.parse(self.formula)
+
+    @classmethod
+    def format_infix(cls, formula: str) -> str:
         from . import lib
         from .factory import FunctionFactory
         from .rule import Rule
+
         factory: FunctionFactory = lib.factory_manager.function
         operators: Set[str] = set(factory.operators().keys()).union({'(', ')', ','})
         operators -= {Rule.AND, Rule.OR}
 
-        # sorted to have multi-char operators separated first (eg., && and &)
+        # sorted to have multi-char operators separated first (eg., ** and *)
         regex = "|".join(re.escape(o) for o in sorted(operators, reverse=True))
         spaced = re.sub(fr"({regex})", r' \1 ', formula)
         result = re.sub(r"\s+", " ", spaced).strip()
         return result
 
-    @staticmethod  # noqa: C901 mccabe complexity=19
-    def infix_to_postfix(formula: str) -> str:
-        formula = Function.format_infix(formula)
-
+    @classmethod  # noqa: C901 mccabe complexity=19
+    def infix_to_postfix(cls, formula: str) -> str:
+        # TODO: support for unary and binary (+,-)
         from . import lib
         from .factory import FunctionFactory
+
+        formula = cls.format_infix(formula)
         factory: FunctionFactory = lib.factory_manager.function
 
         from collections import deque
@@ -1326,8 +1331,39 @@ class Function(Term):
                 raise SyntaxError(f"mismatching parentheses in: {formula}")
             queue.append(stack.pop())
 
-        return " ".join(x for x in queue)
+        return " ".join(queue)
 
-    def load(self) -> None:
+    @classmethod
+    def parse(cls, formula: str) -> 'Function.Node':
+        from . import lib
+        from .factory import FunctionFactory
 
-        pass
+        postfix = cls.infix_to_postfix(formula)
+        stack: List[Function.Node] = []
+        factory: FunctionFactory = lib.factory_manager.function
+
+        for token in postfix.split():
+            element: Optional[Function.Element] = (factory.objects[token]
+                                                   if token in factory.objects else None)
+            is_operand = not element and token not in {"(", ")", ","}
+
+            if element:
+                if element.arity > len(stack):
+                    raise SyntaxError(f"function element {element.name} has arity {element.arity}, "
+                                      f"but the size of the stack is {len(stack)}")
+                node = Function.Node(factory.copy(token))
+                node.right = stack.pop()
+                if element.arity == 2:
+                    node.left = stack.pop()
+                stack.append(node)
+            elif is_operand:
+                try:
+                    node = Function.Node(value=float(token))
+                except ValueError:
+                    node = Function.Node(variable=token)
+                stack.append(node)
+
+        if len(stack) != 1:
+            raise SyntaxError(f"invalid formula: {formula}")
+
+        return stack[-1]

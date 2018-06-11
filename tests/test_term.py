@@ -40,11 +40,11 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def is_monotonic(self, monotonic: bool = True) -> 'TermAssert':
-        self.test.assertEqual(self.actual.is_monotonic(), monotonic)
+        self.test.assertEqual(monotonic, self.actual.is_monotonic())
         return self
 
     def is_not_monotonic(self) -> 'TermAssert':
-        self.test.assertEqual(self.actual.is_monotonic(), False)
+        self.test.assertEqual(False, self.actual.is_monotonic())
         return self
 
     def configured_as(self, parameters: str) -> 'TermAssert':
@@ -53,15 +53,15 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_membership(self, x: float, mf: float) -> 'TermAssert':
         if math.isnan(mf):
-            self.test.assertEqual(math.isnan(self.actual.membership(x)), True,
+            self.test.assertEqual(True, math.isnan(self.actual.membership(x)),
                                   f"when x={x:.3f}")
             return self
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
         if platform.system() == 'Darwin':
-            self.test.assertEqual(self.actual.membership(x), mf, f"when x={x:.3f}")
+            self.test.assertEqual(mf, self.actual.membership(x), f"when x={x:.3f}")
         else:  # use approximate values in other platforms
-            self.test.assertAlmostEqual(self.actual.membership(x), mf, places=15,
+            self.test.assertAlmostEqual(mf, self.actual.membership(x), places=15,
                                         msg=f"when x={x:.3f}")
         return self
 
@@ -72,12 +72,12 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0,
                       maximum: float = 1.0) -> 'TermAssert':
-        self.test.assertEqual(self.actual.is_monotonic(), True)
+        self.test.assertEqual(True, self.actual.is_monotonic())
         if math.isnan(mf):
-            self.test.assertEqual(math.isnan(self.actual.tsukamoto(x, minimum, maximum)), True,
+            self.test.assertEqual(True, math.isnan(self.actual.tsukamoto(x, minimum, maximum)),
                                   f"when x={x:.3f}")
         else:
-            self.test.assertEqual(self.actual.tsukamoto(x, minimum, maximum), mf, f"when x={x:.3f}")
+            self.test.assertEqual(mf, self.actual.tsukamoto(x, minimum, maximum), f"when x={x:.3f}")
         return self
 
     def has_tsukamotos(self, x_mf: Dict[float, float], minimum: float = -1.0,
@@ -1136,7 +1136,7 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 1.0}, height=0.5)
 
-    def test_function(self) -> None:
+    def test_function_format_infix(self) -> None:
         self.assertEqual("a + b * 1 ( True or True ) / ( False and False )",
                          fl.Function.format_infix(
                              f"a+b*1(True {fl.Rule.OR} True)/(False {fl.Rule.AND} False)"))
@@ -1145,19 +1145,42 @@ class TestTerm(unittest.TestCase):
                              f"sqrt(a+b*1+sin(pi/2)-~3)"))
 
     def test_function_postfix(self) -> None:
-        self.assertEqual("a b +", fl.Function.infix_to_postfix("a+b"))
-        self.assertEqual("a b 2 * +", fl.Function.infix_to_postfix("a+b*2"))
-        self.assertEqual("a b 2 3 ^ * +", fl.Function.infix_to_postfix("a+b*2^3"))
-        self.assertEqual("a b 2 3 ^ * 4 2 - / +", fl.Function.infix_to_postfix("a+b*2^3/(4 - 2)"))
-        self.assertEqual("a b 2 3 ^ * 4 2 - / 3.1416 4 / sin * +",
-                         fl.Function.infix_to_postfix("a+b*2^3/(4 - 2)*sin(3.1416/4)"))
+        infix_postfix = {
+            "a+b": "a b +",
+            "a+b*2": "a b 2 * +",
+            "a+b*2^3": "a b 2 3 ^ * +",
+            "a+b*2^3/(4 - 2)": "a b 2 3 ^ * 4 2 - / +",
+            "a+b*2^3/(4 - 2)*sin(3.1416/4)": "a b 2 3 ^ * 4 2 - / 3.1416 4 / sin * +",
+            ".-.-a + .+.+b": "a .- .- b .+ .+ +",
+            "a*.-b**3": "a b 3 ** .- *",
+            ".-(a)**.-b": "a b .- ** .-",
+            ".+a**.-b": "a b .- ** .+",
+            ".-a**b + .+a**.-b - .-a ** .-b + .-(a**b) - .-(a)**.-b":
+                "a b ** .- a b .- ** .+ + a b .- ** .- - a b ** .- + a b .- ** .- -",
+            "a+~b": "a b ~ +",
+            "~a*~b": "a ~ b ~ *",
+            "(sin(3.1416/4) + cos(3.1416/4)) / (~sin(3.1416/4) - ~cos(3.1416/4))":
+                "3.1416 4 / sin 3.1416 4 / cos + 3.1416 4 / sin ~ 3.1416 4 / cos ~ - /"
+        }
+        for infix, postfix in infix_postfix.items():
+            self.assertEqual(postfix, fl.Function.infix_to_postfix(infix))
 
-        self.assertEqual("a b ~ +", fl.Function.infix_to_postfix("a+~b"))
-        self.assertEqual("a ~ b ~ *", fl.Function.infix_to_postfix("~a*~b"))
-
-        self.assertEqual("3.1416 4 / sin 3.1416 4 / cos + 3.1416 4 / sin ~ 3.1416 4 / cos ~ - /",
-                         fl.Function.infix_to_postfix("(sin(3.1416/4) + cos(3.1416/4)) / "
-                                                      "(~sin(3.1416/4) - ~cos(3.1416/4))"))
+    def test_function_parse(self) -> None:
+        infix_postfix = {
+            "a+b": "a b +",
+            "a+b*2": "a b 2.000 * +",
+            "a+b*2^3": "a b 2.000 3.000 ^ * +",
+            "a+b*2^3/(4 - 2)": "a b 2.000 3.000 ^ * 4.000 2.000 - / +",
+            "a+b*2^3/(4 - 2)*sin(3.142/4)":
+                "a b 2.000 3.000 ^ * 4.000 2.000 - / 3.142 4.000 / sin * +",
+            "a+~b": "a b ~ +",
+            "~a*~b": "a ~ b ~ *",
+            "(sin(3.142/4) + cos(3.142/4)) / (~sin(3.142/4) - ~cos(3.142/4))":
+                "3.142 4.000 / sin 3.142 4.000 / cos + "
+                "3.142 4.000 / sin ~ 3.142 4.000 / cos ~ - /"
+        }
+        for infix, postfix in infix_postfix.items():
+            self.assertEqual(postfix, fl.Function.parse(infix).postfix())
 
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self) -> None:
@@ -1166,25 +1189,25 @@ class TestTerm(unittest.TestCase):
 
 class FunctionNodeAssert(BaseAssert):
     def prefix_is(self, prefix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(self.actual.prefix(), prefix)
+        self.test.assertEqual(prefix, self.actual.prefix())
         return self
 
     def infix_is(self, infix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(self.actual.infix(), infix)
+        self.test.assertEqual(infix, self.actual.infix())
         return self
 
     def postfix_is(self, postfix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(self.actual.postfix(), postfix)
+        self.test.assertEqual(postfix, self.actual.postfix())
         return self
 
     def to_string_is(self, expected: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(str(self.actual), expected)
+        self.test.assertEqual(expected, str(self.actual))
         return self
 
     def evaluates_to(self, value: float,
                      variables: Optional[
                          Dict[str, float]] = None) -> 'FunctionNodeAssert':
-        self.test.assertAlmostEqual(self.actual.evaluate(variables), value, places=15,
+        self.test.assertAlmostEqual(value, self.actual.evaluate(variables), places=15,
                                     msg=f"when value is {value:.3f}")
         return self
 
@@ -1221,26 +1244,26 @@ class TestFunction(unittest.TestCase):
                                                "expected a method reference, but found none")
 
         functions = fl.FunctionFactory()
-        node_mult = fl.Function.Node(
-            element=functions.copy("*"),
+        node_pow = fl.Function.Node(
+            element=functions.copy("**"),
             left=fl.Function.Node(value=3.0),
             right=fl.Function.Node(value=4.0)
         )
-        FunctionNodeAssert(self, node_mult) \
-            .postfix_is("3.000 4.000 *") \
-            .prefix_is("* 3.000 4.000") \
-            .infix_is("3.000 * 4.000") \
-            .evaluates_to(12.0)
+        FunctionNodeAssert(self, node_pow) \
+            .postfix_is("3.000 4.000 **") \
+            .prefix_is("** 3.000 4.000") \
+            .infix_is("3.000 ** 4.000") \
+            .evaluates_to(81.0)
 
         node_sin = fl.Function.Node(
             element=functions.copy("sin"),
-            left=node_mult
+            left=node_pow
         )
         FunctionNodeAssert(self, node_sin) \
-            .postfix_is("3.000 4.000 * sin") \
-            .prefix_is("sin * 3.000 4.000") \
-            .infix_is("sin ( 3.000 * 4.000 )") \
-            .evaluates_to(-0.5365729180004349)
+            .postfix_is("3.000 4.000 ** sin") \
+            .prefix_is("sin ** 3.000 4.000") \
+            .infix_is("sin ( 3.000 ** 4.000 )") \
+            .evaluates_to(-0.629887994274454)
 
         node_pow = fl.Function.Node(
             element=functions.copy("pow"),
@@ -1249,13 +1272,13 @@ class TestFunction(unittest.TestCase):
         )
 
         FunctionNodeAssert(self, node_pow) \
-            .postfix_is("3.000 4.000 * sin two pow") \
-            .prefix_is("pow sin * 3.000 4.000 two") \
-            .infix_is("pow ( sin ( 3.000 * 4.000 ) two )") \
+            .postfix_is("3.000 4.000 ** sin two pow") \
+            .prefix_is("pow sin ** 3.000 4.000 two") \
+            .infix_is("pow ( sin ( 3.000 ** 4.000 ) two )") \
             .fails_to_evaluate(ValueError,
                                "expected a map of variables containing the value for 'two', "
                                "but the map contains: None") \
-            .evaluates_to(0.28791049633150145, {'two': 2})
+            .evaluates_to(0.39675888533109455, {'two': 2})
 
         node_sum = fl.Function.Node(
             element=functions.copy("+"),
@@ -1264,10 +1287,10 @@ class TestFunction(unittest.TestCase):
         )
 
         FunctionNodeAssert(self, node_sum) \
-            .postfix_is("3.000 4.000 * sin two pow 3.000 4.000 * sin two pow +") \
-            .prefix_is("+ pow sin * 3.000 4.000 two pow sin * 3.000 4.000 two") \
-            .infix_is("pow ( sin ( 3.000 * 4.000 ) two ) + pow ( sin ( 3.000 * 4.000 ) two )") \
-            .evaluates_to(0.5758209926630029, {'two': 2})
+            .postfix_is("3.000 4.000 ** sin two pow 3.000 4.000 ** sin two pow +") \
+            .prefix_is("+ pow sin ** 3.000 4.000 two pow sin ** 3.000 4.000 two") \
+            .infix_is("pow ( sin ( 3.000 ** 4.000 ) two ) + pow ( sin ( 3.000 ** 4.000 ) two )") \
+            .evaluates_to(0.7935177706621891, {'two': 2})
 
     def test_node_deep_copy(self) -> None:
         node_mult = fl.Function.Node(

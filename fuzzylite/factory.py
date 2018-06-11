@@ -104,17 +104,24 @@ class FunctionFactory(CloningFactory[Function.Element]):
         operator_type = Function.Element.Type.Operator
         operators = [
             # p = 100  #  priority
+
             # First order: not, negate
             Function.Element("!", "Logical NOT", operator_type, operator.not_,
                              arity=1, precedence=100, associativity=1),
-
             Function.Element("~", "Negate", operator_type, operator.neg,
                              arity=1, precedence=100, associativity=1),
 
-            # Second order: power
+            # Second order: power, unary -, unary +
             # p -= 10
             Function.Element("^", "Power", operator_type, operator.pow,
                              arity=2, precedence=90, associativity=1),
+            Function.Element("**", "Power", operator_type, operator.pow,
+                             arity=2, precedence=90, associativity=1),
+
+            Function.Element(".-", "Unary minus", operator_type, operator.neg,
+                             arity=1, precedence=90, associativity=1),
+            Function.Element(".+", "Unary plus", operator_type, operator.pos,
+                             arity=1, precedence=90, associativity=1),
 
             # Third order: Multiplication, Division, and Modulo
             # p -= 10
