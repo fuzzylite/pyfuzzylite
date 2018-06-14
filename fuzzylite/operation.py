@@ -15,6 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import math
 from typing import Callable, Optional, Text, Union
 
 
@@ -124,6 +125,10 @@ class Operation(object):
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]
         return len(required_parameters)
+
+    @staticmethod
+    def pi() -> float:
+        return math.pi
 
 
 Op = Operation

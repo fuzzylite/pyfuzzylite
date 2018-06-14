@@ -21,7 +21,7 @@ import operator
 import platform
 import re
 import unittest
-from typing import Callable, Dict, Optional, Sequence, Type
+from typing import Callable, Dict, Optional, Sequence, Type, NoReturn
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -68,6 +68,12 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0) -> 'TermAssert':
         for x in x_mf.keys():
             self.has_membership(x, height * x_mf[x])
+        return self
+
+    def membership_fails(self, x: float, exception: Type[Exception],
+                         message: str) -> 'TermAssert':
+        with self.test.assertRaisesRegex(exception, message):
+            self.actual.membership(x)
         return self
 
     def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0,
@@ -1136,51 +1142,78 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 1.0}, height=0.5)
 
-    def test_function_format_infix(self) -> None:
-        self.assertEqual("a + b * 1 ( True or True ) / ( False and False )",
-                         fl.Function.format_infix(
-                             f"a+b*1(True {fl.Rule.OR} True)/(False {fl.Rule.AND} False)"))
-        self.assertEqual("sqrt ( a + b * 1 + sin ( pi / 2 ) - ~ 3 )",
-                         fl.Function.format_infix(
-                             f"sqrt(a+b*1+sin(pi/2)-~3)"))
+    @unittest.skip("division by zero not handled well by Python")
+    def test_division_by_zero(self) -> None:
+        self.assertTrue(math.isnan(
+            fl.Function.create("DivisionByZero", "1000 / x").membership(0.0)))
 
-    def test_function_postfix(self) -> None:
-        infix_postfix = {
-            "a+b": "a b +",
-            "a+b*2": "a b 2 * +",
-            "a+b*2^3": "a b 2 3 ^ * +",
-            "a+b*2^3/(4 - 2)": "a b 2 3 ^ * 4 2 - / +",
-            "a+b*2^3/(4 - 2)*sin(3.1416/4)": "a b 2 3 ^ * 4 2 - / 3.1416 4 / sin * +",
-            ".-.-a + .+.+b": "a .- .- b .+ .+ +",
-            "a*.-b**3": "a b 3 ** .- *",
-            ".-(a)**.-b": "a b .- ** .-",
-            ".+a**.-b": "a b .- ** .+",
-            ".-a**b + .+a**.-b - .-a ** .-b + .-(a**b) - .-(a)**.-b":
-                "a b ** .- a b .- ** .+ + a b .- ** .- - a b ** .- + a b .- ** .- -",
-            "a+~b": "a b ~ +",
-            "~a*~b": "a ~ b ~ *",
-            "(sin(3.1416/4) + cos(3.1416/4)) / (~sin(3.1416/4) - ~cos(3.1416/4))":
-                "3.1416 4 / sin 3.1416 4 / cos + 3.1416 4 / sin ~ 3.1416 4 / cos ~ - /"
-        }
-        for infix, postfix in infix_postfix.items():
-            self.assertEqual(postfix, fl.Function.infix_to_postfix(infix))
+    def test_function(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")):
+            fl.Function("f(x)", "f(x)=2x+1").membership(math.nan)
 
-    def test_function_parse(self) -> None:
-        infix_postfix = {
-            "a+b": "a b +",
-            "a+b*2": "a b 2.000 * +",
-            "a+b*2^3": "a b 2.000 3.000 ^ * +",
-            "a+b*2^3/(4 - 2)": "a b 2.000 3.000 ^ * 4.000 2.000 - / +",
-            "a+b*2^3/(4 - 2)*sin(3.142/4)":
-                "a b 2.000 3.000 ^ * 4.000 2.000 - / 3.142 4.000 / sin * +",
-            "a+~b": "a b ~ +",
-            "~a*~b": "a ~ b ~ *",
-            "(sin(3.142/4) + cos(3.142/4)) / (~sin(3.142/4) - ~cos(3.142/4))":
-                "3.142 4.000 / sin 3.142 4.000 / cos + "
-                "3.142 4.000 / sin ~ 3.142 4.000 / cos ~ - /"
-        }
-        for infix, postfix in infix_postfix.items():
-            self.assertEqual(postfix, fl.Function.parse(infix).postfix())
+        TermAssert(self, fl.Function("function", "", variables={"y": 1.5})) \
+            .exports_fll("term: function Function") \
+            .configured_as("2*x**3 +2*y - 3") \
+            .exports_fll("term: function Function 2*x**3 +2*y - 3") \
+            .has_memberships({-0.5: -0.25,
+                              -0.4: -0.1280000000000001,
+                              -0.25: -0.03125,
+                              -0.1: -0.0019999999999997797,
+                              0.0: 0.0,
+                              0.1: 0.0019999999999997797,
+                              0.25: 0.03125,
+                              0.4: 0.1280000000000001,
+                              0.5: 0.25,
+                              math.nan: math.nan,
+                              math.inf: math.inf,
+                              -math.inf: -math.inf})
+
+        input_a = fl.InputVariable("i_A")
+        output_a = fl.OutputVariable("o_A")
+        engine_a = fl.Engine("A", "Engine A", [input_a], [output_a])
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected a map of variables containing the value for 'i_A', "
+                "but the map contains: {'x': 0.0}")):
+            fl.Function.create("engine_a", "2*i_A + o_A + x")
+
+        function_a = fl.Function.create("f", "2*i_A + o_A + x", engine_a)
+        assert_that = TermAssert(self, function_a)
+        assert_that.exports_fll("term: f Function 2*i_A + o_A + x").has_membership(0.0, math.nan)
+        input_a.value = 3.0
+        output_a.value = 1.0
+        assert_that.has_memberships({
+            -1.0: 6.0,
+            -0.5: 6.5,
+            0.0: 7.0,
+            0.5: 7.5,
+            1.0: 8.0,
+            math.nan: math.nan,
+            math.inf: math.inf,
+            -math.inf: -math.inf
+        })
+
+        function_a.variables = {"x": math.nan}
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "variable 'x' is reserved for internal use of Function term, "
+                "please remove it from the map of variables: {'x': nan}")):
+            function_a.membership(0.0)
+        del function_a.variables["x"]
+
+        input_a.name = "x"
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "variable 'x' is reserved for internal use of Function term, "
+                f"please rename the engine variable: {str(input_a)}")):
+            function_a.membership(0.0)
+
+        input_b = fl.InputVariable("i_B")
+        output_b = fl.OutputVariable("o_B")
+        engine_b = fl.Engine("B", "Engine B", [input_b], [output_b])
+        self.assertEqual(engine_a, function_a.engine)
+        self.assertTrue(function_a.is_loaded())
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "expected a map of variables containing the value for 'i_A', "
+                "but the map contains: {'i_B': nan, 'o_B': nan, 'x': 0.0}")):
+            function_a.update_reference(engine_b)
 
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self) -> None:
@@ -1237,9 +1270,10 @@ class TestFunction(unittest.TestCase):
         self.assertEqual(str(element), str(copy.deepcopy(element)))
 
     def test_node_evaluation(self) -> None:
+        type_function = fl.Function.Element.Type.Function
         FunctionNodeAssert(self, fl.Function.Node(
             element=fl.Function.Element("undefined", "undefined method",  # type: ignore
-                                        fl.Function.Element.Type.Function, None))
+                                        type_function, None))
                            ).fails_to_evaluate(ValueError,
                                                "expected a method reference, but found none")
 
@@ -1292,6 +1326,37 @@ class TestFunction(unittest.TestCase):
             .infix_is("pow ( sin ( 3.000 ** 4.000 ) two ) + pow ( sin ( 3.000 ** 4.000 ) two )") \
             .evaluates_to(0.7935177706621891, {'two': 2})
 
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"), left=None)) \
+            .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
+
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"),
+                                                  left=fl.Function.Node(value=math.pi),
+                                                  right=None)).evaluates_to(-1)
+
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
+                                                  left=None, right=None)) \
+            .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
+                                                  left=None,
+                                                  right=fl.Function.Node(value=2.0))) \
+            .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
+                                                  left=fl.Function.Node(value=2.0),
+                                                  right=None)) \
+            .fails_to_evaluate(ValueError, re.escape("expected a right node, but found none"))
+
+        def raise_exception() -> NoReturn:
+            raise ValueError("mocking testing exception")
+
+        FunctionNodeAssert(self,
+                           fl.Function.Node(element=functions.copy("pow"),
+                                            left=fl.Function.Node(value=2.0),
+                                            right=fl.Function.Node(
+                                                element=fl.Function.Element("raise", "exception",
+                                                                            type_function,
+                                                                            raise_exception)))) \
+            .fails_to_evaluate(ValueError, re.escape("mocking testing exception"))
+
     def test_node_deep_copy(self) -> None:
         node_mult = fl.Function.Node(
             element=fl.Function.Element("*", "multiplication", fl.Function.Element.Type.Operator,
@@ -1340,6 +1405,53 @@ class TestFunction(unittest.TestCase):
 
         FunctionNodeAssert(self, fl.Function.Node(value=1)) \
             .to_string_is("1")
+
+    def test_function_format_infix(self) -> None:
+        self.assertEqual("a + b * 1 ( True or True ) / ( False and False )",
+                         fl.Function.format_infix(
+                             f"a+b*1(True {fl.Rule.OR} True)/(False {fl.Rule.AND} False)"))
+        self.assertEqual("sqrt ( a + b * 1 + sin ( pi / 2 ) - ~ 3 )",
+                         fl.Function.format_infix(
+                             f"sqrt(a+b*1+sin(pi/2)-~3)"))
+
+    def test_function_postfix(self) -> None:
+        infix_postfix = {
+            "a+b": "a b +",
+            "a+b*2": "a b 2 * +",
+            "a+b*2^3": "a b 2 3 ^ * +",
+            "a+b*2^3/(4 - 2)": "a b 2 3 ^ * 4 2 - / +",
+            "a+b*2^3/(4 - 2)*sin(pi/4)":
+                "a b 2 3 ^ * 4 2 - / pi 4 / sin * +",
+            ".-.-a + .+.+b": "a .- .- b .+ .+ +",
+            "a*.-b**3": "a b 3 ** .- *",
+            ".-(a)**.-b": "a b .- ** .-",
+            ".+a**.-b": "a b .- ** .+",
+            ".-a**b + .+a**.-b - .-a ** .-b + .-(a**b) - .-(a)**.-b":
+                "a b ** .- a b .- ** .+ + a b .- ** .- - a b ** .- + a b .- ** .- -",
+            "a+~b": "a b ~ +",
+            "~a*~b": "a ~ b ~ *",
+            "(sin(pi()/4) + cos(pi/4)) / (~sin(pi()/4) - ~cos(pi/4))":
+                "pi 4 / sin pi 4 / cos + pi 4 / sin ~ pi 4 / cos ~ - /"
+        }
+        for infix, postfix in infix_postfix.items():
+            self.assertEqual(postfix, fl.Function.infix_to_postfix(infix))
+
+    def test_function_parse(self) -> None:
+        infix_postfix = {
+            "a+b": "a b +",
+            "a+b*2": "a b 2.000 * +",
+            "a+b*2^3": "a b 2.000 3.000 ^ * +",
+            "a+b*2^3/(4 - 2)": "a b 2.000 3.000 ^ * 4.000 2.000 - / +",
+            "a+b*2^3/(4 - 2)*sin(pi/4)":
+                "a b 2.000 3.000 ^ * 4.000 2.000 - / pi 4.000 / sin * +",
+            "a+~b": "a b ~ +",
+            "~a*~b": "a ~ b ~ *",
+            "(sin(pi()/4) + cos(pi/4)) / (~sin(pi()/4) - ~cos(pi/4))":
+                "pi 4.000 / sin pi 4.000 / cos + "
+                "pi 4.000 / sin ~ pi 4.000 / cos ~ - /"
+        }
+        for infix, postfix in infix_postfix.items():
+            self.assertEqual(postfix, fl.Function.parse(infix).postfix())
 
 
 if __name__ == '__main__':

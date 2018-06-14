@@ -1100,25 +1100,21 @@ class Function(Term):
                 if not self.element.method:
                     raise ValueError("expected a method reference, but found none")
                 arity = self.element.arity
-                try:
-                    if arity == 0:
-                        result = self.element.method()
-                    elif arity == 1:
-                        if not self.left:
-                            raise ValueError("expected a left node, but found none")
-                        result = self.element.method(
-                            self.left.evaluate(local_variables))
-                    elif arity == 2:
-                        if not self.left:
-                            raise ValueError("expected a left node, but found none")
-                        if not self.right:
-                            raise ValueError("expected a right node, but found none")
-                        result = self.element.method(
-                            self.left.evaluate(local_variables),
-                            self.right.evaluate(local_variables))
-                except Exception as ex:
-                    raise ValueError(f"error occurred during the evaluation of method "
-                                     f"'{self.element.method.__name__}': {ex}") from ex
+                if arity == 0:
+                    result = self.element.method()
+                elif arity == 1:
+                    if not self.left:
+                        raise ValueError("expected a left node, but found none")
+                    result = self.element.method(
+                        self.left.evaluate(local_variables))
+                elif arity == 2:
+                    if not self.left:
+                        raise ValueError("expected a left node, but found none")
+                    if not self.right:
+                        raise ValueError("expected a right node, but found none")
+                    result = self.element.method(
+                        self.left.evaluate(local_variables),
+                        self.right.evaluate(local_variables))
             elif self.variable:
                 if not local_variables or self.variable not in local_variables:
                     raise ValueError(
@@ -1212,10 +1208,8 @@ class Function(Term):
 
     def update_reference(self, engine: 'Engine') -> None:
         self.engine = engine
-        try:
+        if self.is_loaded():
             self.load()
-        except:  # noqa: E722
-            pass
 
     @staticmethod
     def create(name: str, formula: str, engine: Optional['Engine'] = None) -> 'Function':
@@ -1224,18 +1218,26 @@ class Function(Term):
         return result
 
     def membership(self, x: float) -> float:
-        if not self.is_loaded():
-            raise RuntimeError(f"function '{self.formula}' is not loaded")
+        if 'x' in self.variables:
+            raise ValueError("variable 'x' is reserved for internal use of Function term, please "
+                             f"remove it from the map of variables: {self.variables}")
 
+        engine_variables: Dict[str, float] = {}
         if self.engine:
-            self.variables.update(
-                {variable.name: variable.value for variable in self.engine.inputs})
-            self.variables.update(
-                {variable.name: variable.value for variable in self.engine.outputs})
+            for variable in self.engine.variables():
+                engine_variables[variable.name] = variable.value
 
-        self.variables['x'] = x
+            if 'x' in engine_variables:
+                raise ValueError("variable 'x' is reserved for internal use of Function term, "
+                                 f"please rename the engine variable: {self.engine.variable('x')}")
+        engine_variables['x'] = x
 
-        return self.evaluate(self.variables)
+        overrides = self.variables.keys() & engine_variables.keys()
+        if overrides:
+            raise ValueError("function variables cannot override engine variables, please "
+                             f"resolve the name ambiguity of the following variables: {overrides}")
+        engine_variables.update(self.variables)
+        return self.evaluate(engine_variables)
 
     def evaluate(self, variables: Optional[Dict[str, float]] = None) -> float:
         if not self.root:
@@ -1251,6 +1253,7 @@ class Function(Term):
 
     def load(self) -> None:
         self.root = self.parse(self.formula)
+        self.membership(0.0)  # make sure function can be evaluated, else raise exception
 
     @classmethod
     def format_infix(cls, formula: str) -> str:
@@ -1352,7 +1355,8 @@ class Function(Term):
                     raise SyntaxError(f"function element {element.name} has arity {element.arity}, "
                                       f"but the size of the stack is {len(stack)}")
                 node = Function.Node(factory.copy(token))
-                node.right = stack.pop()
+                if element.arity >= 1:
+                    node.right = stack.pop()
                 if element.arity == 2:
                     node.left = stack.pop()
                 stack.append(node)
@@ -1364,6 +1368,6 @@ class Function(Term):
                 stack.append(node)
 
         if len(stack) != 1:
-            raise SyntaxError(f"invalid formula: {formula}")
+            raise SyntaxError(f"invalid formula: '{formula}'")
 
         return stack[-1]

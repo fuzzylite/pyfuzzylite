@@ -184,6 +184,13 @@ class TestFactory(unittest.TestCase):
 
 
 class TestFunctionFactory(unittest.TestCase):
+    def test_factory_precedence(self) -> None:
+        precedence_expected = {0: 100, 1: 90, 2: 80, 3: 70, 4: 60, 5: 50,
+                               6: 40, 7: 30, 8: 20, 9: 10, 10: 0}
+        factory = fl.FunctionFactory()
+        for p, e in precedence_expected.items():
+            self.assertEqual(e, factory._precedence(p))
+
     def test_factory_matches_keys_and_names(self) -> None:
         for key, element in fl.FunctionFactory().objects.items():
             self.assertEqual(key, element.name)
@@ -240,7 +247,7 @@ class TestFunctionFactory(unittest.TestCase):
             .contains_exactly(
             {'abs', 'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh', 'ceil',
              'cos', 'cosh', 'eq', 'exp', 'fabs', 'floor', 'fmod', 'ge', 'gt', 'le',
-             'log', 'log10', 'log1p', 'lt', 'max', 'min', 'neq', 'pow', 'round', 'sin',
+             'log', 'log10', 'log1p', 'lt', 'max', 'min', 'neq', 'pi', 'pow', 'round', 'sin',
              'sinh', 'sqrt', 'tan', 'tanh'},
             fl.Function.Element.Type.Function)
 

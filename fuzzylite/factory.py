@@ -94,59 +94,59 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
+
     def __init__(self) -> None:
         super().__init__()
         self._register_operators()
         self._register_functions()
 
+    def _precedence(self, importance: int) -> int:
+        maximum = 100
+        step = 10
+        return maximum - importance * step
+
     def _register_operators(self) -> None:
         import operator
         operator_type = Function.Element.Type.Operator
+        p: Callable[[int], int] = self._precedence
         operators = [
-            # p = 100  #  priority
-
             # First order: not, negate
             Function.Element("!", "Logical NOT", operator_type, operator.not_,
-                             arity=1, precedence=100, associativity=1),
+                             arity=1, precedence=p(0), associativity=1),
             Function.Element("~", "Negate", operator_type, operator.neg,
-                             arity=1, precedence=100, associativity=1),
+                             arity=1, precedence=p(0), associativity=1),
 
             # Second order: power, unary -, unary +
-            # p -= 10
             Function.Element("^", "Power", operator_type, operator.pow,
-                             arity=2, precedence=90, associativity=1),
+                             arity=2, precedence=p(1), associativity=1),
             Function.Element("**", "Power", operator_type, operator.pow,
-                             arity=2, precedence=90, associativity=1),
+                             arity=2, precedence=p(1), associativity=1),
 
             Function.Element(".-", "Unary minus", operator_type, operator.neg,
-                             arity=1, precedence=90, associativity=1),
+                             arity=1, precedence=p(1), associativity=1),
             Function.Element(".+", "Unary plus", operator_type, operator.pos,
-                             arity=1, precedence=90, associativity=1),
+                             arity=1, precedence=p(1), associativity=1),
 
             # Third order: Multiplication, Division, and Modulo
-            # p -= 10
-            Function.Element("*", "Multiplication",
-                             operator_type, operator.mul, arity=2, precedence=80),
-            Function.Element("/", "Division",
-                             operator_type, operator.truediv, arity=2, precedence=80),
-            Function.Element("%", "Modulo",
-                             operator_type, operator.mod, arity=2, precedence=80),
+            Function.Element("*", "Multiplication", operator_type, operator.mul,
+                             arity=2, precedence=p(2)),
+            Function.Element("/", "Division", operator_type, operator.truediv,
+                             arity=2, precedence=p(2)),
+            Function.Element("%", "Modulo", operator_type, operator.mod,
+                             arity=2, precedence=p(2)),
 
             # Fourth order: Addition, Subtraction
-            # p -= 10
-            Function.Element("+", "Addition",
-                             operator_type, operator.add, arity=2, precedence=70),
-            Function.Element("-", "Subtraction",
-                             operator_type, operator.sub, arity=2, precedence=70),
+            Function.Element("+", "Addition", operator_type, operator.add,
+                             arity=2, precedence=p(3)),
+            Function.Element("-", "Subtraction", operator_type, operator.sub,
+                             arity=2, precedence=p(3)),
 
             # Fifth order: logical and
-            # p -= 10
-            Function.Element(Rule.AND, "Logical AND", operator_type,
-                             Op.logical_and, arity=2, precedence=60),
+            Function.Element(Rule.AND, "Logical AND", operator_type, Op.logical_and,
+                             arity=2, precedence=p(4)),
             # Sixth order: logical or
-            # p -= 10
-            Function.Element(Rule.OR, "Logical OR", operator_type,
-                             Op.logical_or, arity=2, precedence=50)
+            Function.Element(Rule.OR, "Logical OR", operator_type, Op.logical_or,
+                             arity=2, precedence=p(5))
         ]
         for op in operators:
             self.objects[op.name] = op
@@ -190,9 +190,11 @@ class FunctionFactory(CloningFactory[Function.Element]):
             Function.Element("pow", "Power", function_type, math.pow, arity=2),
             Function.Element("atan2", "Inverse tangent (y,x)", function_type, math.atan2, arity=2),
             Function.Element("fmod", "Floating-point remainder", function_type, math.fmod, arity=2),
+            Function.Element("pi", "Pi constant", function_type, Op.pi, arity=0)
         ]
 
         for f in functions:
+            f.precedence = self._precedence(0)
             self.objects[f.name] = f
 
     def operators(self) -> Dict[str, Function.Element]:

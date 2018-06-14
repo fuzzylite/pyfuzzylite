@@ -73,5 +73,11 @@ class Engine(object):
     def infer_type(self) -> Tuple[Type, str]:
         pass
 
+    def variable(self, name: str) -> Optional[Variable]:
+        for variable in self.variables():
+            if variable.name == name:
+                return variable
+        return None
+
     def variables(self) -> List[Variable]:
         return [*self.inputs, *self.outputs]
