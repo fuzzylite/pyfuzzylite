@@ -52,17 +52,17 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def has_membership(self, x: float, mf: float) -> 'TermAssert':
+        message = "\n".join([f"{str(self.actual)}",
+                             f"expected: \u03BC(x={x:.3f})={mf}, but"])
         if math.isnan(mf):
-            self.test.assertEqual(True, math.isnan(self.actual.membership(x)),
-                                  f"when x={x:.3f}")
-            return self
+            return self.test.assertEqual(str(fl.nan), str(self.actual.membership(x)), message)
+
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
         if platform.system() == 'Darwin':
-            self.test.assertEqual(mf, self.actual.membership(x), f"when x={x:.3f}")
+            self.test.assertEqual(mf, self.actual.membership(x), message)
         else:  # use approximate values in other platforms
-            self.test.assertAlmostEqual(mf, self.actual.membership(x), places=15,
-                                        msg=f"when x={x:.3f}")
+            self.test.assertAlmostEqual(mf, self.actual.membership(x), places=15, msg=message)
         return self
 
     def has_memberships(self, x_mf: Dict[float, float], height: float = 1.0) -> 'TermAssert':
@@ -71,9 +71,15 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def membership_fails(self, x: float, exception: Type[Exception],
-                         message: str) -> 'TermAssert':
-        with self.test.assertRaisesRegex(exception, message):
+                         regex: str) -> 'TermAssert':
+        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
             self.actual.membership(x)
+        return self
+
+    def memberships_fail(self, x_mf: Dict[float, float], exception: Type[Exception],
+                         regex: str) -> 'TermAssert':
+        for x, _ in x_mf.items():
+            self.membership_fails(x, exception, regex)
         return self
 
     def has_tsukamoto(self, x: float, mf: float, minimum: float = -1.0,
@@ -81,9 +87,10 @@ class TermAssert(BaseAssert[fl.Term]):
         self.test.assertEqual(True, self.actual.is_monotonic())
         if math.isnan(mf):
             self.test.assertEqual(True, math.isnan(self.actual.tsukamoto(x, minimum, maximum)),
-                                  f"when x={x:.3f}")
+                                  f"{str(self.actual)}\nwhen x={x:.3f}")
         else:
-            self.test.assertEqual(mf, self.actual.tsukamoto(x, minimum, maximum), f"when x={x:.3f}")
+            self.test.assertEqual(mf, self.actual.tsukamoto(x, minimum, maximum),
+                                  f"{str(self.actual)}\nwhen x={x:.3f}")
         return self
 
     def has_tsukamotos(self, x_mf: Dict[float, float], minimum: float = -1.0,
@@ -1142,10 +1149,47 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 1.0}, height=0.5)
 
-    @unittest.skip("division by zero not handled well by Python")
-    def test_division_by_zero(self) -> None:
-        self.assertTrue(math.isnan(
-            fl.Function.create("DivisionByZero", "1000 / x").membership(0.0)))
+    # @unittest.skip("division by zero not handled well by Python")
+    def test_division_by_zero_fails_with_float(self) -> None:
+        self.assertEqual(fl.lib.floating_point_type, float)
+
+        TermAssert(self, fl.Function.create("dbz", "0.0/x")) \
+            .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
+            .has_memberships({fl.inf: 0.0, -fl.inf: -0.0, fl.nan: fl.nan})
+
+        TermAssert(self, fl.Function.create("dbz", "inf/x")) \
+            .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
+            .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
+
+        TermAssert(self, fl.Function.create("dbz", ".-inf/x")) \
+            .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
+            .has_memberships({fl.inf: fl.inf, -fl.inf: fl.inf, fl.nan: fl.nan})
+
+        TermAssert(self, fl.Function.create("dbz", "nan/x")) \
+            .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
+            .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
+
+    def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
+        import numpy as np
+        fl.lib.floating_point_type = np.float_
+        try:
+            TermAssert(self, fl.Function.create("dbz", "0.0/x")) \
+                .has_memberships({0.0: fl.nan, fl.inf: 0.0, -fl.inf: 0.0, fl.nan: fl.nan})
+
+            TermAssert(self, fl.Function.create("dbz", "inf/x")) \
+                .has_memberships({0.0: fl.inf, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
+
+            TermAssert(self, fl.Function.create("dbz", "~inf/x")) \
+                .has_memberships({0.0: -fl.inf, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
+
+            TermAssert(self, fl.Function.create("dbz", "nan/x")) \
+                .has_memberships({0.0: fl.nan, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
+        except Exception:
+            fl.lib.floating_point_type = float
+            raise
+
+        fl.lib.floating_point_type = float
+        self.assertEqual(fl.lib.floating_point_type, float)
 
     def test_function(self) -> None:
         with self.assertRaisesRegex(RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")):
@@ -1174,7 +1218,7 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, re.escape(
                 "expected a map of variables containing the value for 'i_A', "
                 "but the map contains: {'x': 0.0}")):
-            fl.Function.create("engine_a", "2*i_A + o_A + x")
+            fl.Function.create("engine_a", "2*i_A + o_A + x").membership(0.0)
 
         function_a = fl.Function.create("f", "2*i_A + o_A + x", engine_a)
         assert_that = TermAssert(self, function_a)
@@ -1214,6 +1258,7 @@ class TestTerm(unittest.TestCase):
                 "expected a map of variables containing the value for 'i_A', "
                 "but the map contains: {'i_B': nan, 'o_B': nan, 'x': 0.0}")):
             function_a.update_reference(engine_b)
+            function_a.membership(0.0)
 
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self) -> None:

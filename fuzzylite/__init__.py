@@ -50,3 +50,4 @@ lib: Library = Library()
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary
+Float = lib.floating_point

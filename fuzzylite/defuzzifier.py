@@ -99,7 +99,7 @@ class Centroid(IntegralDefuzzifier):
             return nan
         resolution = self.resolution
         dx = (maximum - minimum) / resolution
-        area = x_centroid = float(0.0)
+        area = x_centroid = 0.0
         for i in range(0, resolution):
             x = minimum + (i + 0.5) * dx
             y = term.membership(x)

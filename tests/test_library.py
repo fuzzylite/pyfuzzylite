@@ -70,7 +70,7 @@ class TestLibrary(unittest.TestCase):
                     'Concave', 'Consequent', 'Constant', 'ConstructionFactory', 'Cosine',
                     'Defuzzifier', 'DefuzzifierFactory', 'Discrete', 'DrasticProduct', 'DrasticSum',
                     'EinsteinProduct', 'EinsteinSum', 'Engine', 'Exporter', 'Expression',
-                    'Extremely', 'FactoryManager', 'First', 'FllExporter', 'Function',
+                    'Extremely', 'FactoryManager', 'First', 'FllExporter', 'Float', 'Function',
                     'FunctionFactory', 'Gaussian', 'GaussianProduct', 'General', 'HamacherProduct',
                     'HamacherSum', 'Hedge', 'HedgeFactory', 'HedgeFunction', 'Highest', 'Importer',
                     'InputVariable', 'IntegralDefuzzifier', 'LargestOfMaximum', 'Last', 'Library',

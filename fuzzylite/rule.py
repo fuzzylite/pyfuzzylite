@@ -220,7 +220,8 @@ class Rule(object):
 
         antecedent = []
         consequent = []
-        weight = 1.0
+        from . import Float
+        weight = Float(1.0)
         s_begin, s_if, s_then, s_with, s_end = range(5)
         state = s_begin
         for token in rule.split():
@@ -241,7 +242,7 @@ class Rule(object):
                 else:
                     consequent.append(token)
             elif state == s_with:
-                weight = float(token)
+                weight = Float(token)
                 state = s_end
             elif state == s_end:
                 raise SyntaxError(f"unexpected token '{token}' at the end of rule")

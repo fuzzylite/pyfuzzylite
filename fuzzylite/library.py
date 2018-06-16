@@ -16,7 +16,7 @@
 """
 
 import logging
-from typing import Optional
+from typing import Optional, SupportsFloat, Type
 
 from .factory import FactoryManager
 
@@ -24,11 +24,20 @@ from .factory import FactoryManager
 class Library(object):
 
     def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
+                 floating_point_type: Type[SupportsFloat] = float,
                  factory_manager: Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance
+        self.floating_point_type = floating_point_type
         self.factory_manager = factory_manager if factory_manager else FactoryManager()
         self.logger = logging.getLogger("fuzzylite")
+
+    def floating_point(self, value: object) -> SupportsFloat:
+        return self.floating_point_type(value)
+
+    @property
+    def debugging(self) -> bool:
+        return self.logger.level == logging.DEBUG
 
     @property
     def name(self) -> str:
@@ -61,10 +70,6 @@ class Library(object):
     @property
     def website(self) -> str:
         return "https://www.fuzzylite.com/"
-
-    @property
-    def debugging(self) -> bool:
-        return self.logger.level == logging.DEBUG
 
     @property
     def summary(self) -> str:
@@ -167,65 +172,3 @@ In addition, you can easily:
 """
         )
         return result
-
-#
-# __library_global: Optional[Library] = None
-# __library_thread: Optional[threading.local] = None
-#
-#
-# def __global_library() -> Library:
-#     global __library_global, __library_thread
-#
-#     if not __library_global:
-#         __library_global = Library()
-#
-#     if __library_thread:
-#         if 'library' in vars(__library_thread):
-#             del __library_thread.library
-#         __library_thread = None
-#
-#     return __library_global
-#
-#
-# def __thread_local_library() -> Library:
-#     global __library_global, __library_thread
-#
-#     if not __library_thread:
-#         __library_thread = threading.local()
-#
-#     if 'library' not in vars(__library_thread):
-#         __library_thread.library = Library()
-#
-#     if __library_global:
-#         __library_global = None
-#
-#     return __library_thread.library
-#
-#
-# library = __global_library
-#
-#
-# class StorageMode(enum.Enum):
-#     GLOBAL, THREAD_LOCAL = range(2)
-#
-#
-# def set_storage_mode(mode: StorageMode) -> None:
-#     global library
-#     if mode == StorageMode.GLOBAL:
-#         library = __global_library
-#     elif mode == StorageMode.THREAD_LOCAL:
-#         library = __thread_local_library
-#     else:
-#         raise ValueError(f"unexpected storage mode: {mode}")
-#     library()
-#
-#
-# def get_storage_mode() -> StorageMode:
-#     global library
-#     if library == __global_library:
-#         result = StorageMode.GLOBAL
-#     elif library == __thread_local_library:
-#         result = StorageMode.THREAD_LOCAL
-#     else:
-#         raise ValueError(f"unexpected storage mode: {library}")
-#     return result
