@@ -39,7 +39,7 @@ class Defuzzifier(object):
 
 
 class IntegralDefuzzifier(Defuzzifier):
-    __slots__ = ("resolution",)
+    __slots__ = ["resolution"]
 
     default_resolution = 100
 
@@ -124,7 +124,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 
 
 class WeightedDefuzzifier(Defuzzifier):
-    __slots__ = ("type",)
+    __slots__ = ["type"]
 
     class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)

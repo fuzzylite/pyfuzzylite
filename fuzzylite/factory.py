@@ -38,7 +38,7 @@ T = TypeVar('T')
 
 
 class ConstructionFactory(Generic[T]):
-    __slots__ = ("constructors",)
+    __slots__ = ["constructors"]
 
     def __init__(self) -> None:
         self.constructors: Dict[str, Callable[[], Optional[T]]] = {}
@@ -55,7 +55,7 @@ class ConstructionFactory(Generic[T]):
 
 
 class CloningFactory(Generic[T]):
-    __slots__ = ("objects",)
+    __slots__ = ["objects"]
 
     def __init__(self) -> None:
         self.objects: Dict[str, T] = {}
@@ -254,8 +254,7 @@ class TermFactory(ConstructionFactory[Term]):
 
 
 class FactoryManager(object):
-    __slots__ = ("tnorm", "snorm", "activation", "defuzzifier",
-                 "term", "hedge", "function")
+    __slots__ = ["tnorm", "snorm", "activation", "defuzzifier", "term", "hedge", "function"]
 
     def __init__(self,  # type: ignore
                  tnorm: TNormFactory = None,

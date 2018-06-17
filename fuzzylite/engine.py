@@ -27,7 +27,7 @@ from .variable import InputVariable, OutputVariable, Variable
 
 
 class Engine(object):
-    __slots__ = ("name", "description", "inputs", "outputs", "blocks")
+    __slots__ = ["name", "description", "inputs", "outputs", "blocks"]
 
     def __init__(self, name: str = "",
                  description: str = "",

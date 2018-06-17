@@ -41,7 +41,7 @@ class Expression(object):
 
 
 class Proposition(Expression):
-    __slots__ = ("variable", "hedges", "term")
+    __slots__ = ["variable", "hedges", "term"]
 
     def __init__(self, variable: Optional['Variable'] = None,
                  hedges: Optional[Iterable['Hedge']] = None,
@@ -100,7 +100,7 @@ class Proposition(Expression):
 
 
 class Operator(Expression):
-    __slots__ = ("name", "left", "right")
+    __slots__ = ["name", "left", "right"]
 
     def __init__(self) -> None:
         self.name: str = ""
@@ -134,7 +134,7 @@ class Operator(Expression):
 
 
 class Antecedent(object):
-    __slots__ = ("text", "expression")
+    __slots__ = ["text", "expression"]
 
     def __init__(self) -> None:
         self.text: str = ""
@@ -160,7 +160,7 @@ class Antecedent(object):
 
 
 class Consequent(object):
-    __slots__ = ("text", "conclusions")
+    __slots__ = ["text", "conclusions"]
 
     def __init__(self) -> None:
         self.text: str = ""
@@ -180,7 +180,7 @@ class Consequent(object):
 
 
 class Rule(object):
-    __slots__ = ("enabled", "weight", "activation_degree", "triggered", "antecedent", "consequent")
+    __slots__ = ["enabled", "weight", "activation_degree", "triggered", "antecedent", "consequent"]
 
     IF = 'if'
     IS = 'is'
@@ -307,8 +307,8 @@ class Rule(object):
 
 
 class RuleBlock(object):
-    __slots__ = ("name", "description", "enabled", "conjunction", "disjunction", "implication",
-                 "activation", "rules")
+    __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
+                 "activation", "rules"]
 
     def __init__(self, name: str = "", description: str = "", enabled: bool = True,
                  conjunction: Optional[TNorm] = None,

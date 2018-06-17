@@ -31,8 +31,8 @@ if typing.TYPE_CHECKING:
 
 
 class Variable(object):
-    __slots__ = ("name", "description", "minimum", "maximum",
-                 "enabled", "lock_range", "_value", "terms")
+    __slots__ = ["name", "description", "minimum", "maximum",
+                 "enabled", "lock_range", "_value", "terms"]
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,
@@ -99,8 +99,8 @@ class Variable(object):
 class InputVariable(Variable):
     __slots__ = ()
 
-    def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
-                 maximum: float = inf,
+    def __init__(self, name: str = "", description: str = "",
+                 minimum: float = -inf, maximum: float = inf,
                  terms: Optional[Iterable['Term']] = None) -> None:
         super().__init__(name, description, minimum, maximum, terms)
 
@@ -112,7 +112,7 @@ class InputVariable(Variable):
 
 
 class OutputVariable(Variable):
-    __slots__ = ("fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value")
+    __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value"]
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,

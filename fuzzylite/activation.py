@@ -35,7 +35,7 @@ class Activation(object):
 
 
 class First(Activation):
-    __slots__ = ("number_of_rules", "threshold")
+    __slots__ = ["number_of_rules", "threshold"]
 
     def __init__(self, number_of_rules: int = 1, threshold: float = 0.0) -> None:
         self.number_of_rules = number_of_rules
