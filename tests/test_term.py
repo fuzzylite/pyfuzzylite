@@ -1164,22 +1164,19 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Function.create("dbz", ".-inf/x")) \
             .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
-            .has_memberships({fl.inf: fl.inf, -fl.inf: fl.inf, fl.nan: fl.nan})
+            .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
         TermAssert(self, fl.Function.create("dbz", "nan/x")) \
             .membership_fails(0.0, ZeroDivisionError, re.escape("float division by zero")) \
-            .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
+            .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
         import logging
-        logging.basicConfig(level=logging.INFO,
-                            datefmt='%Y-%m-%dT%H:%M:%S',
-                            format='%(asctime)s %(levelname)s %(module)s::%(funcName)s[%(lineno)d]'
-                                   '\n%(message)s')
         fl.lib.logger.setLevel(logging.DEBUG)
         self.assertTrue(fl.lib.debugging)
         import numpy as np  # type: ignore
         fl.lib.floating_point_type = np.float_
+        np.seterr('ignore')  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")) \
                 .has_memberships({0.0: fl.nan, fl.inf: 0.0, -fl.inf: 0.0, fl.nan: fl.nan})
@@ -1344,7 +1341,7 @@ class TestFunction(unittest.TestCase):
 
         node_sin = fl.Function.Node(
             element=functions.copy("sin"),
-            left=node_pow
+            right=node_pow
         )
         FunctionNodeAssert(self, node_sin) \
             .postfix_is("3.000 4.000 ** sin") \
@@ -1379,16 +1376,16 @@ class TestFunction(unittest.TestCase):
             .infix_is("pow ( sin ( 3.000 ** 4.000 ) two ) + pow ( sin ( 3.000 ** 4.000 ) two )") \
             .evaluates_to(0.7935177706621891, {'two': 2})
 
-        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"), left=None)) \
-            .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
+        FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"), right=None)) \
+            .fails_to_evaluate(ValueError, re.escape("expected a right node, but found none"))
 
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"),
-                                                  left=fl.Function.Node(constant=math.pi),
-                                                  right=None)).evaluates_to(-1)
+                                                  right=fl.Function.Node(constant=math.pi),
+                                                  left=None)).evaluates_to(-1)
 
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
                                                   left=None, right=None)) \
-            .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
+            .fails_to_evaluate(ValueError, re.escape("expected a right node, but found none"))
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
                                                   left=None,
                                                   right=fl.Function.Node(constant=2.0))) \
@@ -1420,7 +1417,7 @@ class TestFunction(unittest.TestCase):
         node_sin = fl.Function.Node(
             element=fl.Function.Element("sin", "sine", fl.Function.Element.Type.Function,
                                         math.sin, 1),
-            left=node_mult
+            right=node_mult
         )
         FunctionNodeAssert(self, node_sin) \
             .infix_is("sin ( 3.000 * 4.000 )") \
@@ -1433,7 +1430,7 @@ class TestFunction(unittest.TestCase):
             .evaluates_to(-0.5365729180004349)
 
         # if we change the original object
-        node_sin.left.element.name = "?"  # type: ignore
+        node_sin.right.element.name = "?"  # type: ignore
         # the copy cannot be affected
         FunctionNodeAssert(self, node_copy) \
             .infix_is("sin ( 3.000 * 4.000 )") \

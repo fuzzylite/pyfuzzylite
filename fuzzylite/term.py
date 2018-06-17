@@ -1092,12 +1092,12 @@ class Function(Term):
             return self.type == Function.Element.Type.Operator
 
     class Node(object):
-        __slots__ = ("element", "variable", "constant", "left", "right")
+        __slots__ = ("element", "variable", "constant", "right", "left",)
 
         def __init__(self, element: Optional['Function.Element'] = None,
                      variable: str = "", constant: float = nan,
-                     left: Optional['Function.Node'] = None,
-                     right: Optional['Function.Node'] = None) -> None:
+                     right: Optional['Function.Node'] = None,
+                     left: Optional['Function.Node'] = None) -> None:
             self.element = element
             self.variable = variable
             self.constant = constant
@@ -1126,15 +1126,15 @@ class Function(Term):
                 if arity == 0:
                     result = self.element.method()
                 elif arity == 1:
-                    if not self.left:
-                        raise ValueError("expected a left node, but found none")
-                    result = self.element.method(
-                        self.left.evaluate(local_variables))
-                elif arity == 2:
-                    if not self.left:
-                        raise ValueError("expected a left node, but found none")
                     if not self.right:
                         raise ValueError("expected a right node, but found none")
+                    result = self.element.method(
+                        self.right.evaluate(local_variables))
+                elif arity == 2:
+                    if not self.right:
+                        raise ValueError("expected a right node, but found none")
+                    if not self.left:
+                        raise ValueError("expected a left node, but found none")
                     result = self.element.method(
                         self.left.evaluate(local_variables),
                         self.right.evaluate(local_variables))
@@ -1359,10 +1359,11 @@ class Function(Term):
                 raise SyntaxError(f"mismatching parentheses in: {formula}")
             queue.append(stack.pop())
 
-        result = " ".join(queue)
+        postfix = " ".join(queue)
         if lib.debugging:
-            lib.logger.debug(f"postfix={result}")
-        return result
+            lib.logger.debug(f"formula={formula}")
+            lib.logger.debug(f"postfix={postfix}")
+        return postfix
 
     @classmethod
     def parse(cls, formula: str) -> 'Function.Node':
@@ -1375,11 +1376,6 @@ class Function(Term):
         factory: FunctionFactory = lib.factory_manager.function
 
         for token in postfix.split():
-            if lib.debugging:
-                lib.logger.debug("-" * 20)
-                lib.logger.debug(f"postfix: {postfix}")
-                lib.logger.debug("\n  ".join(node.postfix() for node in stack))
-
             element: Optional[Function.Element] = (factory.objects[token]
                                                    if token in factory.objects else None)
             is_operand = not element and token not in {"(", ")", ","}
@@ -1404,4 +1400,9 @@ class Function(Term):
         if len(stack) != 1:
             raise SyntaxError(f"invalid formula: '{formula}'")
 
+        if lib.debugging:
+            lib.logger.debug("-" * 20)
+            lib.logger.debug(f"postfix={postfix}")
+            lib.logger.debug("\n  ".join(Op.describe(node, class_hierarchy=False)
+                                         for node in stack))
         return stack[-1]

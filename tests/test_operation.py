@@ -65,18 +65,13 @@ class TestOperation(unittest.TestCase):
 
     def test_describe(self) -> None:
         self.assertEqual("OutputVariable[{"
-                         "'__hierarchy__': 'fuzzylite.variable.OutputVariable, "
-                         "fuzzylite.variable.Variable, builtins.object', "
                          "'default_value': 'nan', 'defuzzifier': 'None', "
                          "'fuzzy': 'term: x Aggregated []', "
                          "'lock_previous_value': 'False', 'previous_value': 'nan'"
                          "}]",
                          fl.Op.describe(
                              fl.OutputVariable("x", "an x", terms=[fl.Triangle("t")])))
-        self.assertEqual("InputVariable[{"
-                         "'__hierarchy__': 'fuzzylite.variable.InputVariable, "
-                         "fuzzylite.variable.Variable, builtins.object'"
-                         "}]",
+        self.assertEqual("InputVariable[{}]",
                          fl.Op.describe(
                              fl.InputVariable("x", "an x", terms=[fl.Triangle("t")])))
 

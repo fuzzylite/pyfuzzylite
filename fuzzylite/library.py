@@ -35,6 +35,16 @@ class Library(object):
     def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
         return self.floating_point_type(value)
 
+    def configure_logging(self, level: int, reset: bool = True) -> None:
+        if reset:
+            for handler in logging.root.handlers[:]:
+                logging.root.removeHandler(handler)
+        logging.basicConfig(level=level,
+                            datefmt='%Y-%m-%d %H:%M:%S',
+                            format='%(asctime)s %(levelname)s '
+                                   '%(module)s::%(funcName)s()[%(lineno)d]'
+                                   '\n%(message)s')
+
     @property
     def debugging(self) -> bool:
         return self.logger.level == logging.DEBUG
