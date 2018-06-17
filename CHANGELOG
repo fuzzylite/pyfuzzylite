@@ -5,3 +5,5 @@ Version 7.0
   printing left to right operands
 - Additional pow operator "**" available for functions
 - Unary plus ".+" and minus ".-" operators for functions
+- Function right nodes are first to evaluate
+- NormFunction and NormLambda for dynamic norms

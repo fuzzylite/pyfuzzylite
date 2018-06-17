@@ -93,6 +93,51 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
             #     raise NotImplementedError()
 
 
+class HedgeFactory(ConstructionFactory[Hedge]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.constructors[""] = type(None)
+
+        hedges = [Any, Extremely, Not, Seldom, Somewhat, Very]
+        for hedge in hedges:
+            self.constructors[hedge().name] = hedge
+
+
+class SNormFactory(ConstructionFactory[SNorm]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.constructors[""] = type(None)
+
+        snorms = [AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
+                  Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum]
+        for snorm in snorms:
+            self.constructors[snorm().class_name] = snorm
+
+
+class TNormFactory(ConstructionFactory[TNorm]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.constructors[""] = type(None)
+
+        tnorms = [AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
+                  HamacherProduct, Minimum, NilpotentMinimum]
+        for tnorm in tnorms:
+            self.constructors[tnorm().class_name] = tnorm
+
+
+class TermFactory(ConstructionFactory[Term]):
+    def __init__(self) -> None:
+        super().__init__()
+        self.constructors[""] = type(None)
+
+        terms = [Bell, Binary, Concave, Constant, Cosine, Discrete,
+                 Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
+                 Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
+                 Spike, SShape, Trapezoid, Triangle, ZShape]
+        for term in terms:
+            self.constructors[term().class_name] = term
+
+
 class FunctionFactory(CloningFactory[Function.Element]):
 
     def __init__(self) -> None:
@@ -206,51 +251,6 @@ class FunctionFactory(CloningFactory[Function.Element]):
         result = {key: prototype for key, prototype in self.objects.items()
                   if prototype.is_function()}
         return result
-
-
-class HedgeFactory(ConstructionFactory[Hedge]):
-    def __init__(self) -> None:
-        super().__init__()
-        self.constructors[""] = type(None)
-
-        hedges = [Any, Extremely, Not, Seldom, Somewhat, Very]
-        for hedge in hedges:
-            self.constructors[hedge().name] = hedge
-
-
-class SNormFactory(ConstructionFactory[SNorm]):
-    def __init__(self) -> None:
-        super().__init__()
-        self.constructors[""] = type(None)
-
-        snorms = [AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
-                  Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum]
-        for snorm in snorms:
-            self.constructors[snorm().class_name] = snorm
-
-
-class TNormFactory(ConstructionFactory[TNorm]):
-    def __init__(self) -> None:
-        super().__init__()
-        self.constructors[""] = type(None)
-
-        tnorms = [AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
-                  HamacherProduct, Minimum, NilpotentMinimum]
-        for tnorm in tnorms:
-            self.constructors[tnorm().class_name] = tnorm
-
-
-class TermFactory(ConstructionFactory[Term]):
-    def __init__(self) -> None:
-        super().__init__()
-        self.constructors[""] = type(None)
-
-        terms = [Bell, Binary, Concave, Constant, Cosine, Discrete,
-                 Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
-                 Rectangle, Sigmoid, SigmoidDifference, SigmoidProduct,
-                 Spike, SShape, Trapezoid, Triangle, ZShape]
-        for term in terms:
-            self.constructors[term().class_name] = term
 
 
 class FactoryManager(object):

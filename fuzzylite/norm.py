@@ -16,16 +16,25 @@
 """
 
 import typing
-from typing import Optional
+from typing import Callable, Optional
 
 if typing.TYPE_CHECKING:
     from fuzzylite.engine import Engine  # noqa: F401
 
 
 class Norm(object):
+
+    def __str__(self) -> str:
+        from .exporter import FllExporter
+        return FllExporter().norm(self)
+
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
+
+    @property
+    def parameters(self) -> str:
+        return ""
 
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
@@ -71,20 +80,6 @@ class Minimum(TNorm):
 class NilpotentMinimum(TNorm):
     def compute(self, a: float, b: float) -> float:
         return min(a, b) if a + b > 1.0 else 0.0
-
-
-class TNormFunction(TNorm):
-    __slots__ = ["f"]
-
-    def __init__(self, formula: str, engine: Optional['Engine'] = None) -> None:
-        from fuzzylite.term import Function
-        self.f = Function(self.class_name, formula, engine)
-        self.f.load()
-
-    def compute(self, a: float, b: float) -> float:
-        self.f.variables['a'] = a
-        self.f.variables['b'] = b
-        return self.f.evaluate()
 
 
 class SNorm(Norm):
@@ -139,15 +134,31 @@ class UnboundedSum(SNorm):
         return a + b
 
 
-class SNormFunction(SNorm):
-    __slots__ = ["f"]
+class NormLambda(TNorm, SNorm):
+    __slots__ = ["function"]
+
+    def __init__(self, function: Callable[[float, float], float]) -> None:
+        self.function = function
+
+    @property
+    def parameters(self) -> str:
+        return " # cannot be exported, use NormFunction instead"
+
+    def compute(self, a: float, b: float) -> float:
+        return self.function(a, b)
+
+
+class NormFunction(TNorm, SNorm):
+    __slots__ = ["function"]
 
     def __init__(self, formula: str, engine: Optional['Engine'] = None) -> None:
         from fuzzylite.term import Function
-        self.f = Function(self.class_name, formula, engine)
-        self.f.load()
+        self.function = Function(self.class_name, formula, engine)
+        self.function.load()
+
+    @property
+    def parameters(self) -> str:
+        return self.function.formula if self.function else ""
 
     def compute(self, a: float, b: float) -> float:
-        self.f.variables['a'] = a
-        self.f.variables['b'] = b
-        return self.f.evaluate()
+        return self.function.evaluate({'a': a, 'b': b})

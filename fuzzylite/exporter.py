@@ -135,7 +135,12 @@ class FllExporter(Exporter):
         return " ".join(result)
 
     def norm(self, norm: Optional['Norm']) -> str:
-        return norm.class_name if norm else "none"
+        if not norm:
+            return "none"
+        result = norm.class_name
+        if norm.parameters:
+            result += f" {norm.parameters}"
+        return result
 
     def activation(self, activation: Optional['Activation']) -> str:
         return activation.class_name if activation else "none"

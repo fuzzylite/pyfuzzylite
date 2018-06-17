@@ -229,8 +229,8 @@ class Rule(object):
                 if token == Rule.IF:
                     state = s_if
                 else:
-                    raise SyntaxError(
-                        f"expected keyword '{Rule.IF}', but found '{token}' in rule: {text}")
+                    raise SyntaxError(f"expected keyword '{Rule.IF}', "
+                                      f"but found '{token}' in rule: {text}")
             elif state == s_if:
                 if token == Rule.THEN:
                     state = s_then
@@ -269,8 +269,7 @@ class Rule(object):
         self.activation_degree = 0.0
         self.triggered = False
 
-    def activate_with(self, conjunction: Optional[TNorm],
-                      disjunction: Optional[SNorm]) -> float:
+    def activate_with(self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]) -> float:
         pass
 
     def trigger(self, implication: Optional[TNorm]) -> None:
@@ -278,9 +277,6 @@ class Rule(object):
             raise RuntimeError(
                 f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
         if self.enabled and Op.gt(self.activation_degree, 0.0):
-            # if fuzzylite.library().debugging:
-            #     fuzzylite.library().logger.debug(
-            #         f"[triggering with {Op.str(self.activation_degree)}] {str(self)}")
             self.consequent.modify(self.activation_degree, implication)
             self.triggered = True
 

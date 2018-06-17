@@ -15,7 +15,6 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import math
 import unittest
 from typing import Generic, TypeVar, Any
 
@@ -31,8 +30,8 @@ class BaseAssert(Generic[T]):
         self.test.maxDiff = None  # show all differences
 
     def exports_fll(self, fll: str) -> Any:
-        self.test.assertEqual(fl.FllExporter().to_string(self.actual), fll)
-        self.test.assertEqual(str(self.actual), fll)
+        self.test.assertEqual(fll, fl.FllExporter().to_string(self.actual))
+        self.test.assertEqual(fll, str(self.actual))
         return self
 
     def has_name(self, name: str) -> Any:
@@ -46,9 +45,3 @@ class BaseAssert(Generic[T]):
                              f"{type(self.actual)} does not have a 'description' attribute")
         self.test.assertEqual(getattr(self.actual, "description"), description)
         return self
-
-    def is_nan(self, value: float, expected: bool = True, msg: str = "") -> Any:
-        """
-        Fail if provided value is not NaN
-        """
-        return self.test.assertEqual(math.isnan(value), expected, msg)
