@@ -15,6 +15,7 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import inspect
 import math
 from typing import Callable, Optional, Text, Union
 
@@ -120,7 +121,6 @@ class Operation(object):
 
     @staticmethod
     def arity_of(method: Callable) -> int:
-        import inspect
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]
@@ -129,6 +129,30 @@ class Operation(object):
     @staticmethod
     def pi() -> float:
         return math.pi
+
+    @staticmethod
+    def describe(instance: object, slots: bool = True, variables: bool = True,
+                 class_hierarchy: bool = True, methods: bool = False) -> Text:
+        if not instance:
+            return str(None)
+        key_values = {}
+        if instance:
+            if slots and instance.__slots__:
+                for slot in instance.__slots__:
+                    key_values[slot] = str(getattr(instance, slot))
+
+            if variables and hasattr(instance, "__dict__"):
+                for variable in instance.__dict__:
+                    key_values[variable] = str(getattr(instance, variable))
+            if class_hierarchy:
+                key_values["__hierarchy__"] = ", ".join(
+                    f"{cls.__module__}.{cls.__name__}"
+                    for cls in inspect.getmro(instance.__class__))
+            if methods:
+                raise NotImplementedError()
+        class_name = instance.__class__.__name__
+        sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
+        return f"{class_name}[{sorted_dict}]"
 
 
 Op = Operation

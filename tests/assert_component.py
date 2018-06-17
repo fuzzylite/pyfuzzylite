@@ -47,7 +47,7 @@ class BaseAssert(Generic[T]):
         self.test.assertEqual(getattr(self.actual, "description"), description)
         return self
 
-    def is_nan(self, value: float, expected: bool = True, msg="") -> Any:
+    def is_nan(self, value: float, expected: bool = True, msg: str = "") -> Any:
         """
         Fail if provided value is not NaN
         """

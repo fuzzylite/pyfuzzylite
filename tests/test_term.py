@@ -55,7 +55,8 @@ class TermAssert(BaseAssert[fl.Term]):
         message = "\n".join([f"{str(self.actual)}",
                              f"expected: \u03BC(x={x:.3f})={mf}, but"])
         if math.isnan(mf):
-            return self.test.assertEqual(str(fl.nan), str(self.actual.membership(x)), message)
+            self.test.assertEqual(str(fl.nan), str(self.actual.membership(x)), message)
+            return self
 
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
@@ -72,7 +73,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def membership_fails(self, x: float, exception: Type[Exception],
                          regex: str) -> 'TermAssert':
-        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
+        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):  # type: ignore
             self.actual.membership(x)
         return self
 
@@ -1170,7 +1171,14 @@ class TestTerm(unittest.TestCase):
             .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
-        import numpy as np
+        import logging
+        logging.basicConfig(level=logging.INFO,
+                            datefmt='%Y-%m-%dT%H:%M:%S',
+                            format='%(asctime)s %(levelname)s %(module)s::%(funcName)s[%(lineno)d]'
+                                   '\n%(message)s')
+        fl.lib.logger.setLevel(logging.DEBUG)
+        self.assertTrue(fl.lib.debugging)
+        import numpy as np  # type: ignore
         fl.lib.floating_point_type = np.float_
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")) \
@@ -1278,8 +1286,8 @@ class FunctionNodeAssert(BaseAssert):
         self.test.assertEqual(postfix, self.actual.postfix())
         return self
 
-    def to_string_is(self, expected: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(expected, str(self.actual))
+    def value_is(self, expected: str) -> 'FunctionNodeAssert':
+        self.test.assertEqual(expected, self.actual.value())
         return self
 
     def evaluates_to(self, value: float,
@@ -1325,8 +1333,8 @@ class TestFunction(unittest.TestCase):
         functions = fl.FunctionFactory()
         node_pow = fl.Function.Node(
             element=functions.copy("**"),
-            left=fl.Function.Node(value=3.0),
-            right=fl.Function.Node(value=4.0)
+            left=fl.Function.Node(constant=3.0),
+            right=fl.Function.Node(constant=4.0)
         )
         FunctionNodeAssert(self, node_pow) \
             .postfix_is("3.000 4.000 **") \
@@ -1375,7 +1383,7 @@ class TestFunction(unittest.TestCase):
             .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
 
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("cos"),
-                                                  left=fl.Function.Node(value=math.pi),
+                                                  left=fl.Function.Node(constant=math.pi),
                                                   right=None)).evaluates_to(-1)
 
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
@@ -1383,10 +1391,10 @@ class TestFunction(unittest.TestCase):
             .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
                                                   left=None,
-                                                  right=fl.Function.Node(value=2.0))) \
+                                                  right=fl.Function.Node(constant=2.0))) \
             .fails_to_evaluate(ValueError, re.escape("expected a left node, but found none"))
         FunctionNodeAssert(self, fl.Function.Node(element=functions.copy("pow"),
-                                                  left=fl.Function.Node(value=2.0),
+                                                  left=fl.Function.Node(constant=2.0),
                                                   right=None)) \
             .fails_to_evaluate(ValueError, re.escape("expected a right node, but found none"))
 
@@ -1395,7 +1403,7 @@ class TestFunction(unittest.TestCase):
 
         FunctionNodeAssert(self,
                            fl.Function.Node(element=functions.copy("pow"),
-                                            left=fl.Function.Node(value=2.0),
+                                            left=fl.Function.Node(constant=2.0),
                                             right=fl.Function.Node(
                                                 element=fl.Function.Element("raise", "exception",
                                                                             type_function,
@@ -1406,8 +1414,8 @@ class TestFunction(unittest.TestCase):
         node_mult = fl.Function.Node(
             element=fl.Function.Element("*", "multiplication", fl.Function.Element.Type.Operator,
                                         operator.mul, 2, 80),
-            left=fl.Function.Node(value=3.0),
-            right=fl.Function.Node(value=4.0)
+            left=fl.Function.Node(constant=3.0),
+            right=fl.Function.Node(constant=4.0)
         )
         node_sin = fl.Function.Node(
             element=fl.Function.Element("sin", "sine", fl.Function.Element.Type.Function,
@@ -1435,21 +1443,21 @@ class TestFunction(unittest.TestCase):
         some_type = fl.Function.Element.Type.Operator
         FunctionNodeAssert(self, fl.Function.Node(
             element=fl.Function.Element("+", "sum", some_type, sum))) \
-            .to_string_is("+")
+            .value_is("+")
         FunctionNodeAssert(self, fl.Function.Node(
             element=fl.Function.Element("+", "sum", some_type, sum), variable="x")) \
-            .to_string_is("+")
+            .value_is("+")
         FunctionNodeAssert(self, fl.Function.Node(
-            element=fl.Function.Element("+", "sum", some_type, sum), variable="x", value=1)) \
-            .to_string_is("+")
+            element=fl.Function.Element("+", "sum", some_type, sum), variable="x", constant=1)) \
+            .value_is("+")
 
         FunctionNodeAssert(self, fl.Function.Node(variable="x")) \
-            .to_string_is("x")
-        FunctionNodeAssert(self, fl.Function.Node(variable="x", value=1.0)) \
-            .to_string_is("x")
+            .value_is("x")
+        FunctionNodeAssert(self, fl.Function.Node(variable="x", constant=1.0)) \
+            .value_is("x")
 
-        FunctionNodeAssert(self, fl.Function.Node(value=1)) \
-            .to_string_is("1")
+        FunctionNodeAssert(self, fl.Function.Node(constant=1)) \
+            .value_is("1")
 
     def test_function_format_infix(self) -> None:
         self.assertEqual("a + b * 1 ( True or True ) / ( False and False )",

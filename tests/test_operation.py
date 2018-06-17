@@ -63,6 +63,23 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.scale(math.inf, 0, 1, 0, 10), math.inf)
         self.assertEqual(fl.Op.scale(-math.inf, 0, 1, 0, 10), -math.inf)
 
+    def test_describe(self) -> None:
+        self.assertEqual("OutputVariable[{"
+                         "'__hierarchy__': 'fuzzylite.variable.OutputVariable, "
+                         "fuzzylite.variable.Variable, builtins.object', "
+                         "'default_value': 'nan', 'defuzzifier': 'None', "
+                         "'fuzzy': 'term: x Aggregated []', "
+                         "'lock_previous_value': 'False', 'previous_value': 'nan'"
+                         "}]",
+                         fl.Op.describe(
+                             fl.OutputVariable("x", "an x", terms=[fl.Triangle("t")])))
+        self.assertEqual("InputVariable[{"
+                         "'__hierarchy__': 'fuzzylite.variable.InputVariable, "
+                         "fuzzylite.variable.Variable, builtins.object'"
+                         "}]",
+                         fl.Op.describe(
+                             fl.InputVariable("x", "an x", terms=[fl.Triangle("t")])))
+
 
 if __name__ == '__main__':
     unittest.main()

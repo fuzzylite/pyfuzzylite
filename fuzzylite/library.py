@@ -16,7 +16,7 @@
 """
 
 import logging
-from typing import Optional, SupportsFloat, Type
+from typing import Optional, SupportsFloat, Type, Union
 
 from .factory import FactoryManager
 
@@ -24,7 +24,7 @@ from .factory import FactoryManager
 class Library(object):
 
     def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
-                 floating_point_type: Type[SupportsFloat] = float,
+                 floating_point_type: Type[float] = float,
                  factory_manager: Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance
@@ -32,7 +32,7 @@ class Library(object):
         self.factory_manager = factory_manager if factory_manager else FactoryManager()
         self.logger = logging.getLogger("fuzzylite")
 
-    def floating_point(self, value: object) -> SupportsFloat:
+    def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
         return self.floating_point_type(value)
 
     @property

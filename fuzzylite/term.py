@@ -1092,25 +1092,28 @@ class Function(Term):
             return self.type == Function.Element.Type.Operator
 
     class Node(object):
-        __slots__ = ("element", "variable", "value", "left", "right")
+        __slots__ = ("element", "variable", "constant", "left", "right")
 
-        def __init__(self, element: Optional['Function.Element'] = None, variable: str = "",
-                     value: float = nan,
+        def __init__(self, element: Optional['Function.Element'] = None,
+                     variable: str = "", constant: float = nan,
                      left: Optional['Function.Node'] = None,
                      right: Optional['Function.Node'] = None) -> None:
             self.element = element
             self.variable = variable
-            self.value = value
+            self.constant = constant
             self.left = left
             self.right = right
 
         def __str__(self) -> str:
+            return Op.describe(self)
+
+        def value(self) -> str:
             if self.element:
                 result = self.element.name
             elif self.variable:
                 result = self.variable
             else:
-                result = Op.str(self.value)
+                result = Op.str(self.constant)
             return result
 
         def evaluate(self,
@@ -1143,11 +1146,7 @@ class Function(Term):
                 result = local_variables[self.variable]
 
             else:
-                result = self.value
-
-            from . import lib
-            if lib.debugging:
-                lib.logger.debug(f"{self.postfix()} = {Op.str(result)}")
+                result = self.constant
 
             return result
 
@@ -1155,12 +1154,12 @@ class Function(Term):
             if not node:
                 return self.prefix(self)
 
-            if not isnan(node.value):
-                return Op.str(node.value)
+            if not isnan(node.constant):
+                return Op.str(node.constant)
             if node.variable:
                 return node.variable
 
-            result = [str(node)]
+            result = [node.value()]
             if node.left:
                 result.append(self.prefix(node.left))
             if node.right:
@@ -1171,8 +1170,8 @@ class Function(Term):
             if not node:
                 return self.infix(self)
 
-            if not isnan(node.value):
-                return Op.str(node.value)
+            if not isnan(node.constant):
+                return Op.str(node.constant)
             if node.variable:
                 return node.variable
 
@@ -1186,9 +1185,9 @@ class Function(Term):
                            node.element.type == Function.Element.Type.Function)
 
             if is_function:
-                result = str(node) + f" ( {' '.join(children)} )"
+                result = node.value() + f" ( {' '.join(children)} )"
             else:  # is operator
-                result = f" {str(node)} ".join(children)
+                result = f" {node.value()} ".join(children)
 
             return result
 
@@ -1196,8 +1195,8 @@ class Function(Term):
             if not node:
                 return self.postfix(self)
 
-            if not isnan(node.value):
-                return Op.str(node.value)
+            if not isnan(node.constant):
+                return Op.str(node.constant)
             if node.variable:
                 return node.variable
 
@@ -1206,7 +1205,7 @@ class Function(Term):
                 result.append(self.postfix(node.left))
             if node.right:
                 result.append(self.postfix(node.right))
-            result.append(str(node))
+            result.append(node.value())
             return " ".join(result)
 
     def __init__(self, name: str = "", formula: str = "", engine: Optional['Engine'] = None,
@@ -1304,6 +1303,12 @@ class Function(Term):
         stack: List[str] = []
 
         for token in formula.split():
+            if lib.debugging:
+                lib.logger.debug("=" * 20)
+                lib.logger.debug(f"formula: {formula}")
+                lib.logger.debug(f"queue: {queue}")
+                lib.logger.debug(f"stack: {stack}")
+
             element: Optional[Function.Element] = (factory.objects[token]
                                                    if token in factory.objects else None)
             is_operand = not element and token not in {"(", ")", ","}
@@ -1321,18 +1326,19 @@ class Function(Term):
                     raise SyntaxError(f"mismatching parentheses in: {formula}")
 
             elif element and element.is_operator():
-                o1 = element
                 while stack and stack[-1] in factory.objects:
-                    o2 = factory.objects[stack[-1]]
-                    if (o1.associativity < 0 and o1.precedence == o2.precedence
-                            or o1.precedence < o2.precedence):
+                    top = factory.objects[stack[-1]]
+                    if ((element.associativity < 0 and element.precedence <= top.precedence) or
+                            (element.associativity > 0 and element.precedence < top.precedence)):
                         queue.append(stack.pop())
                     else:
                         break
+
                 stack.append(token)
 
             elif token == '(':
                 stack.append(token)
+
             elif token == ')':
                 while stack and stack[-1] != '(':
                     queue.append(stack.pop())
@@ -1353,7 +1359,10 @@ class Function(Term):
                 raise SyntaxError(f"mismatching parentheses in: {formula}")
             queue.append(stack.pop())
 
-        return " ".join(queue)
+        result = " ".join(queue)
+        if lib.debugging:
+            lib.logger.debug(f"postfix={result}")
+        return result
 
     @classmethod
     def parse(cls, formula: str) -> 'Function.Node':
@@ -1366,6 +1375,11 @@ class Function(Term):
         factory: FunctionFactory = lib.factory_manager.function
 
         for token in postfix.split():
+            if lib.debugging:
+                lib.logger.debug("-" * 20)
+                lib.logger.debug(f"postfix: {postfix}")
+                lib.logger.debug("\n  ".join(node.postfix() for node in stack))
+
             element: Optional[Function.Element] = (factory.objects[token]
                                                    if token in factory.objects else None)
             is_operand = not element and token not in {"(", ")", ","}
@@ -1382,7 +1396,7 @@ class Function(Term):
                 stack.append(node)
             elif is_operand:
                 try:
-                    node = Function.Node(value=Float(token))
+                    node = Function.Node(constant=Float(token))
                 except ValueError:
                     node = Function.Node(variable=token)
                 stack.append(node)
