@@ -19,7 +19,7 @@ import unittest
 from typing import Dict, Tuple
 
 import fuzzylite as fl
-from .assert_component import BaseAssert
+from tests.assert_component import BaseAssert
 
 
 class NormAssert(BaseAssert):

@@ -1171,9 +1171,6 @@ class TestTerm(unittest.TestCase):
             .has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
-        import logging
-        fl.lib.logger.setLevel(logging.DEBUG)
-        self.assertTrue(fl.lib.debugging)
         import numpy as np  # type: ignore
         fl.lib.floating_point_type = np.float_
         np.seterr('ignore')  # ignore "errors", (e.g., division by zero)
