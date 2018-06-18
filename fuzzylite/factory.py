@@ -17,7 +17,7 @@
 
 import copy
 import math
-from typing import Callable, Dict, Generic, Optional, TypeVar
+from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
@@ -43,6 +43,9 @@ class ConstructionFactory(Generic[T]):
     def __init__(self) -> None:
         self.constructors: Dict[str, Callable[[], Optional[T]]] = {}
 
+    def __iter__(self) -> Iterator[str]:
+        return self.constructors.__iter__()
+
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
@@ -59,6 +62,9 @@ class CloningFactory(Generic[T]):
 
     def __init__(self) -> None:
         self.objects: Dict[str, T] = {}
+
+    def __iter__(self) -> Iterator[str]:
+        return self.objects.__iter__()
 
     @property
     def class_name(self) -> str:
