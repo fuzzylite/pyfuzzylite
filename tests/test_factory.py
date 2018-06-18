@@ -107,20 +107,19 @@ class TestFactory(unittest.TestCase):
     def test_activation_factory(self) -> None:
         FactoryAssert(self, fl.ActivationFactory()) \
             .has_class_name("ActivationFactory") \
-            .contains(["", "First", "Last", "Threshold"]) \
+            .contains(["First", "Last", "Threshold"]) \
             .contains(["Second", "Third"], False) \
-            .constructs_exactly(
-            {"": type(None), "First": fl.First, "General": fl.General, "Highest": fl.Highest,
-             "Last": fl.Last, "Lowest": fl.Lowest, "Proportional": fl.Proportional,
-             "Threshold": fl.Threshold})
+            .constructs_exactly({"First": fl.First, "General": fl.General, "Highest": fl.Highest,
+                                 "Last": fl.Last, "Lowest": fl.Lowest,
+                                 "Proportional": fl.Proportional,
+                                 "Threshold": fl.Threshold})
 
     def test_defuzzifier_factory(self) -> None:
         FactoryAssert(self, fl.DefuzzifierFactory()) \
             .has_class_name("DefuzzifierFactory") \
-            .contains(["", "Bisector", "MeanOfMaximum", "WeightedSum"]) \
+            .contains(["Bisector", "MeanOfMaximum", "WeightedSum"]) \
             .contains(["Something", "Else"], False) \
-            .constructs_exactly({"": type(None),
-                                 "Bisector": fl.Bisector, "Centroid": fl.Centroid,
+            .constructs_exactly({"Bisector": fl.Bisector, "Centroid": fl.Centroid,
                                  "LargestOfMaximum": fl.LargestOfMaximum,
                                  "MeanOfMaximum": fl.MeanOfMaximum,
                                  "SmallestOfMaximum": fl.SmallestOfMaximum,
@@ -131,21 +130,18 @@ class TestFactory(unittest.TestCase):
     def test_hedge_factory(self) -> None:
         FactoryAssert(self, fl.HedgeFactory()) \
             .has_class_name("HedgeFactory") \
-            .contains(["", "any", "seldom", "very"]) \
+            .contains(["any", "seldom", "very"]) \
             .contains(["very much", "often"], False) \
-            .constructs_exactly({"": type(None),
-                                 "any": fl.Any, "extremely": fl.Extremely, "not": fl.Not,
-                                 "seldom": fl.Seldom,
-                                 "somewhat": fl.Somewhat, "very": fl.Very
+            .constructs_exactly({"any": fl.Any, "extremely": fl.Extremely, "not": fl.Not,
+                                 "seldom": fl.Seldom, "somewhat": fl.Somewhat, "very": fl.Very
                                  })
 
     def test_snorm_factory(self) -> None:
         FactoryAssert(self, fl.SNormFactory()) \
             .has_class_name("SNormFactory") \
-            .contains(["", "AlgebraicSum", "EinsteinSum", "UnboundedSum"]) \
+            .contains(["AlgebraicSum", "EinsteinSum", "UnboundedSum"]) \
             .contains(["AlgebraicProduct", "EinsteinProduct", "UnboundedProduct"], False) \
-            .constructs_exactly({"": type(None),
-                                 "AlgebraicSum": fl.AlgebraicSum, "BoundedSum": fl.BoundedSum,
+            .constructs_exactly({"AlgebraicSum": fl.AlgebraicSum, "BoundedSum": fl.BoundedSum,
                                  "DrasticSum": fl.DrasticSum,
                                  "EinsteinSum": fl.EinsteinSum, "HamacherSum": fl.HamacherSum,
                                  "Maximum": fl.Maximum,
@@ -159,8 +155,7 @@ class TestFactory(unittest.TestCase):
             .has_class_name("TNormFactory") \
             .contains(["AlgebraicProduct", "EinsteinProduct", "NilpotentMinimum"]) \
             .contains(["AlgebraicSum", "EinsteinSum", "UnboundedSum"], False) \
-            .constructs_exactly({"": type(None),
-                                 "AlgebraicProduct": fl.AlgebraicProduct,
+            .constructs_exactly({"AlgebraicProduct": fl.AlgebraicProduct,
                                  "BoundedDifference": fl.BoundedDifference,
                                  "DrasticProduct": fl.DrasticProduct,
                                  "EinsteinProduct": fl.EinsteinProduct,
@@ -171,10 +166,9 @@ class TestFactory(unittest.TestCase):
     def test_term_factory(self) -> None:
         FactoryAssert(self, fl.TermFactory()) \
             .has_class_name("TermFactory") \
-            .contains(["", "Bell", "Gaussian", "ZShape"]) \
+            .contains(["Bell", "Gaussian", "ZShape"]) \
             .contains(["Star", "Cube", "Sphere"], False) \
-            .constructs_exactly({"": type(None),
-                                 "Bell": fl.Bell, "Binary": fl.Binary, "Concave": fl.Concave,
+            .constructs_exactly({"Bell": fl.Bell, "Binary": fl.Binary, "Concave": fl.Concave,
                                  "Constant": fl.Constant,
                                  "Cosine": fl.Cosine, "Discrete": fl.Discrete,
                                  "Function": fl.Function,

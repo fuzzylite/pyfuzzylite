@@ -17,7 +17,7 @@
 
 import copy
 import math
-from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
+from typing import Callable, Dict, Generic, Iterator, TypeVar
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
@@ -41,7 +41,7 @@ class ConstructionFactory(Generic[T]):
     __slots__ = ["constructors"]
 
     def __init__(self) -> None:
-        self.constructors: Dict[str, Callable[[], Optional[T]]] = {}
+        self.constructors: Dict[str, Callable[[], T]] = {}
 
     def __iter__(self) -> Iterator[str]:
         return self.constructors.__iter__()
@@ -50,7 +50,7 @@ class ConstructionFactory(Generic[T]):
     def class_name(self) -> str:
         return self.__class__.__name__
 
-    def construct(self, key: str) -> Optional[T]:
+    def construct(self, key: str) -> T:
         if key in self.constructors:
             if self.constructors[key]:
                 return self.constructors[key]()
@@ -79,7 +79,7 @@ class CloningFactory(Generic[T]):
 class ActivationFactory(ConstructionFactory[Activation]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         for activation in [First, General, Highest, Last, Lowest, Proportional, Threshold]:
             self.constructors[activation().class_name] = activation
@@ -88,7 +88,7 @@ class ActivationFactory(ConstructionFactory[Activation]):
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         for defuzzifier in [Bisector, Centroid, LargestOfMaximum, MeanOfMaximum, SmallestOfMaximum,
                             WeightedAverage, WeightedSum]:
@@ -102,7 +102,7 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 class HedgeFactory(ConstructionFactory[Hedge]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         hedges = [Any, Extremely, Not, Seldom, Somewhat, Very]
         for hedge in hedges:
@@ -112,7 +112,7 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 class SNormFactory(ConstructionFactory[SNorm]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         snorms = [AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
                   Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum]
@@ -123,7 +123,7 @@ class SNormFactory(ConstructionFactory[SNorm]):
 class TNormFactory(ConstructionFactory[TNorm]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         tnorms = [AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
                   HamacherProduct, Minimum, NilpotentMinimum]
@@ -134,7 +134,7 @@ class TNormFactory(ConstructionFactory[TNorm]):
 class TermFactory(ConstructionFactory[Term]):
     def __init__(self) -> None:
         super().__init__()
-        self.constructors[""] = type(None)
+        # self.constructors[""] = type(None)
 
         terms = [Bell, Binary, Concave, Constant, Cosine, Discrete,
                  Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
