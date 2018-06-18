@@ -21,8 +21,8 @@ import logging
 import re
 import typing
 from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import (Callable, Deque, Dict, Iterable, List, Optional, Sequence, Set, SupportsFloat,
-                    TypeVar, Union)
+from typing import (Callable, Deque, Dict, Iterable, Iterator, List, Optional, Sequence, Set,
+                    SupportsFloat, Tuple, TypeVar, Union)
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
@@ -421,38 +421,57 @@ class Discrete(Term):
             self.y = y
 
         def __str__(self) -> str:
-            return f"({self.x},{self.y})"
+            return f"({self.x}, {self.y})"
 
-        # todo: consider y
         def __eq__(self, other: object) -> bool:
             if isinstance(other, Discrete.Pair):
-                return self.x == other.x
-            return self.x == other
+                return self.values == other.values
+            return self.values == other
 
         def __ne__(self, other: object) -> bool:
             if isinstance(other, Discrete.Pair):
-                return self.x != other.x
-            return self.x != other
+                return not (self.values == other.values)
+            return self.values != other
 
-        def __lt__(self, other: Union[float, 'Discrete.Pair']) -> bool:
-            if isinstance(other, float):
-                return self.x < other
-            return self.x < other.x
+        def __lt__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+            if isinstance(other, Discrete.Pair):
+                return self.values < other.values
+            if isinstance(other, tuple):
+                return self.values < other
+            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                             f"but found {type(other)}")
 
-        def __le__(self, other: Union[float, 'Discrete.Pair']) -> bool:
-            if isinstance(other, float):
-                return self.x <= other
-            return self.x <= other.x
+        def __le__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+            if isinstance(other, Discrete.Pair):
+                return self.values <= other.values
+            if isinstance(other, tuple):
+                return self.values <= other
+            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                             f"but found {type(other)}")
 
-        def __gt__(self, other: Union[float, 'Discrete.Pair']) -> bool:
-            if isinstance(other, float):
-                return self.x > other
-            return self.x > other.x
+        def __gt__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+            if isinstance(other, Discrete.Pair):
+                return self.values > other.values
+            if isinstance(other, tuple):
+                return self.values >= other
+            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                             f"but found {type(other)}")
 
-        def __ge__(self, other: Union[float, 'Discrete.Pair']) -> bool:
-            if isinstance(other, float):
-                return self.x >= other
-            return self.x >= other.x
+        def __ge__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+            if isinstance(other, Discrete.Pair):
+                return self.values >= other.values
+            if isinstance(other, tuple):
+                return self.values >= other
+            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                             f"but found {type(other)}")
+
+        @property
+        def values(self) -> Tuple[float, float]:
+            return self.x, self.y
+
+        @values.setter
+        def values(self, xy: Tuple[float, float]) -> None:
+            self.x, self.y = xy
 
     def __init__(self, name: str = "", xy: Optional[Iterable[Pair]] = None,
                  height: float = 1.0) -> None:
@@ -461,7 +480,7 @@ class Discrete(Term):
         if xy:
             self.xy.extend(xy)
 
-    def __iter__(self) -> Iterable['Discrete.Pair']:
+    def __iter__(self) -> Iterator['Discrete.Pair']:
         return iter(self.xy)
 
     def membership(self, x: float) -> float:
@@ -477,13 +496,13 @@ class Discrete(Term):
         if x >= self.xy[-1].x:
             return self.height * self.xy[-1].y
 
-        index = bisect.bisect(self.xy, x)
-
-        lower_bound = self.xy[index - 1]
-        if x == lower_bound.x:
-            return self.height * lower_bound.y
+        index = bisect.bisect(self.xy, (x, -inf))
 
         upper_bound = self.xy[index]
+        if Op.eq(x, upper_bound.x):
+            return self.height * upper_bound.y
+
+        lower_bound = self.xy[index - 1]
 
         return self.height * Op.scale(x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y)
 
@@ -512,11 +531,7 @@ class Discrete(Term):
         return (pair.y for pair in self.xy)
 
     def sort(self) -> None:
-        Discrete.sort_pairs(self.xy)
-
-    @staticmethod
-    def sort_pairs(xy: List['Discrete.Pair']) -> None:
-        xy.sort(key=lambda pair: pair.x)
+        self.xy.sort()
 
     Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
 

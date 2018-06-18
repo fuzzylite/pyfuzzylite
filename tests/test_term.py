@@ -450,6 +450,16 @@ class TestTerm(unittest.TestCase):
         xy = fl.Discrete("name", fl.Discrete.pairs_from("0 1 2 3 4 5 6 7".split()))
         self.assertSequenceEqual(tuple(xy.x()), (0, 2, 4, 6))
         self.assertSequenceEqual(tuple(xy.y()), (1, 3, 5, 7))
+        self.assertEqual(3, xy.membership(2))
+
+        # Test iterators
+        it = iter(xy)
+        self.assertEqual(next(it), (0, 1))
+        self.assertEqual(next(it), (2, 3))
+        self.assertEqual(next(it), (4, 5))
+        self.assertEqual(next(it), (6, 7))
+        with self.assertRaisesRegex(StopIteration, ""):
+            next(it)
 
         self.assertEqual(fl.Discrete.pairs_from([]), [])
         self.assertEqual(fl.Discrete.values_from(
@@ -469,6 +479,59 @@ class TestTerm(unittest.TestCase):
                 "expected a list of (x,y)-pairs, but found none")):
             term.xy = []
             term.membership(0.0)
+
+    def test_discrete_pairs(self) -> None:
+        pairs = [fl.Discrete.Pair(*pair) for pair in [(1, 0), (3, 0), (5, 0), (2, 0), (4, 0)]]
+        self.assertListEqual([(1, 0), (2, 0), (3, 0), (4, 0), (5, 0)],
+                             [pair.values for pair in sorted(pairs)])
+
+        # Comparison between Pairs
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) == fl.Discrete.Pair(0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.5, 0.1) == fl.Discrete.Pair(0.5, 0.1))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != fl.Discrete.Pair(0.5, 0.1))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != fl.Discrete.Pair(0.1, 0.55))
+
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < fl.Discrete.Pair(0.1, 0.55))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < fl.Discrete.Pair(0.11, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= fl.Discrete.Pair(0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= fl.Discrete.Pair(0.1, 0.51))
+
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > fl.Discrete.Pair(0.1, 0.49))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > fl.Discrete.Pair(0.09, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= fl.Discrete.Pair(0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= fl.Discrete.Pair(0.1, 0.49))
+
+        # Comparison of tuples
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) == (0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.5, 0.1) == (0.5, 0.1))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != (0.5, 0.1))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != (0.1, 0.55))
+
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < (0.1, 0.55))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < (0.11, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= (0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= (0.1, 0.51))
+
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > (0.1, 0.49))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > (0.09, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= (0.1, 0.5))
+        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= (0.1, 0.49))
+
+        # Comparison of floats
+        base_pair = fl.Discrete.Pair()
+        self.assertEqual("(nan, nan)", str(base_pair))
+        base_pair.values = (0.1, 0.5)
+        self.assertEqual("(0.1, 0.5)", str(base_pair))
+        self.assertFalse(base_pair == 0.1)
+        self.assertTrue(base_pair != 0.1)
+
+        for value in [fl.nan, fl.inf, -fl.inf, -1.0, -0.5, 0.0, 0.5, 1.0]:
+            for compare in [fl.Discrete.Pair.__lt__, fl.Discrete.Pair.__gt__,
+                            fl.Discrete.Pair.__le__, fl.Discrete.Pair.__ge__]:
+                with self.assertRaisesRegex(ValueError, re.escape(
+                        "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                        "but found <class 'float'>")):
+                    compare(base_pair, value)  # type: ignore
 
     def test_gaussian(self) -> None:
         TermAssert(self, fl.Gaussian("gaussian")) \
