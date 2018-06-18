@@ -16,6 +16,11 @@
 """
 
 import math
+import typing
+from typing import Callable
+
+if typing.TYPE_CHECKING:
+    from .term import Function
 
 
 class Hedge(object):
@@ -57,7 +62,30 @@ class Very(Hedge):
         return x * x
 
 
-class HedgeFunction(Hedge):
-    # todo implement
+class HedgeLambda(Hedge):
+    __slots__ = ['_name', 'function']
+
+    def __init__(self, name: str, function: Callable[[float], float]) -> None:
+        self._name = name
+        self.function = function
+
+    @property
+    def name(self) -> str:
+        return self._name
+
     def hedge(self, x: float) -> float:
-        raise NotImplementedError()
+        return self.function(x)
+
+
+class HedgeFunction(Hedge):
+    __slots__ = ['function']
+
+    def __init__(self, function: 'Function') -> None:
+        self.function = function
+
+    @property
+    def name(self) -> str:
+        return self.function.name
+
+    def hedge(self, x: float) -> float:
+        return self.function.membership(x)

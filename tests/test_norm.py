@@ -399,8 +399,8 @@ class SNormTerm(unittest.TestCase):
 
 class NormFunctions(unittest.TestCase):
     def test_norm_function(self) -> None:
-        NormAssert(self, fl.NormFunction("a + b - (a * b)")) \
-            .exports_fll("NormFunction a + b - (a * b)") \
+        NormAssert(self, fl.NormFunction(fl.Function.create("AlgebraicSum", "a + b - (a * b)"))) \
+            .exports_fll("NormFunction") \
             .is_s_norm() \
             .is_t_norm() \
             .evaluates(
@@ -426,8 +426,9 @@ class NormFunctions(unittest.TestCase):
 
     def test_norm_lambda(self) -> None:
         NormAssert(self, fl.NormLambda(lambda a, b: a + b - (a * b))) \
-            .exports_fll("NormLambda  # cannot be exported, use NormFunction instead") \
+            .exports_fll("NormLambda") \
             .is_s_norm() \
+            .is_t_norm() \
             .evaluates(
             {
                 (0.00, 0.00): 0.00,

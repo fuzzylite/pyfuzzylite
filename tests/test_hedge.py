@@ -125,12 +125,34 @@ class TestHedge(unittest.TestCase):
                         -inf: inf,
                         nan: nan})
 
-    @unittest.skip("For evaluation")
     def test_function(self) -> None:
-        HedgeAssert(self, fl.HedgeFunction()) \
-            .has_name("function") \
-            .evaluates({})
+        HedgeAssert(self, fl.HedgeFunction(fl.Function.create("my_hedge", "x**2"))) \
+            .has_name("my_hedge") \
+            .evaluates({-1.0: 1.0,
+                        -0.5: 0.25,
+                        0.00: 0.0,
+                        0.25: 0.0625,
+                        0.50: 0.25,
+                        0.75: 0.5625,
+                        1.00: 1.0,
+                        inf: inf,
+                        -inf: inf,
+                        nan: nan})
 
+    def test_lambda(self) -> None:
+        HedgeAssert(self, fl.HedgeLambda("my_hedge", lambda x: (
+            2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))))) \
+            .has_name("my_hedge") \
+            .evaluates({-1.0: 2.0,
+                        -0.5: 0.5,
+                        0.00: 0.0,
+                        0.25: 0.125,
+                        0.50: 0.5,
+                        0.75: 0.875,
+                        1.00: 1.0,
+                        inf: -inf,
+                        -inf: inf,
+                        nan: nan})
 
-if __name__ == '__main__':
-    unittest.main()
+        if __name__ == '__main__':
+            unittest.main()

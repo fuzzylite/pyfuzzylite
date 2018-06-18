@@ -16,10 +16,10 @@
 """
 
 import typing
-from typing import Callable, Optional
+from typing import Callable
 
 if typing.TYPE_CHECKING:
-    from fuzzylite.engine import Engine  # noqa: F401
+    from .term import Function
 
 
 class Norm(object):
@@ -31,10 +31,6 @@ class Norm(object):
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
-
-    @property
-    def parameters(self) -> str:
-        return ""
 
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
@@ -140,10 +136,6 @@ class NormLambda(TNorm, SNorm):
     def __init__(self, function: Callable[[float, float], float]) -> None:
         self.function = function
 
-    @property
-    def parameters(self) -> str:
-        return " # cannot be exported, use NormFunction instead"
-
     def compute(self, a: float, b: float) -> float:
         return self.function(a, b)
 
@@ -151,14 +143,8 @@ class NormLambda(TNorm, SNorm):
 class NormFunction(TNorm, SNorm):
     __slots__ = ["function"]
 
-    def __init__(self, formula: str, engine: Optional['Engine'] = None) -> None:
-        from fuzzylite.term import Function
-        self.function = Function(self.class_name, formula, engine)
-        self.function.load()
-
-    @property
-    def parameters(self) -> str:
-        return self.function.formula if self.function else ""
+    def __init__(self, function: 'Function') -> None:
+        self.function = function
 
     def compute(self, a: float, b: float) -> float:
         return self.function.evaluate({'a': a, 'b': b})

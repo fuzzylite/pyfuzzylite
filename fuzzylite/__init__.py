@@ -34,7 +34,8 @@ from fuzzylite.factory import (ActivationFactory, CloningFactory, ConstructionFa
                                DefuzzifierFactory, FactoryManager, FunctionFactory, HedgeFactory,
                                SNormFactory, TNormFactory, TermFactory)
 # HEDGES
-from fuzzylite.hedge import Any, Extremely, Hedge, HedgeFunction, Not, Seldom, Somewhat, Very
+from fuzzylite.hedge import (Any, Extremely, Hedge, HedgeFunction, HedgeLambda, Not, Seldom,
+                             Somewhat, Very)
 # IMPORTER
 from fuzzylite.importer import Importer
 # LIBRARY
