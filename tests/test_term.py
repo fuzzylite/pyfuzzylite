@@ -1256,6 +1256,43 @@ class TestTerm(unittest.TestCase):
         fl.lib.floating_point_type = float
         self.assertEqual(fl.lib.floating_point_type, float)
 
+    @unittest.skip("Testing of Tsukamoto")
+    def test_tsukamoto(self) -> None:
+        pass
+
+
+class FunctionNodeAssert(BaseAssert):
+    def prefix_is(self, prefix: str) -> 'FunctionNodeAssert':
+        self.test.assertEqual(prefix, self.actual.prefix())
+        return self
+
+    def infix_is(self, infix: str) -> 'FunctionNodeAssert':
+        self.test.assertEqual(infix, self.actual.infix())
+        return self
+
+    def postfix_is(self, postfix: str) -> 'FunctionNodeAssert':
+        self.test.assertEqual(postfix, self.actual.postfix())
+        return self
+
+    def value_is(self, expected: str) -> 'FunctionNodeAssert':
+        self.test.assertEqual(expected, self.actual.value())
+        return self
+
+    def evaluates_to(self, value: float,
+                     variables: Optional[
+                         Dict[str, float]] = None) -> 'FunctionNodeAssert':
+        self.test.assertAlmostEqual(value, self.actual.evaluate(variables), places=15,
+                                    msg=f"when value is {value:.3f}")
+        return self
+
+    def fails_to_evaluate(self, exception: Type[Exception],
+                          message: str) -> 'FunctionNodeAssert':
+        with self.test.assertRaisesRegex(exception, message):
+            self.actual.evaluate()
+        return self
+
+
+class TestFunction(unittest.TestCase):
     def test_function(self) -> None:
         with self.assertRaisesRegex(RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")):
             fl.Function("f(x)", "f(x)=2x+1").membership(math.nan)
@@ -1325,43 +1362,6 @@ class TestTerm(unittest.TestCase):
             function_a.update_reference(engine_b)
             function_a.membership(0.0)
 
-    @unittest.skip("Testing of Tsukamoto")
-    def test_tsukamoto(self) -> None:
-        pass
-
-
-class FunctionNodeAssert(BaseAssert):
-    def prefix_is(self, prefix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(prefix, self.actual.prefix())
-        return self
-
-    def infix_is(self, infix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(infix, self.actual.infix())
-        return self
-
-    def postfix_is(self, postfix: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(postfix, self.actual.postfix())
-        return self
-
-    def value_is(self, expected: str) -> 'FunctionNodeAssert':
-        self.test.assertEqual(expected, self.actual.value())
-        return self
-
-    def evaluates_to(self, value: float,
-                     variables: Optional[
-                         Dict[str, float]] = None) -> 'FunctionNodeAssert':
-        self.test.assertAlmostEqual(value, self.actual.evaluate(variables), places=15,
-                                    msg=f"when value is {value:.3f}")
-        return self
-
-    def fails_to_evaluate(self, exception: Type[Exception],
-                          message: str) -> 'FunctionNodeAssert':
-        with self.test.assertRaisesRegex(exception, message):
-            self.actual.evaluate()
-        return self
-
-
-class TestFunction(unittest.TestCase):
     def test_element(self) -> None:
         element = fl.Function.Element("function", "math function()",  # type: ignore
                                       fl.Function.Element.Type.Function, None, 0, 0,
