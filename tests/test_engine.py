@@ -39,8 +39,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
     def has_n_inputs(self, n: int) -> 'EngineAssert':
         n_inputs = len(self.actual.inputs)
-        self.test.assertEqual(n_inputs, n,
-                              f"expected {n} input variable{'' if n == 1 else 's'}, but found {n_inputs}")
+        self.test.assertEqual(n_inputs, n, f"expected {n} input variables, but found {n_inputs}")
         return self
 
     def has_inputs_named(self, names: List[str]) -> 'EngineAssert':

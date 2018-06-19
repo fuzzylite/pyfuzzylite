@@ -138,45 +138,41 @@ class InputVariableAssert(BaseAssert[fl.InputVariable]):
 class TestInputVariable(unittest.TestCase):
     def test_constructor(self) -> None:
         InputVariableAssert(self, fl.InputVariable("name", "description")) \
-            .exports_fll("\n".join(
-            ["InputVariable: name",
-             "  description: description",
-             "  enabled: true",
-             "  range: -inf inf",
-             "  lock-range: true"
-             ]))
+            .exports_fll("\n".join(["InputVariable: name",
+                                    "  description: description",
+                                    "  enabled: true",
+                                    "  range: -inf inf",
+                                    "  lock-range: true"
+                                    ]))
         InputVariableAssert(self, fl.InputVariable("name", "description", -1.0, 1.0,
                                                    [fl.Triangle('A', -1.0, 1.0),
                                                     fl.Triangle('B', -10.0, 10.0)])) \
-            .exports_fll(
-            "\n".join(
-                ["InputVariable: name",
-                 "  description: description",
-                 "  enabled: true",
-                 "  range: -1.000 1.000",
-                 "  lock-range: true",
-                 "  term: A Triangle -1.000 0.000 1.000",
-                 "  term: B Triangle -10.000 0.000 10.000",
-                 ]))
+            .exports_fll("\n".join(["InputVariable: name",
+                                    "  description: description",
+                                    "  enabled: true",
+                                    "  range: -1.000 1.000",
+                                    "  lock-range: true",
+                                    "  term: A Triangle -1.000 0.000 1.000",
+                                    "  term: B Triangle -10.000 0.000 10.000",
+                                    ]))
 
     def test_fuzzy_value(self) -> None:
         InputVariableAssert(self, fl.InputVariable("name", "description", -1.0, 1.0,
                                                    [fl.Triangle('Low', -1.0, -1.0, 0.0),
                                                     fl.Triangle('Medium', -0.5, 0.0, 0.5),
                                                     fl.Triangle('High', 0.0, 1.0, 1.0)])) \
-            .fuzzy_values(
-            {-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
-             -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
-             -0.25: "0.250/Low + 0.500/Medium + 0.000/High",
-             0.00: "0.000/Low + 1.000/Medium + 0.000/High",
-             0.25: "0.000/Low + 0.500/Medium + 0.250/High",
-             0.50: "0.000/Low + 0.000/Medium + 0.500/High",
-             0.75: "0.000/Low + 0.000/Medium + 0.750/High",
-             1.00: "0.000/Low + 0.000/Medium + 1.000/High",
-             math.nan: "nan/Low + nan/Medium + nan/High",
-             math.inf: "0.000/Low + 0.000/Medium + 0.000/High",
-             -math.inf: "0.000/Low + 0.000/Medium + 0.000/High",
-             })
+            .fuzzy_values({-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
+                           -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
+                           -0.25: "0.250/Low + 0.500/Medium + 0.000/High",
+                           0.00: "0.000/Low + 1.000/Medium + 0.000/High",
+                           0.25: "0.000/Low + 0.500/Medium + 0.250/High",
+                           0.50: "0.000/Low + 0.000/Medium + 0.500/High",
+                           0.75: "0.000/Low + 0.000/Medium + 0.750/High",
+                           1.00: "0.000/Low + 0.000/Medium + 1.000/High",
+                           math.nan: "nan/Low + nan/Medium + nan/High",
+                           math.inf: "0.000/Low + 0.000/Medium + 0.000/High",
+                           -math.inf: "0.000/Low + 0.000/Medium + 0.000/High",
+                           })
 
 
 class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
@@ -198,33 +194,31 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
 class TestOutputVariable(unittest.TestCase):
     def test_constructor(self) -> None:
         OutputVariableAssert(self, fl.OutputVariable("name", "description")) \
-            .exports_fll("\n".join(
-            ["OutputVariable: name",
-             "  description: description",
-             "  enabled: true",
-             "  range: -inf inf",
-             "  lock-range: true",
-             "  aggregation: none",
-             "  defuzzifier: none",
-             "  default: nan",
-             "  lock-previous: false"
-             ]))
+            .exports_fll("\n".join(["OutputVariable: name",
+                                    "  description: description",
+                                    "  enabled: true",
+                                    "  range: -inf inf",
+                                    "  lock-range: true",
+                                    "  aggregation: none",
+                                    "  defuzzifier: none",
+                                    "  default: nan",
+                                    "  lock-previous: false"
+                                    ]))
         OutputVariableAssert(self, fl.OutputVariable("name", "description", -1.0, 1.0,
                                                      [fl.Triangle('A', -1.0, 1.0),
                                                       fl.Triangle('B', -10.0, 10.0)])) \
-            .exports_fll("\n".join(
-            ["OutputVariable: name",
-             "  description: description",
-             "  enabled: true",
-             "  range: -1.000 1.000",
-             "  lock-range: true",
-             "  aggregation: none",
-             "  defuzzifier: none",
-             "  default: nan",
-             "  lock-previous: false",
-             "  term: A Triangle -1.000 0.000 1.000",
-             "  term: B Triangle -10.000 0.000 10.000",
-             ]))
+            .exports_fll("\n".join(["OutputVariable: name",
+                                    "  description: description",
+                                    "  enabled: true",
+                                    "  range: -1.000 1.000",
+                                    "  lock-range: true",
+                                    "  aggregation: none",
+                                    "  defuzzifier: none",
+                                    "  default: nan",
+                                    "  lock-previous: false",
+                                    "  term: A Triangle -1.000 0.000 1.000",
+                                    "  term: B Triangle -10.000 0.000 10.000",
+                                    ]))
 
     def test_fuzzy_value(self) -> None:
         low, medium, high = [fl.Triangle('Low', -1.0, -1.0, 0.0),
@@ -249,20 +243,20 @@ class TestOutputVariable(unittest.TestCase):
         variable.value = 0.0
         variable.previous_value = -1.0
         variable.fuzzy.terms.extend([fl.Activated(term, 0.5) for term in variable.terms])
-        OutputVariableAssert(self, variable).exports_fll("\n".join(
-            ["OutputVariable: name",
-             "  description: description",
-             "  enabled: true",
-             "  range: -1.000 1.000",
-             "  lock-range: true",
-             "  aggregation: none",
-             "  defuzzifier: none",
-             "  default: nan",
-             "  lock-previous: false",
-             "  term: Low Triangle -1.000 -1.000 0.000",
-             "  term: Medium Triangle -0.500 0.000 0.500",
-             "  term: High Triangle 0.000 1.000 1.000",
-             ]))
+        OutputVariableAssert(self, variable) \
+            .exports_fll("\n".join(["OutputVariable: name",
+                                    "  description: description",
+                                    "  enabled: true",
+                                    "  range: -1.000 1.000",
+                                    "  lock-range: true",
+                                    "  aggregation: none",
+                                    "  defuzzifier: none",
+                                    "  default: nan",
+                                    "  lock-previous: false",
+                                    "  term: Low Triangle -1.000 -1.000 0.000",
+                                    "  term: Medium Triangle -0.500 0.000 0.500",
+                                    "  term: High Triangle 0.000 1.000 1.000",
+                                    ]))
 
         self.assertEqual(variable.value, 0.0)
         self.assertEqual(variable.previous_value, -1.0)
@@ -318,8 +312,8 @@ class TestOutputVariable(unittest.TestCase):
         variable.lock_previous_value = False
         variable.value = 0.4
         variable.default_value = 0.5
-        with self.assertRaisesRegex(ValueError,
-                                    "expected a defuzzifier in output variable name, but found none"):
+        with self.assertRaisesRegex(ValueError, "expected a defuzzifier in output variable name, "
+                                                "but found none"):
             variable.defuzzify()
         self.assertEqual(variable.previous_value, 0.4)
         self.assertEqual(variable.value, 0.5)
