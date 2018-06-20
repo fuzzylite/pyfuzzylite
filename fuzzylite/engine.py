@@ -27,24 +27,24 @@ from .variable import InputVariable, OutputVariable, Variable
 
 
 class Engine(object):
-    __slots__ = ["name", "description", "inputs", "outputs", "blocks"]
+    __slots__ = ["name", "description", "input_variables", "output_variables", "rule_blocks"]
 
     def __init__(self, name: str = "",
                  description: str = "",
-                 inputs: Optional[Iterable[InputVariable]] = None,
-                 outputs: Optional[Iterable[OutputVariable]] = None,
-                 blocks: Optional[Iterable[RuleBlock]] = None) -> None:
+                 input_variables: Optional[Iterable[InputVariable]] = None,
+                 output_variables: Optional[Iterable[OutputVariable]] = None,
+                 rule_blocks: Optional[Iterable[RuleBlock]] = None) -> None:
         self.name = name
         self.description = description
-        self.inputs: List[InputVariable] = []
-        self.outputs: List[OutputVariable] = []
-        self.blocks: List[RuleBlock] = []
-        if inputs:
-            self.inputs.extend(inputs)
-        if outputs:
-            self.outputs.extend(outputs)
-        if blocks:
-            self.blocks.extend(blocks)
+        self.input_variables: List[InputVariable] = []
+        self.output_variables: List[OutputVariable] = []
+        self.rule_blocks: List[RuleBlock] = []
+        if input_variables:
+            self.input_variables.extend(input_variables)
+        if output_variables:
+            self.output_variables.extend(output_variables)
+        if rule_blocks:
+            self.rule_blocks.extend(rule_blocks)
 
     def __str__(self) -> str:
         return FllExporter().engine(self)
@@ -73,11 +73,24 @@ class Engine(object):
     def infer_type(self) -> Tuple[Type, str]:
         pass
 
+    @property
+    def variables(self) -> List[Variable]:
+        return [*self.input_variables, *self.output_variables]
+
     def variable(self, name: str) -> Optional[Variable]:
-        for variable in self.variables():
+        for variable in self.variables:
             if variable.name == name:
                 return variable
         return None
 
-    def variables(self) -> List[Variable]:
-        return [*self.inputs, *self.outputs]
+    def input_variable(self, name: str) -> Optional[InputVariable]:
+        for variable in self.input_variables:
+            if variable.name == name:
+                return variable
+        return None
+
+    def output_variable(self, name: str) -> Optional[OutputVariable]:
+        for variable in self.output_variables:
+            if variable.name == name:
+                return variable
+        return None

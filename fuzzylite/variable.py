@@ -51,6 +51,12 @@ class Variable(object):
     def __str__(self) -> str:
         return FllExporter().variable(self)
 
+    def term(self, name: str) -> Optional['Term']:
+        for term in self.terms:
+            if term.name == name:
+                return term
+        return None
+
     @property
     def range(self) -> Tuple[float, float]:
         return self.minimum, self.maximum

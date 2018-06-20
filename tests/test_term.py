@@ -604,10 +604,10 @@ class TestTerm(unittest.TestCase):
 
     def test_linear(self) -> None:
         engine = fl.Engine(
-            inputs=[fl.InputVariable("A"), fl.InputVariable("B"), fl.InputVariable("C")])
-        engine.inputs[0].value = 0
-        engine.inputs[1].value = 1
-        engine.inputs[2].value = 2
+            input_variables=[fl.InputVariable("A"), fl.InputVariable("B"), fl.InputVariable("C")])
+        engine.input_variables[0].value = 0
+        engine.input_variables[1].value = 1
+        engine.input_variables[2].value = 2
 
         with self.assertRaisesRegex(ValueError,
                                     "expected the reference to an engine, but found none"):

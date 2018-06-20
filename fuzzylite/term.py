@@ -645,7 +645,7 @@ class Linear(Term):
 
         result = 0.0
         number_of_coefficients = len(self.coefficients)
-        input_variables = self.engine.inputs
+        input_variables = self.engine.input_variables
         for i, input_variable in enumerate(input_variables):
             if i < number_of_coefficients:
                 result += self.coefficients[i] * input_variable.value
@@ -1258,7 +1258,7 @@ class Function(Term):
 
         engine_variables: Dict[str, float] = {}
         if self.engine:
-            for variable in self.engine.variables():
+            for variable in self.engine.variables:
                 engine_variables[variable.name] = variable.value
 
             if 'x' in engine_variables:

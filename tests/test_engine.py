@@ -38,32 +38,30 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def has_n_inputs(self, n: int) -> 'EngineAssert':
-        n_inputs = len(self.actual.inputs)
+        n_inputs = len(self.actual.input_variables)
         self.test.assertEqual(n_inputs, n, f"expected {n} input variables, but found {n_inputs}")
         return self
 
     def has_inputs_named(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([iv.name for iv in self.actual.inputs], names)
+        self.test.assertSequenceEqual([iv.name for iv in self.actual.input_variables], names)
         return self
 
     def has_n_outputs(self, n: int) -> 'EngineAssert':
-        n_outputs = len(self.actual.outputs)
-        self.test.assertEqual(n_outputs, n, f"expected {n} output variable{'' if n == 1 else 's'}, "
-                                            f"but found {n_outputs}")
+        n_outputs = len(self.actual.output_variables)
+        self.test.assertEqual(n_outputs, n, f"expected {n} output variables, but found {n_outputs}")
         return self
 
     def has_outputs_named(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([ov.name for ov in self.actual.outputs], names)
+        self.test.assertSequenceEqual([ov.name for ov in self.actual.output_variables], names)
         return self
 
     def has_n_blocks(self, n: int) -> 'EngineAssert':
-        n_blocks = len(self.actual.blocks)
-        self.test.assertEqual(n_blocks, n, f"expected {n} rule block{'' if n == 1 else 's'}, "
-                                           f"but found {n_blocks}")
+        n_blocks = len(self.actual.rule_blocks)
+        self.test.assertEqual(n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}")
         return self
 
     def has_blocks_named(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([rb.name for rb in self.actual.blocks], names)
+        self.test.assertSequenceEqual([rb.name for rb in self.actual.rule_blocks], names)
         return self
 
 
@@ -83,31 +81,32 @@ class TestEngine(unittest.TestCase):
             .has_name("name").has_description("description") \
             .has_n_inputs(2).has_inputs_named(["A", "B"])
 
-        flc.inputs = []
+        flc.input_variables = []
         EngineAssert(self, flc).has_n_inputs(0).has_inputs_named([])
 
-        flc.inputs = [fl.InputVariable("X"), fl.InputVariable("Y"), fl.InputVariable("Z")]
+        flc.input_variables = [fl.InputVariable("X"), fl.InputVariable("Y"), fl.InputVariable("Z")]
         EngineAssert(self, flc).has_n_inputs(3).has_inputs_named(["X", "Y", "Z"])
 
         names = ["X", "Y", "Z"]
-        for i, iv in enumerate(flc.inputs):
+        for i, iv in enumerate(flc.input_variables):
             self.assertEqual(iv.name, names[i])
 
     def test_outputs(self) -> None:
-        flc = fl.Engine("name", "description", [],
-                        [fl.OutputVariable("A"), fl.OutputVariable("B")])
+        flc = fl.Engine("name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")])
         EngineAssert(self, flc) \
             .has_name("name").has_description("description") \
             .has_n_outputs(2).has_outputs_named(["A", "B"])
 
-        flc.outputs = []
+        flc.output_variables = []
         EngineAssert(self, flc).has_n_outputs(0).has_outputs_named([])
 
-        flc.outputs = [fl.OutputVariable("X"), fl.OutputVariable("Y"), fl.OutputVariable("Z")]
+        flc.output_variables = [fl.OutputVariable("X"),
+                                fl.OutputVariable("Y"),
+                                fl.OutputVariable("Z")]
         EngineAssert(self, flc).has_n_outputs(3).has_outputs_named(["X", "Y", "Z"])
 
         names = ["X", "Y", "Z"]
-        for i, iv in enumerate(flc.outputs):
+        for i, iv in enumerate(flc.output_variables):
             self.assertEqual(iv.name, names[i])
 
 
