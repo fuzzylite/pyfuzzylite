@@ -16,7 +16,7 @@
 """
 import typing
 from math import nan
-from typing import Iterable, List, Optional
+from typing import Deque, Iterable, List, Optional
 
 from .exporter import FllExporter
 from .hedge import Any
@@ -33,11 +33,7 @@ if typing.TYPE_CHECKING:
 
 
 class Expression(object):
-
-    def activation_degree(self,
-                          conjunction: Optional[TNorm] = None,
-                          disjunction: Optional[SNorm] = None) -> float:
-        raise NotImplementedError()
+    pass
 
 
 class Proposition(Expression):
@@ -67,70 +63,19 @@ class Proposition(Expression):
 
         return " ".join(result)
 
-    def activation_degree(self,
-                          conjunction: Optional[TNorm] = None,
-                          disjunction: Optional[SNorm] = None) -> float:
-        if not self.variable:
-            raise ValueError(f"expected a variable in proposition {self}, but found none")
-        if not self.variable.enabled:
-            return 0.0
-
-        if self.hedges:
-            # if last hedge is "Any", apply hedges in reverse order and return degree
-            if isinstance(self.hedges[-1], Any):
-                result = nan
-                for hedge in reversed(self.hedges):
-                    result = hedge.hedge(result)
-                return result
-
-        if not self.term:
-            raise ValueError(f"expected a term in proposition {self}, but found none")
-
-        result = nan
-        if isinstance(self.variable, InputVariable):
-            result = self.term.membership(self.variable.value)
-        elif isinstance(self.variable, OutputVariable):
-            result = self.variable.fuzzy.activation_degree(self.term)
-
-        if self.hedges:
-            for hedge in reversed(self.hedges):
-                result = hedge.hedge(result)
-
-        return result
-
 
 class Operator(Expression):
     __slots__ = ["name", "left", "right"]
 
-    def __init__(self) -> None:
-        self.name: str = ""
-        self.left: Optional[Expression] = None
-        self.right: Optional[Expression] = None
+    def __init__(self, name: str = "",
+                 right: Optional[Expression] = None,
+                 left: Optional[Expression] = None) -> None:
+        self.name = name
+        self.right = right
+        self.left = left
 
     def __str__(self) -> str:
-        return " ".join([str(self.left), self.name, str(self.right)])
-
-    def activation_degree(self,
-                          conjunction: Optional[TNorm] = None,
-                          disjunction: Optional[SNorm] = None) -> float:
-        if not (self.left and self.right):
-            raise ValueError("expected left and right operands")
-
-        if self.name == Rule.AND:
-            if not conjunction:
-                raise ValueError(f"rule requires a conjunction operator: '{str(self)}'")
-            return conjunction.compute(
-                self.left.activation_degree(conjunction, disjunction),
-                self.right.activation_degree(conjunction, disjunction))
-
-        if self.name == Rule.OR:
-            if not disjunction:
-                raise ValueError(f"rule requires a disjunction operator: '{str(self)}'")
-            return disjunction.compute(
-                self.left.activation_degree(conjunction, disjunction),
-                self.right.activation_degree(conjunction, disjunction))
-
-        raise ValueError(f"operator <{self.name}> not recognized in {str(self)}")
+        return self.name
 
 
 class Antecedent(object):
@@ -140,23 +85,236 @@ class Antecedent(object):
         self.text: str = ""
         self.expression: Optional[Expression] = None
 
+    def __str__(self) -> str:
+        return self.infix() if self.expression else self.text
+
     def is_loaded(self) -> bool:
         return bool(self.expression)
 
     def unload(self) -> None:
         self.expression = None
 
-    def load(self, engine: 'Engine') -> None:
-        # if fuzzylite.library().debugging:
-        #     fuzzylite.library().logger.debug(f"Antecedent: {antecedent}")
+    def activation_degree(self,  # noqa C901 'Antecedent.activation_degree' is too complex (20)
+                          conjunction: Optional[TNorm] = None,
+                          disjunction: Optional[SNorm] = None,
+                          node: Optional[Expression] = None) -> float:
+        if not node:
+            if self.expression:
+                return self.activation_degree(conjunction, disjunction, self.expression)
+            raise RuntimeError(f"antecedent '{self.text}' is not loaded")
+
+        # PROPOSITION
+        if isinstance(node, Proposition):
+            if not node.variable:
+                raise ValueError(f"expected a variable in proposition '{node}', "
+                                 f"but found none in antecedent: '{self.text}'")
+            if not node.variable.enabled:
+                return 0.0
+
+            if node.hedges:
+                # if last hedge is "Any", apply hedges in reverse order and return degree
+                if isinstance(node.hedges[-1], Any):
+                    result = nan
+                    for hedge in reversed(node.hedges):
+                        result = hedge.hedge(result)
+                    return result
+
+            if not node.term:
+                raise ValueError(f"expected a term in proposition '{node}', "
+                                 f"but found none for antecedent: '{self.text}'")
+
+            result = nan
+            if isinstance(node.variable, InputVariable):
+                result = node.term.membership(node.variable.value)
+            elif isinstance(node.variable, OutputVariable):
+                result = node.variable.fuzzy.activation_degree(node.term)
+
+            for hedge in reversed(node.hedges):
+                result = hedge.hedge(result)
+
+            return result
+
+        # OPERATOR
+        if isinstance(node, Operator):
+            if not (node.left and node.right):
+                raise ValueError(f"expected left and right operands for operator '{node}' "
+                                 f"in antecedent: '{self.text}'")
+
+            if node.name == Rule.AND:
+                if not conjunction:
+                    raise ValueError(f"expected a conjunction operator, "
+                                     f"but found none for antecedent: '{self.text}'")
+                return conjunction.compute(
+                    self.activation_degree(conjunction, disjunction, node.left),
+                    self.activation_degree(conjunction, disjunction, node.right))
+
+            if node.name == Rule.OR:
+                if not disjunction:
+                    raise ValueError(f"expected a disjunction operator, "
+                                     f"but found none for antecedent: '{self.text}'")
+                return disjunction.compute(
+                    self.activation_degree(conjunction, disjunction, node.left),
+                    self.activation_degree(conjunction, disjunction, node.right))
+
+            raise ValueError(f"operator '{node}' not recognized in antecedent: '{self.text}'")
+
+        raise RuntimeError(f"unexpected type of node '{node}': {type(node)}")
+
+    def load(self, engine: 'Engine') -> None:  # noqa: C901 'Antecedent.load' is too complex (23)
+        from collections import deque
+        from . import lib
+        from .term import Function
+
         self.unload()
         if not self.text:
             raise ValueError("expected the antecedent of a rule, but found none")
 
-    def activation_degree(self, conjunction: TNorm, disjunction: SNorm) -> float:
-        if not self.expression:
-            raise ValueError(f"antecedent <{self.text}> is not loaded")
-        return self.expression.activation_degree(conjunction, disjunction)
+        postfix = Function().infix_to_postfix(self.text)
+        if lib.debugging:
+            lib.logger.debug(f"antecedent={self.text}\npostfix={postfix}")
+
+        # Build a proposition tree from the antecedent of a fuzzy rule. The rules are:
+        # (1) After a variable comes 'is',
+        # (2) After 'is' comes a hedge or a term
+        # (3) After a hedge comes a hedge or a term
+        # (4) After a term comes a variable or an operator
+
+        s_variable, s_is, s_hedge, s_term, s_and_or = (2 ** i for i in range(5))
+        state = s_variable
+
+        stack: Deque[Expression] = deque()
+
+        proposition: Optional[Proposition] = None
+        for token in postfix.split():
+            if state & s_variable:
+                variable = engine.variable(token)
+                if variable:
+                    proposition = Proposition(variable)
+                    stack.append(proposition)
+                    state = s_is
+                    lib.logger.debug(f"token '{token}' is a variable")
+                    continue
+
+            if state & s_is:
+                if Rule.IS == token:
+                    state = s_hedge | s_term
+                    lib.logger.debug(f"token '{token}' is a keyword")
+                    continue
+
+            if state & s_hedge:
+                factory = lib.factory_manager.hedge
+                if token in factory:
+                    hedge = factory.construct(token)
+                    proposition.hedges.append(hedge)  # type: ignore
+                    if isinstance(hedge, Any):
+                        state = s_variable | s_and_or
+                    else:
+                        state = s_hedge | s_term
+                    lib.logger.debug(f"token '{token} is hedge")
+                    continue
+
+            if state & s_term:
+                term = proposition.variable.term(token)  # type: ignore
+                if term:
+                    state = s_variable | s_and_or
+                    lib.logger.debug(f"token '{token} is term")
+                    continue
+
+            if state & s_and_or:
+                if token in {Rule.AND, Rule.OR}:
+                    if len(stack) < 2:
+                        raise SyntaxError(f"operator '{token}' expects 2 operands, "
+                                          f"but found {len(stack)}")
+                    operator = Operator(token)
+                    operator.right = stack.pop()
+                    operator.left = stack.pop()
+                    stack.append(operator)
+                    state = s_variable | s_and_or
+                    lib.logger.debug(f"token '{token} is logical operator '{operator}'")
+                    continue
+
+            # if reached this point, there was an error in the current state
+            if state & (s_variable | s_and_or):
+                raise SyntaxError(f"expected variable or logical operator, but found '{token}'")
+
+            if state & s_is:
+                raise SyntaxError(f"expected keyword '{Rule.IS}', but found '{token}'")
+
+            if state & (s_hedge | s_term):
+                raise SyntaxError(f"expected hedge or term, but found '{token}'")
+
+            raise SyntaxError(f"unexpected token '{token}'")
+
+        # check final state for errors (outside of for-loop)
+        if not state & (s_variable | s_and_or):  # only acceptable final states
+            if state & s_is:
+                raise SyntaxError(f"expected keyword '{Rule.IS}' after '{token}'")
+            if stack & (s_hedge | s_term):
+                raise SyntaxError(f"expected hedge or term, but found '{token}'")
+
+        if len(stack) != 1:
+            errors = " ".join(str(element) for element in stack)
+            raise SyntaxError(f"unable to parse the following expressions: {errors}")
+
+        self.expression = stack.pop()
+
+    def prefix(self, node: Optional[Expression] = None) -> str:
+        if not node:
+            if self.expression:
+                return self.prefix(self.expression)
+            raise RuntimeError(f"antecedent is not loaded in rule: '{self.text}'")
+
+        if isinstance(node, Proposition):
+            return str(node)
+
+        if isinstance(node, Operator):
+            result: List[str] = [str(node)]
+            if node.left:
+                result.append(self.prefix(node.left))
+            if node.right:
+                result.append(self.prefix(node.right))
+            return " ".join(result)
+
+        raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
+
+    def infix(self, node: Optional[Expression] = None) -> str:
+        if not node:
+            if self.expression:
+                return self.infix(self.expression)
+            raise RuntimeError(f"antecedent is not loaded in rule: '{self.text}'")
+
+        if isinstance(node, Proposition):
+            return str(node)
+
+        if isinstance(node, Operator):
+            result: List[str] = []
+            if node.left:
+                result.append(self.infix(node.left))
+            result.append(str(node))
+            if node.right:
+                result.append(self.infix(node.right))
+            return " ".join(result)
+
+        raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
+
+    def postfix(self, node: Optional[Expression] = None) -> str:
+        if not node:
+            if self.expression:
+                return self.postfix(self.expression)
+            raise RuntimeError(f"antecedent is not loaded in rule: '{self.text}'")
+
+        if isinstance(node, Proposition):
+            return str(node)
+
+        if isinstance(node, Operator):
+            result: List[str] = []
+            if node.left:
+                result.append(self.postfix(node.left))
+            if node.right:
+                result.append(self.postfix(node.right))
+            result.append(str(node))
+            return " ".join(result)
+        raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
 
 class Consequent(object):
@@ -166,17 +324,130 @@ class Consequent(object):
         self.text: str = ""
         self.conclusions: List[Proposition] = []
 
+    def __str__(self) -> str:
+        if self.conclusions:
+            result = f" {Rule.AND} ".join(str(proposition) for proposition in self.conclusions)
+        else:
+            result = self.text
+        return result
+
     def is_loaded(self) -> bool:
         return bool(self.conclusions)
 
     def unload(self) -> None:
         self.conclusions.clear()
 
-    def load(self, engine: 'Engine') -> None:
-        pass
-
     def modify(self, activation_degree: float, implication: Optional[TNorm]) -> None:
-        pass
+        from .term import Activated
+
+        if not self.conclusions:
+            raise RuntimeError(f"consequent is not loaded in rule: '{self.text}'")
+
+        for proposition in self.conclusions:
+            if not proposition.variable:
+                raise ValueError(f"expected a variable in '{proposition}', "
+                                 f"but found none in consequent: '{self.text}'")
+            if proposition.variable.enabled:
+                for hedge in reversed(proposition.hedges):
+                    # TODO: Revisit because hedging like this stage would decrease the importance
+                    # TODO: What about any?
+                    activation_degree = hedge.hedge(activation_degree)
+
+                if not proposition.term:
+                    raise ValueError(f"expected a term in proposition '{proposition}', "
+                                     f"but found none in consequent: '{self.text}'")
+                activated_term = Activated(proposition.term, activation_degree, implication)
+                if isinstance(proposition.variable, OutputVariable):
+                    proposition.variable.fuzzy.terms.append(activated_term)
+                else:
+                    raise RuntimeError(f"expected an output variable, but found "
+                                       f"'{type(proposition.variable)}' in consequent: "
+                                       f"'{self.text}'")
+
+    def load(self, engine: 'Engine') -> None:  # noqa C901 'Consequent.load' is too complex (21)
+        from . import lib
+
+        self.unload()
+        if not self.text:
+            raise ValueError("expected the consequent of a rule, but found none")
+
+        if lib.debugging:
+            lib.logger.debug(f"consequent={self.text}")
+
+        # Extracts the list of propositions from the consequent
+        #  The rules are:
+        #  (1) After a variable comes 'is' or '=',
+        #  (2) After 'is' comes a hedge or a term
+        #  (3) After a hedge comes a hedge or a term
+        #  (4) After a term comes operators 'and' or 'with'
+        #  (5) After operator 'and' comes a variable
+        #  (6) After operator 'with' comes a float
+
+        s_variable, s_is, s_hedge, s_term, s_and, s_with = (2 ** i for i in range(6))
+        state = s_variable
+
+        proposition: Optional[Proposition] = None
+        conclusions: List[Proposition] = []
+        for token in self.text.split():
+            if state & s_variable:
+                variable = engine.output_variable(token)
+                if variable:
+                    proposition = Proposition(variable)
+                    conclusions.append(proposition)
+                    state = s_is
+                    continue
+
+            if state & s_is:
+                if Rule.IS == token:
+                    state = s_hedge | s_term
+                    continue
+
+            if state & s_hedge:
+                factory = lib.factory_manager.hedge
+                if token in factory:
+                    hedge = factory.construct(token)
+                    proposition.hedges.append(hedge)  # type: ignore
+                    state = s_hedge | s_term
+                    continue
+
+            if state & s_term:
+                term = proposition.variable.term(token)  # type: ignore
+                if term:
+                    proposition.term = term  # type: ignore
+                    state = s_and | s_with
+                    continue
+
+            if state & s_and:
+                if Rule.AND == token:
+                    state = s_variable
+                    continue
+
+            # if reached this point, there was an error:
+            if state & s_variable:
+                raise SyntaxError(f"consequent expected an output variable, "
+                                  f"but found '{token}' in consequent: '{self.text}'")
+            if state & s_is:
+                raise SyntaxError(f"consequent expected keyword '{Rule.IS}', "
+                                  f"but found '{token}' in consequent: '{self.text}'")
+            if state & (s_hedge | s_term):
+                raise SyntaxError(f"consequent expected "
+                                  f"operator '{Rule.AND}' or keyword '{Rule.WITH}', "
+                                  f"but found '{token}' in consequent: '{self.text}'")
+            raise SyntaxError(f"unexpected token '{token}' in consequent: '{self.text}'")
+
+        # final states
+        if not state & (s_and | s_with):
+            if state & s_variable:
+                raise SyntaxError(f"consequent expected output variable after '{token}' "
+                                  f"in consequent: '{self.text}'")
+            if state & s_is:
+                raise SyntaxError(f"consequent expected keyword '{Rule.IS}' after '{token}' "
+                                  f"in consequent: '{self.text}'")
+            if state & (s_hedge | s_term):
+                raise SyntaxError(f"consequent expected hedge or term after '{token}' "
+                                  f"in consequent: '{self.text}'")
+
+        self.conclusions = conclusions
 
 
 class Rule(object):
@@ -202,26 +473,26 @@ class Rule(object):
 
     @property
     def text(self) -> str:
-        result = [Rule.IF]
-        if self.antecedent:
-            result.append(self.antecedent.text)
-        result.append(Rule.THEN)
-        if self.consequent:
-            result.append(self.consequent.text)
-        if self.weight != 1.0:
-            result.append(Rule.WITH)
-            result.append(Op.str(self.weight))
+        result = [Rule.IF,
+                  self.antecedent.text,
+                  Rule.THEN,
+                  self.consequent.text]
+        if not Op.eq(self.weight, 1.0):
+            result.extend([Rule.WITH,
+                           Op.str(self.weight)])
         return " ".join(result)
 
     @text.setter
     def text(self, text: str) -> None:
+        from . import Float
+
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
 
-        antecedent = []
-        consequent = []
-        from . import Float
-        weight = Float(1.0)
+        antecedent: List[str] = []
+        consequent: List[str] = []
+        weight: float = Float(1.0)
+
         s_begin, s_if, s_then, s_with, s_end = range(5)
         state = s_begin
         for token in rule.split():
@@ -270,12 +541,15 @@ class Rule(object):
         self.triggered = False
 
     def activate_with(self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]) -> float:
-        pass
+        if not self.is_loaded():
+            raise RuntimeError(f"rule is not loaded: '{self.text}'")
+        self.activation_degree = (self.weight *
+                                  self.antecedent.activation_degree(conjunction, disjunction))
+        return self.activation_degree
 
     def trigger(self, implication: Optional[TNorm]) -> None:
         if not self.is_loaded():
-            raise RuntimeError(
-                f"expected to trigger rule, but the rule is not loaded: '{self.text}'")
+            raise RuntimeError(f"rule is not loaded: '{self.text}'")
         if self.enabled and Op.gt(self.activation_degree, 0.0):
             self.consequent.modify(self.activation_degree, implication)
             self.triggered = True
@@ -326,11 +600,28 @@ class RuleBlock(object):
     def __str__(self) -> str:
         return FllExporter().rule_block(self)
 
+    def activate(self) -> None:
+        if not self.activation:
+            raise ValueError(f"expected an activation method, "
+                             f"but found none in rule block: {str(self)}")
+        return self.activation.activate(self)
+
     def unload_rules(self) -> None:
-        pass
+        for rule in self.rules:
+            rule.unload()
 
-    def load_rules(self) -> None:
-        pass
+    def load_rules(self, engine: 'Engine') -> None:
+        exceptions: List[str] = []
+        for rule in self.rules:
+            rule.unload()
+            try:
+                rule.load(engine)
+            except Exception as ex:
+                exceptions.append(f"[{rule.text}]: {str(ex)}")
+        if exceptions:
+            raise RuntimeError("failed to load the following rules:\n"
+                               "\n".join(exceptions))
 
-    def reload_rules(self) -> None:
-        pass
+    def reload_rules(self, engine: 'Engine') -> None:
+        self.unload_rules()
+        self.load_rules(engine)

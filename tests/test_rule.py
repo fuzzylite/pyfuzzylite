@@ -70,7 +70,7 @@ class TestExpression(unittest.TestCase):
         proposition.hedges = [fl.Very()]
         proposition.term = fl.Term("term")
 
-        self.assertEqual(str(proposition), "variable is very term")
+        self.assertEqual("variable is very term", str(proposition))
 
     def test_operator(self) -> None:
         self.assertEqual("", fl.Operator().name)
@@ -79,7 +79,7 @@ class TestExpression(unittest.TestCase):
         operator.name = "AND"
         operator.left = fl.Proposition()
         operator.right = fl.Proposition()
-        self.assertEqual("? is ? AND ? is ?", str(operator))
+        self.assertEqual("AND", str(operator))
 
 
 class RuleAssert(BaseAssert[fl.Rule]):
@@ -96,6 +96,10 @@ class RuleAssert(BaseAssert[fl.Rule]):
 
 
 class TestRule(unittest.TestCase):
+
+    def test_rule_parser(self) -> None:
+        pass
+
     def test_rule_parser_exceptions(self) -> None:
         RuleAssert(self, fl.Rule()) \
             .parser_fails("", SyntaxError, "expected an if-then rule") \
