@@ -128,7 +128,7 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
-        result = ["term:", Op.valid_name(term.name), term.class_name]
+        result = ["term:", Op.normalize_name(term.name), term.class_name]
         parameters = term.parameters()
         if parameters:
             result.append(parameters)

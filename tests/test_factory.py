@@ -16,7 +16,7 @@
 """
 
 import unittest
-from typing import Dict, Iterable, Sequence, Tuple, List, Type, Set, Union, Optional
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Type, Union
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert

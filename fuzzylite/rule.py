@@ -611,7 +611,7 @@ class RuleBlock(object):
             rule.unload()
 
     def load_rules(self, engine: 'Engine') -> None:
-        exceptions: List[str] = []
+        exceptions: List[str] = []  # noqa E701 (False Positive)
         for rule in self.rules:
             rule.unload()
             try:

@@ -21,7 +21,7 @@ import operator
 import platform
 import re
 import unittest
-from typing import Callable, Dict, Optional, Sequence, Type, NoReturn
+from typing import Callable, Dict, NoReturn, Optional, Sequence, Type
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert

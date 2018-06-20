@@ -17,7 +17,7 @@
 
 import math
 import unittest
-from typing import Dict, Sequence, Tuple, Optional
+from typing import Dict, Optional, Sequence, Tuple
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
