@@ -92,7 +92,7 @@ class Operation(object):
         return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
 
     @staticmethod
-    def valid_name(name: str) -> str:
+    def normalize_name(name: str) -> str:
         result = ''.join([x for x in name if x in ("_", ".") or x.isalnum()])
         return result if result else "unnamed"
 
