@@ -52,8 +52,7 @@ class ConstructionFactory(Generic[T]):
 
     def construct(self, key: str) -> T:
         if key in self.constructors:
-            if self.constructors[key]:
-                return self.constructors[key]()
+            return self.constructors[key]()
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
