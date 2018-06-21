@@ -127,7 +127,7 @@ class TestEngine(unittest.TestCase):
         food.terms.append(fl.Trapezoid("delicious", 2.500, 7.500, 10.000, 10.000))
         engine.input_variables.append(food)
 
-        mTip = fl.OutputVariable()
+        mTip = fl.OutputVariable()  # noqa N806 should be lowercase
         mTip.name = "mTip"
         mTip.description = "tip based on Mamdani inference"
         mTip.enabled = True
@@ -142,7 +142,7 @@ class TestEngine(unittest.TestCase):
         mTip.terms.append(fl.Triangle("generous", 20.000, 25.000, 30.000))
         engine.output_variables.append(mTip)
 
-        tsTip = fl.OutputVariable()
+        tsTip = fl.OutputVariable()  # noqa N806 should be lowercase
         tsTip.name = "tsTip"
         tsTip.description = "tip based on Takagi-Sugeno inference"
         tsTip.enabled = True
@@ -174,7 +174,7 @@ class TestEngine(unittest.TestCase):
             "if service is excellent and food is delicious then mTip is generous with 1.0", engine))
         engine.rule_blocks.append(mamdani)
 
-        takagiSugeno = fl.RuleBlock()
+        takagiSugeno = fl.RuleBlock()  # noqa N806 should be lowercase
         takagiSugeno.name = "takagiSugeno"
         takagiSugeno.description = "Takagi-Sugeno inference"
         takagiSugeno.enabled = True
