@@ -20,7 +20,7 @@ import math
 from math import nan
 
 from .operation import Op
-from .term import Aggregated, Constant, Function, Linear, Term
+from .term import Aggregated, Constant, Function, Linear, Optional, Term, Union
 
 
 class Defuzzifier(object):
@@ -43,8 +43,8 @@ class IntegralDefuzzifier(Defuzzifier):
 
     default_resolution = 100
 
-    def __init__(self) -> None:
-        self.resolution = IntegralDefuzzifier.default_resolution
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        self.resolution = resolution if resolution else IntegralDefuzzifier.default_resolution
 
     def __str__(self) -> str:
         return f"{self.class_name} {self.parameters()}"
@@ -61,8 +61,8 @@ class IntegralDefuzzifier(Defuzzifier):
 
 
 class Bisector(IntegralDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        super().__init__(resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not math.isfinite(minimum + maximum):
@@ -91,8 +91,8 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        super().__init__(resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not math.isfinite(minimum + maximum):
@@ -110,8 +110,8 @@ class Centroid(IntegralDefuzzifier):
 
 class LargestOfMaximum(IntegralDefuzzifier):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        super().__init__(resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not math.isfinite(minimum + maximum):
@@ -130,8 +130,8 @@ class LargestOfMaximum(IntegralDefuzzifier):
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        super().__init__(resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not math.isfinite(minimum + maximum):
@@ -158,8 +158,8 @@ class MeanOfMaximum(IntegralDefuzzifier):
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, resolution: Optional[int] = None) -> None:
+        super().__init__(resolution)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         if not math.isfinite(minimum + maximum):
@@ -183,8 +183,12 @@ class WeightedDefuzzifier(Defuzzifier):
     class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
-    def __init__(self) -> None:
-        self.type = WeightedDefuzzifier.Type.Automatic
+    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+        if type is None:
+            type = WeightedDefuzzifier.Type.Automatic
+        elif isinstance(type, str):
+            type = WeightedDefuzzifier.Type[type]
+        self.type = type
 
     def __str__(self) -> str:
         return f"{self.class_name} {self.parameters()}"
@@ -206,8 +210,8 @@ class WeightedDefuzzifier(Defuzzifier):
 
 
 class WeightedAverage(WeightedDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+        super().__init__(type)
 
     def defuzzify(self, fuzzy_output: Term,
                   unused_minimum: float = nan, unused_maximum: float = nan) -> float:
@@ -243,8 +247,8 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+        super().__init__(type)
 
     def defuzzify(self, fuzzy_output: Term,
                   unused_minimum: float = nan, unused_maximum: float = nan) -> float:
