@@ -108,19 +108,73 @@ class Centroid(IntegralDefuzzifier):
         return x_centroid / area
 
 
-# TODO: Implement
 class LargestOfMaximum(IntegralDefuzzifier):
-    pass
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+        if not math.isfinite(minimum + maximum):
+            return nan
+        resolution = self.resolution
+        dx = (maximum - minimum) / resolution
+        y_max = -math.inf
+        x_largest = maximum
+        for i in range(0, resolution):
+            x = minimum + (i + 0.5) * dx
+            y = term.membership(x)
+            if Op.ge(y, y_max):
+                y_max = y
+                x_largest = x
+        return x_largest
 
 
-# TODO: Implement
 class MeanOfMaximum(IntegralDefuzzifier):
-    pass
+    def __init__(self) -> None:
+        super().__init__()
+
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+        if not math.isfinite(minimum + maximum):
+            return nan
+        resolution = self.resolution
+        dx = (maximum - minimum) / resolution
+        y_max = -math.inf
+        x_smallest = minimum
+        x_largest = maximum
+        find_x_largest = False
+        for i in range(0, resolution):
+            x = minimum + (i + 0.5) * dx
+            y = term.membership(x)
+            if Op.gt(y, y_max):
+                y_max = y
+                x_smallest = x
+                x_largest = x
+                find_x_largest = True
+            elif find_x_largest and Op.eq(y, y_max):
+                x_largest = x
+            elif Op.lt(y, y_max):
+                find_x_largest = False
+        return (x_largest + x_smallest) / 2.0
 
 
-# TODO: Implement
 class SmallestOfMaximum(IntegralDefuzzifier):
-    pass
+    def __init__(self) -> None:
+        super().__init__()
+
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+        if not math.isfinite(minimum + maximum):
+            return nan
+        resolution = self.resolution
+        dx = (maximum - minimum) / resolution
+        y_max = -math.inf
+        x_smallest = minimum
+        for i in range(0, resolution):
+            x = minimum + (i + 0.5) * dx
+            y = term.membership(x)
+            if Op.gt(y, y_max):
+                y_max = y
+                x_smallest = x
+        return x_smallest
 
 
 class WeightedDefuzzifier(Defuzzifier):
