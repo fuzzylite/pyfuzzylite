@@ -1,6 +1,4 @@
 
-
-
 pyfuzzylite&trade; 
 ==================
 <img src="https://raw.githubusercontent.com/fuzzylite/pyfuzzylite/master/fuzzylite.png" align="right" alt="fuzzylite">
@@ -12,7 +10,7 @@ A Fuzzy Logic Control Library in Python
 By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
 
 | Branch | Status  | Coverage |
 |--------|---------|----------|
