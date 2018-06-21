@@ -296,7 +296,7 @@ class TestOutputVariable(unittest.TestCase):
 
         # tests locking of previous value
         variable.default_value = 0.123
-        variable.lock_previous_value = True
+        variable.lock_previous = True
         variable.defuzzify()
         self.assertEqual(variable.previous_value, 0.246)
         self.assertEqual(variable.value, 0.246)
@@ -309,7 +309,7 @@ class TestOutputVariable(unittest.TestCase):
 
         # tests exception on defuzzification
         variable.fuzzy.terms.extend([fl.Activated(term) for term in variable.terms])
-        variable.lock_previous_value = False
+        variable.lock_previous = False
         variable.value = 0.4
         variable.default_value = 0.5
         with self.assertRaisesRegex(ValueError, "expected a defuzzifier in output variable name, "

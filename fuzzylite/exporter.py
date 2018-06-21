@@ -79,7 +79,15 @@ class FllExporter(Exporter):
         raise ValueError(f"expected a fuzzylite object, but found '{type(instance).__name__}'")
 
     def engine(self, engine: 'Engine') -> str:
-        pass
+        result = [f"Engine: {engine.name}",
+                  f"description: {engine.description}"]
+        for input_variable in engine.input_variables:
+            result.append(self.input_variable(input_variable))
+        for output_variable in engine.output_variables:
+            result.append(self.output_variable(output_variable))
+        for rule_block in engine.rule_blocks:
+            result.append(self.rule_block(rule_block))
+        return self.separator.join(result)
 
     def variable(self, v: 'Variable') -> str:
         result = [f"Variable: {v.name}",
@@ -110,7 +118,7 @@ class FllExporter(Exporter):
                   f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
                   f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
                   f"{self.indent}default: {Op.str(ov.default_value)}",
-                  f"{self.indent}lock-previous: {str(ov.lock_previous_value).lower()}",
+                  f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}",
                   *[f"{self.indent}{self.term(term)}" for term in ov.terms]
                   ]
         return self.separator.join(result)

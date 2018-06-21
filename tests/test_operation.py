@@ -67,7 +67,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual("OutputVariable[{"
                          "'default_value': 'nan', 'defuzzifier': 'None', "
                          "'fuzzy': 'term: x Aggregated []', "
-                         "'lock_previous_value': 'False', 'previous_value': 'nan'"
+                         "'lock_previous': 'False', 'previous_value': 'nan'"
                          "}]",
                          fl.Op.describe(
                              fl.OutputVariable("x", "an x", terms=[fl.Triangle("t")])))

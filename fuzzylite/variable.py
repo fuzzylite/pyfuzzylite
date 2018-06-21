@@ -118,7 +118,7 @@ class InputVariable(Variable):
 
 
 class OutputVariable(Variable):
-    __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous_value"]
+    __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous"]
 
     def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
                  maximum: float = inf,
@@ -133,7 +133,7 @@ class OutputVariable(Variable):
         self.defuzzifier: Optional['Defuzzifier'] = None
         self.previous_value: float = nan
         self.default_value: float = nan
-        self.lock_previous_value: bool = False
+        self.lock_previous: bool = False
 
     def __str__(self) -> str:
         return FllExporter().output_variable(self)
@@ -199,7 +199,7 @@ class OutputVariable(Variable):
         if not is_valid:
             # if a previous defuzzification was successfully performed and
             # and the output value is supposed not to change when the output is empty
-            if self.lock_previous_value and not isnan(self.previous_value):
+            if self.lock_previous and not isnan(self.previous_value):
                 result = self.previous_value
             else:
                 result = self.default_value

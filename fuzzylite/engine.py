@@ -16,7 +16,8 @@
 """
 
 import enum
-from typing import Iterable, List, Optional, Tuple
+from math import nan
+from typing import Iterable, List, Optional, Tuple, Union
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -28,6 +29,9 @@ from .variable import InputVariable, OutputVariable, Variable
 
 class Engine(object):
     __slots__ = ["name", "description", "input_variables", "output_variables", "rule_blocks"]
+
+    class Type(enum.Enum):
+        Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
 
     def __init__(self, name: str = "",
                  description: str = "",
@@ -49,29 +53,37 @@ class Engine(object):
     def __str__(self) -> str:
         return FllExporter().engine(self)
 
-    def configure(self, conjunction: Optional[TNorm] = None,
-                  disjunction: Optional[SNorm] = None,
-                  implication: Optional[TNorm] = None,
-                  aggregation: Optional[SNorm] = None,
-                  defuzzifier: Optional[Defuzzifier] = None,
-                  activation: Optional[Activation] = None) -> None:
+    def configure(self,
+                  conjunction: Optional[Union[TNorm, str]] = None,
+                  disjunction: Optional[Union[SNorm, str]] = None,
+                  implication: Optional[Union[TNorm, str]] = None,
+                  aggregation: Optional[Union[SNorm, str]] = None,
+                  defuzzifier: Optional[Union[Defuzzifier, str]] = None,
+                  activation: Optional[Union[Activation, str]] = None) -> None:
+        from . import lib
+        factory = lib.factory_manager
+        if isinstance(conjunction, str):
+            conjunction = factory.tnorm.construct(conjunction)
+        if isinstance(disjunction, str):
+            disjunction = factory.snorm.construct(disjunction)
+        if isinstance(implication, str):
+            implication = factory.tnorm.construct(implication)
+        if isinstance(aggregation, str):
+            aggregation = factory.snorm.construct(aggregation)
+        if isinstance(defuzzifier, str):
+            defuzzifier = factory.defuzzifier.construct(defuzzifier)
+        if isinstance(activation, str):
+            activation = factory.activation.construct(activation)
 
-        pass
+        for block in self.rule_blocks:
+            block.conjunction = conjunction
+            block.disjunction = disjunction
+            block.implication = implication
+            block.activation = activation
 
-    def is_ready(self) -> Tuple[bool, str]:
-        pass
-
-    def process(self) -> None:
-        pass
-
-    def restart(self) -> None:
-        pass
-
-    class Type(enum.Enum):
-        Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
-
-    def infer_type(self) -> Tuple[Type, str]:
-        pass
+        for variable in self.output_variables:
+            variable.aggregation = aggregation
+            variable.defuzzifier = defuzzifier
 
     @property
     def variables(self) -> List[Variable]:
@@ -94,3 +106,47 @@ class Engine(object):
             if variable.name == name:
                 return variable
         return None
+
+    def rule_block(self, name: str) -> Optional[RuleBlock]:
+        for block in self.rule_blocks:
+            if block.name == name:
+                return block
+        return None
+
+    def restart(self) -> None:
+        for input_variable in self.input_variables:
+            input_variable.value = nan
+
+        for output_variable in self.output_variables:
+            output_variable.clear()
+
+    def process(self) -> None:
+        from . import lib
+
+        # Clear output values
+        for variable in self.output_variables:
+            variable.fuzzy.clear()
+
+        if lib.debugging:
+            pass
+
+        # Activate rule blocks
+        for block in self.rule_blocks:
+            if block.enabled:
+                block.activate()
+
+        if lib.debugging:
+            pass
+
+        # Defuzzify output variables
+        for variable in self.output_variables:
+            variable.defuzzify()
+
+        if lib.debugging:
+            pass
+
+    def is_ready(self) -> Tuple[bool, str]:
+        raise NotImplementedError()
+
+    def infer_type(self) -> Tuple[Type, str]:
+        raise NotImplementedError()
