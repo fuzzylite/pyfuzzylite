@@ -2,6 +2,7 @@ include AUTHOR
 include CHANGELOG
 include COPYING
 include LICENSE
+include LICENSE.FuzzyLite
 include MANIFEST.in
 include README.md
 include THANKS

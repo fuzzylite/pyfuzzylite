@@ -58,7 +58,7 @@ def setup_package() -> None:
         author_email="jcrada@fuzzylite.com",
         maintainer="Juan Rada-Vilela, Ph.D.",
         maintainer_email="jcrada@fuzzylite.com",
-        license="Affero GNU General Public License v3.0",
+        license="Affero GNU General Public License v3",
         packages=['fuzzylite'],
         package_dir={'fuzzylite': '.'},
         # entry_points={
