@@ -58,7 +58,7 @@ def setup_package() -> None:
         author_email="jcrada@fuzzylite.com",
         maintainer="Juan Rada-Vilela, Ph.D.",
         maintainer_email="jcrada@fuzzylite.com",
-        license="GNU General Public License v3.0",
+        license="Affero GNU General Public License v3.0",
         packages=['fuzzylite'],
         package_dir={'fuzzylite': '.'},
         # entry_points={
@@ -73,7 +73,7 @@ def setup_package() -> None:
             'Development Status :: 2 - Pre-Alpha',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+            'License :: OSI Approved :: Affero GNU General Public License v3 or later (AGPLv3+)',
             'License :: Other/Proprietary License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3.6',
