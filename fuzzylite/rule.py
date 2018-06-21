@@ -216,6 +216,7 @@ class Antecedent(object):
             if state & s_term:
                 term = proposition.variable.term(token)  # type: ignore
                 if term:
+                    proposition.term = term  # type: ignore
                     state = s_variable | s_and_or
                     lib.logger.debug(f"token '{token} is term")
                     continue
