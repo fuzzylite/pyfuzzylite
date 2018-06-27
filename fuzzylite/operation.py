@@ -17,7 +17,7 @@
 
 import inspect
 import math
-from typing import Callable, Optional, Text, Union
+from typing import Callable, List, Optional, SupportsFloat, Text, Union
 
 
 class Operation(object):
@@ -92,18 +92,9 @@ class Operation(object):
         return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
 
     @staticmethod
-    def normalize_name(name: str) -> str:
+    def as_identifier(name: str) -> str:
         result = ''.join([x for x in name if x in ("_", ".") or x.isalnum()])
         return result if result else "unnamed"
-
-    @staticmethod
-    def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
-        if not decimals:
-            from . import lib
-            decimals = lib.decimals
-        if isinstance(x, float):
-            return f"{x:.{decimals}f}"
-        return str(x)
 
     @staticmethod
     def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float,
@@ -132,7 +123,7 @@ class Operation(object):
 
     @staticmethod
     def describe(instance: object, slots: bool = True, variables: bool = True,
-                 class_hierarchy: bool = False) -> Text:
+                 class_hierarchy: bool = False) -> str:
         if not instance:
             return str(None)
         key_values = {}
@@ -153,6 +144,33 @@ class Operation(object):
         class_name = instance.__class__.__name__
         sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
         return f"{class_name}[{sorted_dict}]"
+
+    @staticmethod
+    def strip_comments(fll: str, delimiter: str = "#") -> str:
+        lines: List[str] = []
+        for line in fll.split('\n'):
+            ignore = line.find(delimiter)
+            if ignore != -1:
+                line = line[:ignore]
+            line = line.strip()
+            if line:
+                lines.append(line)
+        return "\n".join(lines)
+
+    @staticmethod
+    def scalar(x: Union[SupportsFloat, str, bytes]) -> float:
+        from . import lib
+        return lib.floating_point(x)
+
+    # Last method of class such that it does not replace builtins.str
+    @staticmethod
+    def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
+        if not decimals:
+            from . import lib
+            decimals = lib.decimals
+        if isinstance(x, float):
+            return f"{x:.{decimals}f}"
+        return str(x)
 
 
 Op = Operation

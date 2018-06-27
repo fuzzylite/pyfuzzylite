@@ -218,8 +218,9 @@ class TestEngine(unittest.TestCase):
 10.0000000000000000 6.6666666666666670 20.2157800031293959 22.7777777777777821
 10.0000000000000000 10.0000000000000000 25.0010497900419928 25.0000000000000000
 """, decimals=16)
-        # .exports_fll("")
-        # .has_type(fl.Engine.Type.Hybrid)
+
+    def test_engine_from_fll(self) -> None:
+        pass
 
     def test_inputs(self) -> None:
         flc = fl.Engine("name", "description",

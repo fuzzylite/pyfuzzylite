@@ -29,7 +29,7 @@ from .norm import SNorm, TNorm
 from .operation import Op
 
 if typing.TYPE_CHECKING:
-    from .engine import Engine
+    from .engine import Engine  # noqa F401
 
 
 class Term(object):
@@ -119,7 +119,7 @@ class Term(object):
         """
         raise NotImplementedError()
 
-    def update_reference(self, engine: 'Engine') -> None:
+    def update_reference(self, engine: Optional['Engine']) -> None:
         """
           Updates the references (if any) to point to the current engine (useful
           when cloning engines or creating terms within Importer objects
@@ -661,7 +661,7 @@ class Linear(Term):
     def parameters(self) -> str:
         return self._parameters(*self.coefficients)
 
-    def update_reference(self, engine: 'Engine') -> None:
+    def update_reference(self, engine: Optional['Engine']) -> None:
         self.engine = engine
 
 
@@ -1240,7 +1240,7 @@ class Function(Term):
         self.formula = parameters
         self.load()
 
-    def update_reference(self, engine: 'Engine') -> None:
+    def update_reference(self, engine: Optional['Engine']) -> None:
         self.engine = engine
         if self.is_loaded():
             self.load()

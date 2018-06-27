@@ -122,7 +122,7 @@ class TestTerm(unittest.TestCase):
             fl.Term().tsukamoto(math.nan, math.nan, math.nan)
 
         # does nothing, for test coverage
-        fl.Term().update_reference(None)  # type: ignore
+        fl.Term().update_reference(None)
 
         discrete_triangle = fl.Triangle("triangle", -1.0, 0.0, 1.0).discretize(-1, 1, 10)
         self.assertEqual(fl.Discrete.dict_from(discrete_triangle.xy),

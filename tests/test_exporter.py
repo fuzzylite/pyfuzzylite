@@ -30,10 +30,9 @@ class TestFllExporter(unittest.TestCase):
             fl.InputVariable("name", terms=[fl.Triangle("A"), fl.Trapezoid("B")])),
             "\n".join(
                 ["InputVariable: name",
-                 "  description: ",
                  "  enabled: true",
                  "  range: -inf inf",
-                 "  lock-range: true",
+                 "  lock-range: false",
                  "  term: A Triangle nan nan nan",
                  "  term: B Trapezoid nan nan nan nan",
                  ])

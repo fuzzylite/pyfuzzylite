@@ -22,11 +22,11 @@ import fuzzylite as fl
 
 
 class TestOperation(unittest.TestCase):
-    def test_valid_name(self) -> None:
-        self.assertEqual(fl.Op.normalize_name("  xx  "), "xx")  # trims
-        self.assertEqual(fl.Op.normalize_name("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")
-        self.assertEqual(fl.Op.normalize_name("abc123_.ABC"), "abc123_.ABC")
-        self.assertEqual(fl.Op.normalize_name("      "), "unnamed")
+    def test_valid_identifier(self) -> None:
+        self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
+        self.assertEqual(fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")
+        self.assertEqual(fl.Op.as_identifier("abc123_.ABC"), "abc123_.ABC")
+        self.assertEqual(fl.Op.as_identifier("      "), "unnamed")
 
     def test_str(self) -> None:
         fl.lib.decimals = 3

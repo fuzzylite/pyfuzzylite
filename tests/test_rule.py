@@ -33,7 +33,6 @@ class TestRuleBlock(unittest.TestCase):
             "\n".join(
                 [
                     "RuleBlock: ",
-                    "  description: ",
                     "  enabled: true",
                     "  conjunction: none",
                     "  disjunction: none",

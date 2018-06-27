@@ -79,8 +79,9 @@ class FllExporter(Exporter):
         raise ValueError(f"expected a fuzzylite object, but found '{type(instance).__name__}'")
 
     def engine(self, engine: 'Engine') -> str:
-        result = [f"Engine: {engine.name}",
-                  f"description: {engine.description}"]
+        result = [f"Engine: {engine.name}"]
+        if engine.description:
+            result.append(f"description: {engine.description}")
         for input_variable in engine.input_variables:
             result.append(self.input_variable(input_variable))
         for output_variable in engine.output_variables:
@@ -90,53 +91,61 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def variable(self, v: 'Variable') -> str:
-        result = [f"Variable: {v.name}",
-                  f"{self.indent}description: {v.description}",
-                  f"{self.indent}enabled: {str(v.enabled).lower()}",
-                  f"{self.indent}range: {' '.join([Op.str(v.minimum), Op.str(v.maximum)])}",
-                  f"{self.indent}lock-range: {str(v.enabled).lower()}",
-                  *[f"{self.indent}{self.term(term)}" for term in v.terms]
-                  ]
+        result = [f"Variable: {v.name}"]
+        if v.description:
+            result.append(f"{self.indent}description: {v.description}")
+        result.extend([
+            f"{self.indent}enabled: {str(v.enabled).lower()}",
+            f"{self.indent}range: {' '.join([Op.str(v.minimum), Op.str(v.maximum)])}",
+            f"{self.indent}lock-range: {str(v.enabled).lower()}",
+            *[f"{self.indent}{self.term(term)}" for term in v.terms]
+        ])
         return self.separator.join(result)
 
     def input_variable(self, iv: 'InputVariable') -> str:
-        result = [f"InputVariable: {iv.name}",
-                  f"{self.indent}description: {iv.description}",
-                  f"{self.indent}enabled: {str(iv.enabled).lower()}",
-                  f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
-                  f"{self.indent}lock-range: {str(iv.enabled).lower()}",
-                  *[f"{self.indent}{self.term(term)}" for term in iv.terms]
-                  ]
+        result = [f"InputVariable: {iv.name}"]
+        if iv.description:
+            result.append(f"{self.indent}description: {iv.description}")
+        result.extend([
+            f"{self.indent}enabled: {str(iv.enabled).lower()}",
+            f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
+            f"{self.indent}lock-range: {str(iv.lock_range).lower()}",
+            *[f"{self.indent}{self.term(term)}" for term in iv.terms]
+        ])
         return self.separator.join(result)
 
     def output_variable(self, ov: 'OutputVariable') -> str:
-        result = [f"OutputVariable: {ov.name}",
-                  f"{self.indent}description: {ov.description}",
-                  f"{self.indent}enabled: {str(ov.enabled).lower()}",
-                  f"{self.indent}range: {' '.join([Op.str(ov.minimum), Op.str(ov.maximum)])}",
-                  f"{self.indent}lock-range: {str(ov.enabled).lower()}",
-                  f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
-                  f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
-                  f"{self.indent}default: {Op.str(ov.default_value)}",
-                  f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}",
-                  *[f"{self.indent}{self.term(term)}" for term in ov.terms]
-                  ]
+        result = [f"OutputVariable: {ov.name}"]
+        if ov.description:
+            result.append(f"{self.indent}description: {ov.description}")
+        result.extend([
+            f"{self.indent}enabled: {str(ov.enabled).lower()}",
+            f"{self.indent}range: {' '.join([Op.str(ov.minimum), Op.str(ov.maximum)])}",
+            f"{self.indent}lock-range: {str(ov.lock_range).lower()}",
+            f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
+            f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
+            f"{self.indent}default: {Op.str(ov.default_value)}",
+            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}",
+            *[f"{self.indent}{self.term(term)}" for term in ov.terms]
+        ])
         return self.separator.join(result)
 
     def rule_block(self, rb: 'RuleBlock') -> str:
-        result = [f"RuleBlock: {rb.name}",
-                  f"{self.indent}description: {rb.description}",
-                  f"{self.indent}enabled: {str(rb.enabled).lower()}",
-                  f"{self.indent}conjunction: {self.norm(rb.conjunction)}",
-                  f"{self.indent}disjunction: {self.norm(rb.disjunction)}",
-                  f"{self.indent}implication: {self.norm(rb.implication)}",
-                  f"{self.indent}activation: {self.activation(rb.activation)}",
-                  *[f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
-                  ]
+        result = [f"RuleBlock: {rb.name}"]
+        if rb.description:
+            result.append(f"{self.indent}description: {rb.description}")
+        result.extend([
+            f"{self.indent}enabled: {str(rb.enabled).lower()}",
+            f"{self.indent}conjunction: {self.norm(rb.conjunction)}",
+            f"{self.indent}disjunction: {self.norm(rb.disjunction)}",
+            f"{self.indent}implication: {self.norm(rb.implication)}",
+            f"{self.indent}activation: {self.activation(rb.activation)}",
+            *[f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
+        ])
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
-        result = ["term:", Op.normalize_name(term.name), term.class_name]
+        result = ["term:", Op.as_identifier(term.name), term.class_name]
         parameters = term.parameters()
         if parameters:
             result.append(parameters)

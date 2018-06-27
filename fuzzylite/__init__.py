@@ -37,7 +37,7 @@ from fuzzylite.factory import (ActivationFactory, CloningFactory, ConstructionFa
 from fuzzylite.hedge import (Any, Extremely, Hedge, HedgeFunction, HedgeLambda, Not, Seldom,
                              Somewhat, Very)
 # IMPORTER
-from fuzzylite.importer import Importer
+from fuzzylite.importer import Importer, FllImporter
 # LIBRARY
 from fuzzylite.library import Library
 # NORM
@@ -63,4 +63,4 @@ lib: Library = Library()
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary
-Float = lib.floating_point
+Float = lib.floating_point  # TODO: rename to scalar

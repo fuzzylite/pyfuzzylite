@@ -142,7 +142,7 @@ class TestInputVariable(unittest.TestCase):
                                     "  description: description",
                                     "  enabled: true",
                                     "  range: -inf inf",
-                                    "  lock-range: true"
+                                    "  lock-range: false"
                                     ]))
         InputVariableAssert(self, fl.InputVariable("name", "description", -1.0, 1.0,
                                                    [fl.Triangle('A', -1.0, 1.0),
@@ -151,7 +151,7 @@ class TestInputVariable(unittest.TestCase):
                                     "  description: description",
                                     "  enabled: true",
                                     "  range: -1.000 1.000",
-                                    "  lock-range: true",
+                                    "  lock-range: false",
                                     "  term: A Triangle -1.000 0.000 1.000",
                                     "  term: B Triangle -10.000 0.000 10.000",
                                     ]))
@@ -198,7 +198,7 @@ class TestOutputVariable(unittest.TestCase):
                                     "  description: description",
                                     "  enabled: true",
                                     "  range: -inf inf",
-                                    "  lock-range: true",
+                                    "  lock-range: false",
                                     "  aggregation: none",
                                     "  defuzzifier: none",
                                     "  default: nan",
@@ -211,7 +211,7 @@ class TestOutputVariable(unittest.TestCase):
                                     "  description: description",
                                     "  enabled: true",
                                     "  range: -1.000 1.000",
-                                    "  lock-range: true",
+                                    "  lock-range: false",
                                     "  aggregation: none",
                                     "  defuzzifier: none",
                                     "  default: nan",
@@ -248,7 +248,7 @@ class TestOutputVariable(unittest.TestCase):
                                     "  description: description",
                                     "  enabled: true",
                                     "  range: -1.000 1.000",
-                                    "  lock-range: true",
+                                    "  lock-range: false",
                                     "  aggregation: none",
                                     "  defuzzifier: none",
                                     "  default: nan",
