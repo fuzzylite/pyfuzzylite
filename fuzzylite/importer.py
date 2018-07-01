@@ -30,6 +30,10 @@ if typing.TYPE_CHECKING:
 
 class Importer(object):
 
+    @property
+    def class_name(self) -> str:
+        return self.__class__.__name__
+
     def from_string(self, fll: str) -> 'Engine':
         raise NotImplementedError()
 
