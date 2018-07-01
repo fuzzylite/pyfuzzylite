@@ -485,14 +485,12 @@ class Rule(object):
 
     @text.setter
     def text(self, text: str) -> None:
-        from . import Float
-
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
 
         antecedent: List[str] = []
         consequent: List[str] = []
-        weight: float = Float(1.0)
+        weight: float = Op.scalar(1.0)
 
         s_begin, s_if, s_then, s_with, s_end = range(5)
         state = s_begin
@@ -514,7 +512,7 @@ class Rule(object):
                 else:
                     consequent.append(token)
             elif state == s_with:
-                weight = Float(token)
+                weight = Op.scalar(token)
                 state = s_end
             elif state == s_end:
                 raise SyntaxError(f"unexpected token '{token}' at the end of rule")

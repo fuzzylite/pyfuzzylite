@@ -48,14 +48,13 @@ class First(Activation):
     def configure(self, parameters: str) -> None:
         if not parameters:
             return
-        from . import Float
         values = parameters.split()
         required = 2
         if len(values) < required:
             raise ValueError(f"activation <{self.class_name}> requires {required} parameters, "
                              f"but only {len(values)} were provided")
         self.number_of_rules = int(values[0])
-        self.threshold = Float(values[1])
+        self.threshold = Op.scalar(values[1])
 
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction

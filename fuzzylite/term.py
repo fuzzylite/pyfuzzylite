@@ -280,8 +280,7 @@ class Bell(Term):
         return super()._parameters(self.center, self.width, self.slope)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width, self.slope = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
@@ -311,8 +310,7 @@ class Binary(Term):
         return super()._parameters(self.start, self.direction)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.direction = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -354,8 +352,7 @@ class Concave(Term):
         return super()._parameters(self.inflection, self.end)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.inflection, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -374,8 +371,7 @@ class Constant(Term):
         return super()._parameters(self.value)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         if not values:
             raise ValueError("not enough values to unpack (expected 1, got 0)")
         self.value = values[0]
@@ -404,8 +400,7 @@ class Cosine(Term):
         return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -514,8 +509,7 @@ class Discrete(Term):
         return super()._parameters(*Discrete.values_from(self.xy))
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = [Float(x) for x in parameters.split()]
+        values = [Op.scalar(x) for x in parameters.split()]
         if len(values) % 2 == 0:
             self.height = 1.0
         else:
@@ -539,15 +533,14 @@ class Discrete(Term):
     def pairs_from(values: Union[Sequence[Floatable],
                                  Dict[Floatable, Floatable]]) -> \
             List['Discrete.Pair']:
-        from . import Float
         if isinstance(values, dict):
-            return [Discrete.Pair(Float(x), Float(y)) for x, y in values.items()]
+            return [Discrete.Pair(Op.scalar(x), Op.scalar(y)) for x, y in values.items()]
 
         if len(values) % 2 != 0:
             raise ValueError("not enough values to unpack (expected an even number, "
                              f"but got {len(values)}) in {values}")
 
-        result = [Discrete.Pair(Float(values[i]), Float(values[i + 1]))
+        result = [Discrete.Pair(Op.scalar(values[i]), Op.scalar(values[i + 1]))
                   for i in range(0, len(values) - 1, 2)]
         return result
 
@@ -583,8 +576,7 @@ class Gaussian(Term):
         return super()._parameters(self.mean, self.standard_deviation)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.mean, self.standard_deviation = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -622,8 +614,7 @@ class GaussianProduct(Term):
                                    self.mean_b, self.standard_deviation_b)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.mean_a, self.standard_deviation_a, self.mean_b, self.standard_deviation_b = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -655,8 +646,7 @@ class Linear(Term):
         return result
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        self.coefficients = [Float(p) for p in parameters.split()]
+        self.coefficients = [Op.scalar(p) for p in parameters.split()]
 
     def parameters(self) -> str:
         return self._parameters(*self.coefficients)
@@ -705,8 +695,7 @@ class PiShape(Term):
                                    self.top_right, self.bottom_right)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -753,8 +742,7 @@ class Ramp(Term):
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -781,8 +769,7 @@ class Rectangle(Term):
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -809,8 +796,7 @@ class Sigmoid(Term):
         return super()._parameters(self.inflection, self.slope)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.inflection, self.slope = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -839,8 +825,7 @@ class SigmoidDifference(Term):
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -869,8 +854,7 @@ class SigmoidProduct(Term):
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -893,8 +877,7 @@ class Spike(Term):
         return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -931,8 +914,7 @@ class SShape(Term):
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -979,8 +961,7 @@ class Trapezoid(Term):
         return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -1024,8 +1005,7 @@ class Triangle(Term):
         return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.vertex_a, self.vertex_b, self.vertex_c = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
@@ -1062,8 +1042,7 @@ class ZShape(Term):
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
-        from . import Float
-        values = tuple(Float(x) for x in parameters.split())
+        values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1383,12 +1362,10 @@ class Function(Term):
     @classmethod
     def parse(cls, formula: str) -> 'Function.Node':
         from . import lib
-        from . import Float
-        from .factory import FunctionFactory
 
         postfix = cls.infix_to_postfix(formula)
         stack: List[Function.Node] = []
-        factory: FunctionFactory = lib.factory_manager.function
+        factory = lib.factory_manager.function
 
         for token in postfix.split():
             element: Optional[Function.Element] = (factory.objects[token]
@@ -1407,7 +1384,7 @@ class Function(Term):
                 stack.append(node)
             elif is_operand:
                 try:
-                    node = Function.Node(constant=Float(token))
+                    node = Function.Node(constant=Op.scalar(token))
                 except ValueError:
                     node = Function.Node(variable=token)
                 stack.append(node)
