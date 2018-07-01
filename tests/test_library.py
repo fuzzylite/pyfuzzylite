@@ -30,7 +30,7 @@ class TestLibrary(unittest.TestCase):
                     'Defuzzifier', 'DefuzzifierFactory', 'Discrete', 'DrasticProduct', 'DrasticSum',
                     'EinsteinProduct', 'EinsteinSum', 'Engine', 'Exporter', 'Expression',
                     'Extremely', 'FactoryManager', 'First', 'FldExporter', 'FllExporter',
-                    'FllImporter', 'Float', 'Function', 'FunctionFactory', 'Gaussian',
+                    'FllImporter', 'Function', 'FunctionFactory', 'Gaussian',
                     'GaussianProduct', 'General', 'HamacherProduct', 'HamacherSum', 'Hedge',
                     'HedgeFactory', 'HedgeFunction', 'HedgeLambda', 'Highest', 'Importer',
                     'InputVariable', 'IntegralDefuzzifier', 'LargestOfMaximum', 'Last', 'Library',
@@ -46,7 +46,7 @@ class TestLibrary(unittest.TestCase):
                     '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
                     '__spec__', '__version__', 'activation', 'defuzzifier', 'engine', 'exporter',
                     'factory', 'hedge', 'importer', 'inf', 'isnan', 'lib', 'library', 'nan', 'norm',
-                    'operation', 'rule', 'term', 'variable'}
+                    'operation', 'rule', 'scalar', 'term', 'variable'}
 
         self.assertSetEqual(expected, set(dir(fuzzylite)))
 
