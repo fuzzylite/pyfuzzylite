@@ -7,6 +7,8 @@ include MANIFEST.in
 include README.md
 include THANKS
 include fuzzylite.png
+include requirements.txt
+include requirements-test.txt
 recursive-include fuzzylite *.py
 recursive-include tests *.py
 recursive-include examples *.fll
