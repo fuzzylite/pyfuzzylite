@@ -9,3 +9,5 @@ include THANKS
 include fuzzylite.png
 recursive-include fuzzylite *.py
 recursive-include tests *.py
+recursive-include examples *.fll
+recursive-exclude examples *.fld
