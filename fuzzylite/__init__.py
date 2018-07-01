@@ -28,7 +28,7 @@ from fuzzylite.defuzzifier import (Defuzzifier, WeightedDefuzzifier, IntegralDef
                                    WeightedAverage, WeightedSum)
 from fuzzylite.engine import Engine
 # EXPORTER
-from fuzzylite.exporter import Exporter, FllExporter
+from fuzzylite.exporter import Exporter, FldExporter, FllExporter
 # FACTORY
 from fuzzylite.factory import (ActivationFactory, CloningFactory, ConstructionFactory,
                                DefuzzifierFactory, FactoryManager, FunctionFactory, HedgeFactory,

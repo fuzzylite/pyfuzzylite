@@ -58,6 +58,10 @@ class Variable(object):
         return None
 
     @property
+    def drange(self) -> float:
+        return self.maximum - self.minimum
+
+    @property
     def range(self) -> Tuple[float, float]:
         return self.minimum, self.maximum
 

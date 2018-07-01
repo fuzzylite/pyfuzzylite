@@ -162,6 +162,25 @@ class Operation(object):
         from . import lib
         return lib.floating_point(x)
 
+    @staticmethod
+    def increment(x: List[int], minimum: List[int], maximum: List[int],
+                  position: Optional[int] = None) -> bool:
+        if position is None:
+            position = len(x) - 1
+        if not x or position < 0:
+            return False
+
+        incremented = True
+        if x[position] < maximum[position]:
+            x[position] += 1
+        else:
+            incremented = not (position == 0)
+            x[position] = minimum[position]
+            position -= 1
+            if position >= 0:
+                incremented = Op.increment(x, minimum, maximum, position)
+        return incremented
+
     # Last method of class such that it does not replace builtins.str
     @staticmethod
     def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:

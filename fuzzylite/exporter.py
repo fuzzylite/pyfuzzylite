@@ -14,9 +14,11 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-
+import enum
+import io
 import typing
-from typing import Optional
+from pathlib import Path
+from typing import List, Optional, Set
 
 from .operation import Op
 
@@ -31,7 +33,16 @@ if typing.TYPE_CHECKING:
 
 
 class Exporter(object):
-    pass
+    @property
+    def class_name(self) -> str:
+        return self.__class__.__name__
+
+    def to_string(self, instance: object) -> str:
+        raise NotImplementedError()
+
+    def to_file(self, path: Path, instance: object) -> None:
+        with path.open(mode='w') as fll:
+            fll.write(self.to_string(instance))
 
 
 class FllExporter(Exporter):
@@ -170,3 +181,128 @@ class FllExporter(Exporter):
 
     def rule(self, rule: 'Rule') -> str:
         return f"rule: {rule.text}"
+
+
+class FldExporter(Exporter):
+    __slots__ = ["separator", "headers", "input_values", "output_values"]
+
+    class ScopeOfValues(enum.Enum):
+        EachVariable, AllVariables = range(2)
+
+    def __init__(self,
+                 separator: str = ' ',
+                 headers: bool = True,
+                 input_values: bool = True,
+                 output_values: bool = True) -> None:
+        self.separator = separator
+        self.headers = headers
+        self.input_values = input_values
+        self.output_values = output_values
+
+    def header(self, engine: 'Engine') -> str:
+        result: List[str] = []
+        if self.input_values:
+            result.extend(iv.name for iv in engine.input_variables)
+        if self.output_values:
+            result.extend(ov.name for ov in engine.output_variables)
+        return self.separator.join(result)
+
+    def to_string(self, instance: object) -> str:
+        from .engine import Engine
+        if isinstance(instance, Engine):
+            return self.to_string_from_scope(instance)
+        raise ValueError(f"expected an Engine, but got {type(instance)}")
+
+    def to_string_from_scope(self, engine: 'Engine', values: int = 1024,
+                             scope: ScopeOfValues = ScopeOfValues.AllVariables,
+                             active_variables: Optional[Set['InputVariable']] = None) -> str:
+        if not active_variables:
+            active_variables = set(engine.input_variables)
+
+        writer = io.StringIO()
+        self.write_from_scope(engine, writer, values, scope, active_variables)
+        return writer.getvalue()
+
+    def to_file_from_scope(self, path: Path, engine: 'Engine', values: int = 1024,
+                           scope: ScopeOfValues = ScopeOfValues.AllVariables,
+                           active_variables: Optional[Set['InputVariable']] = None) -> None:
+        if not active_variables:
+            active_variables = set(engine.input_variables)
+
+        with path.open('w') as writer:
+            self.write_from_scope(engine, writer, values, scope, active_variables)
+
+    def write_from_scope(self, engine: 'Engine', writer: typing.IO, values: int,
+                         scope: ScopeOfValues, active_variables: Set['InputVariable']) -> None:
+        if self.headers:
+            writer.writelines(self.header(engine) + "\n")
+
+        if scope == FldExporter.ScopeOfValues.AllVariables:
+            resolution = max(1, int(pow(values, (1.0 / len(engine.input_variables)))))
+        else:
+            resolution = values
+
+        sample_values = [0] * len(engine.input_variables)
+        min_values = [0] * len(engine.input_variables)
+        max_values = [resolution if iv in active_variables else 0
+                      for iv in engine.input_variables]
+
+        input_values = [Op.scalar('nan')] * len(engine.input_variables)
+        incremented = True
+        while incremented:
+            for i, iv in enumerate(engine.input_variables):
+                if iv in active_variables:
+                    input_values[i] = (iv.minimum +
+                                       sample_values[i] * iv.drange / max(1.0, resolution))
+                else:
+                    input_values[i] = iv.value
+            self.write(engine, writer, input_values, active_variables)
+
+            incremented = Op.increment(sample_values, min_values, max_values)
+
+    def to_string_from_reader(self, engine: 'Engine', reader: typing.IO) -> str:
+        writer = io.StringIO()
+        self.write_from_reader(engine, writer, reader)
+        return writer.getvalue()
+
+    def to_file_from_reader(self, path: Path, engine: 'Engine', reader: typing.IO) -> None:
+        with path.open('w') as writer:
+            self.write_from_reader(engine, writer, reader)
+
+    def write_from_reader(self, engine: 'Engine', writer: typing.IO, reader: typing.IO) -> None:
+        if self.headers:
+            writer.writelines(self.header(engine) + "\n")
+        active_variables = set(engine.input_variables)
+        for i, line in enumerate(reader.readlines()):
+            line = line.strip()
+            if not line or line[0] == '#':
+                continue
+            try:
+                input_values = [Op.scalar(x) for x in line.split()]
+            except ValueError:
+                if line == 0:  # ignore headers
+                    continue
+                raise
+            self.write(engine, writer, input_values, active_variables)
+
+    def write(self, engine: 'Engine', writer: typing.IO, input_values: List[float],
+              active_variables: Set['InputVariable']) -> None:
+        if not input_values:
+            writer.writelines("\n")
+        if len(input_values) != len(engine.input_variables):
+            raise ValueError()
+
+        values: List[str] = []
+        for i, iv in enumerate(engine.input_variables):
+            if iv in active_variables:
+                iv.value = input_values[i]
+            if self.input_values:
+                values.append(Op.str(iv.value))
+
+        engine.process()
+
+        if self.output_values:
+            for ov in engine.output_variables:
+                values.append(Op.str(ov.value))
+
+        writer.writelines(self.separator.join(values) + "\n")
