@@ -180,6 +180,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 class WeightedDefuzzifier(Defuzzifier):
     __slots__ = ["type"]
 
+    @enum.unique
     class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 

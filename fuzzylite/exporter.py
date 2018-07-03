@@ -186,6 +186,7 @@ class FllExporter(Exporter):
 class FldExporter(Exporter):
     __slots__ = ["separator", "headers", "input_values", "output_values"]
 
+    @enum.unique
     class ScopeOfValues(enum.Enum):
         EachVariable, AllVariables = range(2)
 

@@ -1054,6 +1054,7 @@ class Function(Term):
         __slots__ = ["name", "description", "type", "method", "arity", "precedence",
                      "associativity"]
 
+        @enum.unique
         class Type(enum.Enum):
             Operator, Function = range(2)
 
