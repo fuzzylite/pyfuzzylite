@@ -61,6 +61,8 @@ class IntegralDefuzzifier(Defuzzifier):
 
 
 class Bisector(IntegralDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -91,6 +93,8 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -109,6 +113,7 @@ class Centroid(IntegralDefuzzifier):
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
+    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -130,6 +135,8 @@ class LargestOfMaximum(IntegralDefuzzifier):
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -158,6 +165,8 @@ class MeanOfMaximum(IntegralDefuzzifier):
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -211,6 +220,8 @@ class WeightedDefuzzifier(Defuzzifier):
 
 
 class WeightedAverage(WeightedDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
         super().__init__(type)
 
@@ -248,6 +259,8 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
+    __slots__ = ()
+
     def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
         super().__init__(type)
 

@@ -39,6 +39,7 @@ class Activation(object):
 
 
 class General(Activation):
+    __slots__ = ()
 
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
@@ -182,6 +183,7 @@ class Lowest(Activation):
 
 
 class Proportional(Activation):
+    __slots__ = ()
 
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction

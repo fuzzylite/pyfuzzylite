@@ -37,95 +37,125 @@ class Norm(object):
 
 
 class TNorm(Norm):
+
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
 
 
 class AlgebraicProduct(TNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return a * b
 
 
 class BoundedDifference(TNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return max(0.0, a + b - 1.0)
 
 
 class DrasticProduct(TNorm):
-    # todo: op.eq(1.0, max(a,b)) ?
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return min(a, b) if max(a, b) == 1.0 else 0.0
 
 
 class EinsteinProduct(TNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return (a * b) / (2.0 - (a + b - a * b))
 
 
 class HamacherProduct(TNorm):
-    # todo: op.neq(a+b,0.0) ?
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return (a * b) / (a + b - a * b) if a + b != 0.0 else 0.0
 
 
 class Minimum(TNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return min(a, b)
 
 
 class NilpotentMinimum(TNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return min(a, b) if a + b > 1.0 else 0.0
 
 
 class SNorm(Norm):
+
     def compute(self, a: float, b: float) -> float:
         raise NotImplementedError()
 
 
 class AlgebraicSum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return a + b - (a * b)
 
 
 class BoundedSum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return min(1.0, a + b)
 
 
 class DrasticSum(SNorm):
-    # todo: op.eq(a+b,0.0) ?
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return max(a, b) if min(a, b) == 0.0 else 1.0
 
 
 class EinsteinSum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return (a + b) / (1.0 + a * b)
 
 
 class HamacherSum(SNorm):
-    # todo: op.neq(a+b,0.0) ?
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return (a + b - 2.0 * a * b) / (1.0 - a * b) if a * b != 1.0 else 1.0
 
 
 class Maximum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return max(a, b)
 
 
 class NilpotentMaximum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return max(a, b) if a + b < 1.0 else 1.0
 
 
 class NormalizedSum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return (a + b) / max(1.0, a + b)
 
 
 class UnboundedSum(SNorm):
+    __slots__ = ()
+
     def compute(self, a: float, b: float) -> float:
         return a + b
 
