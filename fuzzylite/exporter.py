@@ -18,7 +18,7 @@ import enum
 import io
 import typing
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import IO, List, Optional, Set
 
 from .operation import Op
 
@@ -233,7 +233,7 @@ class FldExporter(Exporter):
         with path.open('w') as writer:
             self.write_from_scope(engine, writer, values, scope, active_variables)
 
-    def write_from_scope(self, engine: 'Engine', writer: typing.IO, values: int,
+    def write_from_scope(self, engine: 'Engine', writer: IO[str], values: int,
                          scope: ScopeOfValues, active_variables: Set['InputVariable']) -> None:
         if self.headers:
             writer.writelines(self.header(engine) + "\n")
@@ -261,16 +261,16 @@ class FldExporter(Exporter):
 
             incremented = Op.increment(sample_values, min_values, max_values)
 
-    def to_string_from_reader(self, engine: 'Engine', reader: typing.IO) -> str:
+    def to_string_from_reader(self, engine: 'Engine', reader: IO[str]) -> str:
         writer = io.StringIO()
         self.write_from_reader(engine, writer, reader)
         return writer.getvalue()
 
-    def to_file_from_reader(self, path: Path, engine: 'Engine', reader: typing.IO) -> None:
+    def to_file_from_reader(self, path: Path, engine: 'Engine', reader: IO[str]) -> None:
         with path.open('w') as writer:
             self.write_from_reader(engine, writer, reader)
 
-    def write_from_reader(self, engine: 'Engine', writer: typing.IO, reader: typing.IO) -> None:
+    def write_from_reader(self, engine: 'Engine', writer: IO[str], reader: IO[str]) -> None:
         if self.headers:
             writer.writelines(self.header(engine) + "\n")
         active_variables = set(engine.input_variables)
@@ -286,7 +286,7 @@ class FldExporter(Exporter):
                 raise
             self.write(engine, writer, input_values, active_variables)
 
-    def write(self, engine: 'Engine', writer: typing.IO, input_values: List[float],
+    def write(self, engine: 'Engine', writer: IO[str], input_values: List[float],
               active_variables: Set['InputVariable']) -> None:
         if not input_values:
             writer.writelines("\n")

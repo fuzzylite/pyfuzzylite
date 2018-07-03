@@ -111,7 +111,7 @@ class Operation(object):
         return x
 
     @staticmethod
-    def arity_of(method: Callable) -> int:
+    def arity_of(method: Callable) -> int:  # type: ignore
         signature = inspect.signature(method)
         required_parameters = [parameter for parameter in signature.parameters.values()
                                if parameter.default == inspect.Parameter.empty]

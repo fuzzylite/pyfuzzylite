@@ -17,7 +17,7 @@
 
 import copy
 import math
-from typing import Callable, Dict, Generic, Iterator, TypeVar
+from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
 
 from .activation import Activation, First, General, Highest, Last, Lowest, Proportional, Threshold
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
@@ -261,14 +261,14 @@ class FunctionFactory(CloningFactory[Function.Element]):
 class FactoryManager(object):
     __slots__ = ["tnorm", "snorm", "activation", "defuzzifier", "term", "hedge", "function"]
 
-    def __init__(self,  # type: ignore
-                 tnorm: TNormFactory = None,
-                 snorm: SNormFactory = None,
-                 activation: ActivationFactory = None,
-                 defuzzifier: DefuzzifierFactory = None,
-                 term: TermFactory = None,
-                 hedge: HedgeFactory = None,
-                 function: FunctionFactory = None) -> None:
+    def __init__(self,
+                 tnorm: Optional[TNormFactory] = None,
+                 snorm: Optional[SNormFactory] = None,
+                 activation: Optional[ActivationFactory] = None,
+                 defuzzifier: Optional[DefuzzifierFactory] = None,
+                 term: Optional[TermFactory] = None,
+                 hedge: Optional[HedgeFactory] = None,
+                 function: Optional[FunctionFactory] = None) -> None:
         self.tnorm = tnorm if tnorm else TNormFactory()
         self.snorm = snorm if snorm else SNormFactory()
         self.activation = activation if activation else ActivationFactory()
