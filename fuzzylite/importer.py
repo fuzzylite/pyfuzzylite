@@ -16,7 +16,7 @@
 """
 import typing
 from pathlib import Path
-from typing import List, Optional, Tuple, Type, TypeVar
+from typing import List, Optional, Tuple, Type, TypeVar, Union
 
 if typing.TYPE_CHECKING:
     from .activation import Activation  # noqa F401
@@ -37,7 +37,9 @@ class Importer(object):
     def from_string(self, fll: str) -> 'Engine':
         raise NotImplementedError()
 
-    def from_file(self, path: Path) -> 'Engine':
+    def from_file(self, path: Union[Path, str]) -> 'Engine':
+        if isinstance(path, str):
+            path = Path(path)
         with path.open() as fll:
             return self.from_string("\n".join(fll.readlines()))
 
