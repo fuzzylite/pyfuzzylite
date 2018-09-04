@@ -579,15 +579,15 @@ class RuleBlock(object):
     __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
                  "activation", "rules"]
 
-    def __init__(self, name: str = "", description: str = "", enabled: bool = True,
+    def __init__(self, name: str = "", description: str = "",
+                 rules: Optional[Iterable[Rule]] = None,
                  conjunction: Optional[TNorm] = None,
                  disjunction: Optional[SNorm] = None,
                  implication: Optional[TNorm] = None,
-                 activation: Optional['Activation'] = None,
-                 rules: Optional[Iterable[Rule]] = None) -> None:
+                 activation: Optional['Activation'] = None) -> None:
         self.name = name
         self.description = description
-        self.enabled = enabled
+        self.enabled = True
         self.conjunction = conjunction
         self.disjunction = disjunction
         self.implication = implication

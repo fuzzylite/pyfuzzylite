@@ -40,17 +40,17 @@ class TestRuleBlock(unittest.TestCase):
                     "  activation: none",
                 ]))
 
-        RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock", enabled=False,
-                                           conjunction=fl.TNorm(), disjunction=fl.SNorm(),
-                                           implication=fl.TNorm(), activation=fl.Activation(),
+        RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock",
                                            rules=[fl.Rule.parse("if a then z"),
-                                                  fl.Rule.parse("if b then y")])) \
+                                                  fl.Rule.parse("if b then y")],
+                                           conjunction=fl.TNorm(), disjunction=fl.SNorm(),
+                                           implication=fl.TNorm(), activation=fl.Activation())) \
             .exports_fll(
             "\n".join(
                 [
                     "RuleBlock: rb",
                     "  description: a ruleblock",
-                    "  enabled: false",
+                    "  enabled: true",
                     "  conjunction: TNorm",
                     "  disjunction: SNorm",
                     "  implication: TNorm",
