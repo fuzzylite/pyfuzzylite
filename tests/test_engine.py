@@ -93,6 +93,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
 
 class TestEngine(unittest.TestCase):
+
     def test_empty_engine(self) -> None:
         flc = fl.Engine("name", "description")
         EngineAssert(self, flc) \

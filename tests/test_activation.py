@@ -38,6 +38,7 @@ class ActivationAssert(BaseAssert[fl.Activation]):
 
 
 class TestActivation(unittest.TestCase):
+
     def test_activation_base(self) -> None:
         with self.assertRaises(NotImplementedError):
             fl.Activation().activate(fl.RuleBlock())

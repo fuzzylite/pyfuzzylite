@@ -24,6 +24,7 @@ if typing.TYPE_CHECKING:
 
 
 class Hedge(object):
+
     @property
     def name(self) -> str:
         return self.__class__.__name__.lower()

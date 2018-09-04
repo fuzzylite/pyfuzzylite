@@ -27,6 +27,7 @@ class RuleBlockAssert(BaseAssert[fl.RuleBlock]):
 
 
 class TestRuleBlock(unittest.TestCase):
+
     def test_constructor(self) -> None:
         RuleBlockAssert(self, fl.RuleBlock()) \
             .exports_fll(
@@ -61,6 +62,7 @@ class TestRuleBlock(unittest.TestCase):
 
 
 class TestExpression(unittest.TestCase):
+
     def test_proposition(self) -> None:
         self.assertEqual(str(fl.Proposition()), "? is ?")
 

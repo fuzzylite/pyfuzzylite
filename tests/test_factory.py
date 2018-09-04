@@ -61,6 +61,7 @@ class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory, fl.CloningFactory]]
 
 
 class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
+
     def contains_exactly(self, elements: Set[str],
                          element_type: Optional[
                              fl.Function.Element.Type] = None) -> 'FunctionFactoryAssert':
@@ -88,12 +89,14 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
 
 
 class TestFactory(unittest.TestCase):
+
     def test_construction_factory(self) -> None:
         actual: fl.ConstructionFactory = fl.ConstructionFactory()
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
 
         class Example(object):
+
             def __str__(self) -> str:
                 return "instance of Example"
 
@@ -189,6 +192,7 @@ class TestFactory(unittest.TestCase):
         assert_that.has_class_name("CloningFactory").copies_exactly({})
 
         class Example(object):
+
             def __init__(self, value: str) -> None:
                 self.property = value
 
@@ -203,6 +207,7 @@ class TestFactory(unittest.TestCase):
 
 
 class TestFunctionFactory(unittest.TestCase):
+
     def test_factory_precedence(self) -> None:
         precedence_expected = {0: 100, 1: 90, 2: 80, 3: 70, 4: 60, 5: 50,
                                6: 40, 7: 30, 8: 20, 9: 10, 10: 0}

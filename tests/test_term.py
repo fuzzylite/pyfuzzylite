@@ -28,6 +28,7 @@ from tests.assert_component import BaseAssert
 
 
 class TermAssert(BaseAssert[fl.Term]):
+
     def has_name(self, name: str, height: float = 1.0) -> 'TermAssert':
         self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
@@ -107,6 +108,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
 
 class TestTerm(unittest.TestCase):
+
     def test_term(self) -> None:
         self.assertEqual(fl.Term().name, "")
         self.assertEqual(fl.Term("X").name, "X")
@@ -1262,6 +1264,7 @@ class TestTerm(unittest.TestCase):
 
 
 class FunctionNodeAssert(BaseAssert):
+
     def prefix_is(self, prefix: str) -> 'FunctionNodeAssert':
         self.test.assertEqual(prefix, self.actual.prefix())
         return self
@@ -1293,6 +1296,7 @@ class FunctionNodeAssert(BaseAssert):
 
 
 class TestFunction(unittest.TestCase):
+
     def test_function(self) -> None:
         with self.assertRaisesRegex(RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")):
             fl.Function("f(x)", "f(x)=2x+1").membership(math.nan)

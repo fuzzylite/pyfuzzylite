@@ -38,6 +38,7 @@ class VariableAssert(BaseAssert[fl.Variable]):
 
 
 class TestVariable(unittest.TestCase):
+
     def test_constructor(self) -> None:
         VariableAssert(self, fl.Variable("name", "description")) \
             .exports_fll(
@@ -136,6 +137,7 @@ class InputVariableAssert(BaseAssert[fl.InputVariable]):
 
 
 class TestInputVariable(unittest.TestCase):
+
     def test_constructor(self) -> None:
         InputVariableAssert(self, fl.InputVariable("name", "description")) \
             .exports_fll("\n".join(["InputVariable: name",
@@ -192,6 +194,7 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
 
 
 class TestOutputVariable(unittest.TestCase):
+
     def test_constructor(self) -> None:
         OutputVariableAssert(self, fl.OutputVariable("name", "description")) \
             .exports_fll("\n".join(["OutputVariable: name",

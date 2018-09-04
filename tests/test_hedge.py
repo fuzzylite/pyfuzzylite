@@ -35,6 +35,7 @@ class HedgeAssert(BaseAssert[fl.Hedge]):
 
 
 class TestHedge(unittest.TestCase):
+
     def test_any(self) -> None:
         HedgeAssert(self, fl.Any()) \
             .has_name("any") \

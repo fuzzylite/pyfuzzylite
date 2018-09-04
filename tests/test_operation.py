@@ -22,6 +22,7 @@ import fuzzylite as fl
 
 
 class TestOperation(unittest.TestCase):
+
     def test_valid_identifier(self) -> None:
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
         self.assertEqual(fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")

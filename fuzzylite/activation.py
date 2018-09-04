@@ -24,6 +24,7 @@ from .rule import Rule, RuleBlock
 
 
 class Activation(object):
+
     @property
     def class_name(self) -> str:
         return self.__class__.__name__

@@ -46,6 +46,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
 
 
 class TestDefuzzifier(unittest.TestCase):
+
     def test_defuzzifier(self) -> None:
         with self.assertRaises(NotImplementedError):
             fl.Defuzzifier().configure("")

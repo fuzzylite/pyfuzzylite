@@ -24,6 +24,7 @@ T = TypeVar('T')
 
 
 class BaseAssert(Generic[T]):
+
     def __init__(self, test: unittest.TestCase, actual: T) -> None:
         self.test = test
         self.actual = actual

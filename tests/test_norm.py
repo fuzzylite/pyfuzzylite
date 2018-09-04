@@ -42,6 +42,7 @@ class NormAssert(BaseAssert):
 
 
 class TNormTerm(unittest.TestCase):
+
     def test_algebraic_product(self) -> None:
         NormAssert(self, fl.AlgebraicProduct()) \
             .is_t_norm() \
@@ -198,6 +199,7 @@ class TNormTerm(unittest.TestCase):
 
 
 class SNormTerm(unittest.TestCase):
+
     def test_algebraic_sum(self) -> None:
         NormAssert(self, fl.AlgebraicSum()) \
             .is_s_norm() \
@@ -398,6 +400,7 @@ class SNormTerm(unittest.TestCase):
 
 
 class NormFunctions(unittest.TestCase):
+
     def test_norm_function(self) -> None:
         NormAssert(self, fl.NormFunction(fl.Function.create("AlgebraicSum", "a + b - (a * b)"))) \
             .exports_fll("NormFunction") \

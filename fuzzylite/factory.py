@@ -76,6 +76,7 @@ class CloningFactory(Generic[T]):
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)
@@ -85,6 +86,7 @@ class ActivationFactory(ConstructionFactory[Activation]):
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)
@@ -99,6 +101,7 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)
@@ -109,6 +112,7 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)
@@ -120,6 +124,7 @@ class SNormFactory(ConstructionFactory[SNorm]):
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)
@@ -131,6 +136,7 @@ class TNormFactory(ConstructionFactory[TNorm]):
 
 
 class TermFactory(ConstructionFactory[Term]):
+
     def __init__(self) -> None:
         super().__init__()
         # self.constructors[""] = type(None)

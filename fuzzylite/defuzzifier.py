@@ -24,6 +24,7 @@ from .term import Aggregated, Constant, Function, Linear, Optional, Term, Union
 
 
 class Defuzzifier(object):
+
     @property
     def class_name(self) -> str:
         return self.__class__.__name__

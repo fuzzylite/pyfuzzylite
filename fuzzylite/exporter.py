@@ -33,6 +33,7 @@ if typing.TYPE_CHECKING:
 
 
 class Exporter(object):
+
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
