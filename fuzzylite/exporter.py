@@ -18,7 +18,7 @@ import enum
 import io
 import typing
 from pathlib import Path
-from typing import IO, List, Optional, Set
+from typing import IO, List, Optional, Set, Union
 
 from .operation import Op
 
@@ -40,7 +40,9 @@ class Exporter(object):
     def to_string(self, instance: object) -> str:
         raise NotImplementedError()
 
-    def to_file(self, path: Path, instance: object) -> None:
+    def to_file(self, path: Union[str, Path], instance: object) -> None:
+        if isinstance(path, str):
+            path = Path(path)
         with path.open(mode='w') as fll:
             fll.write(self.to_string(instance))
 
@@ -92,7 +94,7 @@ class FllExporter(Exporter):
     def engine(self, engine: 'Engine') -> str:
         result = [f"Engine: {engine.name}"]
         if engine.description:
-            result.append(f"description: {engine.description}")
+            result.append(f"{self.indent}description: {engine.description}")
         for input_variable in engine.input_variables:
             result.append(self.input_variable(input_variable))
         for output_variable in engine.output_variables:
@@ -108,9 +110,9 @@ class FllExporter(Exporter):
         result.extend([
             f"{self.indent}enabled: {str(v.enabled).lower()}",
             f"{self.indent}range: {' '.join([Op.str(v.minimum), Op.str(v.maximum)])}",
-            f"{self.indent}lock-range: {str(v.enabled).lower()}",
-            *[f"{self.indent}{self.term(term)}" for term in v.terms]
-        ])
+            f"{self.indent}lock-range: {str(v.lock_range).lower()}"])
+        if v.terms:
+            result.extend(f"{self.indent}{self.term(term)}" for term in v.terms)
         return self.separator.join(result)
 
     def input_variable(self, iv: 'InputVariable') -> str:
@@ -120,9 +122,9 @@ class FllExporter(Exporter):
         result.extend([
             f"{self.indent}enabled: {str(iv.enabled).lower()}",
             f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
-            f"{self.indent}lock-range: {str(iv.lock_range).lower()}",
-            *[f"{self.indent}{self.term(term)}" for term in iv.terms]
-        ])
+            f"{self.indent}lock-range: {str(iv.lock_range).lower()}"])
+        if iv.terms:
+            result.extend(f"{self.indent}{self.term(term)}" for term in iv.terms)
         return self.separator.join(result)
 
     def output_variable(self, ov: 'OutputVariable') -> str:
@@ -136,9 +138,9 @@ class FllExporter(Exporter):
             f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
             f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
             f"{self.indent}default: {Op.str(ov.default_value)}",
-            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}",
-            *[f"{self.indent}{self.term(term)}" for term in ov.terms]
-        ])
+            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}"])
+        if ov.terms:
+            result.extend(f"{self.indent}{self.term(term)}" for term in ov.terms)
         return self.separator.join(result)
 
     def rule_block(self, rb: 'RuleBlock') -> str:
@@ -150,9 +152,9 @@ class FllExporter(Exporter):
             f"{self.indent}conjunction: {self.norm(rb.conjunction)}",
             f"{self.indent}disjunction: {self.norm(rb.disjunction)}",
             f"{self.indent}implication: {self.norm(rb.implication)}",
-            f"{self.indent}activation: {self.activation(rb.activation)}",
-            *[f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
-        ])
+            f"{self.indent}activation: {self.activation(rb.activation)}"])
+        if rb.rules:
+            result.extend(f"{self.indent}{self.rule(rule)}" for rule in rb.rules)
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
@@ -181,6 +183,10 @@ class FllExporter(Exporter):
 
     def rule(self, rule: 'Rule') -> str:
         return f"rule: {rule.text}"
+
+
+class PythonExporter(Exporter):
+    pass
 
 
 class FldExporter(Exporter):

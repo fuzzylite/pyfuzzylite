@@ -22,22 +22,118 @@ import fuzzylite as fl
 
 
 class TestFllExporter(unittest.TestCase):
-    def test_to_string(self) -> None:
-        self.assertEqual(fl.FllExporter().term(fl.Term("X", 1.0)), "term: X Term")
-        self.assertEqual(fl.FllExporter().rule(fl.Rule.parse("if x then y")), "rule: if x then y")
 
-    def test_variables(self) -> None:
+    def test_single_line_indent(self) -> None:
+        engine = fl.Engine("engine", "single line export to FLL",
+                           [fl.InputVariable("A", "variable A")],
+                           [fl.OutputVariable("Z", "variable Z")],
+                           [fl.RuleBlock("R", "rule block R")])
+        self.assertEqual(
+            fl.FllExporter(separator="; ", indent='\t').engine(engine),
+            "Engine: engine; "
+            "\tdescription: single line export to FLL; "
+            "InputVariable: A; "
+            "\tdescription: variable A; "
+            "\tenabled: true; "
+            "\trange: -inf inf; "
+            "\tlock-range: false; "
+            "OutputVariable: Z; "
+            "\tdescription: variable Z; "
+            "\tenabled: true; "
+            "\trange: -inf inf; "
+            "\tlock-range: false; "
+            "\taggregation: none; "
+            "\tdefuzzifier: none; "
+            "\tdefault: nan; "
+            "\tlock-previous: false; "
+            "RuleBlock: R; "
+            "\tdescription: rule block R; "
+            "\tenabled: true; "
+            "\tconjunction: none; "
+            "\tdisjunction: none; "
+            "\timplication: none; "
+            "\tactivation: none")
+
+    def test_variable(self) -> None:
+        self.assertEqual(fl.FllExporter().variable(
+            fl.Variable("variable", "a variable", 0, 1, [fl.Triangle("A")])),
+            """\
+Variable: variable
+  description: a variable
+  enabled: true
+  range: 0 1
+  lock-range: false
+  term: A Triangle nan nan nan\
+""")
+
+    def test_input_variable(self) -> None:
         self.assertEqual(fl.FllExporter().input_variable(
-            fl.InputVariable("name", terms=[fl.Triangle("A"), fl.Trapezoid("B")])),
-            "\n".join(
-                ["InputVariable: name",
-                 "  enabled: true",
-                 "  range: -inf inf",
-                 "  lock-range: false",
-                 "  term: A Triangle nan nan nan",
-                 "  term: B Trapezoid nan nan nan nan",
-                 ])
-        )
+            fl.InputVariable("input_variable", "an input variable", 0, 1, [fl.Triangle("A")])),
+            """\
+InputVariable: input_variable
+  description: an input variable
+  enabled: true
+  range: 0 1
+  lock-range: false
+  term: A Triangle nan nan nan\
+""")
+
+    def test_output_variable(self) -> None:
+        self.assertEqual(fl.FllExporter().output_variable(
+            fl.OutputVariable("output_variable", "an output variable", 0, 1, [fl.Triangle("A")])),
+            """\
+OutputVariable: output_variable
+  description: an output variable
+  enabled: true
+  range: 0 1
+  lock-range: false
+  aggregation: none
+  defuzzifier: none
+  default: nan
+  lock-previous: false
+  term: A Triangle nan nan nan\
+""")
+
+    def test_rule_block(self) -> None:
+        self.assertEqual(fl.FllExporter().rule_block(
+            fl.RuleBlock("rb", "a ruleblock", [fl.Rule.parse("if a then z")])),
+            """\
+RuleBlock: rb
+  description: a ruleblock
+  enabled: true
+  conjunction: none
+  disjunction: none
+  implication: none
+  activation: none
+  rule: if a then z\
+""")
+
+    def test_term(self) -> None:
+        self.assertEqual(fl.FllExporter().term(fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)),
+                         "term: A Triangle 0.000 1.000 2.000 0.500")
+
+    def test_rule(self) -> None:
+        self.assertEqual(fl.FllExporter().rule(fl.Rule.parse("if a then z")),
+                         "rule: if a then z")
+
+    def test_norm(self) -> None:
+        self.assertEqual(fl.FllExporter().norm(None), "none")
+        self.assertEqual(fl.FllExporter().norm(fl.AlgebraicProduct()), "AlgebraicProduct")
+        self.assertEqual(fl.FllExporter().norm(fl.AlgebraicSum()), "AlgebraicSum")
+
+    def test_activation(self) -> None:
+        self.assertEqual(fl.FllExporter().activation(None), "none")
+        self.assertEqual(fl.FllExporter().activation(fl.General()), "General")
+
+    def test_defuzzifier(self) -> None:
+        self.assertEqual(fl.FllExporter().defuzzifier(None), "none")
+        self.assertEqual(fl.FllExporter().defuzzifier(fl.Centroid()), "Centroid 100")
+
+
+class TestPythonExporter(unittest.TestCase):
+    @unittest.skip("")
+    def test_export(self) -> None:
+        pass
 
 
 class TestFldExporter(unittest.TestCase):
