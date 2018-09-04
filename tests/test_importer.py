@@ -52,11 +52,11 @@ RuleBlock:
   rule: if obstacle is right then steer is left\
 """
         fl.lib.decimals = 9
-        engine = fl.importer.FllImporter().from_file("../examples/terms/Bell.fll")
+        engine = fl.importer.FllImporter().from_file("examples/terms/Bell.fll")
         self.assertEqual(expected, fl.exporter.FllExporter().to_string(engine))
 
         from pathlib import Path
-        engine = fl.importer.FllImporter().from_file(Path("../examples/terms/Bell.fll"))
+        engine = fl.importer.FllImporter().from_file(Path("examples/terms/Bell.fll"))
         self.assertEqual(expected, fl.exporter.FllExporter().to_string(engine))
         fl.lib.decimals = 3
 
@@ -68,7 +68,7 @@ RuleBlock:
         import logging
         fl.lib.logger.setLevel(logging.INFO)
         examples = 0
-        for fll_file in glob.iglob('../examples/terms/*.fll', recursive=True):
+        for fll_file in glob.iglob('examples/terms/*.fll', recursive=True):
             examples += 1
             with open(fll_file, 'r') as file:
                 fl.lib.logger.info(fll_file)
