@@ -17,9 +17,11 @@
 import distutils.core
 import io
 
+from typing import List
+
 
 class PyTest(distutils.core.Command):
-    user_options = []
+    user_options: List[str] = []
 
     def initialize_options(self) -> None:
         pass
