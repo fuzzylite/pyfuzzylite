@@ -46,7 +46,7 @@ class TestVariable(unittest.TestCase):
                 "  description: description",
                 "  enabled: true",
                 "  range: -inf inf",
-                "  lock-range: true"
+                "  lock-range: false"
             ]))
         VariableAssert(self,
                        fl.Variable("name", "description", -1.0, 1.0,
@@ -57,7 +57,7 @@ class TestVariable(unittest.TestCase):
                 "  description: description",
                 "  enabled: true",
                 "  range: -1.000 1.000",
-                "  lock-range: true",
+                "  lock-range: false",
                 "  term: A Triangle -1.000 0.000 1.000",
                 "  term: B Triangle -10.000 0.000 10.000",
             ]))
