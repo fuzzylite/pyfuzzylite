@@ -137,26 +137,32 @@ class TestPythonExporter(unittest.TestCase):
 
 
 class TestFldExporter(unittest.TestCase):
-    @unittest.skip("")
+
+    @unittest.skip("Re-enable after test coverage improved independently")
     def test_from_scope(self) -> None:
+        import concurrent.futures
         import logging
+
         fl.lib.configure_logging(logging.INFO)
 
-        files = list(glob.iglob('examples/terms/**/*.fll', recursive=True))
-        import concurrent.futures
+        fl.lib.decimals = 3
+
+        files = list(glob.iglob('examples/terms/*.fll', recursive=True))
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(TestFldExporter.export, files)
-        print(f"fl.lib.decimals: {fl.lib.decimals}")
+
+        self.assertEqual(fl.lib.decimals, 3)
 
     @staticmethod
     def export(path: str) -> None:
         import io
+        import time
+
         fl.lib.decimals = 9
         importer = fl.FllImporter()
         fll_exporter = fl.FllExporter()
         fld_exporter = fl.FldExporter()
 
-        import time
         with io.open(path, 'r') as file:
             import_fll = "".join(file.readlines())
             engine = importer.from_string(import_fll)
