@@ -208,6 +208,10 @@ RuleBlock: rb
                          fl.FllExporter().defuzzifier(defuzzifier))
         self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 100")
 
+    def test_object(self) -> None:
+        with self.assertRaisesRegex(ValueError, rf"expected a fuzzylite object, but found 'object"):
+            fl.FllExporter().to_string(object())
+
 
 class TestPythonExporter(unittest.TestCase):
 
@@ -316,7 +320,7 @@ fl.InputVariable(
     def test_output_variable(self) -> None:
         ov = fl.OutputVariable(name="output_variable",
                                description="an output variable",
-                               minimum=0, maximum=1,
+                               minimum=0.0, maximum=1.0,
                                terms=[fl.Triangle("A")])
         self.assertEqual(fl.PythonExporter().to_string(ov),
                          fl.PythonExporter().output_variable(ov))
@@ -325,8 +329,8 @@ fl.OutputVariable(
     name="output_variable",
     description="an output variable",
     enabled=True,
-    minimum=0,
-    maximum=1,
+    minimum=0.000,
+    maximum=1.000,
     lock_range=False,
     aggregation=None,
     defuzzifier=None,
@@ -339,8 +343,8 @@ fl.OutputVariable(
     name="output_variable",
     description="an output variable",
     enabled=True,
-    minimum=0,
-    maximum=1,
+    minimum=0.000,
+    maximum=1.000,
     lock_range=False,
     aggregation=None,
     defuzzifier=None,
@@ -418,6 +422,10 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().to_string(defuzzifier),
                          fl.PythonExporter().defuzzifier(defuzzifier))
         self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(100)")
+
+    def test_object(self) -> None:
+        with self.assertRaisesRegex(ValueError, rf"expected a fuzzylite object, but found 'object"):
+            fl.PythonExporter().to_string(object())
 
 
 class TestFldExporter(unittest.TestCase):
