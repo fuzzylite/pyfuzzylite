@@ -12,4 +12,5 @@ include requirements-test.txt
 recursive-include fuzzylite *.py
 recursive-include tests *.py
 recursive-include examples *.fll
+recursive-include examples *.py
 recursive-exclude examples *.fld
