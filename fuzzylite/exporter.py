@@ -271,7 +271,7 @@ class PythonExporter(Exporter):
                   f"{self.indent}lock_range={self.format(iv.lock_range)}"]
         if iv.terms:
             if len(iv.terms) == 1:
-                terms = f"{self.indent}terms=[f{self.term(iv.terms[0])}]"
+                terms = f"{self.indent}terms=[{self.term(iv.terms[0])}]"
             else:
                 terms = (f"{self.indent}terms=[\n" +
                          ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in iv.terms) +
@@ -292,7 +292,7 @@ class PythonExporter(Exporter):
                   f"{self.indent}lock_previous={self.format(ov.lock_previous)}"]
         if ov.terms:
             if len(ov.terms) == 1:
-                terms = f"{self.indent}terms=[f{self.term(ov.terms[0])}]"
+                terms = f"{self.indent}terms=[{self.term(ov.terms[0])}]"
             else:
                 terms = (f"{self.indent}terms=[\n" +
                          ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in ov.terms) +
@@ -314,10 +314,8 @@ class PythonExporter(Exporter):
                 rules = f"{self.indent}rules=[{self.rule(rb.rules[0])}]"
             else:
                 rules = (f"{self.indent}rules=[\n{2*self.indent}" +
-                         f"fl.Rule.parse(rule, engine) for rule in [\n{3*self.indent}" +
-                         f",\n{3 * self.indent}".join(self.format(rule.text) for rule in rb.rules) +
-                         f"\n{2*self.indent}]"
-                         + f"\n{self.indent}]"
+                         f",\n{2*self.indent}".join(self.rule(rule) for rule in rb.rules) +
+                         f"\n{self.indent}]"
                          )
             result += [rules]
         return "fl.RuleBlock(\n%s\n)" % ',\n'.join(result)
