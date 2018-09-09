@@ -18,9 +18,10 @@
 import enum
 import math
 from math import nan
+from typing import Optional, Union
 
 from .operation import Op
-from .term import Aggregated, Constant, Function, Linear, Optional, Term, Union
+from .term import Aggregated, Constant, Function, Linear, Term
 
 
 class Defuzzifier(object):

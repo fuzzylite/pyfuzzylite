@@ -31,22 +31,27 @@ if typing.TYPE_CHECKING:
 
 
 class Variable(object):
-    __slots__ = ["name", "description", "minimum", "maximum",
-                 "enabled", "lock_range", "_value", "terms"]
+    __slots__ = ["name", "description", "enabled", "minimum", "maximum", "lock_range", "terms",
+                 "_value"]
 
-    def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
+    def __init__(self,
+                 name: str = "",
+                 description: str = "",
+                 enabled: bool = True,
+                 minimum: float = -inf,
                  maximum: float = inf,
+                 lock_range: bool = False,
                  terms: Optional[Iterable['Term']] = None) -> None:
         self.name = name
         self.description = description
+        self.enabled = enabled
         self.minimum = minimum
         self.maximum = maximum
-        self.enabled = True
-        self.lock_range = False
-        self._value = nan
+        self.lock_range = lock_range
         self.terms: List[Term] = []
         if terms:
             self.terms.extend(terms)
+        self._value = nan
 
     def __str__(self) -> str:
         return FllExporter().variable(self)
@@ -109,10 +114,21 @@ class Variable(object):
 class InputVariable(Variable):
     __slots__ = ()
 
-    def __init__(self, name: str = "", description: str = "",
-                 minimum: float = -inf, maximum: float = inf,
+    def __init__(self,
+                 name: str = "",
+                 description: str = "",
+                 enabled: bool = True,
+                 minimum: float = -inf,
+                 maximum: float = inf,
+                 lock_range: bool = False,
                  terms: Optional[Iterable['Term']] = None) -> None:
-        super().__init__(name, description, minimum, maximum, terms)
+        super().__init__(name=name,
+                         description=description,
+                         enabled=enabled,
+                         minimum=minimum,
+                         maximum=maximum,
+                         lock_range=lock_range,
+                         terms=terms)
 
     def __str__(self) -> str:
         return FllExporter().input_variable(self)
@@ -124,20 +140,35 @@ class InputVariable(Variable):
 class OutputVariable(Variable):
     __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous"]
 
-    def __init__(self, name: str = "", description: str = "", minimum: float = -inf,
+    def __init__(self,
+                 name: str = "",
+                 description: str = "",
+                 enabled: bool = True,
+                 minimum: float = -inf,
                  maximum: float = inf,
+                 lock_range: bool = False,
+                 lock_previous: bool = False,
+                 default_value: float = nan,
+                 aggregation: Optional[SNorm] = None,
+                 defuzzifier: Optional['Defuzzifier'] = None,
                  terms: Optional[Iterable['Term']] = None) -> None:
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
-        self.fuzzy: Aggregated = Aggregated()
+        self.fuzzy = Aggregated(aggregation=aggregation)
         # initialize parent members
-        super().__init__(name, description, minimum, maximum, terms)
+        super().__init__(name=name,
+                         description=description,
+                         enabled=enabled,
+                         minimum=minimum,
+                         maximum=maximum,
+                         lock_range=lock_range,
+                         terms=terms)
         # set values of output variable
-        self.defuzzifier: Optional['Defuzzifier'] = None
-        self.previous_value: float = nan
-        self.default_value: float = nan
-        self.lock_previous: bool = False
+        self.defuzzifier = defuzzifier
+        self.lock_previous = lock_previous
+        self.default_value = default_value
+        self.previous_value = nan
 
     def __str__(self) -> str:
         return FllExporter().output_variable(self)
@@ -215,8 +246,8 @@ class OutputVariable(Variable):
 
     def clear(self) -> None:
         self.fuzzy.clear()
-        self.value = nan
         self.previous_value = nan
+        self._value = nan
 
     def fuzzy_value(self) -> str:
         result: List[str] = []

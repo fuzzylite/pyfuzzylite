@@ -132,9 +132,43 @@ RuleBlock: rb
 
 class TestPythonExporter(unittest.TestCase):
 
-    @unittest.skip("")
-    def test_export(self) -> None:
-        pass
+    def test_py(self) -> None:
+        import concurrent.futures
+        import logging
+
+        fl.lib.configure_logging(logging.INFO)
+
+        fl.lib.decimals = 3
+
+        files = list(glob.iglob('examples/terms/*.fll', recursive=True))
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            executor.map(TestPythonExporter.export, files)
+
+        self.assertEqual(fl.lib.decimals, 3)
+
+    @staticmethod
+    def export(path: str) -> None:
+        import io
+        import time
+
+        fl.lib.decimals = 9
+        importer = fl.FllImporter()
+        fll_exporter = fl.FllExporter()
+        py_exporter = fl.PythonExporter()
+
+        with io.open(path, 'r') as file:
+            import_fll = "".join(file.readlines())
+            engine = importer.from_string(import_fll)
+            engine.description = "obstacle avoidance for self-driving cars"
+            engine.input_variables[0].description = "location of obstacle relative to vehicle"
+            engine.output_variables[0].description = "direction to steer the vehicle to"
+            engine.rule_blocks[0].name = "steer_away"
+            engine.rule_blocks[0].description = "steer away from obstacles"
+            file_name = file.name[file.name.rfind('/'):file.name.rfind('.')]
+            fll_exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
+            start = time.time()
+            py_exporter.to_file(Path("/tmp/fl/" + file_name + ".py"), engine)
+            fl.lib.logger.info(str(path) + f".py\t{time.time() - start}")
 
 
 class TestFldExporter(unittest.TestCase):
