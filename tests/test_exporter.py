@@ -31,11 +31,12 @@ class TestExporter(unittest.TestCase):
         self.assertEqual(fl.Exporter().class_name, "Exporter")
 
     def test_to_string(self) -> None:
-        self.assertRaises(fl.Exporter().to_string(None), ValueError)
+        with self.assertRaises(NotImplementedError):
+            fl.Exporter().to_string(None)
 
     def test_to_file(self) -> None:
         exporter = fl.Exporter()
-        exporter.to_string = MagicMock(return_value="MagicMock Test")
+        exporter.to_string = MagicMock(return_value="MagicMock Test")  # type: ignore
         path = tempfile.mkstemp(text=True)[1]
 
         exporter.to_file(path, object())
