@@ -1,11 +1,14 @@
 Engine: Sigmoid
+  description: obstacle avoidance for self-driving cars
 InputVariable: obstacle
+  description: location of obstacle relative to vehicle
   enabled: true
   range: 0.000000000 1.000000000
   lock-range: false
   term: left Triangle 0.000000000 0.333000000 0.666000000
   term: right Triangle 0.333000000 0.666000000 1.000000000
 OutputVariable: steer
+  description: direction to steer the vehicle to
   enabled: true
   range: 0.000000000 1.000000000
   lock-range: false
@@ -15,7 +18,8 @@ OutputVariable: steer
   lock-previous: false
   term: left Sigmoid 0.500000000 -30.030030030
   term: right Sigmoid 0.500000000 29.985007496
-RuleBlock: 
+RuleBlock: steer_away
+  description: steer away from obstacles
   enabled: true
   conjunction: none
   disjunction: none
