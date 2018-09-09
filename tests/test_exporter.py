@@ -56,8 +56,8 @@ class TestFllExporter(unittest.TestCase):
 
     def test_variable(self) -> None:
         self.assertEqual(fl.FllExporter().variable(
-            fl.Variable("variable", "a variable", 0, 1, [fl.Triangle("A")])),
-            """\
+            fl.Variable(name="variable", description="a variable",
+                        minimum=0, maximum=1, terms=[fl.Triangle("A")])), """\
 Variable: variable
   description: a variable
   enabled: true
@@ -68,8 +68,10 @@ Variable: variable
 
     def test_input_variable(self) -> None:
         self.assertEqual(fl.FllExporter().input_variable(
-            fl.InputVariable("input_variable", "an input variable", 0, 1, [fl.Triangle("A")])),
-            """\
+            fl.InputVariable(name="input_variable",
+                             description="an input variable",
+                             minimum=0, maximum=1,
+                             terms=[fl.Triangle("A")])), """\
 InputVariable: input_variable
   description: an input variable
   enabled: true
@@ -80,8 +82,10 @@ InputVariable: input_variable
 
     def test_output_variable(self) -> None:
         self.assertEqual(fl.FllExporter().output_variable(
-            fl.OutputVariable("output_variable", "an output variable", 0, 1, [fl.Triangle("A")])),
-            """\
+            fl.OutputVariable(name="output_variable",
+                              description="an output variable",
+                              minimum=0, maximum=1,
+                              terms=[fl.Triangle("A")])), """\
 OutputVariable: output_variable
   description: an output variable
   enabled: true
@@ -96,8 +100,8 @@ OutputVariable: output_variable
 
     def test_rule_block(self) -> None:
         self.assertEqual(fl.FllExporter().rule_block(
-            fl.RuleBlock("rb", "a ruleblock", [fl.Rule.parse("if a then z")])),
-            """\
+            fl.RuleBlock(name="rb", description="a ruleblock",
+                         rules=[fl.Rule.parse("if a then z")])), """\
 RuleBlock: rb
   description: a ruleblock
   enabled: true
@@ -132,6 +136,7 @@ RuleBlock: rb
 
 class TestPythonExporter(unittest.TestCase):
 
+    @unittest.skip("Re-enable after test coverage improved independently")
     def test_py(self) -> None:
         import concurrent.futures
         import logging

@@ -188,7 +188,7 @@ class FllExporter(Exporter):
 
 class PythonExporter(Exporter):
 
-    def __init__(self, indent: str = "    "):
+    def __init__(self, indent: str = "    ") -> None:
         self.indent = indent
 
     def to_string(self, instance: object) -> str:
@@ -196,13 +196,11 @@ class PythonExporter(Exporter):
         if isinstance(instance, Engine):
             return self.engine(instance)
 
-        from .variable import InputVariable, OutputVariable, Variable
+        from .variable import InputVariable, OutputVariable
         if isinstance(instance, InputVariable):
             return self.input_variable(instance)
         if isinstance(instance, OutputVariable):
             return self.output_variable(instance)
-        if isinstance(instance, Variable):
-            return self.variable(instance)
 
         from .term import Term
         if isinstance(instance, Term):

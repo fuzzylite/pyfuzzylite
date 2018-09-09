@@ -50,8 +50,14 @@ class TestVariable(unittest.TestCase):
                 "  lock-range: false"
             ]))
         VariableAssert(self,
-                       fl.Variable("name", "description", -1.0, 1.0,
-                                   [fl.Triangle('A', -1.0, 1.0), fl.Triangle('B', -10.0, 10.0)])) \
+                       fl.Variable(name="name",
+                                   description="description",
+                                   minimum=-1.0,
+                                   maximum=1.0,
+                                   terms=[
+                                       fl.Triangle('A', -1.0, 1.0),
+                                       fl.Triangle('B', -10.0, 10.0)
+                                   ])) \
             .exports_fll(
             "\n".join([
                 "Variable: name",
@@ -84,10 +90,15 @@ class TestVariable(unittest.TestCase):
         self.assertEqual(variable.value, maximum)
 
     def test_fuzzify(self) -> None:
-        VariableAssert(self, fl.Variable("name", "description", -1.0, 1.0,
-                                         [fl.Triangle('Low', -1.0, -1.0, 0.0),
-                                          fl.Triangle('Medium', -0.5, 0.0, 0.5),
-                                          fl.Triangle('High', 0.0, 1.0, 1.0)])) \
+        VariableAssert(self, fl.Variable(name="name",
+                                         description="description",
+                                         minimum=-1.0,
+                                         maximum=1.0,
+                                         terms=[
+                                             fl.Triangle('Low', -1.0, -1.0, 0.0),
+                                             fl.Triangle('Medium', -0.5, 0.0, 0.5),
+                                             fl.Triangle('High', 0.0, 1.0, 1.0)
+                                         ])) \
             .fuzzy_values(
             {-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
              -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
@@ -106,7 +117,11 @@ class TestVariable(unittest.TestCase):
         low, medium, high = (fl.Triangle('Low', -1.0, -.5, 0.0),
                              fl.Triangle('Medium', -0.5, 0.0, 0.5),
                              fl.Triangle('High', 0.0, .5, 1.0))
-        VariableAssert(self, fl.Variable("name", "description", -1.0, 1.0, [low, medium, high])) \
+        VariableAssert(self, fl.Variable(name="name",
+                                         description="description",
+                                         minimum=-1.0,
+                                         maximum=1.0,
+                                         terms=[low, medium, high])) \
             .highest_memberships(
             {-1.00: (0.0, None),
              -0.75: (0.5, low),
@@ -146,9 +161,14 @@ class TestInputVariable(unittest.TestCase):
                                     "  range: -inf inf",
                                     "  lock-range: false"
                                     ]))
-        InputVariableAssert(self, fl.InputVariable("name", "description", -1.0, 1.0,
-                                                   [fl.Triangle('A', -1.0, 1.0),
-                                                    fl.Triangle('B', -10.0, 10.0)])) \
+        InputVariableAssert(self, fl.InputVariable(name="name",
+                                                   description="description",
+                                                   minimum=-1.0,
+                                                   maximum=1.0,
+                                                   terms=[
+                                                       fl.Triangle('A', -1.0, 1.0),
+                                                       fl.Triangle('B', -10.0, 10.0)
+                                                   ])) \
             .exports_fll("\n".join(["InputVariable: name",
                                     "  description: description",
                                     "  enabled: true",
@@ -159,10 +179,15 @@ class TestInputVariable(unittest.TestCase):
                                     ]))
 
     def test_fuzzy_value(self) -> None:
-        InputVariableAssert(self, fl.InputVariable("name", "description", -1.0, 1.0,
-                                                   [fl.Triangle('Low', -1.0, -1.0, 0.0),
-                                                    fl.Triangle('Medium', -0.5, 0.0, 0.5),
-                                                    fl.Triangle('High', 0.0, 1.0, 1.0)])) \
+        InputVariableAssert(self, fl.InputVariable(name="name",
+                                                   description="description",
+                                                   minimum=-1.0,
+                                                   maximum=1.0,
+                                                   terms=[
+                                                       fl.Triangle('Low', -1.0, -1.0, 0.0),
+                                                       fl.Triangle('Medium', -0.5, 0.0, 0.5),
+                                                       fl.Triangle('High', 0.0, 1.0, 1.0)
+                                                   ])) \
             .fuzzy_values({-1.00: "1.000/Low + 0.000/Medium + 0.000/High",
                            -0.50: "0.500/Low + 0.000/Medium + 0.000/High",
                            -0.25: "0.250/Low + 0.500/Medium + 0.000/High",
@@ -207,9 +232,14 @@ class TestOutputVariable(unittest.TestCase):
                                     "  default: nan",
                                     "  lock-previous: false"
                                     ]))
-        OutputVariableAssert(self, fl.OutputVariable("name", "description", -1.0, 1.0,
-                                                     [fl.Triangle('A', -1.0, 1.0),
-                                                      fl.Triangle('B', -10.0, 10.0)])) \
+        OutputVariableAssert(self, fl.OutputVariable(name="name",
+                                                     description="description",
+                                                     minimum=-1.0,
+                                                     maximum=1.0,
+                                                     terms=[
+                                                         fl.Triangle('A', -1.0, 1.0),
+                                                         fl.Triangle('B', -10.0, 10.0)
+                                                     ])) \
             .exports_fll("\n".join(["OutputVariable: name",
                                     "  description: description",
                                     "  enabled: true",
@@ -228,8 +258,11 @@ class TestOutputVariable(unittest.TestCase):
                              fl.Triangle('Medium', -0.5, 0.0, 0.5),
                              fl.Triangle('High', 0.0, 1.0, 1.0)]
         OutputVariableAssert(self,
-                             fl.OutputVariable("name", "description", -1.0, 1.0,
-                                               [low, medium, high])) \
+                             fl.OutputVariable(name="name",
+                                               description="description",
+                                               minimum=-1.0,
+                                               maximum=1.0,
+                                               terms=[low, medium, high])) \
             .activated_values({tuple(): "0.000/Low + 0.000/Medium + 0.000/High",
                                tuple([fl.Activated(low, 0.5)]):
                                    "0.500/Low + 0.000/Medium + 0.000/High",
@@ -242,7 +275,11 @@ class TestOutputVariable(unittest.TestCase):
         low, medium, high = [fl.Triangle('Low', -1.0, -1.0, 0.0),
                              fl.Triangle('Medium', -0.5, 0.0, 0.5),
                              fl.Triangle('High', 0.0, 1.0, 1.0)]
-        variable = fl.OutputVariable("name", "description", -1.0, 1.0, [low, medium, high])
+        variable = fl.OutputVariable(name="name",
+                                     description="description",
+                                     minimum=-1.0,
+                                     maximum=1.0,
+                                     terms=[low, medium, high])
         variable.value = 0.0
         variable.previous_value = -1.0
         variable.fuzzy.terms.extend([fl.Activated(term, 0.5) for term in variable.terms])
@@ -274,7 +311,11 @@ class TestOutputVariable(unittest.TestCase):
         low, medium, high = [fl.Triangle('Low', -1.0, -1.0, 0.0),
                              fl.Triangle('Medium', -0.5, 0.0, 0.5),
                              fl.Triangle('High', 0.0, 1.0, 1.0)]
-        variable = fl.OutputVariable("name", "description", -1.0, 1.0, [low, medium, high])
+        variable = fl.OutputVariable(name="name",
+                                     description="description",
+                                     minimum=-1.0,
+                                     maximum=1.0,
+                                     terms=[low, medium, high])
         variable.default_value = 0.123
         variable.enabled = False
         variable.value = 0.0
