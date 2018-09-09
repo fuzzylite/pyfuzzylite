@@ -15,10 +15,35 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import glob
+import io
+import os
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import fuzzylite as fl
+
+
+class TestExporter(unittest.TestCase):
+
+    def test_class_name(self) -> None:
+        self.assertEqual(fl.Exporter().class_name, "Exporter")
+
+    def test_to_string(self) -> None:
+        self.assertRaises(fl.Exporter().to_string(None), ValueError)
+
+    def test_to_file(self) -> None:
+        exporter = fl.Exporter()
+        exporter.to_string = MagicMock(return_value="MagicMock Test")
+        path = tempfile.mkstemp(text=True)[1]
+
+        exporter.to_file(path, object())
+
+        with io.open(path, "r") as exported:
+            self.assertEqual("MagicMock Test", exported.read())
+
+        os.remove(path)
 
 
 class TestFllExporter(unittest.TestCase):
