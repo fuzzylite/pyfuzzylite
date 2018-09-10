@@ -95,74 +95,79 @@ class FllExporter(Exporter):
     def engine(self, engine: 'Engine') -> str:
         result = [f"Engine: {engine.name}"]
         if engine.description:
-            result.append(f"{self.indent}description: {engine.description}")
+            result += [f"{self.indent}description: {engine.description}"]
         for input_variable in engine.input_variables:
-            result.append(self.input_variable(input_variable))
+            result += [self.input_variable(input_variable)]
         for output_variable in engine.output_variables:
-            result.append(self.output_variable(output_variable))
+            result += [self.output_variable(output_variable)]
         for rule_block in engine.rule_blocks:
-            result.append(self.rule_block(rule_block))
+            result += [self.rule_block(rule_block)]
+        result += ['']
         return self.separator.join(result)
 
     def variable(self, v: 'Variable') -> str:
         result = [f"Variable: {v.name}"]
         if v.description:
-            result.append(f"{self.indent}description: {v.description}")
-        result.extend([
+            result += [f"{self.indent}description: {v.description}"]
+        result += [
             f"{self.indent}enabled: {str(v.enabled).lower()}",
             f"{self.indent}range: {' '.join([Op.str(v.minimum), Op.str(v.maximum)])}",
-            f"{self.indent}lock-range: {str(v.lock_range).lower()}"])
+            f"{self.indent}lock-range: {str(v.lock_range).lower()}"
+        ]
         if v.terms:
-            result.extend(f"{self.indent}{self.term(term)}" for term in v.terms)
+            result += [f"{self.indent}{self.term(term)}" for term in v.terms]
         return self.separator.join(result)
 
     def input_variable(self, iv: 'InputVariable') -> str:
         result = [f"InputVariable: {iv.name}"]
         if iv.description:
-            result.append(f"{self.indent}description: {iv.description}")
-        result.extend([
+            result += [f"{self.indent}description: {iv.description}"]
+        result += [
             f"{self.indent}enabled: {str(iv.enabled).lower()}",
             f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
-            f"{self.indent}lock-range: {str(iv.lock_range).lower()}"])
+            f"{self.indent}lock-range: {str(iv.lock_range).lower()}"
+        ]
         if iv.terms:
-            result.extend(f"{self.indent}{self.term(term)}" for term in iv.terms)
+            result += [f"{self.indent}{self.term(term)}" for term in iv.terms]
         return self.separator.join(result)
 
     def output_variable(self, ov: 'OutputVariable') -> str:
         result = [f"OutputVariable: {ov.name}"]
         if ov.description:
-            result.append(f"{self.indent}description: {ov.description}")
-        result.extend([
+            result += [f"{self.indent}description: {ov.description}"]
+        result += [
             f"{self.indent}enabled: {str(ov.enabled).lower()}",
             f"{self.indent}range: {' '.join([Op.str(ov.minimum), Op.str(ov.maximum)])}",
             f"{self.indent}lock-range: {str(ov.lock_range).lower()}",
             f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
             f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
             f"{self.indent}default: {Op.str(ov.default_value)}",
-            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}"])
+            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}"
+        ]
         if ov.terms:
-            result.extend(f"{self.indent}{self.term(term)}" for term in ov.terms)
+            result += [f"{self.indent}{self.term(term)}" for term in ov.terms]
         return self.separator.join(result)
 
     def rule_block(self, rb: 'RuleBlock') -> str:
         result = [f"RuleBlock: {rb.name}"]
         if rb.description:
-            result.append(f"{self.indent}description: {rb.description}")
-        result.extend([
+            result += [f"{self.indent}description: {rb.description}"]
+        result += [
             f"{self.indent}enabled: {str(rb.enabled).lower()}",
             f"{self.indent}conjunction: {self.norm(rb.conjunction)}",
             f"{self.indent}disjunction: {self.norm(rb.disjunction)}",
             f"{self.indent}implication: {self.norm(rb.implication)}",
-            f"{self.indent}activation: {self.activation(rb.activation)}"])
+            f"{self.indent}activation: {self.activation(rb.activation)}"
+        ]
         if rb.rules:
-            result.extend(f"{self.indent}{self.rule(rule)}" for rule in rb.rules)
+            result += [f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
         return self.separator.join(result)
 
     def term(self, term: 'Term') -> str:
         result = ["term:", Op.as_identifier(term.name), term.class_name]
         parameters = term.parameters()
         if parameters:
-            result.append(parameters)
+            result += [parameters]
         return " ".join(result)
 
     def norm(self, norm: Optional['Norm']) -> str:
@@ -177,9 +182,9 @@ class FllExporter(Exporter):
         from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
         result = [defuzzifier.class_name]
         if isinstance(defuzzifier, IntegralDefuzzifier):
-            result.append(str(defuzzifier.resolution))
+            result += [str(defuzzifier.resolution)]
         elif isinstance(defuzzifier, WeightedDefuzzifier):
-            result.append(defuzzifier.type.name)
+            result += [defuzzifier.type.name]
         return " ".join(result)
 
     def rule(self, rule: 'Rule') -> str:
@@ -358,9 +363,9 @@ class FldExporter(Exporter):
     def header(self, engine: 'Engine') -> str:
         result: List[str] = []
         if self.input_values:
-            result.extend(iv.name for iv in engine.input_variables)
+            result += [iv.name for iv in engine.input_variables]
         if self.output_values:
-            result.extend(ov.name for ov in engine.output_variables)
+            result += [ov.name for ov in engine.output_variables]
         return self.separator.join(result)
 
     def to_string(self, instance: object) -> str:
@@ -458,7 +463,6 @@ class FldExporter(Exporter):
         engine.process()
 
         if self.output_values:
-            for ov in engine.output_variables:
-                values.append(Op.str(ov.value))
+            values.extend(Op.str(ov.value) for ov in engine.output_variables)
 
         writer.writelines(self.separator.join(values) + "\n")

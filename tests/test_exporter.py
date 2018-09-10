@@ -78,7 +78,7 @@ class TestFllExporter(unittest.TestCase):
             "\tconjunction: none; "
             "\tdisjunction: none; "
             "\timplication: none; "
-            "\tactivation: none")
+            "\tactivation: none; ")
 
     def test_engine(self) -> None:
         engine = fl.Engine("engine", "an engine",
@@ -130,7 +130,7 @@ RuleBlock: rb
   disjunction: none
   implication: none
   activation: none
-  rule: if a then z\
+  rule: if a then z
 """)
 
     def test_variable(self) -> None:
@@ -144,8 +144,7 @@ Variable: variable
   enabled: true
   range: 0 1
   lock-range: false
-  term: A Triangle nan nan nan\
-""")
+  term: A Triangle nan nan nan""")
 
     def test_input_variable(self) -> None:
         variable = fl.InputVariable(name="input_variable",
@@ -160,8 +159,7 @@ InputVariable: input_variable
   enabled: true
   range: 0 1
   lock-range: false
-  term: A Triangle nan nan nan\
-""")
+  term: A Triangle nan nan nan""")
 
     def test_output_variable(self) -> None:
         variable = fl.OutputVariable(name="output_variable",
@@ -180,8 +178,7 @@ OutputVariable: output_variable
   defuzzifier: none
   default: nan
   lock-previous: false
-  term: A Triangle nan nan nan\
-""")
+  term: A Triangle nan nan nan""")
 
     def test_rule_block(self) -> None:
         rb = fl.RuleBlock(name="rb", description="a rule block",
@@ -196,8 +193,7 @@ RuleBlock: rb
   disjunction: none
   implication: none
   activation: none
-  rule: if a then z\
-""")
+  rule: if a then z""")
 
     def test_term(self) -> None:
         term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
@@ -454,7 +450,7 @@ fl.RuleBlock(
             fl.PythonExporter().to_string(object())
 
 
-class TestFldExporter(unittest.TestCase):
+class TestExporters(unittest.TestCase):
 
     @unittest.skip("Re-enable after test coverage improved independently")
     def test_from_scope(self) -> None:
@@ -465,9 +461,11 @@ class TestFldExporter(unittest.TestCase):
 
         fl.lib.decimals = 3
 
-        files = list(glob.iglob('examples/terms/*.fll', recursive=True))
+        import examples
+        terms = next(iter(examples.__path__)) + "/terms"  # type: ignore
+        files = list(glob.iglob(terms + '/*.fll', recursive=True))
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(TestFldExporter.export, files)
+            executor.map(TestExporters.export, files)
 
         self.assertEqual(fl.lib.decimals, 3)
 
@@ -478,17 +476,27 @@ class TestFldExporter(unittest.TestCase):
 
         fl.lib.decimals = 9
         importer = fl.FllImporter()
-        fll_exporter = fl.FllExporter()
-        fld_exporter = fl.FldExporter()
+        exporters = [
+            fl.FllExporter(), fl.PythonExporter(),  # fl.FldExporter()
+        ]
 
         with io.open(path, 'r') as file:
-            import_fll = "".join(file.readlines())
+            import_fll = file.read()
             engine = importer.from_string(import_fll)
             file_name = file.name[file.name.rfind('/'):file.name.rfind('.')]
-            fll_exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
-            start = time.time()
-            fld_exporter.to_file_from_scope(Path("/tmp/fl/" + file_name + ".fld"), engine, 100_000)
-            fl.lib.logger.info(str(path) + f".fld\t{time.time() - start}")
+            for exporter in exporters:
+                start = time.time()
+                if isinstance(exporter, fl.FldExporter):
+                    exporter.to_file_from_scope(
+                        Path("/tmp/fl/" + file_name + ".fld"), engine, 100_000)
+
+                elif isinstance(exporter, fl.FllExporter):
+                    exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
+
+                elif isinstance(exporter, fl.PythonExporter):
+                    exporter.to_file(Path("/tmp/fl/" + file_name + ".py"), engine)
+
+                fl.lib.logger.info(str(path) + f".fld\t{time.time() - start}")
 
 
 if __name__ == '__main__':

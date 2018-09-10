@@ -45,10 +45,8 @@ steer_away = fl.RuleBlock(
     implication=fl.Minimum(),
     activation=fl.General(),
     rules=[
-        fl.Rule.parse(rule, engine) for rule in [
-            "if obstacle is left then steer is right",
-            "if obstacle is right then steer is left"
-        ]
+        fl.Rule.parse("if obstacle is left then steer is right"),
+        fl.Rule.parse("if obstacle is right then steer is left")
     ]
 )
 engine.rule_blocks = [steer_away]
