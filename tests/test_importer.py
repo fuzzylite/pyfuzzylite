@@ -284,7 +284,7 @@ RuleBlock: steer_away
         with self.assertRaisesRegex(SyntaxError, re.escape(
                 "factory manager does not contain a factory named 'variable' "
                 "to construct objects of type '<class 'fuzzylite.variable.Variable'>'")):
-            fl.FllImporter().component(fl.Variable, """Variable: Invalid""")
+            fl.FllImporter().component(fl.Variable, """Variable: Invalid""")  # type: ignore
 
 
 class TestFllImporterBatch(unittest.TestCase):
