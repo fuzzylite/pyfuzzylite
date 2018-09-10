@@ -14,18 +14,18 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-import typing
 from pathlib import Path
 from typing import List, Optional, Tuple, Type, TypeVar, Union
 
-if typing.TYPE_CHECKING:
-    from .activation import Activation  # noqa F401
-    from .defuzzifier import Defuzzifier  # noqa F401
-    from .engine import Engine  # noqa F401
-    from .norm import SNorm, TNorm  # noqa F401
-    from .rule import Rule, RuleBlock  # noqa F401
-    from .term import Term
-    from .variable import InputVariable, OutputVariable
+from .activation import Activation
+from .defuzzifier import Defuzzifier
+from .engine import Engine
+from .factory import ConstructionFactory
+from .norm import SNorm, TNorm
+from .operation import Op
+from .rule import Rule, RuleBlock
+from .term import Term
+from .variable import InputVariable, OutputVariable
 
 
 class Importer(object):
@@ -41,7 +41,7 @@ class Importer(object):
         if isinstance(path, str):
             path = Path(path)
         with path.open() as fll:
-            return self.from_string("\n".join(fll.readlines()))
+            return self.from_string(fll.read())
 
 
 class FllImporter(Importer):
@@ -50,11 +50,7 @@ class FllImporter(Importer):
     def __init__(self, separator: str = '\n') -> None:
         self.separator = separator
 
-    def from_string(self, fll: str) -> 'Engine':
-        return self.engine(fll)
-
     def _process(self, component: str, block: List[str], engine: 'Engine') -> None:
-        from .operation import Op
         if component == "Engine":
             for line in block:
                 line = Op.strip_comments(line)
@@ -80,10 +76,10 @@ class FllImporter(Importer):
         else:
             raise SyntaxError(f"'{key}' is not a valid component of the FuzzyLite Language")
 
-    def engine(self, fll: str) -> 'Engine':
-        from .operation import Op
-        from .engine import Engine
+    def from_string(self, fll: str) -> 'Engine':
+        return self.engine(fll)
 
+    def engine(self, fll: str) -> 'Engine':
         engine = Engine()
         component = ""
         block: List[str] = []
@@ -106,8 +102,6 @@ class FllImporter(Importer):
         return engine
 
     def input_variable(self, fll: str, engine: Optional['Engine'] = None) -> 'InputVariable':
-        from .operation import Op
-        from .variable import InputVariable
 
         iv = InputVariable()
         for line in fll.split(self.separator):
@@ -133,9 +127,6 @@ class FllImporter(Importer):
         return iv
 
     def output_variable(self, fll: str, engine: Optional['Engine'] = None) -> 'OutputVariable':
-        from .operation import Op
-        from .variable import OutputVariable
-
         ov = OutputVariable()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -167,25 +158,7 @@ class FllImporter(Importer):
         ov.name = Op.as_identifier(ov.name)
         return ov
 
-    def term(self, fll: str, engine: Optional['Engine'] = None) -> 'Term':
-        from . import lib
-        from .operation import Op
-
-        values = self.extract_value(fll, "term").split(maxsplit=2)
-        if len(values) < 2:
-            raise SyntaxError(f"expected format 'term: name Term [parameters]', but got '{fll}'")
-
-        term = lib.factory_manager.term.construct(values[1])
-        term.name = Op.as_identifier(values[0])
-        term.update_reference(engine)
-        if len(values) > 2:
-            term.configure(values[2])
-        return term
-
-    def rule_block(self, fll: str, engine: 'Engine') -> 'RuleBlock':
-        from .operation import Op
-        from .rule import RuleBlock
-
+    def rule_block(self, fll: str, engine: Optional['Engine'] = None) -> 'RuleBlock':
         rb = RuleBlock()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -214,35 +187,36 @@ class FllImporter(Importer):
                 raise SyntaxError(f"'{key}' is not a valid component of '{rb.__class__}'")
         return rb
 
-    def rule(self, fll: str, engine: 'Engine') -> Optional['Rule']:
-        from .operation import Op
-        from .rule import Rule  # noqa F811
+    def term(self, fll: str, engine: Optional['Engine'] = None) -> 'Term':
+        from . import lib
 
-        fll = Op.strip_comments(fll)
-        if not fll:
-            return None
-        rule = Rule()
-        rule.text = self.extract_value(fll, "rule")
-        rule.load(engine)
-        return rule
+        values = self.extract_value(fll, "term").split(maxsplit=2)
+        if len(values) < 2:
+            raise SyntaxError(f"expected format 'term: name Term [parameters]', but got '{fll}'")
+
+        term = lib.factory_manager.term.construct(values[1])
+        term.name = Op.as_identifier(values[0])
+        term.update_reference(engine)
+        if len(values) > 2:
+            term.configure(values[2])
+        return term
+
+    def rule(self, fll: str, engine: Optional['Engine'] = None) -> Optional['Rule']:
+        return Rule.parse(self.extract_value(fll, "rule"), engine)
 
     def tnorm(self, fll: str) -> Optional['TNorm']:
-        from .norm import TNorm  # noqa F811
         return self.component(TNorm, fll)  # type: ignore
 
     def snorm(self, fll: str) -> Optional['SNorm']:
-        from .norm import SNorm  # noqa F811
         return self.component(SNorm, fll)  # type: ignore
 
     def activation(self, fll: str) -> Optional['Activation']:
-        from .activation import Activation  # noqa F811
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
         return self.component(Activation, name, parameters)  # type: ignore
 
     def defuzzifier(self, fll: str) -> Optional['Defuzzifier']:
-        from .defuzzifier import Defuzzifier  # noqa F811
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
@@ -252,8 +226,6 @@ class FllImporter(Importer):
 
     def component(self, cls: Type[T], fll: str, parameters: Optional[str] = None) -> Optional[T]:
         from . import lib
-        from .operation import Op
-        from .factory import ConstructionFactory
 
         fll = Op.strip_comments(fll)
         if not fll or fll == "none":
@@ -271,7 +243,6 @@ class FllImporter(Importer):
         return result
 
     def range(self, fll: str) -> Tuple[float, float]:
-        from .operation import Op
         values = fll.split()
         if len(values) != 2:
             raise SyntaxError(f"expected range of two values, but got {values}")
@@ -285,8 +256,7 @@ class FllImporter(Importer):
         raise SyntaxError(f"expected boolean in {['true', 'false']}, but got '{fll}'")
 
     def extract_key_value(self, fll: str, component: Optional[str] = None) -> Tuple[str, str]:
-        from .operation import Op
-        parts = Op.strip_comments(fll).split(":", maxsplit=2)
+        parts = Op.strip_comments(fll).split(":", maxsplit=1)
         if len(parts) != 2 or (component and parts[0] != component):
             key = component if component else 'key'
             raise SyntaxError(f"expected '{key}: value' definition, but found '{fll}'")

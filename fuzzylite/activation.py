@@ -38,6 +38,13 @@ class Activation(object):
     def configure(self, parameters: str) -> None:
         pass
 
+    def __str__(self) -> str:
+        result = self.class_name
+        parameters = self.parameters()
+        if parameters:
+            result += f" {parameters}"
+        return result
+
 
 class General(Activation):
     __slots__ = ()
