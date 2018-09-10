@@ -54,8 +54,6 @@ class FllImporter(Importer):
         if component == "Engine":
             for line in block:
                 line = Op.strip_comments(line)
-                if not line:
-                    continue
 
                 key, value = self.extract_key_value(line)
                 if key == "Engine":
@@ -73,8 +71,6 @@ class FllImporter(Importer):
         elif component == "RuleBlock":
             rule_block = self.rule_block(self.separator.join(block), engine)
             engine.rule_blocks.append(rule_block)
-        else:
-            raise SyntaxError(f"'{key}' is not a valid component of the FuzzyLite Language")
 
     def from_string(self, fll: str) -> 'Engine':
         return self.engine(fll)
