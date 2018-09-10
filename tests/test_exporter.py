@@ -304,7 +304,7 @@ rb = fl.RuleBlock(
     activation=None,
     rules=[fl.Rule.parse("if a then z")]
 )
-engine.rule_blocks = [rb]\
+engine.rule_blocks = [rb]
 """)
 
     def test_input_variable(self) -> None:
