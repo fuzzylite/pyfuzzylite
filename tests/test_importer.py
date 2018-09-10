@@ -91,8 +91,12 @@ class TestFllImporter(unittest.TestCase):
         self.assertEqual(BELL_FLL, str(engine))
 
     def test_engine(self) -> None:
-        engine = fl.FllImporter().engine(BELL_FLL)
-        self.assertEqual(BELL_FLL, str(engine))
+        engine = """\
+Engine: Bell
+
+  description: obstacle avoidance for self-driving cars
+"""
+        self.assertEqual(engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine)))
 
     def test_input_variable(self) -> None:
         iv = """\
@@ -101,9 +105,10 @@ InputVariable: obstacle
   enabled: true
   range: 0.000 1.000
   lock-range: false
+
   term: left Triangle 0.000 0.333 0.666
   term: right Triangle 0.333 0.666 1.000"""
-        self.assertEqual(iv, str(fl.FllImporter().input_variable(iv)))
+        self.assertEqual(iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv)))
 
     def test_output_variable(self) -> None:
         ov = """\
@@ -116,9 +121,10 @@ OutputVariable: steer
   defuzzifier: Centroid 100
   default: nan
   lock-previous: false
+
   term: left Bell 0.333 0.167 3.000
   term: right Bell 0.666 0.167 3.000"""
-        self.assertEqual(ov, str(fl.FllImporter().output_variable(ov)))
+        self.assertEqual(ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov)))
 
     def test_rule_block(self) -> None:
         rb = """\
@@ -129,9 +135,10 @@ RuleBlock: steer_away
   disjunction: none
   implication: Minimum
   activation: General
+
   rule: if obstacle is left then steer is right
   rule: if obstacle is right then steer is left"""
-        self.assertEqual(rb, str(fl.FllImporter().rule_block(rb)))
+        self.assertEqual(rb.replace("\n\n", "\n"), str(fl.FllImporter().rule_block(rb)))
 
     def test_term(self) -> None:
         term = "term: left Triangle 0.000 0.333 0.666"
@@ -141,6 +148,10 @@ RuleBlock: steer_away
         self.assertEqual(term, str(fl.FllImporter().term(term)))
         self.assertEqual(None, cast(fl.Function, fl.FllImporter().term(term)).engine)
         self.assertEqual(engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine)
+
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "expected format 'term: name Term [parameters]', but got 'term: name'")):
+            fl.FllImporter().term("term: name")
 
     def test_rule(self) -> None:
         rule = "rule: if obstacle is left then steer is right"
@@ -158,8 +169,8 @@ RuleBlock: steer_away
         self.assertEqual(None, fl.FllImporter().tnorm(""))
         self.assertEqual(None, fl.FllImporter().tnorm("none"))
 
-        with self.assertRaisesRegex(ValueError,
-                                    "constructor of 'AlgebraicSum' not found in TNormFactory"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "constructor of 'AlgebraicSum' not found in TNormFactory")):
             fl.FllImporter().tnorm("AlgebraicSum")
 
     def test_snorm(self) -> None:
@@ -169,8 +180,8 @@ RuleBlock: steer_away
         self.assertEqual(None, fl.FllImporter().snorm(""))
         self.assertEqual(None, fl.FllImporter().snorm("none"))
 
-        with self.assertRaisesRegex(ValueError,
-                                    "constructor of 'AlgebraicProduct' not found in SNormFactory"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "constructor of 'AlgebraicProduct' not found in SNormFactory")):
             fl.FllImporter().snorm("AlgebraicProduct")
 
     def test_activation(self) -> None:
@@ -181,8 +192,8 @@ RuleBlock: steer_away
 
         self.assertEqual(None, fl.FllImporter().activation("none"))
 
-        with self.assertRaisesRegex(ValueError,
-                                    "constructor of 'Invalid' not found in ActivationFactory"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "constructor of 'Invalid' not found in ActivationFactory")):
             fl.FllImporter().activation("Invalid")
 
     def test_defuzzifier(self) -> None:
@@ -193,14 +204,17 @@ RuleBlock: steer_away
 
         self.assertEqual(None, fl.FllImporter().defuzzifier("none"))
 
-        with self.assertRaisesRegex(ValueError,
-                                    "constructor of 'Invalid' not found in DefuzzifierFactory"):
+        with self.assertRaisesRegex(ValueError, re.escape(
+                "constructor of 'Invalid' not found in DefuzzifierFactory")):
             fl.FllImporter().defuzzifier("Invalid")
 
     def test_range(self) -> None:
         self.assertEqual((1.0, 1.0), fl.FllImporter().range("1.0000 1.0000"))
         self.assertEqual((-fl.inf, fl.inf), fl.FllImporter().range("-inf\tinf"))
         self.assertEqual(str((fl.nan, fl.nan)), str(fl.FllImporter().range("-nan nan")))
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "expected range of two values, but got ['1', '2', '3']")):
+            fl.FllImporter().range("1 2 3")
 
     def test_boolean(self) -> None:
         self.assertEqual(True, fl.FllImporter().boolean("true"))
@@ -249,6 +263,28 @@ RuleBlock: steer_away
                 "expected 'DESCRIPTION: value' definition, "
                 "but found 'description: value1 value2'")):
             fl.FllImporter().extract_value("description: value1 value2", "DESCRIPTION")
+
+    def test_invalid_components(self) -> None:
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "'invalid' is not a valid component of 'Engine'")):
+            fl.FllImporter().engine("""Engine: name\n  invalid: component""")
+
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "'invalid' is not a valid component of 'InputVariable'")):
+            fl.FllImporter().input_variable("""InputVariable: name\n  invalid: component""")
+
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "'invalid' is not a valid component of 'OutputVariable'")):
+            fl.FllImporter().output_variable("""OutputVariable: name\n  invalid: component""")
+
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "'invalid' is not a valid component of 'RuleBlock'")):
+            fl.FllImporter().rule_block("""RuleBlock: name\n  invalid: component""")
+
+        with self.assertRaisesRegex(SyntaxError, re.escape(
+                "factory manager does not contain a factory named 'variable' "
+                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'")):
+            fl.FllImporter().component(fl.Variable, """Variable: Invalid""")
 
 
 class TestFllImporterBatch(unittest.TestCase):

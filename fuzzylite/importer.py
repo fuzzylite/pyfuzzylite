@@ -122,7 +122,7 @@ class FllImporter(Importer):
             elif key == "term":
                 iv.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(f"'{key}' is not a valid component of '{iv.__class__}'")
+                raise SyntaxError(f"'{key}' is not a valid component of '{iv.__class__.__name__}'")
         iv.name = Op.as_identifier(iv.name)
         return iv
 
@@ -154,7 +154,7 @@ class FllImporter(Importer):
             elif key == "term":
                 ov.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(f"'{key}' is not a valid component of '{ov.__class__}'")
+                raise SyntaxError(f"'{key}' is not a valid component of '{ov.__class__.__name__}'")
         ov.name = Op.as_identifier(ov.name)
         return ov
 
@@ -184,7 +184,7 @@ class FllImporter(Importer):
                 if rule:
                     rb.rules.append(rule)
             else:
-                raise SyntaxError(f"'{key}' is not a valid component of '{rb.__class__}'")
+                raise SyntaxError(f"'{key}' is not a valid component of '{rb.__class__.__name__}'")
         return rb
 
     def term(self, fll: str, engine: Optional['Engine'] = None) -> 'Term':
@@ -233,8 +233,8 @@ class FllImporter(Importer):
 
         factory_attr = cls.__name__.lower()
         if not hasattr(lib.factory_manager, factory_attr):
-            raise ValueError(f"factory manager does not contain a factory named '{factory_attr} "
-                             f"to construct objects of type '{cls}'")
+            raise SyntaxError(f"factory manager does not contain a factory named '{factory_attr}' "
+                              f"to construct objects of type '{cls}'")
 
         factory: ConstructionFactory[FllImporter.T] = getattr(lib.factory_manager, factory_attr)
         result = factory.construct(fll)
