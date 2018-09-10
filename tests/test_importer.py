@@ -28,13 +28,16 @@ import fuzzylite as fl
 
 BELL_FLL = """\
 Engine: Bell
+  description: obstacle avoidance for self-driving cars
 InputVariable: obstacle
+  description: location of obstacle relative to vehicle
   enabled: true
   range: 0.000 1.000
   lock-range: false
   term: left Triangle 0.000 0.333 0.666
   term: right Triangle 0.333 0.666 1.000
 OutputVariable: steer
+  description: direction to steer the vehicle to
   enabled: true
   range: 0.000 1.000
   lock-range: false
@@ -44,7 +47,8 @@ OutputVariable: steer
   lock-previous: false
   term: left Bell 0.333 0.167 3.000
   term: right Bell 0.666 0.167 3.000
-RuleBlock: 
+RuleBlock: steer_away
+  description: steer away from obstacles
   enabled: true
   conjunction: none
   disjunction: none
@@ -93,6 +97,7 @@ class TestFllImporter(unittest.TestCase):
     def test_input_variable(self) -> None:
         iv = """\
 InputVariable: obstacle
+  description: location of obstacle relative to vehicle
   enabled: true
   range: 0.000 1.000
   lock-range: false
@@ -103,6 +108,7 @@ InputVariable: obstacle
     def test_output_variable(self) -> None:
         ov = """\
 OutputVariable: steer
+  description: direction to steer the vehicle to
   enabled: true
   range: 0.000 1.000
   lock-range: false
@@ -116,7 +122,8 @@ OutputVariable: steer
 
     def test_rule_block(self) -> None:
         rb = """\
-RuleBlock: 
+RuleBlock: steer_away
+  description: steer away from obstacles
   enabled: true
   conjunction: none
   disjunction: none
@@ -245,44 +252,6 @@ RuleBlock:
 
 
 class TestFllImporterBatch(unittest.TestCase):
-
-    @unittest.skip("Re-enable after test coverage improved independently")
-    def test_from_file(self) -> None:
-        expected = """\
-Engine: Bell
-InputVariable: obstacle
-enabled: true
-range: 0.000000000 1.000000000
-lock-range: false
-term: left Triangle 0.000000000 0.333000000 0.666000000
-term: right Triangle 0.333000000 0.666000000 1.000000000
-OutputVariable: steer
-enabled: true
-range: 0.000000000 1.000000000
-lock-range: false
-aggregation: Maximum
-defuzzifier: Centroid 100
-default: nan
-lock-previous: false
-term: left Bell 0.333000000 0.166500000 3.000000000
-term: right Bell 0.666500000 0.166750000 3.000000000
-RuleBlock: 
-enabled: true
-conjunction: none
-disjunction: none
-implication: Minimum
-activation: General
-rule: if obstacle is left then steer is right
-rule: if obstacle is right then steer is left\
-"""
-        fl.lib.decimals = 9
-        engine = fl.importer.FllImporter().from_file("examples/terms/Bell.fll")
-        self.assertEqual(expected, fl.exporter.FllExporter().to_string(engine))
-
-        from pathlib import Path
-        engine = fl.importer.FllImporter().from_file(Path("examples/terms/Bell.fll"))
-        self.assertEqual(expected, fl.exporter.FllExporter().to_string(engine))
-        fl.lib.decimals = 3
 
     @unittest.skip("Re-enable after test coverage improved independently")
     def test_import_examples(self) -> None:
