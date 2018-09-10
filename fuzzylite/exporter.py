@@ -264,7 +264,7 @@ class PythonExporter(Exporter):
             result += [f"{rb.name} = {self.rule_block(rb)}"]
         result += ["engine.rule_blocks = [%s]" %
                    ", ".join(rb.name for rb in engine.rule_blocks)]
-
+        result += ['']
         return '\n'.join(result)
 
     def input_variable(self, iv: 'InputVariable') -> str:

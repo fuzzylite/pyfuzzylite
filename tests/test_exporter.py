@@ -453,7 +453,7 @@ fl.RuleBlock(
 class TestExporters(unittest.TestCase):
 
     @unittest.skip("Re-enable after test coverage improved independently")
-    def test_from_scope(self) -> None:
+    def test_exporters(self) -> None:
         import concurrent.futures
         import logging
 
