@@ -16,7 +16,7 @@
 """
 
 import unittest
-from typing import Type
+from typing import Dict, List, Type, Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -64,7 +64,7 @@ class TestRuleBlock(unittest.TestCase):
 class TestExpression(unittest.TestCase):
 
     def test_proposition(self) -> None:
-        self.assertEqual(str(fl.Proposition()), "? is ?")
+        self.assertEqual("", str(fl.Proposition()))
 
         proposition = fl.Proposition()
         proposition.variable = fl.Variable("variable")
@@ -73,14 +73,260 @@ class TestExpression(unittest.TestCase):
 
         self.assertEqual("variable is very term", str(proposition))
 
+        proposition = fl.Proposition(fl.Variable("variable"), [fl.Very()], fl.Term("term"))
+        self.assertEqual("variable is very term", str(proposition))
+
     def test_operator(self) -> None:
         self.assertEqual("", fl.Operator().name)
 
         operator = fl.Operator()
         operator.name = "AND"
-        operator.left = fl.Proposition()
-        operator.right = fl.Proposition()
         self.assertEqual("AND", str(operator))
+
+        operator = fl.Operator()
+        operator.name = "OR"
+        operator.left = fl.Proposition(fl.Variable("variable_a"), [fl.Very()], fl.Term("term_a"))
+        operator.right = fl.Proposition(fl.Variable("variable_b"), [fl.Very()], fl.Term("term_b"))
+        self.assertEqual("OR", str(operator))
+
+
+class AssertAntecedent:
+
+    def __init__(self, test: unittest.TestCase, engine: fl.Engine) -> None:
+        self.test = test
+        self.engine = engine
+
+    def can_load_antecedent(self,
+                            text: str,
+                            postfix: Optional[str] = None,
+                            prefix: Optional[str] = None,
+                            infix: Optional[str] = None) -> 'AssertAntecedent':
+        antecedent = fl.Antecedent(text)
+        antecedent.load(self.engine)
+        self.test.assertTrue(antecedent.is_loaded())
+        self.test.assertTrue(postfix or prefix or infix, "expected one of {postfix, prefix, infix}")
+        if postfix:
+            self.test.assertEqual(postfix,
+                                  antecedent.postfix(antecedent.expression))
+        if prefix:
+            self.test.assertEqual(prefix,
+                                  antecedent.prefix(antecedent.expression))
+        if infix:
+            self.test.assertEqual(infix,
+                                  antecedent.infix(antecedent.expression))
+        return self
+
+    def cannot_load_antecedent(self, text: str, exception: Exception, regex: str) -> 'AssertAntecedent':
+        antecedent = fl.Antecedent(text)
+        with self.test.assertRaisesRegex(exception, regex):
+            antecedent.load(self.engine)
+        return self
+
+    def has_activation_degrees(self,
+                               inputs: Dict[fl.Variable, List[float]],
+                               rules: Dict[str, List[float]],
+                               conjunction: Optional[fl.TNorm] = None,
+                               disjunction: Optional[fl.SNorm] = None,
+                               decimal_places: int = 3
+                               ) -> 'AssertAntecedent':
+        self.test.assertTrue(inputs, msg="inputs is empty")
+        self.test.assertTrue(rules, msg="rules is empty")
+
+        index = 0
+        more_values = True
+        while more_values:
+            for input_variable, values in inputs.items():
+                more_values &= index + 1 < len(values)
+                input_variable.value = values[index]
+
+            for text, values in rules.items():
+                antecedent = fl.Antecedent(text)
+                antecedent.load(self.engine)
+                obtained = antecedent.activation_degree(conjunction=conjunction,
+                                                        disjunction=disjunction)
+                expected = values[index]
+                self.test.assertAlmostEqual(expected, obtained, places=decimal_places,
+                                            msg=f"at index {index}")
+            index += 1
+
+        return self
+
+
+class TestAntecedent(unittest.TestCase):
+    SimpleDimmer = """
+Engine: SimpleDimmer
+InputVariable: Ambient
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: DARK Triangle 0.000 0.250 0.500
+  term: MEDIUM Triangle 0.250 0.500 0.750
+  term: BRIGHT Triangle 0.500 0.750 1.000
+OutputVariable: Power
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid 200
+  default: nan
+  lock-previous: false
+  term: LOW Triangle 0.000 0.250 0.500
+  term: MEDIUM Triangle 0.250 0.500 0.750
+  term: HIGH Triangle 0.500 0.750 1.000
+  # rule: if Ambient is DARK then Power is HIGH
+  # rule: if Ambient is MEDIUM then Power is MEDIUM
+  # rule: if Ambient is BRIGHT then Power is LOW
+  """
+
+    def test_loaded(self):
+        antecedent = fl.Antecedent()
+        self.assertFalse(antecedent.is_loaded())
+
+        antecedent.expression = fl.Expression()
+        self.assertTrue(antecedent.is_loaded())
+
+        antecedent.unload()
+        self.assertFalse(antecedent.is_loaded())
+
+    def test_antecedent_load_input_variable(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is DARK", postfix="Ambient is DARK")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is very DARK", postfix="Ambient is very DARK")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is any", postfix="Ambient is any")
+
+    def test_antecedent_load_input_variables_connectors(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Ambient is DARK {fl.Rule.AND} Ambient is BRIGHT", postfix="Ambient is DARK Ambient is BRIGHT and")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Ambient is very DARK {fl.Rule.OR} Ambient is very BRIGHT", postfix="Ambient is very DARK Ambient is very BRIGHT or")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Ambient is any {fl.Rule.AND} Ambient is not any", postfix="Ambient is any Ambient is not any and")
+
+    def test_antecedent_load_output_variables_connectors(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Power is HIGH {fl.Rule.AND} Power is LOW", postfix="Power is HIGH Power is LOW and")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Power is very HIGH {fl.Rule.OR} Power is very LOW", postfix="Power is very HIGH Power is very LOW or")
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            f"Power is any {fl.Rule.AND} Power is not any", "Power is any Power is not any and")
+
+    def test_antecedent_load_fails(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            "", ValueError, "expected the antecedent of a rule, but found none")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            f"Ambient is any {fl.Rule.AND}", SyntaxError, "operator 'and' expects 2 operands, but found 1")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            "InvalidVariable is any", SyntaxError, "expected variable or logical operator, but found 'InvalidVariable'")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            "Ambient isn't", SyntaxError, "expected keyword 'is', but found 'isn't'")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            "Ambient is very invalid", SyntaxError, "expected hedge or term, but found 'invalid'")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            "Ambient is invalid_term", SyntaxError, "expected hedge or term, but found 'invalid_term'")
+
+    def test_antecedent_to_string(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is DARK and Ambient is BRIGHT",
+            postfix="Ambient is DARK Ambient is BRIGHT and",
+            prefix="and Ambient is DARK Ambient is BRIGHT",
+            infix="Ambient is DARK and Ambient is BRIGHT",
+        )
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is DARK and (Ambient is MEDIUM or Ambient is BRIGHT)",
+            postfix="Ambient is DARK Ambient is MEDIUM Ambient is BRIGHT or and",
+            prefix="and Ambient is DARK or Ambient is MEDIUM Ambient is BRIGHT",
+            infix="Ambient is DARK and Ambient is MEDIUM or Ambient is BRIGHT",
+        )
+
+        AssertAntecedent(self, engine).can_load_antecedent(
+            "Ambient is BRIGHT or Ambient is DARK and Ambient is MEDIUM",
+            postfix="Ambient is BRIGHT Ambient is DARK Ambient is MEDIUM and or",
+            prefix="or Ambient is BRIGHT and Ambient is DARK Ambient is MEDIUM",
+            infix="Ambient is BRIGHT or Ambient is DARK and Ambient is MEDIUM",
+        )
+
+    def test_activation_degrees(self):
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is DARK":
+                    [0.0, 0.8, 0.4, 0.0, 0.0, 0.0, 0.0],
+                "Ambient is MEDIUM":
+                    [0.0, 0.0, 0.6, 1.0, 0.6, 0.0, 0.0],
+                "Ambient is BRIGHT":
+                    [0.0, 0.0, 0.0, 0.0, 0.4, 0.8, 0.0],
+            }
+        )
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is very DARK":
+                    [0.0, 0.64, 0.160, 0.0, 0.000, 0.000, 0.0],
+                "Ambient is somewhat MEDIUM":
+                    [0.0, 0.00, 0.775, 1.0, 0.775, 0.000, 0.0],
+                "Ambient is seldom BRIGHT":
+                    [0.0, 0.00, 0.000, 0.0, 0.447, 0.684, 0.0],
+            }
+        )
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is very very DARK":
+                    [0.0, 0.41, 0.026, 0.0, 0.000, 0.000, 0.0],
+                "Ambient is somewhat very MEDIUM":
+                    [0.0, 0.00, 0.600, 1.0, 0.600, 0.000, 0.0],
+                "Ambient is seldom very BRIGHT":
+                    [0.0, 0.00, 0.000, 0.0, 0.283, 0.576, 0.0],
+            }
+        )
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is any":
+                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                "Ambient is not any":
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "Ambient is not not any":
+                    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+            }
+        )
 
 
 class RuleAssert(BaseAssert[fl.Rule]):

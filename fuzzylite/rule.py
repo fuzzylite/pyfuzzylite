@@ -51,15 +51,17 @@ class Proposition(Expression):
     def __str__(self) -> str:
         result = []
 
-        result.append(self.variable.name if self.variable else "?")
+        if self.variable:
+            result.append(self.variable.name)
 
-        result.append(Rule.IS)
+            result.append(Rule.IS)
 
         if self.hedges:
             for hedge in self.hedges:
                 result.append(hedge.name)
 
-        result.append(self.term.name if self.term else "?")
+        if self.term:
+            result.append(self.term.name)
 
         return " ".join(result)
 
@@ -81,8 +83,8 @@ class Operator(Expression):
 class Antecedent(object):
     __slots__ = ["text", "expression"]
 
-    def __init__(self) -> None:
-        self.text: str = ""
+    def __init__(self, text: str = "") -> None:
+        self.text: str = text
         self.expression: Optional[Expression] = None
 
     def __str__(self) -> str:
@@ -269,7 +271,7 @@ class Antecedent(object):
             return str(node)
 
         if isinstance(node, Operator):
-            result: List[str] = [str(node)]
+            result: List[str] = [node.name]
             if node.left:
                 result.append(self.prefix(node.left))
             if node.right:
@@ -279,6 +281,7 @@ class Antecedent(object):
         raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
     def infix(self, node: Optional[Expression] = None) -> str:
+        # TODO: enclose propositions in parentheses
         if not node:
             if self.expression:
                 return self.infix(self.expression)
@@ -291,7 +294,7 @@ class Antecedent(object):
             result: List[str] = []
             if node.left:
                 result.append(self.infix(node.left))
-            result.append(str(node))
+            result.append(node.name)
             if node.right:
                 result.append(self.infix(node.right))
             return " ".join(result)
@@ -313,7 +316,7 @@ class Antecedent(object):
                 result.append(self.postfix(node.left))
             if node.right:
                 result.append(self.postfix(node.right))
-            result.append(str(node))
+            result.append(node.name)
             return " ".join(result)
         raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
