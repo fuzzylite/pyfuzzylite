@@ -90,29 +90,31 @@ class Engine(object):
     def variables(self) -> List[Variable]:
         return [*self.input_variables, *self.output_variables]
 
-    def variable(self, name: str) -> Optional[Variable]:
+    def variable(self, name: str) -> Variable:
         for variable in self.variables:
             if variable.name == name:
                 return variable
-        return None
+        raise ValueError(f"variable '{name}' not found in {v.name for v in self.variables}")
 
-    def input_variable(self, name: str) -> Optional[InputVariable]:
+    def input_variable(self, name: str) -> InputVariable:
         for variable in self.input_variables:
             if variable.name == name:
                 return variable
-        return None
+        raise ValueError(f"input variable '{name}' not found in "
+                         f"{v.name for v in self.input_variables}")
 
-    def output_variable(self, name: str) -> Optional[OutputVariable]:
+    def output_variable(self, name: str) -> OutputVariable:
         for variable in self.output_variables:
             if variable.name == name:
                 return variable
-        return None
+        raise ValueError(f"output variable '{name}' not found in "
+                         f"{v.name for v in self.output_variables}")
 
-    def rule_block(self, name: str) -> Optional[RuleBlock]:
+    def rule_block(self, name: str) -> RuleBlock:
         for block in self.rule_blocks:
             if block.name == name:
                 return block
-        return None
+        raise ValueError(f"rule block '{name}' not found in {r.name for r in self.rule_blocks}")
 
     def restart(self) -> None:
         for input_variable in self.input_variables:
@@ -149,5 +151,5 @@ class Engine(object):
     def is_ready(self) -> Tuple[bool, str]:
         raise NotImplementedError()
 
-    def infer_type(self) -> Tuple[Type, str]:
+    def infer_type(self) -> Tuple['Engine.Type', str]:
         raise NotImplementedError()

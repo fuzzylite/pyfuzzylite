@@ -56,11 +56,11 @@ class Variable(object):
     def __str__(self) -> str:
         return FllExporter().variable(self)
 
-    def term(self, name: str) -> Optional['Term']:
+    def term(self, name: str) -> 'Term':
         for term in self.terms:
             if term.name == name:
                 return term
-        return None
+        raise ValueError(f"term '{name}' not found in {t.name for t in self.terms}")
 
     @property
     def drange(self) -> float:

@@ -187,9 +187,10 @@ class Antecedent(object):
         stack: Deque[Expression] = deque()
 
         proposition: Optional[Proposition] = None
+        variables = {v.name: v for v in engine.variables}
         for token in postfix.split():
             if state & s_variable:
-                variable = engine.variable(token)
+                variable = variables.get(token, None)
                 if variable:
                     proposition = Proposition(variable)
                     stack.append(proposition)
@@ -216,7 +217,8 @@ class Antecedent(object):
                     continue
 
             if state & s_term:
-                term = proposition.variable.term(token)  # type: ignore
+                terms = {t.name: t for t in proposition.variable.terms}  # type: ignore
+                term = terms.get(token, None)
                 if term:
                     proposition.term = term  # type: ignore
                     state = s_variable | s_and_or
