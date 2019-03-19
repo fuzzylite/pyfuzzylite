@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
     from .variable import InputVariable, OutputVariable, Variable
 
 
-class Exporter(object):
+class Exporter:
 
     @property
     def class_name(self) -> str:

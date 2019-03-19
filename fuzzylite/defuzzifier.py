@@ -24,7 +24,7 @@ from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
 
 
-class Defuzzifier(object):
+class Defuzzifier:
 
     @property
     def class_name(self) -> str:

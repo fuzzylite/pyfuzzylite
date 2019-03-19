@@ -28,7 +28,7 @@ from .term import Term
 from .variable import InputVariable, OutputVariable
 
 
-class Importer(object):
+class Importer:
 
     @property
     def class_name(self) -> str:

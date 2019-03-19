@@ -67,10 +67,10 @@ class TestDefuzzifier(unittest.TestCase):
     @unittest.skip("Need to manually compute bisectors of triangles")
     def test_bisector(self) -> None:
         DefuzzifierAssert(self, fl.Bisector()) \
-            .exports_fll("BiSector 100") \
+            .exports_fll("Bisector 100") \
             .has_parameters("100") \
             .configured_as("200") \
-            .exports_fll("BiSector 200")
+            .exports_fll("Bisector 200")
 
         DefuzzifierAssert(self, fl.Bisector()) \
             .defuzzifies(

@@ -21,7 +21,7 @@ from typing import Optional, SupportsFloat, Type, Union
 from .factory import FactoryManager
 
 
-class Library(object):
+class Library:
 
     def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
                  floating_point_type: Type[float] = float,

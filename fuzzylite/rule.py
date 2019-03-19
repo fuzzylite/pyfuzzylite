@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
     from .variable import Variable  # noqa: F401
 
 
-class Expression(object):
+class Expression:
     pass
 
 
@@ -323,7 +323,7 @@ class Antecedent(object):
         raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
 
-class Consequent(object):
+class Consequent:
     __slots__ = ["text", "conclusions"]
 
     def __init__(self) -> None:
@@ -580,7 +580,7 @@ class Rule(object):
         return rule
 
 
-class RuleBlock(object):
+class RuleBlock:
     __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
                  "activation", "rules"]
 

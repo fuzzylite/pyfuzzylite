@@ -30,7 +30,7 @@ if typing.TYPE_CHECKING:
     from .defuzzifier import Defuzzifier  # noqa: F401
 
 
-class Variable(object):
+class Variable:
     __slots__ = ["name", "description", "enabled", "minimum", "maximum", "lock_range", "terms",
                  "_value"]
 

@@ -23,7 +23,9 @@ from .operation import Op
 from .rule import Rule, RuleBlock
 
 
-class Activation(object):
+class Activation:
+
+    # TODO: __slots__ = () ?
 
     @property
     def class_name(self) -> str:

@@ -27,7 +27,7 @@ from .rule import RuleBlock
 from .variable import InputVariable, OutputVariable, Variable
 
 
-class Engine(object):
+class Engine:
     __slots__ = ["name", "description", "input_variables", "output_variables", "rule_blocks"]
 
     @enum.unique

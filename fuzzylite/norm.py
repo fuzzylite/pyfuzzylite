@@ -22,7 +22,7 @@ if typing.TYPE_CHECKING:
     from .term import Function
 
 
-class Norm(object):
+class Norm:
 
     def __str__(self) -> str:
         from .exporter import FllExporter

@@ -32,7 +32,7 @@ if typing.TYPE_CHECKING:
     from .engine import Engine  # noqa F401
 
 
-class Term(object):
+class Term:
     """
       The Term class is the abstract class for linguistic terms. The linguistic
       terms in this library can be divided in four groups as: `basic`,
@@ -408,7 +408,7 @@ class Cosine(Term):
 class Discrete(Term):
     __slots__ = ["xy"]
 
-    class Pair(object):
+    class Pair:
         __slots__ = ["x", "y"]
 
         def __init__(self, x: float = nan, y: float = nan) -> None:
@@ -1050,7 +1050,7 @@ class ZShape(Term):
 class Function(Term):
     __slots__ = ["root", "formula", "engine", "variables"]
 
-    class Element(object):
+    class Element:
         __slots__ = ["name", "description", "type", "method", "arity", "precedence",
                      "associativity"]
 

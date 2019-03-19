@@ -17,6 +17,7 @@
 
 import unittest
 from typing import Dict, Tuple
+from unittest.mock import MagicMock
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -39,11 +40,22 @@ class ActivationAssert(BaseAssert[fl.Activation]):
 
 class TestActivation(unittest.TestCase):
 
-    def test_activation_base(self) -> None:
+    def test_class_name(self) -> None:
+        self.assertEqual("Activation", fl.Activation().class_name)
+
+    def test_activation(self) -> None:
         with self.assertRaises(NotImplementedError):
             fl.Activation().activate(fl.RuleBlock())
 
-        self.assertEqual(fl.Activation().parameters(), "")
+    def test_parameters(self) -> None:
+        self.assertEqual("", fl.Activation().parameters())
+
+    def test_str(self) -> None:
+        self.assertEqual("Activation", str(fl.Activation()))
+
+        activation = fl.Activation()
+        activation.parameters = MagicMock(return_value="param1 param2")  # type: ignore
+        self.assertEqual("Activation param1 param2", str(activation))
 
 
 if __name__ == '__main__':

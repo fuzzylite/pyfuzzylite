@@ -264,7 +264,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return result
 
 
-class FactoryManager(object):
+class FactoryManager:
     __slots__ = ["tnorm", "snorm", "activation", "defuzzifier", "term", "hedge", "function"]
 
     def __init__(self,

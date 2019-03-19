@@ -23,7 +23,7 @@ if typing.TYPE_CHECKING:
     from .term import Function
 
 
-class Hedge(object):
+class Hedge:
 
     @property
     def name(self) -> str:

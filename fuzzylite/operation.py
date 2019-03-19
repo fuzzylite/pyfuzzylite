@@ -20,7 +20,7 @@ import math
 from typing import Callable, List, Optional, SupportsFloat, Text, Union
 
 
-class Operation(object):
+class Operation:
     """
     Operation
     """

@@ -95,7 +95,7 @@ class TestFactory(unittest.TestCase):
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
 
-        class Example(object):
+        class Example:
 
             def __str__(self) -> str:
                 return "instance of Example"
