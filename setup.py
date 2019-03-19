@@ -17,7 +17,7 @@
 import distutils.core
 import io
 
-from typing import List
+from typing import List  # noqa: I202
 
 
 class PyTest(distutils.core.Command):
