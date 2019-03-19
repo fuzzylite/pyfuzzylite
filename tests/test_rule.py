@@ -118,7 +118,7 @@ class AssertAntecedent:
 
     def cannot_load_antecedent(self,
                                text: str,
-                               exception: Exception,
+                               exception: Type[Exception],
                                regex: str) -> 'AssertAntecedent':
         antecedent = fl.Antecedent(text)
         with self.test.assertRaisesRegex(exception, regex):
@@ -181,7 +181,7 @@ OutputVariable: Power
   # rule: if Ambient is BRIGHT then Power is LOW
   """
 
-    def test_loaded(self):
+    def test_loaded(self) -> None:
         antecedent = fl.Antecedent()
         self.assertFalse(antecedent.is_loaded())
 
@@ -191,7 +191,7 @@ OutputVariable: Power
         antecedent.unload()
         self.assertFalse(antecedent.is_loaded())
 
-    def test_antecedent_load_input_variable(self):
+    def test_antecedent_load_input_variable(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
@@ -203,7 +203,7 @@ OutputVariable: Power
         AssertAntecedent(self, engine).can_load_antecedent(
             "Ambient is any", postfix="Ambient is any")
 
-    def test_antecedent_load_input_variables_connectors(self):
+    def test_antecedent_load_input_variables_connectors(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
@@ -218,7 +218,7 @@ OutputVariable: Power
             f"Ambient is any {fl.Rule.AND} Ambient is not any",
             postfix="Ambient is any Ambient is not any and")
 
-    def test_antecedent_load_output_variables_connectors(self):
+    def test_antecedent_load_output_variables_connectors(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
@@ -233,7 +233,7 @@ OutputVariable: Power
             f"Power is any {fl.Rule.AND} Power is not any",
             postfix="Power is any Power is not any and")
 
-    def test_antecedent_load_fails(self):
+    def test_antecedent_load_fails(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
@@ -260,7 +260,7 @@ OutputVariable: Power
             "Ambient is invalid_term", SyntaxError,
             "expected hedge or term, but found 'invalid_term'")
 
-    def test_antecedent_to_string(self):
+    def test_antecedent_to_string(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
