@@ -16,7 +16,7 @@
 """
 
 import unittest
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Type, Union
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -126,7 +126,9 @@ class AssertAntecedent:
         return self
 
     def has_activation_degrees(self,
-                               inputs: Dict[fl.Variable, List[float]],
+                               inputs: Union[
+                                   Dict[fl.InputVariable, List[float]],
+                                   Dict[fl.OutputVariable, List[List[fl.Activated]]]],
                                rules: Dict[str, List[float]],
                                conjunction: Optional[fl.TNorm] = None,
                                disjunction: Optional[fl.SNorm] = None,
@@ -138,15 +140,18 @@ class AssertAntecedent:
         index = 0
         more_values = True
         while more_values:
-            for input_variable, values in inputs.items():
+            for variable, values in inputs.items():
                 more_values &= index + 1 < len(values)
-                input_variable.value = values[index]
+                if isinstance(variable, fl.InputVariable):
+                    variable.value = values[index]  # type: ignore
+                elif isinstance(variable, fl.OutputVariable):
+                    variable.fuzzy.terms = values[index]  # type: ignore
 
             for text, values in rules.items():
                 antecedent = fl.Antecedent(text)
                 antecedent.load(self.engine)
-                obtained = antecedent.activation_degree(conjunction=conjunction,
-                                                        disjunction=disjunction)
+                obtained = antecedent.activation_degree(
+                    conjunction=conjunction, disjunction=disjunction)
                 expected = values[index]
                 self.test.assertAlmostEqual(expected, obtained, places=decimal_places,
                                             msg=f"at index {index}")
@@ -195,13 +200,13 @@ OutputVariable: Power
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            "Ambient is DARK", postfix="Ambient is DARK")
+            "Ambient is DARK", infix="Ambient is DARK")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            "Ambient is very DARK", postfix="Ambient is very DARK")
+            "Ambient is very DARK", infix="Ambient is very DARK")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            "Ambient is any", postfix="Ambient is any")
+            "Ambient is any", infix="Ambient is any")
 
     def test_antecedent_load_input_variables_connectors(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
@@ -287,9 +292,28 @@ OutputVariable: Power
     def test_activation_degrees(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
+        # Test disabled variables
+        engine.variable("Ambient").enabled = False
         AssertAntecedent(self, engine).has_activation_degrees(
             {
-                engine.variable("Ambient"):
+                engine.input_variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is DARK":
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "Ambient is MEDIUM":
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "Ambient is BRIGHT":
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            }
+        )
+
+        # Test enabled variables
+        engine.variable("Ambient").enabled = True
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.input_variable("Ambient"):
                     [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
             }, {
                 "Ambient is DARK":
@@ -301,9 +325,10 @@ OutputVariable: Power
             }
         )
 
+        # Test hedges
         AssertAntecedent(self, engine).has_activation_degrees(
             {
-                engine.variable("Ambient"):
+                engine.input_variable("Ambient"):
                     [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
             }, {
                 "Ambient is very DARK":
@@ -315,9 +340,10 @@ OutputVariable: Power
             }
         )
 
+        # Test multiple hedges
         AssertAntecedent(self, engine).has_activation_degrees(
             {
-                engine.variable("Ambient"):
+                engine.input_variable("Ambient"):
                     [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
             }, {
                 "Ambient is very very DARK":
@@ -329,9 +355,10 @@ OutputVariable: Power
             }
         )
 
+        # Test special hedges
         AssertAntecedent(self, engine).has_activation_degrees(
             {
-                engine.variable("Ambient"):
+                engine.input_variable("Ambient"):
                     [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
             }, {
                 "Ambient is any":
@@ -340,6 +367,69 @@ OutputVariable: Power
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                 "Ambient is not not any":
                     [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+            }
+        )
+
+    def test_activation_degrees_with_norms(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.input_variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is DARK and Ambient is MEDIUM":
+                    [0.0, 0.0, 0.4, 0.0, 0.0, 0.0, 0.0],
+                "Ambient is MEDIUM and Ambient is BRIGHT":
+                    [0.0, 0.0, 0.0, 0.0, 0.4, 0.0, 0.0],
+                "Ambient is BRIGHT and Ambient is DARK":
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            },
+            conjunction=fl.Minimum()
+        )
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.input_variable("Ambient"):
+                    [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+            }, {
+                "Ambient is DARK or Ambient is MEDIUM":
+                    [0.0, 0.8, 0.6, 1.0, 0.6, 0.0, 0.0],
+                "Ambient is MEDIUM or Ambient is BRIGHT":
+                    [0.0, 0.0, 0.6, 1.0, 0.6, 0.8, 0.0],
+                "Ambient is BRIGHT or Ambient is DARK":
+                    [0.0, 0.8, 0.4, 0.0, 0.4, 0.8, 0.0],
+            },
+            disjunction=fl.Maximum()
+        )
+
+    def test_activation_degrees_output(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        # Test enabled variables
+        low = engine.output_variable("Power").term("LOW")
+        medium = engine.output_variable("Power").term("MEDIUM")
+        high = engine.output_variable("Power").term("HIGH")
+
+        AssertAntecedent(self, engine).has_activation_degrees(
+            {
+                engine.output_variable("Power"): [
+                    [fl.Activated(low, 0.0), fl.Activated(medium, 0.0), fl.Activated(high, 0.0)],
+                    [fl.Activated(low, 0.0), fl.Activated(medium, 0.0), fl.Activated(high, 1.0)],
+                    [fl.Activated(low, 0.0), fl.Activated(medium, 1.0), fl.Activated(high, 0.0)],
+                    [fl.Activated(low, 0.0), fl.Activated(medium, 1.0), fl.Activated(high, 1.0)],
+                    [fl.Activated(low, 1.0), fl.Activated(medium, 0.0), fl.Activated(high, 0.0)],
+                    [fl.Activated(low, 1.0), fl.Activated(medium, 0.0), fl.Activated(high, 1.0)],
+                    [fl.Activated(low, 1.0), fl.Activated(medium, 1.0), fl.Activated(high, 0.0)],
+                    [fl.Activated(low, 1.0), fl.Activated(medium, 1.0), fl.Activated(high, 1.0)],
+                ]
+            }, {
+                "Power is LOW":
+                    [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0],
+                "Power is MEDIUM":
+                    [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0],
+                "Power is HIGH":
+                    [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
             }
         )
 
