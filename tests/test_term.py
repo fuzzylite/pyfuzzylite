@@ -74,7 +74,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def membership_fails(self, x: float, exception: Type[Exception],
                          regex: str) -> 'TermAssert':
-        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):  # type: ignore
+        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
             self.actual.membership(x)
         return self
 
@@ -1263,7 +1263,7 @@ class TestTerm(unittest.TestCase):
         pass
 
 
-class FunctionNodeAssert(BaseAssert):
+class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
 
     def prefix_is(self, prefix: str) -> 'FunctionNodeAssert':
         self.test.assertEqual(prefix, self.actual.prefix())

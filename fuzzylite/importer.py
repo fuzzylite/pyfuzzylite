@@ -201,22 +201,22 @@ class FllImporter(Importer):
         return Rule.parse(self.extract_value(fll, "rule"), engine)
 
     def tnorm(self, fll: str) -> Optional['TNorm']:
-        return self.component(TNorm, fll)  # type: ignore
+        return self.component(TNorm, fll)
 
     def snorm(self, fll: str) -> Optional['SNorm']:
-        return self.component(SNorm, fll)  # type: ignore
+        return self.component(SNorm, fll)
 
     def activation(self, fll: str) -> Optional['Activation']:
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
-        return self.component(Activation, name, parameters)  # type: ignore
+        return self.component(Activation, name, parameters)
 
     def defuzzifier(self, fll: str) -> Optional['Defuzzifier']:
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
-        return self.component(Defuzzifier, name, parameters)  # type: ignore
+        return self.component(Defuzzifier, name, parameters)
 
     T = TypeVar('T', 'Activation', 'Defuzzifier', 'SNorm', 'TNorm')
 

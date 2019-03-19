@@ -16,13 +16,13 @@
 """
 
 import unittest
-from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Type, Union
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
 
-class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory, fl.CloningFactory]]):
+class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory[Any], fl.CloningFactory[Any]]]):
 
     def has_class_name(self, name: str) -> 'FactoryAssert':
         self.test.assertEqual(self.actual.class_name, name)
@@ -91,7 +91,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
 class TestFactory(unittest.TestCase):
 
     def test_construction_factory(self) -> None:
-        actual: fl.ConstructionFactory = fl.ConstructionFactory()
+        actual: fl.ConstructionFactory[Any] = fl.ConstructionFactory()
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
 
@@ -187,7 +187,7 @@ class TestFactory(unittest.TestCase):
                                  })
 
     def test_copy_factory(self) -> None:
-        actual: fl.CloningFactory = fl.CloningFactory()
+        actual: fl.CloningFactory[Any] = fl.CloningFactory()
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("CloningFactory").copies_exactly({})
 

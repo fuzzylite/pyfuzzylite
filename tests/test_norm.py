@@ -22,7 +22,7 @@ import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
 
-class NormAssert(BaseAssert):
+class NormAssert(BaseAssert[fl.Norm]):
 
     def is_t_norm(self) -> 'NormAssert':
         self.test.assertIsInstance(self.actual, fl.TNorm)
@@ -32,7 +32,9 @@ class NormAssert(BaseAssert):
         self.test.assertIsInstance(self.actual, fl.SNorm)
         return self
 
-    def evaluates(self, abz: Dict[Tuple, float], commutative: bool = True) -> 'NormAssert':
+    def evaluates(self,
+                  abz: Dict[Tuple[float, float], float],
+                  commutative: bool = True) -> 'NormAssert':
         for ab, z in abz.items():
             self.test.assertEqual(z, self.actual.compute(*ab), f"in ({ab})")
             if commutative:
