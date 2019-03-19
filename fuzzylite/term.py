@@ -273,8 +273,8 @@ class Bell(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * (1.0 / (1.0 +
-                                     (fabs((x - self.center) / self.width) ** (2.0 * self.slope))))
+        return self.height * (1.0 / (1.0 + (fabs((x - self.center) / self.width)
+                                            ** (2.0 * self.slope))))
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width, self.slope)
@@ -330,13 +330,13 @@ class Concave(Term):
 
         if self.inflection <= self.end:  # Concave increasing
             if x < self.end:
-                return (self.height * (self.end - self.inflection) /
-                        (2.0 * self.end - self.inflection - x))
+                return (self.height * (self.end - self.inflection)
+                        / (2.0 * self.end - self.inflection - x))
 
         else:  # Concave decreasing
             if x > self.end:
-                return (self.height * (self.inflection - self.end) /
-                        (self.inflection - 2.0 * self.end + x))
+                return (self.height * (self.inflection - self.end)
+                        / (self.inflection - 2.0 * self.end + x))
 
         return self.height * 1.0
 
@@ -569,8 +569,8 @@ class Gaussian(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp((-(x - self.mean) * (x - self.mean)) /
-                                 (2.0 * self.standard_deviation * self.standard_deviation))
+        return self.height * exp((-(x - self.mean) * (x - self.mean))
+                                 / (2.0 * self.standard_deviation * self.standard_deviation))
 
     def parameters(self) -> str:
         return super()._parameters(self.mean, self.standard_deviation)
@@ -600,12 +600,12 @@ class GaussianProduct(Term):
         a = b = 1.0
 
         if x < self.mean_a:
-            a = exp((-(x - self.mean_a) * (x - self.mean_a)) /
-                    (2.0 * self.standard_deviation_a * self.standard_deviation_a))
+            a = exp((-(x - self.mean_a) * (x - self.mean_a))
+                    / (2.0 * self.standard_deviation_a * self.standard_deviation_a))
 
         if x > self.mean_b:
-            b = exp((-(x - self.mean_b) * (x - self.mean_b)) /
-                    (2.0 * self.standard_deviation_b * self.standard_deviation_b))
+            b = exp((-(x - self.mean_b) * (x - self.mean_b))
+                    / (2.0 * self.standard_deviation_b * self.standard_deviation_b))
 
         return self.height * a * b
 
@@ -1176,8 +1176,8 @@ class Function(Term):
             if node.right:
                 children.append(self.infix(node.right))
 
-            is_function = (node.element and
-                           node.element.type == Function.Element.Type.Function)
+            is_function = (node.element
+                           and node.element.type == Function.Element.Type.Function)
 
             if is_function:
                 result = node.value() + f" ( {' '.join(children)} )"
@@ -1323,8 +1323,8 @@ class Function(Term):
             elif element and element.is_operator():
                 while stack and stack[-1] in factory.objects:
                     top = factory.objects[stack[-1]]
-                    if ((element.associativity < 0 and element.precedence <= top.precedence) or
-                            (element.associativity > 0 and element.precedence < top.precedence)):
+                    if ((element.associativity < 0 and element.precedence <= top.precedence)
+                            or (element.associativity > 0 and element.precedence < top.precedence)):
                         queue.append(stack.pop())
                     else:
                         break

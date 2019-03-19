@@ -16,7 +16,7 @@
 """
 
 import unittest
-from typing import Dict, List, Type, Optional
+from typing import Dict, List, Optional, Type
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -116,7 +116,10 @@ class AssertAntecedent:
                                   antecedent.infix(antecedent.expression))
         return self
 
-    def cannot_load_antecedent(self, text: str, exception: Exception, regex: str) -> 'AssertAntecedent':
+    def cannot_load_antecedent(self,
+                               text: str,
+                               exception: Exception,
+                               regex: str) -> 'AssertAntecedent':
         antecedent = fl.Antecedent(text)
         with self.test.assertRaisesRegex(exception, regex):
             antecedent.load(self.engine)
@@ -204,46 +207,58 @@ OutputVariable: Power
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Ambient is DARK {fl.Rule.AND} Ambient is BRIGHT", postfix="Ambient is DARK Ambient is BRIGHT and")
+            f"Ambient is DARK {fl.Rule.AND} Ambient is BRIGHT",
+            postfix="Ambient is DARK Ambient is BRIGHT and")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Ambient is very DARK {fl.Rule.OR} Ambient is very BRIGHT", postfix="Ambient is very DARK Ambient is very BRIGHT or")
+            f"Ambient is very DARK {fl.Rule.OR} Ambient is very BRIGHT",
+            postfix="Ambient is very DARK Ambient is very BRIGHT or")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Ambient is any {fl.Rule.AND} Ambient is not any", postfix="Ambient is any Ambient is not any and")
+            f"Ambient is any {fl.Rule.AND} Ambient is not any",
+            postfix="Ambient is any Ambient is not any and")
 
     def test_antecedent_load_output_variables_connectors(self):
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Power is HIGH {fl.Rule.AND} Power is LOW", postfix="Power is HIGH Power is LOW and")
+            f"Power is HIGH {fl.Rule.AND} Power is LOW",
+            postfix="Power is HIGH Power is LOW and")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Power is very HIGH {fl.Rule.OR} Power is very LOW", postfix="Power is very HIGH Power is very LOW or")
+            f"Power is very HIGH {fl.Rule.OR} Power is very LOW",
+            postfix="Power is very HIGH Power is very LOW or")
 
         AssertAntecedent(self, engine).can_load_antecedent(
-            f"Power is any {fl.Rule.AND} Power is not any", "Power is any Power is not any and")
+            f"Power is any {fl.Rule.AND} Power is not any",
+            postfix="Power is any Power is not any and")
 
     def test_antecedent_load_fails(self):
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "", ValueError, "expected the antecedent of a rule, but found none")
+            "", ValueError,
+            "expected the antecedent of a rule, but found none")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            f"Ambient is any {fl.Rule.AND}", SyntaxError, "operator 'and' expects 2 operands, but found 1")
+            f"Ambient is any {fl.Rule.AND}", SyntaxError,
+            "operator 'and' expects 2 operands, but found 1")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "InvalidVariable is any", SyntaxError, "expected variable or logical operator, but found 'InvalidVariable'")
+            "InvalidVariable is any", SyntaxError,
+            "expected variable or logical operator, but found 'InvalidVariable'")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "Ambient isn't", SyntaxError, "expected keyword 'is', but found 'isn't'")
+            "Ambient isn't", SyntaxError,
+            "expected keyword 'is', but found 'isn't'")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "Ambient is very invalid", SyntaxError, "expected hedge or term, but found 'invalid'")
+            "Ambient is very invalid", SyntaxError,
+            "expected hedge or term, but found 'invalid'")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "Ambient is invalid_term", SyntaxError, "expected hedge or term, but found 'invalid_term'")
+            "Ambient is invalid_term", SyntaxError,
+            "expected hedge or term, but found 'invalid_term'")
 
     def test_antecedent_to_string(self):
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
@@ -269,7 +284,7 @@ OutputVariable: Power
             infix="Ambient is BRIGHT or Ambient is DARK and Ambient is MEDIUM",
         )
 
-    def test_activation_degrees(self):
+    def test_activation_degrees(self) -> None:
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).has_activation_degrees(

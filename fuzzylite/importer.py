@@ -220,7 +220,10 @@ class FllImporter(Importer):
 
     T = TypeVar('T', 'Activation', 'Defuzzifier', 'SNorm', 'TNorm')
 
-    def component(self, cls: Type[T], fll: str, parameters: Optional[str] = None) -> Optional[T]:
+    def component(self,
+                  cls: Type['FllImporter.T'],
+                  fll: str, parameters: Optional[str] = None
+                  ) -> Optional['FllImporter.T']:
         from . import lib
 
         fll = Op.strip_comments(fll)

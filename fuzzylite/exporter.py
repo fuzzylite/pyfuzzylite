@@ -278,9 +278,9 @@ class PythonExporter(Exporter):
             if len(iv.terms) == 1:
                 terms = f"{self.indent}terms=[{self.term(iv.terms[0])}]"
             else:
-                terms = (f"{self.indent}terms=[\n" +
-                         ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in iv.terms) +
-                         f"\n{self.indent}]")
+                terms = (f"{self.indent}terms=[\n"
+                         + ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in iv.terms)
+                         + f"\n{self.indent}]")
             result += [terms]
 
         return "fl.InputVariable(\n%s\n)" % ',\n'.join(result)
@@ -299,9 +299,9 @@ class PythonExporter(Exporter):
             if len(ov.terms) == 1:
                 terms = f"{self.indent}terms=[{self.term(ov.terms[0])}]"
             else:
-                terms = (f"{self.indent}terms=[\n" +
-                         ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in ov.terms) +
-                         f"\n{self.indent}]")
+                terms = (f"{self.indent}terms=[\n"
+                         + ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in ov.terms)
+                         + f"\n{self.indent}]")
             result += [terms]
 
         return "fl.OutputVariable(\n%s\n)" % ',\n'.join(result)
@@ -318,10 +318,9 @@ class PythonExporter(Exporter):
             if len(rb.rules) == 1:
                 rules = f"{self.indent}rules=[{self.rule(rb.rules[0])}]"
             else:
-                rules = (f"{self.indent}rules=[\n{2*self.indent}" +
-                         f",\n{2*self.indent}".join(self.rule(rule) for rule in rb.rules) +
-                         f"\n{self.indent}]"
-                         )
+                rules = (f"{self.indent}rules=[\n{2*self.indent}"
+                         + f",\n{2*self.indent}".join(self.rule(rule) for rule in rb.rules)
+                         + f"\n{self.indent}]")
             result += [rules]
         return "fl.RuleBlock(\n%s\n)" % ',\n'.join(result)
 
@@ -413,8 +412,9 @@ class FldExporter(Exporter):
         while incremented:
             for i, iv in enumerate(engine.input_variables):
                 if iv in active_variables:
-                    input_values[i] = (iv.minimum +
-                                       sample_values[i] * iv.drange / max(1.0, resolution))
+                    input_values[i] = (iv.minimum
+                                       + sample_values[i]
+                                       * iv.drange / max(1.0, resolution))
                 else:
                     input_values[i] = iv.value
             self.write(engine, writer, input_values, active_variables)

@@ -545,8 +545,8 @@ class Rule(object):
     def activate_with(self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]) -> float:
         if not self.is_loaded():
             raise RuntimeError(f"rule is not loaded: '{self.text}'")
-        self.activation_degree = (self.weight *
-                                  self.antecedent.activation_degree(conjunction, disjunction))
+        self.activation_degree = (self.weight
+                                  * self.antecedent.activation_degree(conjunction, disjunction))
         return self.activation_degree
 
     def trigger(self, implication: Optional[TNorm]) -> None:
