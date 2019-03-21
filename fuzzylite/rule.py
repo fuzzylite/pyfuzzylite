@@ -482,8 +482,9 @@ class Rule(object):
                   Rule.THEN,
                   self.consequent.text]
         if not Op.eq(self.weight, 1.0):
-            result.extend([Rule.WITH,
-                           Op.str(self.weight)])
+            result.extend([
+                Rule.WITH,
+                Op.str(self.weight)])
         return " ".join(result)
 
     @text.setter

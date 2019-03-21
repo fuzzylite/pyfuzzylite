@@ -17,15 +17,15 @@
 # flake8: noqa
 
 # noinspection PyUnresolvedReferences
-from math import nan, inf, isnan
+from math import inf, isnan, nan
 
 # ACTIVATION
 from fuzzylite.activation import (Activation, First, General, Highest, Last, Lowest, Proportional,
                                   Threshold)
 # DEFUZZIFIER
-from fuzzylite.defuzzifier import (Defuzzifier, WeightedDefuzzifier, IntegralDefuzzifier, Centroid,
-                                   Bisector, LargestOfMaximum, MeanOfMaximum, SmallestOfMaximum,
-                                   WeightedAverage, WeightedSum)
+from fuzzylite.defuzzifier import (Bisector, Centroid, Defuzzifier, IntegralDefuzzifier,
+                                   LargestOfMaximum, MeanOfMaximum, SmallestOfMaximum,
+                                   WeightedAverage, WeightedDefuzzifier, WeightedSum)
 from fuzzylite.engine import Engine
 # EXPORTER
 from fuzzylite.exporter import Exporter, FldExporter, FllExporter, PythonExporter
@@ -37,25 +37,25 @@ from fuzzylite.factory import (ActivationFactory, CloningFactory, ConstructionFa
 from fuzzylite.hedge import (Any, Extremely, Hedge, HedgeFunction, HedgeLambda, Not, Seldom,
                              Somewhat, Very)
 # IMPORTER
-from fuzzylite.importer import Importer, FllImporter
+from fuzzylite.importer import FllImporter, Importer
 # LIBRARY
 from fuzzylite.library import Library
 # NORM
-from fuzzylite.norm import (AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
-                            HamacherProduct, Minimum, NilpotentMinimum)
-from fuzzylite.norm import (AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
-                            Maximum, NilpotentMaximum, NormalizedSum, UnboundedSum)
-from fuzzylite.norm import Norm, NormFunction, NormLambda, SNorm, TNorm
+from fuzzylite.norm import (AlgebraicProduct, AlgebraicSum, BoundedDifference, BoundedSum,
+                            DrasticProduct, DrasticSum, EinsteinProduct, EinsteinSum,
+                            HamacherProduct, HamacherSum, Maximum, Minimum, NilpotentMaximum,
+                            NilpotentMinimum, Norm, NormFunction, NormLambda, NormalizedSum,
+                            SNorm, TNorm, UnboundedSum)
 # OPERATION
 from fuzzylite.operation import Op, Operation
 # RULE
-from fuzzylite.rule import (Rule, Proposition, Operator, RuleBlock, Expression, Antecedent,
-                            Consequent)
+from fuzzylite.rule import (Antecedent, Consequent, Expression, Operator, Proposition, Rule,
+                            RuleBlock)
 # TERM
 from fuzzylite.term import (Activated, Aggregated, Bell, Binary, Concave, Constant, Cosine,
                             Discrete, Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
-                            Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
-                            Spike, Term, Trapezoid, Triangle, ZShape)
+                            Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct, Spike,
+                            Term, Trapezoid, Triangle, ZShape)
 # VARIABLE
 from fuzzylite.variable import InputVariable, OutputVariable, Variable
 

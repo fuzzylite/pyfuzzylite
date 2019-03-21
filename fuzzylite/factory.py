@@ -23,16 +23,15 @@ from .activation import Activation, First, General, Highest, Last, Lowest, Propo
 from .defuzzifier import (Bisector, Centroid, Defuzzifier, LargestOfMaximum, MeanOfMaximum,
                           SmallestOfMaximum, WeightedAverage, WeightedSum)
 from .hedge import Any, Extremely, Hedge, Not, Seldom, Somewhat, Very
-from .norm import (AlgebraicProduct, BoundedDifference, DrasticProduct, EinsteinProduct,
-                   HamacherProduct, Minimum, NilpotentMinimum, TNorm)
-from .norm import (AlgebraicSum, BoundedSum, DrasticSum, EinsteinSum, HamacherSum,
-                   Maximum, NilpotentMaximum, NormalizedSum, SNorm, UnboundedSum)
+from .norm import (AlgebraicProduct, AlgebraicSum, BoundedDifference, BoundedSum, DrasticProduct,
+                   DrasticSum, EinsteinProduct, EinsteinSum, HamacherProduct, HamacherSum, Maximum,
+                   Minimum, NilpotentMaximum, NilpotentMinimum, NormalizedSum, SNorm, TNorm,
+                   UnboundedSum)
 from .operation import Op
 from .rule import Rule
-from .term import (Bell, Binary, Concave, Constant, Cosine, Discrete,
-                   Function, Gaussian, GaussianProduct, Linear, PiShape, Ramp,
-                   Rectangle, SShape, Sigmoid, SigmoidDifference, SigmoidProduct,
-                   Spike, Term, Trapezoid, Triangle, ZShape)
+from .term import (Bell, Binary, Concave, Constant, Cosine, Discrete, Function, Gaussian,
+                   GaussianProduct, Linear, PiShape, Ramp, Rectangle, SShape, Sigmoid,
+                   SigmoidDifference, SigmoidProduct, Spike, Term, Trapezoid, Triangle, ZShape)
 
 T = TypeVar('T')
 
