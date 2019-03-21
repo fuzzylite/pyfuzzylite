@@ -169,7 +169,7 @@ class Antecedent(object):
 
         self.unload()
         if not self.text:
-            raise ValueError("expected the antecedent of a rule, but found none")
+            raise SyntaxError("expected the antecedent of a rule, but found none")
 
         postfix = Function().infix_to_postfix(self.text)
         if lib.debugging:
@@ -251,7 +251,7 @@ class Antecedent(object):
             raise SyntaxError(f"unexpected token '{token}'")
 
         # check final state for errors (outside of for-loop)
-        if not state & (s_variable | s_and_or):  # only acceptable final states
+        if not (state & (s_variable | s_and_or)):  # only acceptable final states
             if state & s_is:
                 raise SyntaxError(f"expected keyword '{Rule.IS}' after '{token}'")
             if stack & (s_hedge | s_term):
@@ -326,8 +326,8 @@ class Antecedent(object):
 class Consequent:
     __slots__ = ["text", "conclusions"]
 
-    def __init__(self) -> None:
-        self.text: str = ""
+    def __init__(self, text: str = "") -> None:
+        self.text: str = text
         self.conclusions: List[Proposition] = []
 
     def __str__(self) -> str:
@@ -347,12 +347,12 @@ class Consequent:
         from .term import Activated
 
         if not self.conclusions:
-            raise RuntimeError(f"consequent is not loaded in rule: '{self.text}'")
+            raise RuntimeError(f"consequent is not loaded")
 
         for proposition in self.conclusions:
             if not proposition.variable:
                 raise ValueError(f"expected a variable in '{proposition}', "
-                                 f"but found none in consequent: '{self.text}'")
+                                 f"but found none in consequent")
             if proposition.variable.enabled:
                 for hedge in reversed(proposition.hedges):
                     # TODO: Revisit because hedging like this stage would decrease the importance
@@ -361,21 +361,20 @@ class Consequent:
 
                 if not proposition.term:
                     raise ValueError(f"expected a term in proposition '{proposition}', "
-                                     f"but found none in consequent: '{self.text}'")
+                                     f"but found none")
                 activated_term = Activated(proposition.term, activation_degree, implication)
                 if isinstance(proposition.variable, OutputVariable):
                     proposition.variable.fuzzy.terms.append(activated_term)
                 else:
                     raise RuntimeError(f"expected an output variable, but found "
-                                       f"'{type(proposition.variable)}' in consequent: "
-                                       f"'{self.text}'")
+                                       f"'{type(proposition.variable)}'")
 
     def load(self, engine: 'Engine') -> None:  # noqa C901 'Consequent.load' is too complex (21)
         from . import lib
 
         self.unload()
         if not self.text:
-            raise ValueError("expected the consequent of a rule, but found none")
+            raise SyntaxError("expected the consequent of a rule, but found none")
 
         if lib.debugging:
             lib.logger.debug(f"consequent={self.text}")
@@ -394,9 +393,10 @@ class Consequent:
 
         proposition: Optional[Proposition] = None
         conclusions: List[Proposition] = []
+        output_variables = {v.name: v for v in engine.output_variables}
         for token in self.text.split():
             if state & s_variable:
-                variable = engine.output_variable(token)
+                variable = output_variables.get(token, None)
                 if variable:
                     proposition = Proposition(variable)
                     conclusions.append(proposition)
@@ -417,7 +417,8 @@ class Consequent:
                     continue
 
             if state & s_term:
-                term = proposition.variable.term(token)  # type: ignore
+                terms = {t.name: t for t in proposition.variable.terms}  # type: ignore
+                term = terms.get(token, None)
                 if term:
                     proposition.term = term  # type: ignore
                     state = s_and | s_with
@@ -431,27 +432,24 @@ class Consequent:
             # if reached this point, there was an error:
             if state & s_variable:
                 raise SyntaxError(f"consequent expected an output variable, "
-                                  f"but found '{token}' in consequent: '{self.text}'")
+                                  f"but found '{token}'")
             if state & s_is:
                 raise SyntaxError(f"consequent expected keyword '{Rule.IS}', "
-                                  f"but found '{token}' in consequent: '{self.text}'")
+                                  f"but found '{token}'")
             if state & (s_hedge | s_term):
-                raise SyntaxError(f"consequent expected "
-                                  f"operator '{Rule.AND}' or keyword '{Rule.WITH}', "
-                                  f"but found '{token}' in consequent: '{self.text}'")
-            raise SyntaxError(f"unexpected token '{token}' in consequent: '{self.text}'")
+                raise SyntaxError(f"consequent expected a hedge or term, "
+                                  f"but found '{token}'")
+
+            raise SyntaxError(f"unexpected token '{token}'")
 
         # final states
-        if not state & (s_and | s_with):
+        if not (state & (s_and | s_with)):
             if state & s_variable:
-                raise SyntaxError(f"consequent expected output variable after '{token}' "
-                                  f"in consequent: '{self.text}'")
+                raise SyntaxError(f"consequent expected output variable after '{token}'")
             if state & s_is:
-                raise SyntaxError(f"consequent expected keyword '{Rule.IS}' after '{token}' "
-                                  f"in consequent: '{self.text}'")
+                raise SyntaxError(f"consequent expected keyword '{Rule.IS}' after '{token}'")
             if state & (s_hedge | s_term):
-                raise SyntaxError(f"consequent expected hedge or term after '{token}' "
-                                  f"in consequent: '{self.text}'")
+                raise SyntaxError(f"consequent expected hedge or term after '{token}' ")
 
         self.conclusions = conclusions
 

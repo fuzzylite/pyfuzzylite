@@ -242,12 +242,16 @@ OutputVariable: Power
         engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            "", ValueError,
+            "", SyntaxError,
             "expected the antecedent of a rule, but found none")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
             f"Ambient is any {fl.Rule.AND}", SyntaxError,
             "operator 'and' expects 2 operands, but found 1")
+
+        AssertAntecedent(self, engine).cannot_load_antecedent(
+            f"Ambient is any DARK", SyntaxError,
+            "expected variable or logical operator, but found 'DARK'")
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
             "InvalidVariable is any", SyntaxError,
@@ -432,6 +436,181 @@ OutputVariable: Power
                     [0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0],
             }
         )
+
+
+class AssertConsequent:
+
+    def __init__(self, test: unittest.TestCase, engine: fl.Engine):
+        self.test = test
+        self.engine = engine
+
+    def can_load_consequent(self, text: str) -> 'AssertConsequent':
+        consequent = fl.Consequent(text)
+        consequent.load(self.engine)
+        self.test.assertTrue(consequent.is_loaded())
+        self.test.assertTrue(consequent.conclusions)
+        self.test.assertEqual(text, str(consequent))
+        return self
+
+    def cannot_load_consequent(self,
+                               text: str,
+                               exception: Type[Exception],
+                               regex: str) -> 'AssertConsequent':
+        consequent = fl.Consequent(text)
+        with self.test.assertRaisesRegex(exception, regex):
+            consequent.load(self.engine)
+        return self
+
+    def modify_consequent(self,
+                          text: str,
+                          activation_degree: float,
+                          expected: Dict[fl.OutputVariable, List[fl.Activated]],
+                          implication: Optional[fl.TNorm] = None,
+                          decimal_places: int = 3
+                          ) -> 'AssertConsequent':
+        self.test.assertTrue(expected, "expected cannot be empty")
+
+        consequent = fl.Consequent(text)
+        consequent.load(self.engine)
+        consequent.modify(activation_degree, implication)
+        for variable in expected.keys():
+            expected_terms = {t.term.name: t.degree
+                              for t in expected[variable]}
+            obtained_terms = {t.term.name: t.degree
+                              for t in variable.fuzzy.terms}
+            self.test.assertSetEqual(set(expected_terms.keys()), set(obtained_terms.keys()))
+
+            for expected_term, expected_activation in expected_terms.items():
+                obtained_activation = obtained_terms[expected_term]
+                self.test.assertAlmostEqual(
+                    expected_activation, obtained_activation,
+                    places=decimal_places, msg=f"for activated term {expected_term}")
+
+            for activated in variable.fuzzy.terms:
+                self.test.assertEqual(implication, activated.implication,
+                                      msg=f"in {str(activated)}")
+
+            variable.fuzzy.clear()
+        return self
+
+    def cannot_modify_consequent(self,
+                                 text: str,
+                                 activation_degree: float,
+                                 implication: Optional[fl.TNorm] = None
+                                 ) -> 'AssertConsequent':
+        pass
+
+
+class TestConsequent(unittest.TestCase):
+
+    def test_loaded(self) -> None:
+        consequent = fl.Consequent()
+        self.assertFalse(consequent.is_loaded())
+
+        consequent.conclusions.append(fl.Proposition())
+        self.assertTrue(consequent.is_loaded())
+
+        consequent.unload()
+        self.assertFalse(consequent.is_loaded())
+
+    def test_consequent_load_output_variable(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertConsequent(self, engine).can_load_consequent("Power is HIGH")
+
+        AssertConsequent(self, engine).can_load_consequent("Power is MEDIUM")
+
+        AssertConsequent(self, engine).can_load_consequent("Power is LOW")
+
+    def test_consequent_load_with_connectors(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertConsequent(self, engine).can_load_consequent(
+            "Power is HIGH and Power is HIGH")
+
+        AssertConsequent(self, engine).can_load_consequent(
+            "Power is very HIGH and Power is very HIGH")
+
+        AssertConsequent(self, engine).can_load_consequent(
+            "Power is any LOW and Power is not any HIGH")
+
+    def test_consequent_load_fails(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "", SyntaxError,
+            "expected the consequent of a rule, but found none")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Ambient is DARK", SyntaxError,
+            "consequent expected an output variable, but found 'Ambient'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power HIGH", SyntaxError,
+            "consequent expected keyword 'is', but found 'HIGH'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is ALL", SyntaxError,
+            "consequent expected a hedge or term, but found 'ALL'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is very ALL", SyntaxError,
+            "consequent expected a hedge or term, but found 'ALL'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is very HIGH or Power is very HIGH", SyntaxError,
+            "unexpected token 'or'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power", SyntaxError,
+            "consequent expected keyword 'is' after 'Power'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is", SyntaxError,
+            "consequent expected hedge or term after 'is'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is very", SyntaxError,
+            "consequent expected hedge or term after 'very'")
+
+        AssertConsequent(self, engine).cannot_load_consequent(
+            "Power is very LOW and", SyntaxError,
+            "consequent expected output variable after 'and'")
+
+    def test_modify_consequent(self) -> None:
+        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+
+        power = engine.output_variable("Power")
+        low = power.term("LOW")
+        high = power.term("HIGH")
+
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is LOW", 0.5, {power: [fl.Activated(low, 0.5)]})
+
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is LOW", 0.5, {power: [fl.Activated(low, 0.5)]},
+            implication=None)
+
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is very LOW", 0.5, {power: [fl.Activated(low, 0.25)]},
+            implication=fl.Minimum())
+
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is LOW and Power is HIGH", 0.25,
+            {power: [fl.Activated(low, 0.25), fl.Activated(high, 0.25)]},
+            implication=fl.AlgebraicProduct())
+
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is LOW and Power is very HIGH", 0.5,
+            {power: [fl.Activated(low, 0.5), fl.Activated(high, 0.25)]})
+
+        power.enabled = False
+        AssertConsequent(self, engine).modify_consequent(
+            "Power is LOW and Power is very HIGH", 0.5, {power: []})
+
+    def test_cannot_modify_consequent(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "consequent is not loaded"):
+            fl.Consequent("").modify(fl.nan, None)
 
 
 class RuleAssert(BaseAssert[fl.Rule]):
