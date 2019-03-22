@@ -21,7 +21,7 @@ By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 
 ### <a name="license">License</a>
-`pyfuzzylite` is licensed under the [**GNU General Public License (GPL) 3.0**](https://www.gnu.org/licenses/gpl.html). You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads).
+`pyfuzzylite` is licensed under the [**Affero General Public License (AGPL) 3.0**](https://www.gnu.org/licenses/agpl.html). Commercial licenses are also available, please contact [sales@fuzzylite.com](mailto:sales@fuzzylite.com). You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads).
 
 [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads/) is the new and (very likely) the best graphical user interface available to  easily design and directly operate fuzzy logic controllers in real time. Available for Windows, Mac, and Linux, its goal is to significantly **speed up** the design of your fuzzy logic controllers, while providing a very **useful**, **functional** and **beautiful** user interface.
 Please, download it and check it out for free at [www.fuzzylite.com/downloads/](https://www.fuzzylite.com/downloads/).
@@ -40,14 +40,14 @@ Please, download it and check it out for free at [www.fuzzylite.com/downloads/](
 #### Reference
 If you are using the FuzzyLite Libraries, please cite the following reference in your article:
 
-Juan Rada-Vilela. fuzzylite: a fuzzy logic control library, 2017. URL https://www.fuzzylite.com/.
+Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL https://fuzzylite.com/.
 
 ```bibtex
  @misc{fl::fuzzylite,
  author={Juan Rada-Vilela},
- title={fuzzylite: a fuzzy logic control library},
- url={https://www.fuzzylite.com/},
- year={2017}}
+ title={The FuzzyLite Libraries for Fuzzy Logic Control},
+ url={https://fuzzylite.com/},
+ year={2018}}
 ```
 
 #### Documentation
