@@ -23,7 +23,7 @@ from .factory import FactoryManager
 
 class Library:
 
-    def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-6,
+    def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-5,
                  floating_point_type: Type[float] = float,
                  factory_manager: Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
