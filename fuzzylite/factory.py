@@ -15,6 +15,10 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["ConstructionFactory", "CloningFactory", "ActivationFactory", "DefuzzifierFactory",
+           "HedgeFactory", "SNormFactory", "TNormFactory", "TermFactory", "FunctionFactory",
+           "FactoryManager"]
+
 import copy
 import math
 from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar

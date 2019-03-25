@@ -15,6 +15,9 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Hedge", "Any", "Extremely", "Not", "Seldom", "Somewhat", "Very", "HedgeLambda",
+           "HedgeFunction"]
+
 import math
 import typing
 from typing import Callable

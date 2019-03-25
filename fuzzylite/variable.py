@@ -15,6 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Variable", "InputVariable", "OutputVariable"]
+
 import math
 import typing
 from math import inf, isnan, nan

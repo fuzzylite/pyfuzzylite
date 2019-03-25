@@ -15,6 +15,10 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Defuzzifier", "IntegralDefuzzifier", "Bisector", "Centroid", "LargestOfMaximum",
+           "MeanOfMaximum", "SmallestOfMaximum", "WeightedDefuzzifier", "WeightedAverage",
+           "WeightedSum"]
+
 import enum
 import math
 from math import nan

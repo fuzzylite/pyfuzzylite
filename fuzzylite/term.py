@@ -15,6 +15,11 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Activated", "Aggregated", "Bell", "Binary", "Concave", "Constant", "Cosine",
+           "Discrete", "Function", "Gaussian", "GaussianProduct", "Linear", "PiShape", "Ramp",
+           "Rectangle", "SShape", "Sigmoid", "SigmoidDifference", "SigmoidProduct", "Spike",
+           "Term", "Trapezoid", "Triangle", "ZShape"]
+
 import bisect
 import enum
 import logging

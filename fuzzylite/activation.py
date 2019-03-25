@@ -14,6 +14,10 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+__all__ = ["Activation", "General", "First", "Last", "Highest", "Lowest", "Proportional",
+           "Threshold"]
+
 import enum
 import heapq
 import operator

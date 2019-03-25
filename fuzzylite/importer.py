@@ -14,6 +14,9 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+__all__ = ["Importer", "FllImporter"]
+
 from pathlib import Path
 from typing import List, Optional, Tuple, Type, TypeVar, Union
 

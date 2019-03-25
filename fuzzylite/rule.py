@@ -14,6 +14,9 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+__all__ = ["Expression", "Proposition", "Operator", "Antecedent", "Consequent", "Rule", "RuleBlock"]
+
 import typing
 from math import nan
 from typing import Deque, Iterable, List, Optional
@@ -88,7 +91,7 @@ class Antecedent(object):
         self.expression: Optional[Expression] = None
 
     def __str__(self) -> str:
-        return self.infix() if self.expression else self.text
+        return self.text
 
     def is_loaded(self) -> bool:
         return bool(self.expression)
@@ -331,11 +334,7 @@ class Consequent:
         self.conclusions: List[Proposition] = []
 
     def __str__(self) -> str:
-        if self.conclusions:
-            result = f" {Rule.AND} ".join(str(proposition) for proposition in self.conclusions)
-        else:
-            result = self.text
-        return result
+        return self.text
 
     def is_loaded(self) -> bool:
         return bool(self.conclusions)

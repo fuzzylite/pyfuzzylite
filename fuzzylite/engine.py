@@ -15,6 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Engine"]
+
 import enum
 from math import nan
 from typing import Iterable, List, Optional, Tuple, Union

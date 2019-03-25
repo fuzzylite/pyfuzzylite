@@ -15,6 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+__all__ = ["Operation", "Op"]
+
 import inspect
 import math
 from typing import Callable, List, Optional, SupportsFloat, Text, Union
