@@ -46,7 +46,8 @@ class TestLibrary(unittest.TestCase):
                     'WeightedSum', 'ZShape', '__annotations__', '__builtins__', '__cached__',
                     '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
                     '__spec__', '__version__', 'activation', 'defuzzifier', 'engine', 'exporter',
-                    'factory', 'hedge', 'importer', 'inf', 'isnan', 'lib', 'library', 'nan', 'norm',
+                    'factory', 'hedge', 'importer', 'inf', 'isinf', 'isnan', 'lib', 'library',
+                    'nan', 'norm',
                     'operation', 'rule', 'scalar', 'term', 'variable'}
 
         self.assertSetEqual(expected, set(dir(fuzzylite)))
