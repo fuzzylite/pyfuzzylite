@@ -17,9 +17,35 @@
 
 import unittest
 from typing import Dict, List, Optional, Type, Union
+from unittest.mock import MagicMock
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
+
+SimpleDimmer = """
+Engine: SimpleDimmer
+InputVariable: Ambient
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: DARK Triangle 0.000 0.250 0.500
+  term: MEDIUM Triangle 0.250 0.500 0.750
+  term: BRIGHT Triangle 0.500 0.750 1.000
+OutputVariable: Power
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid 200
+  default: nan
+  lock-previous: false
+  term: LOW Triangle 0.000 0.250 0.500
+  term: MEDIUM Triangle 0.250 0.500 0.750
+  term: HIGH Triangle 0.500 0.750 1.000
+  # rule: if Ambient is DARK then Power is HIGH
+  # rule: if Ambient is MEDIUM then Power is MEDIUM
+  # rule: if Ambient is BRIGHT then Power is LOW
+  """
 
 
 class RuleBlockAssert(BaseAssert[fl.RuleBlock]):
@@ -42,8 +68,8 @@ class TestRuleBlock(unittest.TestCase):
                 ]))
 
         RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock",
-                                           rules=[fl.Rule.parse("if a then z"),
-                                                  fl.Rule.parse("if b then y")],
+                                           rules=[fl.Rule.create("if a then z"),
+                                                  fl.Rule.create("if b then y")],
                                            conjunction=fl.TNorm(), disjunction=fl.SNorm(),
                                            implication=fl.TNorm(), activation=fl.Activation())) \
             .exports_fll(
@@ -161,30 +187,6 @@ class AssertAntecedent:
 
 
 class TestAntecedent(unittest.TestCase):
-    SimpleDimmer = """
-Engine: SimpleDimmer
-InputVariable: Ambient
-  enabled: true
-  range: 0.000 1.000
-  lock-range: false
-  term: DARK Triangle 0.000 0.250 0.500
-  term: MEDIUM Triangle 0.250 0.500 0.750
-  term: BRIGHT Triangle 0.500 0.750 1.000
-OutputVariable: Power
-  enabled: true
-  range: 0.000 1.000
-  lock-range: false
-  aggregation: Maximum
-  defuzzifier: Centroid 200
-  default: nan
-  lock-previous: false
-  term: LOW Triangle 0.000 0.250 0.500
-  term: MEDIUM Triangle 0.250 0.500 0.750
-  term: HIGH Triangle 0.500 0.750 1.000
-  # rule: if Ambient is DARK then Power is HIGH
-  # rule: if Ambient is MEDIUM then Power is MEDIUM
-  # rule: if Ambient is BRIGHT then Power is LOW
-  """
 
     def test_loaded(self) -> None:
         antecedent = fl.Antecedent()
@@ -197,7 +199,7 @@ OutputVariable: Power
         self.assertFalse(antecedent.is_loaded())
 
     def test_antecedent_load_input_variable(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
             "Ambient is DARK", infix="Ambient is DARK")
@@ -209,7 +211,7 @@ OutputVariable: Power
             "Ambient is any", infix="Ambient is any")
 
     def test_antecedent_load_input_variables_connectors(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
             f"Ambient is DARK {fl.Rule.AND} Ambient is BRIGHT",
@@ -224,7 +226,7 @@ OutputVariable: Power
             postfix="Ambient is any Ambient is not any and")
 
     def test_antecedent_load_output_variables_connectors(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
             f"Power is HIGH {fl.Rule.AND} Power is LOW",
@@ -239,7 +241,7 @@ OutputVariable: Power
             postfix="Power is any Power is not any and")
 
     def test_antecedent_load_fails(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
             "", SyntaxError,
@@ -270,7 +272,7 @@ OutputVariable: Power
             "expected hedge or term, but found 'invalid_term'")
 
     def test_antecedent_to_string(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).can_load_antecedent(
             "Ambient is DARK and Ambient is BRIGHT",
@@ -294,7 +296,7 @@ OutputVariable: Power
         )
 
     def test_activation_degrees(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         # Test disabled variables
         engine.variable("Ambient").enabled = False
@@ -375,7 +377,7 @@ OutputVariable: Power
         )
 
     def test_activation_degrees_with_norms(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertAntecedent(self, engine).has_activation_degrees(
             {
@@ -408,7 +410,7 @@ OutputVariable: Power
         )
 
     def test_activation_degrees_output(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         # Test enabled variables
         low = engine.output_variable("Power").term("LOW")
@@ -514,7 +516,7 @@ class TestConsequent(unittest.TestCase):
         self.assertFalse(consequent.is_loaded())
 
     def test_consequent_load_output_variable(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertConsequent(self, engine).can_load_consequent("Power is HIGH")
 
@@ -523,7 +525,7 @@ class TestConsequent(unittest.TestCase):
         AssertConsequent(self, engine).can_load_consequent("Power is LOW")
 
     def test_consequent_load_with_connectors(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertConsequent(self, engine).can_load_consequent(
             "Power is HIGH and Power is HIGH")
@@ -535,7 +537,7 @@ class TestConsequent(unittest.TestCase):
             "Power is any LOW and Power is not any HIGH")
 
     def test_consequent_load_fails(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         AssertConsequent(self, engine).cannot_load_consequent(
             "", SyntaxError,
@@ -578,7 +580,7 @@ class TestConsequent(unittest.TestCase):
             "consequent expected output variable after 'and'")
 
     def test_modify_consequent(self) -> None:
-        engine = fl.FllImporter().from_string(TestAntecedent.SimpleDimmer)
+        engine = fl.FllImporter().from_string(SimpleDimmer)
 
         power = engine.output_variable("Power")
         low = power.term("LOW")
@@ -613,35 +615,188 @@ class TestConsequent(unittest.TestCase):
             fl.Consequent("").modify(fl.nan, None)
 
 
-class RuleAssert(BaseAssert[fl.Rule]):
+class RuleAssert:
 
-    def parser_fails(self, text: str, exception: Type[Exception] = SyntaxError,
-                     regex: str = "") -> 'RuleAssert':
-        with self.test.assertRaisesRegex(exception, regex):
-            self.actual.text = text
+    def __init__(self, test: unittest.TestCase):
+        self.test = test
+
+    def can_parse_rule(self, text: str, as_text: Optional[str] = None) -> 'RuleAssert':
+        rule = fl.Rule()
+        rule.parse(text)
+        self.test.assertEqual(as_text if as_text else text, rule.text)
         return self
 
-    def has_text(self, text: str) -> 'RuleAssert':
-        self.test.assertEqual(self.actual.text, text)
+    def can_load_rule(self, text: str, engine: fl.Engine) -> 'RuleAssert':
+        rule = fl.Rule()
+        rule.parse(text)
+        rule.load(engine)
+        self.test.assertEqual(text, rule.text)
+        self.test.assertEqual(rule.activation_degree, 0.0)
+        self.test.assertEqual(rule.triggered, False)
+        self.can_create_rule(text, engine)
+        return self
+
+    def can_create_rule(self, text: str, engine: fl.Engine) -> 'RuleAssert':
+        rule = fl.Rule.create(text, engine)
+        self.test.assertEqual(text, rule.text)
+        return self
+
+    def cannot_parse_rule(self,
+                          text: str,
+                          exception: Type[Exception] = SyntaxError,
+                          regex: str = "") -> 'RuleAssert':
+        with self.test.assertRaisesRegex(exception, regex):
+            rule = fl.Rule()
+            rule.parse(text)
+        return self
+
+    def cannot_create_rule(self,
+                           text: str,
+                           engine: fl.Engine,
+                           exception: Type[Exception] = SyntaxError,
+                           regex: str = "") -> 'RuleAssert':
+        with self.test.assertRaisesRegex(exception, regex):
+            fl.Rule.create(text, engine)
         return self
 
 
 class TestRule(unittest.TestCase):
 
-    def test_rule_parser(self) -> None:
-        pass
+    def test_text_setter(self) -> None:
+        rule = fl.Rule()
+        rule.parse = MagicMock()  # type: ignore
+        rule.text = "if a then b"
+        rule.parse.assert_called_once_with("if a then b")  # type: ignore
 
-    def test_rule_parser_exceptions(self) -> None:
-        RuleAssert(self, fl.Rule()) \
-            .parser_fails("", SyntaxError, "expected an if-then rule") \
-            .parser_fails("then", SyntaxError, "expected keyword 'if'") \
-            .parser_fails("if", SyntaxError, "expected keyword 'then'") \
-            .parser_fails("if then", SyntaxError, "expected an antecedent in rule") \
-            .parser_fails("if antecedent then", SyntaxError, "expected a consequent in rule") \
-            .parser_fails("if antecedent then consequent with", SyntaxError,
-                          "expected the rule weight") \
-            .parser_fails("if antecedent then consequent with 1.0 extra", SyntaxError,
-                          "unexpected token 'extra'")
+    def test_can_parse_rule(self) -> None:
+        RuleAssert(self).can_parse_rule("if a then b")
+        RuleAssert(self).can_parse_rule("if a then b with 1.0", as_text="if a then b")
+        RuleAssert(self).can_parse_rule(
+            "if antecedent1 antecedent2 then consequent1 consequent2")
+
+    def test_parser_exceptions(self) -> None:
+        RuleAssert(self).cannot_parse_rule(
+            "", SyntaxError, "expected an if-then rule")
+        RuleAssert(self).cannot_parse_rule(
+            "then", SyntaxError, "expected keyword 'if'")
+        RuleAssert(self).cannot_parse_rule(
+            "if", SyntaxError, "expected keyword 'then'")
+        RuleAssert(self).cannot_parse_rule(
+            "if then", SyntaxError, "expected an antecedent in rule")
+        RuleAssert(self).cannot_parse_rule(
+            "if antecedent then", SyntaxError, "expected a consequent in rule")
+        RuleAssert(self).cannot_parse_rule(
+            "if antecedent then consequent with", SyntaxError, "expected the rule weight")
+        RuleAssert(self).cannot_parse_rule(
+            "if antecedent then consequent with 1.0 extra", SyntaxError, "unexpected token 'extra'")
+
+    def test_can_load_rule(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+
+        RuleAssert(self).can_load_rule(
+            "if Ambient is DARK then Power is HIGH", engine)
+        RuleAssert(self).can_load_rule(
+            "if Ambient is MEDIUM then Power is MEDIUM", engine)
+        RuleAssert(self).can_load_rule(
+            "if Ambient is BRIGHT then Power is LOW", engine)
+
+    def test_deactivate(self) -> None:
+        rule = fl.Rule()
+        rule.activation_degree = fl.nan
+        rule.triggered = True
+        rule.deactivate()
+        self.assertEqual(rule.activation_degree, 0.0)
+        self.assertEqual(rule.triggered, False)
+
+    def test_activate_with(self) -> None:
+        rule = fl.Rule.create("if Ambient is DARK then Power is HIGH")
+
+        self.assertFalse(rule.is_loaded())
+        with self.assertRaisesRegex(RuntimeError, "rule is not loaded"):
+            rule.activate_with(None, None)
+
+        rule.load(fl.FllImporter().from_string(SimpleDimmer))
+        self.assertTrue(rule.is_loaded())
+
+        rule.antecedent.activation_degree = MagicMock(return_value=0.5)  # type: ignore
+        weights = [0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0, -fl.inf, fl.inf]
+        expected = [0.0, 0.05, 0.125, 0.25, 0.375, 0.45, 0.5, -fl.inf, fl.inf]
+
+        obtained = []
+        for weight in weights:
+            rule.weight = weight
+            obtained.append(rule.activate_with(None, None))
+
+        self.assertEqual(expected, obtained)
+
+    def test_trigger(self) -> None:
+        rule = fl.Rule.create("if Ambient is DARK then Power is HIGH")
+
+        self.assertFalse(rule.is_loaded())
+        with self.assertRaisesRegex(RuntimeError, "rule is not loaded"):
+            rule.trigger(None)
+
+        rule.load(fl.FllImporter().from_string(SimpleDimmer))
+        self.assertTrue(rule.is_loaded())
+
+        rule.consequent.modify = MagicMock()  # type: ignore
+        # combinations: enabled and activation_degree
+        rule.enabled = False
+        rule.activation_degree = 0.0
+        rule.trigger(None)
+        expected = False
+        self.assertEqual(expected, rule.triggered)
+
+        rule.enabled = False
+        rule.activation_degree = 1.0
+        rule.trigger(None)
+        expected = False
+        self.assertEqual(expected, rule.triggered)
+
+        rule.enabled = True
+        rule.activation_degree = 0.0
+        rule.trigger(None)
+        expected = False
+        self.assertEqual(expected, rule.triggered)
+
+        rule.enabled = True
+        rule.activation_degree = 1.0
+        rule.trigger(None)
+        expected = True
+        self.assertEqual(expected, rule.triggered)
+
+    def test_is_loaded(self) -> None:
+        rule = fl.Rule()
+        cases = {(True, True): True,
+                 (True, False): False,
+                 (False, True): False,
+                 (False, False): False}
+        for premise, expected in cases.items():
+            rule.antecedent.is_loaded = MagicMock(return_value=premise[0])  # type: ignore
+            rule.consequent.is_loaded = MagicMock(return_value=premise[1])  # type: ignore
+            self.assertEqual(expected, rule.is_loaded())
+
+    def test_unload(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+        rule = fl.Rule.create("if Ambient is DARK then Power is HIGH", engine)
+        self.assertTrue(rule.is_loaded())
+
+        rule.unload()
+        self.assertEqual(False, rule.triggered)
+        self.assertEqual(0.0, rule.activation_degree)
+        self.assertFalse(rule.antecedent.is_loaded())
+        self.assertFalse(rule.consequent.is_loaded())
+
+    def test_load(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+        rule = fl.Rule.create("if Ambient is DARK then Power is HIGH")
+        self.assertFalse(rule.is_loaded())
+
+        rule.load(engine)
+        self.assertEqual(False, rule.triggered)
+        self.assertEqual(0.0, rule.activation_degree)
+        self.assertTrue(rule.antecedent.is_loaded())
+        self.assertTrue(rule.consequent.is_loaded())
 
 
 if __name__ == '__main__':

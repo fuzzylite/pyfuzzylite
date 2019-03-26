@@ -547,6 +547,7 @@ class Rule(object):
         return self.activation_degree
 
     def trigger(self, implication: Optional[TNorm]) -> None:
+        self.triggered = False
         if not self.is_loaded():
             raise RuntimeError(f"rule is not loaded: '{self.text}'")
         if self.enabled and Op.gt(self.activation_degree, 0.0):
