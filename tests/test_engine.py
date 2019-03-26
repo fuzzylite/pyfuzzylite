@@ -167,11 +167,11 @@ class TestEngine(unittest.TestCase):
         mamdani.implication = fl.Minimum()
         mamdani.activation = fl.General()
         mamdani.rules.append(
-            fl.Rule.parse("if service is poor or food is rancid then mTip is cheap", engine))
-        mamdani.rules.append(fl.Rule.parse("if service is good then mTip is average", engine))
-        mamdani.rules.append(fl.Rule.parse(
+            fl.Rule.create("if service is poor or food is rancid then mTip is cheap", engine))
+        mamdani.rules.append(fl.Rule.create("if service is good then mTip is average", engine))
+        mamdani.rules.append(fl.Rule.create(
             "if service is excellent or food is delicious then mTip is generous with 0.5", engine))
-        mamdani.rules.append(fl.Rule.parse(
+        mamdani.rules.append(fl.Rule.create(
             "if service is excellent and food is delicious then mTip is generous with 1.0", engine))
         engine.rule_blocks.append(mamdani)
 
@@ -183,12 +183,13 @@ class TestEngine(unittest.TestCase):
         takagiSugeno.disjunction = fl.AlgebraicSum()
         takagiSugeno.implication = None
         takagiSugeno.activation = fl.General()
-        takagiSugeno.rules.append(
-            fl.Rule.parse("if service is poor or food is rancid then tsTip is cheap", engine))
-        takagiSugeno.rules.append(fl.Rule.parse("if service is good then tsTip is average", engine))
-        takagiSugeno.rules.append(fl.Rule.parse(
+        takagiSugeno.rules.append(fl.Rule.create(
+            "if service is poor or food is rancid then tsTip is cheap", engine))
+        takagiSugeno.rules.append(fl.Rule.create(
+            "if service is good then tsTip is average", engine))
+        takagiSugeno.rules.append(fl.Rule.create(
             "if service is excellent or food is delicious then tsTip is generous with 0.5", engine))
-        takagiSugeno.rules.append(fl.Rule.parse(
+        takagiSugeno.rules.append(fl.Rule.create(
             "if service is excellent and food is delicious then tsTip is generous with 1.0",
             engine))
         engine.rule_blocks.append(takagiSugeno)

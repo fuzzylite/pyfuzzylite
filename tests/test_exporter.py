@@ -81,27 +81,29 @@ class TestFllExporter(unittest.TestCase):
             "\tactivation: none; ")
 
     def test_engine(self) -> None:
-        engine = fl.Engine("engine", "an engine",
-                           input_variables=[
-                               fl.InputVariable(
-                                   name="input_variable",
-                                   description="an input variable",
-                                   minimum=0, maximum=1,
-                                   terms=[fl.Triangle("A")])],
-                           output_variables=[
-                               fl.OutputVariable(
-                                   name="output_variable",
-                                   description="an output variable",
-                                   minimum=0, maximum=1,
-                                   terms=[fl.Triangle("A")])
-                           ],
-                           rule_blocks=[
-                               fl.RuleBlock(
-                                   name="rb",
-                                   description="a rule block",
-                                   rules=[fl.Rule.parse("if a then z")])
-                           ]
-                           )
+        engine = fl.Engine(
+            name="engine",
+            description="an engine",
+            input_variables=[
+                fl.InputVariable(
+                    name="input_variable",
+                    description="an input variable",
+                    minimum=0, maximum=1,
+                    terms=[fl.Triangle("A")])],
+            output_variables=[
+                fl.OutputVariable(
+                    name="output_variable",
+                    description="an output variable",
+                    minimum=0, maximum=1,
+                    terms=[fl.Triangle("A")])
+            ],
+            rule_blocks=[
+                fl.RuleBlock(
+                    name="rb",
+                    description="a rule block",
+                    rules=[fl.Rule.create("if a then z")])
+            ]
+        )
         self.assertEqual(fl.FllExporter().to_string(engine),
                          fl.FllExporter().engine(engine))
         self.assertEqual(fl.FllExporter().engine(engine), """\
@@ -182,7 +184,7 @@ OutputVariable: output_variable
 
     def test_rule_block(self) -> None:
         rb = fl.RuleBlock(name="rb", description="a rule block",
-                          rules=[fl.Rule.parse("if a then z")])
+                          rules=[fl.Rule.create("if a then z")])
         self.assertEqual(fl.FllExporter().to_string(rb),
                          fl.FllExporter().rule_block(rb))
         self.assertEqual(fl.FllExporter().rule_block(rb), """\
@@ -203,7 +205,7 @@ RuleBlock: rb
                          "term: A Triangle 0.000 1.000 2.000 0.500")
 
     def test_rule(self) -> None:
-        rule = fl.Rule.parse("if a then z")
+        rule = fl.Rule.create("if a then z")
         self.assertEqual(fl.FllExporter().to_string(rule),
                          fl.FllExporter().rule(rule))
         self.assertEqual(fl.FllExporter().rule(rule),
@@ -238,27 +240,29 @@ RuleBlock: rb
 class TestPythonExporter(unittest.TestCase):
 
     def test_engine(self) -> None:
-        engine = fl.Engine("engine", "an engine",
-                           input_variables=[
-                               fl.InputVariable(
-                                   name="input_variable",
-                                   description="an input variable",
-                                   minimum=0, maximum=1,
-                                   terms=[fl.Triangle("A")])],
-                           output_variables=[
-                               fl.OutputVariable(
-                                   name="output_variable",
-                                   description="an output variable",
-                                   minimum=0, maximum=1,
-                                   terms=[fl.Triangle("A")])
-                           ],
-                           rule_blocks=[
-                               fl.RuleBlock(
-                                   name="rb",
-                                   description="a rule block",
-                                   rules=[fl.Rule.parse("if a then z")])
-                           ]
-                           )
+        engine = fl.Engine(
+            name="engine",
+            description="an engine",
+            input_variables=[
+                fl.InputVariable(
+                    name="input_variable",
+                    description="an input variable",
+                    minimum=0, maximum=1,
+                    terms=[fl.Triangle("A")])],
+            output_variables=[
+                fl.OutputVariable(
+                    name="output_variable",
+                    description="an output variable",
+                    minimum=0, maximum=1,
+                    terms=[fl.Triangle("A")])
+            ],
+            rule_blocks=[
+                fl.RuleBlock(
+                    name="rb",
+                    description="a rule block",
+                    rules=[fl.Rule.create("if a then z")])
+            ]
+        )
         self.assertEqual(fl.PythonExporter().to_string(engine),
                          fl.PythonExporter().engine(engine))
         self.assertEqual(fl.PythonExporter().engine(engine), """\
@@ -302,7 +306,7 @@ rb = fl.RuleBlock(
     disjunction=None,
     implication=None,
     activation=None,
-    rules=[fl.Rule.parse("if a then z")]
+    rules=[fl.Rule.create("if a then z")]
 )
 engine.rule_blocks = [rb]
 """)
@@ -379,7 +383,7 @@ fl.OutputVariable(
 
     def test_rule_block(self) -> None:
         rb = fl.RuleBlock(name="rb", description="a rule block",
-                          rules=[fl.Rule.parse("if a then z")])
+                          rules=[fl.Rule.create("if a then z")])
         self.assertEqual(fl.PythonExporter().to_string(rb),
                          fl.PythonExporter().rule_block(rb))
         self.assertEqual(fl.PythonExporter().rule_block(rb), """\
@@ -391,9 +395,9 @@ fl.RuleBlock(
     disjunction=None,
     implication=None,
     activation=None,
-    rules=[fl.Rule.parse("if a then z")]
+    rules=[fl.Rule.create("if a then z")]
 )""")
-        rb.rules.append(fl.Rule.parse("if b then y"))
+        rb.rules.append(fl.Rule.create("if b then y"))
         self.assertEqual(fl.PythonExporter().rule_block(rb), """\
 fl.RuleBlock(
     name="rb",
@@ -404,8 +408,8 @@ fl.RuleBlock(
     implication=None,
     activation=None,
     rules=[
-        fl.Rule.parse("if a then z"),
-        fl.Rule.parse("if b then y")
+        fl.Rule.create("if a then z"),
+        fl.Rule.create("if b then y")
     ]
 )""")
 
@@ -417,11 +421,11 @@ fl.RuleBlock(
                          "fl.Triangle(\"A\", 0.000, 1.000, 2.000, 0.500)")
 
     def test_rule(self) -> None:
-        rule = fl.Rule.parse("if a then z")
+        rule = fl.Rule.create("if a then z")
         self.assertEqual(fl.PythonExporter().to_string(rule),
                          fl.PythonExporter().rule(rule))
         self.assertEqual(fl.PythonExporter().rule(rule),
-                         "fl.Rule.parse(\"if a then z\")")
+                         "fl.Rule.create(\"if a then z\")")
 
     def test_norm(self) -> None:
         self.assertEqual(fl.PythonExporter().norm(None), "None")

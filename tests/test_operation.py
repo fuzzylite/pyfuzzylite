@@ -64,6 +64,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.scale(math.inf, 0, 1, 0, 10), math.inf)
         self.assertEqual(fl.Op.scale(-math.inf, 0, 1, 0, 10), -math.inf)
 
+    @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:
         self.assertEqual("OutputVariable[{"
                          "'default_value': 'nan', 'defuzzifier': 'None', "
