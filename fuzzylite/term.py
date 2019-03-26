@@ -1074,7 +1074,7 @@ class Function(Term):
             self.right = right
 
         def __str__(self) -> str:
-            return Op.describe(self)
+            return self.postfix()
 
         def value(self) -> str:
             if self.element:
