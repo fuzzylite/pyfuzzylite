@@ -37,49 +37,42 @@ class Hedge:
 
 
 class Any(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return 1.0
 
 
 class Extremely(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
 
 
 class Not(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return 1.0 - x
 
 
 class Seldom(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
 
 
 class Somewhat(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return math.sqrt(x)
 
 
 class Very(Hedge):
-    __slots__ = ()
 
     def hedge(self, x: float) -> float:
         return x * x
 
 
 class HedgeLambda(Hedge):
-    __slots__ = ['_name', 'function']
 
     def __init__(self, name: str, function: Callable[[float], float]) -> None:
         self._name = name
@@ -94,7 +87,6 @@ class HedgeLambda(Hedge):
 
 
 class HedgeFunction(Hedge):
-    __slots__ = ['function']
 
     def __init__(self, function: 'Function') -> None:
         self.function = function

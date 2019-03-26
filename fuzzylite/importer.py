@@ -48,7 +48,6 @@ class Importer:
 
 
 class FllImporter(Importer):
-    __slots__ = ['separator']
 
     def __init__(self, separator: str = '\n') -> None:
         self.separator = separator
@@ -201,7 +200,7 @@ class FllImporter(Importer):
         return term
 
     def rule(self, fll: str, engine: Optional['Engine'] = None) -> Optional['Rule']:
-        return Rule.parse(self.extract_value(fll, "rule"), engine)
+        return Rule.create(self.extract_value(fll, "rule"), engine)
 
     def tnorm(self, fll: str) -> Optional['TNorm']:
         return self.component(TNorm, fll)

@@ -30,8 +30,6 @@ from .variable import InputVariable, OutputVariable, Variable
 
 
 class Engine:
-    __slots__ = ["name", "description", "input_variables", "output_variables", "rule_blocks"]
-
     @enum.unique
     class Type(enum.Enum):
         Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)

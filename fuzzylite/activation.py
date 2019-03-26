@@ -29,8 +29,6 @@ from .rule import Rule, RuleBlock
 
 class Activation:
 
-    # TODO: __slots__ = () ?
-
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
@@ -53,7 +51,6 @@ class Activation:
 
 
 class General(Activation):
-    __slots__ = ()
 
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
@@ -93,7 +90,6 @@ def _activate_positional(activation: Union['First', 'Last'], rule_block: RuleBlo
 
 
 class First(Activation):
-    __slots__ = ["rules", "threshold"]
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
         self.rules = rules
@@ -114,7 +110,6 @@ class First(Activation):
 
 
 class Last(Activation):
-    __slots__ = ["rules", "threshold"]
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
         self.rules = rules
@@ -163,7 +158,6 @@ def _activate_ranking(activation: Union['Highest', 'Lowest'], rule_block: RuleBl
 
 
 class Highest(Activation):
-    __slots__ = ["rules"]
 
     def __init__(self, rules: int = 1) -> None:
         self.rules = rules
@@ -180,7 +174,6 @@ class Highest(Activation):
 
 
 class Lowest(Activation):
-    __slots__ = ["rules"]
 
     def __init__(self, rules: int = 1) -> None:
         self.rules = rules
@@ -197,7 +190,6 @@ class Lowest(Activation):
 
 
 class Proportional(Activation):
-    __slots__ = ()
 
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
@@ -221,8 +213,6 @@ class Proportional(Activation):
 
 
 class Threshold(Activation):
-    __slots__ = ['comparator', 'threshold']
-
     @enum.unique
     class Comparator(enum.Enum):
         LessThan = "<"

@@ -45,8 +45,6 @@ class Defuzzifier:
 
 
 class IntegralDefuzzifier(Defuzzifier):
-    __slots__ = ["resolution"]
-
     default_resolution = 100
 
     def __init__(self, resolution: Optional[int] = None) -> None:
@@ -67,7 +65,6 @@ class IntegralDefuzzifier(Defuzzifier):
 
 
 class Bisector(IntegralDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -99,7 +96,6 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -119,7 +115,6 @@ class Centroid(IntegralDefuzzifier):
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -141,7 +136,6 @@ class LargestOfMaximum(IntegralDefuzzifier):
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -171,7 +165,6 @@ class MeanOfMaximum(IntegralDefuzzifier):
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
@@ -193,8 +186,6 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 
 
 class WeightedDefuzzifier(Defuzzifier):
-    __slots__ = ["type"]
-
     @enum.unique
     class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)
@@ -226,7 +217,6 @@ class WeightedDefuzzifier(Defuzzifier):
 
 
 class WeightedAverage(WeightedDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
         super().__init__(type)
@@ -265,7 +255,6 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-    __slots__ = ()
 
     def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
         super().__init__(type)

@@ -33,8 +33,6 @@ if typing.TYPE_CHECKING:
 
 
 class Variable:
-    __slots__ = ["name", "description", "enabled", "minimum", "maximum", "lock_range", "terms",
-                 "_value"]
 
     def __init__(self,
                  name: str = "",
@@ -114,7 +112,6 @@ class Variable:
 
 
 class InputVariable(Variable):
-    __slots__ = ()
 
     def __init__(self,
                  name: str = "",
@@ -140,7 +137,6 @@ class InputVariable(Variable):
 
 
 class OutputVariable(Variable):
-    __slots__ = ["fuzzy", "defuzzifier", "previous_value", "default_value", "lock_previous"]
 
     def __init__(self,
                  name: str = "",

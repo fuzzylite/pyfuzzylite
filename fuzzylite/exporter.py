@@ -52,7 +52,6 @@ class Exporter:
 
 
 class FllExporter(Exporter):
-    __slots__ = ["indent", "separator"]
 
     def __init__(self, indent: str = "  ", separator: str = "\n") -> None:
         self.indent = indent
@@ -342,12 +341,10 @@ class PythonExporter(Exporter):
                 if defuzzifier else str(None))
 
     def rule(self, rule: 'Rule') -> str:
-        return f"fl.Rule.parse({self.format(rule.text)})"
+        return f"fl.{rule.create.__qualname__}({self.format(rule.text)})"
 
 
 class FldExporter(Exporter):
-    __slots__ = ["separator", "headers", "input_values", "output_values"]
-
     @enum.unique
     class ScopeOfValues(enum.Enum):
         EachVariable, AllVariables = range(2)

@@ -48,49 +48,42 @@ class TNorm(Norm):
 
 
 class AlgebraicProduct(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return a * b
 
 
 class BoundedDifference(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return max(0.0, a + b - 1.0)
 
 
 class DrasticProduct(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return min(a, b) if max(a, b) == 1.0 else 0.0
 
 
 class EinsteinProduct(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return (a * b) / (2.0 - (a + b - a * b))
 
 
 class HamacherProduct(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return (a * b) / (a + b - a * b) if a + b != 0.0 else 0.0
 
 
 class Minimum(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return min(a, b)
 
 
 class NilpotentMinimum(TNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return min(a, b) if a + b > 1.0 else 0.0
@@ -103,70 +96,60 @@ class SNorm(Norm):
 
 
 class AlgebraicSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return a + b - (a * b)
 
 
 class BoundedSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return min(1.0, a + b)
 
 
 class DrasticSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return max(a, b) if min(a, b) == 0.0 else 1.0
 
 
 class EinsteinSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return (a + b) / (1.0 + a * b)
 
 
 class HamacherSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return (a + b - 2.0 * a * b) / (1.0 - a * b) if a * b != 1.0 else 1.0
 
 
 class Maximum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return max(a, b)
 
 
 class NilpotentMaximum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return max(a, b) if a + b < 1.0 else 1.0
 
 
 class NormalizedSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return (a + b) / max(1.0, a + b)
 
 
 class UnboundedSum(SNorm):
-    __slots__ = ()
 
     def compute(self, a: float, b: float) -> float:
         return a + b
 
 
 class NormLambda(TNorm, SNorm):
-    __slots__ = ["function"]
 
     def __init__(self, function: Callable[[float, float], float]) -> None:
         self.function = function
@@ -176,7 +159,6 @@ class NormLambda(TNorm, SNorm):
 
 
 class NormFunction(TNorm, SNorm):
-    __slots__ = ["function"]
 
     def __init__(self, function: 'Function') -> None:
         self.function = function

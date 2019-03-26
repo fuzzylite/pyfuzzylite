@@ -65,7 +65,6 @@ class Term:
           name is the name of the term
           height is the height of the term
     """
-    __slots__ = ["name", "height"]
 
     def __init__(self, name: str = "", height: float = 1.0) -> None:
         self.name = name
@@ -169,7 +168,6 @@ class Term:
 
 
 class Activated(Term):
-    __slots__ = ["term", "degree", "implication"]
 
     def __init__(self, term: Term, degree: float = 1.0,
                  implication: Optional[TNorm] = None) -> None:
@@ -201,7 +199,6 @@ class Activated(Term):
 
 
 class Aggregated(Term):
-    __slots__ = ["terms", "minimum", "maximum", "aggregation"]
 
     def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan,
                  aggregation: Optional[SNorm] = None,
@@ -266,7 +263,6 @@ class Aggregated(Term):
 
 
 class Bell(Term):
-    __slots__ = ["center", "width", "slope"]
 
     def __init__(self, name: str = "", center: float = nan, width: float = nan, slope: float = nan,
                  height: float = 1.0) -> None:
@@ -291,7 +287,6 @@ class Bell(Term):
 
 
 class Binary(Term):
-    __slots__ = ["start", "direction"]
 
     def __init__(self, name: str = "", start: float = nan, direction: float = nan,
                  height: float = 1.0) -> None:
@@ -321,7 +316,6 @@ class Binary(Term):
 
 
 class Concave(Term):
-    __slots__ = ["inflection", "end"]
 
     def __init__(self, name: str = "", inflection: float = nan, end: float = nan,
                  height: float = 1.0) -> None:
@@ -363,7 +357,6 @@ class Concave(Term):
 
 
 class Constant(Term):
-    __slots__ = ["value"]
 
     def __init__(self, name: str = "", value: float = nan) -> None:
         super().__init__(name)
@@ -384,7 +377,6 @@ class Constant(Term):
 
 
 class Cosine(Term):
-    __slots__ = ["center", "width"]
 
     def __init__(self, name: str = "", center: float = nan, width: float = nan,
                  height: float = 1.0) -> None:
@@ -411,10 +403,7 @@ class Cosine(Term):
 
 
 class Discrete(Term):
-    __slots__ = ["xy"]
-
     class Pair:
-        __slots__ = ["x", "y"]
 
         def __init__(self, x: float = nan, y: float = nan) -> None:
             self.x = x
@@ -563,7 +552,6 @@ class Discrete(Term):
 
 
 class Gaussian(Term):
-    __slots__ = ["mean", "standard_deviation"]
 
     def __init__(self, name: str = "", mean: float = nan, standard_deviation: float = nan,
                  height: float = 1.0) -> None:
@@ -587,7 +575,6 @@ class Gaussian(Term):
 
 
 class GaussianProduct(Term):
-    __slots__ = ["mean_a", "standard_deviation_a", "mean_b", "standard_deviation_b"]
 
     def __init__(self, name: str = "", mean_a: float = nan, standard_deviation_a: float = nan,
                  mean_b: float = nan, standard_deviation_b: float = nan,
@@ -625,7 +612,6 @@ class GaussianProduct(Term):
 
 
 class Linear(Term):
-    __slots__ = ["coefficients", "engine"]
 
     def __init__(self, name: str = "", coefficients: Optional[Iterable[float]] = None,
                  engine: Optional['Engine'] = None) -> None:
@@ -661,7 +647,6 @@ class Linear(Term):
 
 
 class PiShape(Term):
-    __slots__ = ["bottom_left", "top_left", "top_right", "bottom_right"]
 
     def __init__(self, name: str = "", bottom_left: float = nan, top_left: float = nan,
                  top_right: float = nan, bottom_right: float = nan, height: float = 1.0) -> None:
@@ -706,7 +691,6 @@ class PiShape(Term):
 
 
 class Ramp(Term):
-    __slots__ = ["start", "end"]
 
     def __init__(self, name: str = "", start: float = nan, end: float = nan,
                  height: float = 1.0) -> None:
@@ -753,7 +737,6 @@ class Ramp(Term):
 
 
 class Rectangle(Term):
-    __slots__ = ["start", "end"]
 
     def __init__(self, name: str = "", start: float = nan, end: float = nan,
                  height: float = 1.0) -> None:
@@ -781,7 +764,6 @@ class Rectangle(Term):
 
 # TODO: Tsukamoto
 class Sigmoid(Term):
-    __slots__ = ["inflection", "slope"]
 
     def __init__(self, name: str = "", inflection: float = nan, slope: float = nan,
                  height: float = 1.0) -> None:
@@ -807,7 +789,6 @@ class Sigmoid(Term):
 
 
 class SigmoidDifference(Term):
-    __slots__ = ["left", "rising", "falling", "right"]
 
     def __init__(self, name: str = "", left: float = nan, rising: float = nan,
                  falling: float = nan, right: float = nan, height: float = 1.0) -> None:
@@ -836,7 +817,6 @@ class SigmoidDifference(Term):
 
 
 class SigmoidProduct(Term):
-    __slots__ = ["left", "rising", "falling", "right"]
 
     def __init__(self, name: str = "", left: float = nan, rising: float = nan,
                  falling: float = nan, right: float = nan, height: float = 1.0) -> None:
@@ -865,7 +845,6 @@ class SigmoidProduct(Term):
 
 
 class Spike(Term):
-    __slots__ = ["center", "width"]
 
     def __init__(self, name: str = "", inflection: float = nan, slope: float = nan,
                  height: float = 1.0) -> None:
@@ -889,7 +868,6 @@ class Spike(Term):
 
 # TODO: Tsukamoto
 class SShape(Term):
-    __slots__ = ["start", "end"]
 
     def __init__(self, name: str = "", start: float = nan, end: float = nan,
                  height: float = 1.0) -> None:
@@ -925,7 +903,6 @@ class SShape(Term):
 
 
 class Trapezoid(Term):
-    __slots__ = ["vertex_a", "vertex_b", "vertex_c", "vertex_d"]
 
     def __init__(self, name: str = "", vertex_a: float = nan, vertex_b: float = nan,
                  vertex_c: float = nan, vertex_d: float = nan, height: float = 1.0) -> None:
@@ -972,7 +949,6 @@ class Trapezoid(Term):
 
 
 class Triangle(Term):
-    __slots__ = ["vertex_a", "vertex_b", "vertex_c"]
 
     def __init__(self, name: str = "", vertex_a: float = nan, vertex_b: float = nan,
                  vertex_c: float = nan, height: float = 1.0) -> None:
@@ -1017,7 +993,6 @@ class Triangle(Term):
 
 # TODO: Tsukamoto
 class ZShape(Term):
-    __slots__ = ["start", "end"]
 
     def __init__(self, name: str = "", start: float = nan, end: float = nan,
                  height: float = 1.0) -> None:
@@ -1053,12 +1028,7 @@ class ZShape(Term):
 
 
 class Function(Term):
-    __slots__ = ["root", "formula", "engine", "variables"]
-
     class Element:
-        __slots__ = ["name", "description", "type", "method", "arity", "precedence",
-                     "associativity"]
-
         @enum.unique
         class Type(enum.Enum):
             Operator, Function = range(2)
@@ -1092,7 +1062,6 @@ class Function(Term):
             return self.type == Function.Element.Type.Operator
 
     class Node(object):
-        __slots__ = ["element", "variable", "constant", "right", "left"]
 
         def __init__(self, element: Optional['Function.Element'] = None,
                      variable: str = "", constant: float = nan,

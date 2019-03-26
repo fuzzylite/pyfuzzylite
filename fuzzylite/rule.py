@@ -40,7 +40,6 @@ class Expression:
 
 
 class Proposition(Expression):
-    __slots__ = ["variable", "hedges", "term"]
 
     def __init__(self, variable: Optional['Variable'] = None,
                  hedges: Optional[Iterable['Hedge']] = None,
@@ -70,7 +69,6 @@ class Proposition(Expression):
 
 
 class Operator(Expression):
-    __slots__ = ["name", "left", "right"]
 
     def __init__(self, name: str = "",
                  right: Optional[Expression] = None,
@@ -84,7 +82,6 @@ class Operator(Expression):
 
 
 class Antecedent(object):
-    __slots__ = ["text", "expression"]
 
     def __init__(self, text: str = "") -> None:
         self.text: str = text
@@ -327,7 +324,6 @@ class Antecedent(object):
 
 
 class Consequent:
-    __slots__ = ["text", "conclusions"]
 
     def __init__(self, text: str = "") -> None:
         self.text: str = text
@@ -454,8 +450,6 @@ class Consequent:
 
 
 class Rule(object):
-    __slots__ = ["enabled", "weight", "activation_degree", "triggered", "antecedent", "consequent"]
-
     IF = 'if'
     IS = 'is'
     THEN = 'then'
@@ -488,6 +482,9 @@ class Rule(object):
 
     @text.setter
     def text(self, text: str) -> None:
+        self.parse(text)
+
+    def parse(self, text: str) -> None:
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
 
@@ -518,7 +515,7 @@ class Rule(object):
                 weight = Op.scalar(token)
                 state = s_end
             elif state == s_end:
-                raise SyntaxError(f"unexpected token '{token}' at the end of rule")
+                raise SyntaxError(f"unexpected token '{token}'")
             else:
                 raise SyntaxError(f"unexpected state '{state}' in finite state machine")
 
@@ -570,17 +567,15 @@ class Rule(object):
         self.consequent.load(engine)
 
     @staticmethod
-    def parse(text: str, engine: Optional['Engine'] = None) -> 'Rule':
+    def create(text: str, engine: Optional['Engine'] = None) -> 'Rule':
         rule = Rule()
-        rule.text = text
+        rule.parse(text)
         if engine:
             rule.load(engine)
         return rule
 
 
 class RuleBlock:
-    __slots__ = ["name", "description", "enabled", "conjunction", "disjunction", "implication",
-                 "activation", "rules"]
 
     def __init__(self,
                  name: str = "",
