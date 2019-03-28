@@ -42,49 +42,11 @@ OutputVariable: Power
   term: LOW Triangle 0.000 0.250 0.500
   term: MEDIUM Triangle 0.250 0.500 0.750
   term: HIGH Triangle 0.500 0.750 1.000
+#RuleBlock:
   # rule: if Ambient is DARK then Power is HIGH
   # rule: if Ambient is MEDIUM then Power is MEDIUM
   # rule: if Ambient is BRIGHT then Power is LOW
   """
-
-
-class RuleBlockAssert(BaseAssert[fl.RuleBlock]):
-    pass
-
-
-class TestRuleBlock(unittest.TestCase):
-
-    def test_constructor(self) -> None:
-        RuleBlockAssert(self, fl.RuleBlock()) \
-            .exports_fll(
-            "\n".join(
-                [
-                    "RuleBlock: ",
-                    "  enabled: true",
-                    "  conjunction: none",
-                    "  disjunction: none",
-                    "  implication: none",
-                    "  activation: none",
-                ]))
-
-        RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock",
-                                           rules=[fl.Rule.create("if a then z"),
-                                                  fl.Rule.create("if b then y")],
-                                           conjunction=fl.TNorm(), disjunction=fl.SNorm(),
-                                           implication=fl.TNorm(), activation=fl.Activation())) \
-            .exports_fll(
-            "\n".join(
-                [
-                    "RuleBlock: rb",
-                    "  description: a ruleblock",
-                    "  enabled: true",
-                    "  conjunction: TNorm",
-                    "  disjunction: SNorm",
-                    "  implication: TNorm",
-                    "  activation: Activation",
-                    "  rule: if a then z",
-                    "  rule: if b then y",
-                ]))
 
 
 class TestExpression(unittest.TestCase):
@@ -797,6 +759,118 @@ class TestRule(unittest.TestCase):
         self.assertEqual(0.0, rule.activation_degree)
         self.assertTrue(rule.antecedent.is_loaded())
         self.assertTrue(rule.consequent.is_loaded())
+
+
+class RuleBlockAssert(BaseAssert[fl.RuleBlock]):
+    pass
+
+
+class TestRuleBlock(unittest.TestCase):
+
+    def test_constructor(self) -> None:
+        RuleBlockAssert(self, fl.RuleBlock()) \
+            .exports_fll(
+            "\n".join(
+                [
+                    "RuleBlock: ",
+                    "  enabled: true",
+                    "  conjunction: none",
+                    "  disjunction: none",
+                    "  implication: none",
+                    "  activation: none",
+                ]))
+
+        RuleBlockAssert(self, fl.RuleBlock("rb", "a ruleblock",
+                                           rules=[fl.Rule.create("if a then z"),
+                                                  fl.Rule.create("if b then y")],
+                                           conjunction=fl.TNorm(), disjunction=fl.SNorm(),
+                                           implication=fl.TNorm(), activation=fl.Activation())) \
+            .exports_fll(
+            "\n".join(
+                [
+                    "RuleBlock: rb",
+                    "  description: a ruleblock",
+                    "  enabled: true",
+                    "  conjunction: TNorm",
+                    "  disjunction: SNorm",
+                    "  implication: TNorm",
+                    "  activation: Activation",
+                    "  rule: if a then z",
+                    "  rule: if b then y",
+                ]))
+
+    def test_activate(self) -> None:
+        activation = fl.General()
+        activation.activate = MagicMock()  # type: ignore
+
+        rb = fl.RuleBlock(activation=activation)
+
+        rb.activate()
+        activation.activate.assert_called_once_with(rb)  # type: ignore
+
+        rb.activation = None
+        with self.assertRaisesRegex(ValueError, "expected an activation method, but found none"):
+            rb.activate()
+
+    def test_unload_rules(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+        rb = fl.RuleBlock(
+            rules=[
+                fl.Rule.create("if Ambient is DARK then Power is HIGH", engine),
+                fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine),
+                fl.Rule.create("if Ambient is BRIGHT then Power is LOW", engine)
+            ]
+        )
+
+        self.assertTrue(3, len(rb.rules))
+        for rule in rb.rules:
+            self.assertTrue(rule.is_loaded())
+
+        rb.unload_rules()
+        self.assertTrue(3, len(rb.rules))
+        for rule in rb.rules:
+            self.assertFalse(rule.is_loaded())
+
+        rb.load_rules(engine)
+        self.assertTrue(3, len(rb.rules))
+        for rule in rb.rules:
+            self.assertTrue(rule.is_loaded())
+
+    def test_load_rules(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+
+        rule1 = fl.Rule.create("if X then Y", engine=None)
+        self.assertFalse(rule1.is_loaded())
+
+        rule2 = fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine=engine)
+        self.assertTrue(rule2.is_loaded())
+
+        rule3 = fl.Rule.create("if Ambient is BRIGHT then Power is Invalid", engine=None)
+        self.assertFalse(rule3.is_loaded())
+
+        rb = fl.RuleBlock(rules=[rule1, rule2, rule3])
+        expected = ["failed to load the following rules:",
+                    "['rule: if X then Y']: expected variable or logical operator, but found 'X'",
+                    "['rule: if Ambient is BRIGHT then Power is Invalid']: consequent expected a "
+                    "hedge or term, but found 'Invalid'"]
+        try:
+            rb.load_rules(engine)
+            self.assertTrue(False)
+        except RuntimeError as ex:
+            self.assertEqual("\n".join(expected), str(ex))
+
+    def test_reload_rules(self) -> None:
+        engine = fl.FllImporter().from_string(SimpleDimmer)
+
+        rule = fl.Rule.create("if Ambient is DARK then Power is HIGH", engine)
+        rule.load = MagicMock()  # type: ignore
+        rule.unload = MagicMock()  # type: ignore
+
+        rb = fl.RuleBlock(rules=[rule])
+
+        rb.reload_rules(engine)
+        rule.unload.assert_called()  # type: ignore
+        rule.load.assert_called_once_with(engine)  # type: ignore
 
 
 if __name__ == '__main__':

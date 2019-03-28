@@ -500,7 +500,7 @@ class Rule(object):
                     state = s_if
                 else:
                     raise SyntaxError(f"expected keyword '{Rule.IF}', "
-                                      f"but found '{token}' in rule: {text}")
+                                      f"but found '{token}' in rule '{text}'")
             elif state == s_if:
                 if token == Rule.THEN:
                     state = s_then
@@ -515,7 +515,7 @@ class Rule(object):
                 weight = Op.scalar(token)
                 state = s_end
             elif state == s_end:
-                raise SyntaxError(f"unexpected token '{token}'")
+                raise SyntaxError(f"unexpected token '{token}' in rule '{text}'")
             else:
                 raise SyntaxError(f"unexpected state '{state}' in finite state machine")
 
@@ -604,7 +604,7 @@ class RuleBlock:
     def activate(self) -> None:
         if not self.activation:
             raise ValueError(f"expected an activation method, "
-                             f"but found none in rule block: {str(self)}")
+                             f"but found none in rule block:\n{str(self)}")
         return self.activation.activate(self)
 
     def unload_rules(self) -> None:
@@ -618,10 +618,10 @@ class RuleBlock:
             try:
                 rule.load(engine)
             except Exception as ex:
-                exceptions.append(f"[{rule.text}]: {str(ex)}")
+                exceptions.append(f"['{str(rule)}']: {str(ex)}")
         if exceptions:
             raise RuntimeError("failed to load the following rules:\n"
-                               "\n".join(exceptions))
+                               + "\n".join(exceptions))
 
     def reload_rules(self, engine: 'Engine') -> None:
         self.unload_rules()
