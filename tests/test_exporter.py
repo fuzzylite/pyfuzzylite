@@ -239,6 +239,22 @@ RuleBlock: rb
 
 class TestPythonExporter(unittest.TestCase):
 
+    def test_empty_engine(self) -> None:
+        engine = fl.Engine(
+            name="engine",
+            description="an engine")
+        self.assertEqual(fl.PythonExporter().to_string(engine),
+                         fl.PythonExporter().engine(engine))
+        self.assertEqual(fl.PythonExporter().engine(engine), """\
+import fuzzylite as fl
+
+engine = fl.Engine(
+    name="engine",
+    description="an engine",
+    input_variables = [],
+    output_variables = [],
+    rule_blocks = []""")
+
     def test_engine(self) -> None:
         engine = fl.Engine(
             name="engine",
@@ -248,13 +264,16 @@ class TestPythonExporter(unittest.TestCase):
                     name="input_variable",
                     description="an input variable",
                     minimum=0, maximum=1,
-                    terms=[fl.Triangle("A")])],
+                    terms=[fl.Triangle("A")]
+                )
+            ],
             output_variables=[
                 fl.OutputVariable(
                     name="output_variable",
                     description="an output variable",
                     minimum=0, maximum=1,
-                    terms=[fl.Triangle("A")])
+                    terms=[fl.Triangle("A")]
+                )
             ],
             rule_blocks=[
                 fl.RuleBlock(
@@ -265,51 +284,49 @@ class TestPythonExporter(unittest.TestCase):
         )
         self.assertEqual(fl.PythonExporter().to_string(engine),
                          fl.PythonExporter().engine(engine))
-        self.assertEqual(fl.PythonExporter().engine(engine), """\
+        self.assertEqual(second=fl.PythonExporter().engine(engine), first="""\
 import fuzzylite as fl
 
 engine = fl.Engine(
     name="engine",
-    description="an engine"
-)
-
-input_variable = fl.InputVariable(
-    name="input_variable",
-    description="an input variable",
-    enabled=True,
-    minimum=0,
-    maximum=1,
-    lock_range=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
-)
-engine.input_variables = [input_variable]
-
-output_variable = fl.OutputVariable(
-    name="output_variable",
-    description="an output variable",
-    enabled=True,
-    minimum=0,
-    maximum=1,
-    lock_range=False,
-    aggregation=None,
-    defuzzifier=None,
-    lock_previous=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
-)
-engine.output_variables = [output_variable]
-
-rb = fl.RuleBlock(
-    name="rb",
-    description="a rule block",
-    enabled=True,
-    conjunction=None,
-    disjunction=None,
-    implication=None,
-    activation=None,
-    rules=[fl.Rule.create("if a then z")]
-)
-engine.rule_blocks = [rb]
-""")
+    description="an engine",
+    input_variables = [
+        fl.InputVariable(
+            name="input_variable",
+            description="an input variable",
+            enabled=True,
+            minimum=0,
+            maximum=1,
+            lock_range=False,
+            terms=[fl.Triangle("A", nan, nan, nan)]
+        )
+    ],
+    output_variables = [
+        fl.OutputVariable(
+            name="output_variable",
+            description="an output variable",
+            enabled=True,
+            minimum=0,
+            maximum=1,
+            lock_range=False,
+            aggregation=None,
+            defuzzifier=None,
+            lock_previous=False,
+            terms=[fl.Triangle("A", nan, nan, nan)]
+        )
+    ],
+    rule_blocks = [
+        fl.RuleBlock(
+            name="rb",
+            description="a rule block",
+            enabled=True,
+            conjunction=None,
+            disjunction=None,
+            implication=None,
+            activation=None,
+            rules=[fl.Rule.create("if a then z")]
+        )
+    ]""")
 
     def test_input_variable(self) -> None:
         iv = fl.InputVariable(name="input_variable",
@@ -447,7 +464,8 @@ fl.RuleBlock(
         defuzzifier = fl.Centroid()
         self.assertEqual(fl.PythonExporter().to_string(defuzzifier),
                          fl.PythonExporter().defuzzifier(defuzzifier))
-        self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(100)")
+        self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier),
+                         "fl.Centroid(100)")
 
     def test_object(self) -> None:
         with self.assertRaisesRegex(ValueError, rf"expected a fuzzylite object, but found 'object"):
@@ -456,7 +474,7 @@ fl.RuleBlock(
 
 class TestExporters(unittest.TestCase):
 
-    @unittest.skip("Re-enable after test coverage improved independently")
+    # @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         import concurrent.futures
         import logging

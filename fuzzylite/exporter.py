@@ -21,7 +21,7 @@ import enum
 import io
 import typing
 from pathlib import Path
-from typing import IO, List, Optional, Set, Union
+from typing import Any, IO, List, Optional, Set, Union
 
 from .operation import Op
 
@@ -198,6 +198,31 @@ class PythonExporter(Exporter):
     def __init__(self, indent: str = "    ") -> None:
         self.indent = indent
 
+    def engine(self, engine: 'Engine', level: int = 1) -> str:
+        result = [f"""\
+import fuzzylite as fl
+
+engine = fl.Engine(
+{level*self.indent}name={self.format(engine.name)},
+{level*self.indent}description={self.format(engine.description)}"""]
+
+        input_variables: List[str] = []
+        for iv in engine.input_variables:
+            input_variables += [f"{(level+1)*self.indent}{self.input_variable(iv, level+2)}"]
+        result += [self.key_values("input_variables", input_variables)]
+
+        output_variables: List[str] = []
+        for ov in engine.output_variables:
+            output_variables += [f"{(level+1)*self.indent}{self.output_variable(ov, level+2)}"]
+        result += [self.key_values("output_variables", output_variables)]
+
+        rule_blocks: List[str] = []
+        for rb in engine.rule_blocks:
+            rule_blocks += [f"{(level+1)*self.indent}{self.rule_block(rb, level+2)}"]
+        result += [self.key_values("rule_blocks", rule_blocks)]
+
+        return ",\n".join(result)
+
     def to_string(self, instance: object) -> str:
         from .engine import Engine
         if isinstance(instance, Engine):
@@ -242,89 +267,87 @@ class PythonExporter(Exporter):
             return str(x)
         return str(x)
 
-    def engine(self, engine: 'Engine') -> str:
-        result = ["import fuzzylite as fl", ""]
-
-        result += ["engine = fl.Engine(\n"
-                   f"{self.indent}name={self.format(engine.name)},",
-                   f"{self.indent}description={self.format(engine.description)}",
-                   ")"]
-        result += ['']
-        for iv in engine.input_variables:
-            result += [f"{iv.name} = {self.input_variable(iv)}"]
-        result += ["engine.input_variables = [%s]" %
-                   ", ".join(iv.name for iv in engine.input_variables)]
-
-        result += ['']
-        for ov in engine.output_variables:
-            result += [f"{ov.name} = {self.output_variable(ov)}"]
-        result += ["engine.output_variables = [%s]" %
-                   ", ".join(ov.name for ov in engine.output_variables)]
-
-        result += ['']
-        for rb in engine.rule_blocks:
-            result += [f"{rb.name} = {self.rule_block(rb)}"]
-        result += ["engine.rule_blocks = [%s]" %
-                   ", ".join(rb.name for rb in engine.rule_blocks)]
-        result += ['']
+    def key_values(self, name: str, values: List[Any], level: int = 1) -> str:
+        result = [f"{level*self.indent}{name} = "]
+        if not values:
+            result[0] += "[]"
+        else:
+            result[0] += "["
+            result += [",\n".join(values), f"{level*self.indent}]"]
         return '\n'.join(result)
 
-    def input_variable(self, iv: 'InputVariable') -> str:
-        result = [f"{self.indent}name={self.format(iv.name)}",
-                  f"{self.indent}description={self.format(iv.description)}",
-                  f"{self.indent}enabled={self.format(iv.enabled)}",
-                  f"{self.indent}minimum={self.format(iv.minimum)}",
-                  f"{self.indent}maximum={self.format(iv.maximum)}",
-                  f"{self.indent}lock_range={self.format(iv.lock_range)}"]
+    def input_variable(self, iv: 'InputVariable', level: int = 1) -> str:
+        result = [f"{level*self.indent}name={self.format(iv.name)}",
+                  f"{level*self.indent}description={self.format(iv.description)}",
+                  f"{level*self.indent}enabled={self.format(iv.enabled)}",
+                  f"{level*self.indent}minimum={self.format(iv.minimum)}",
+                  f"{level*self.indent}maximum={self.format(iv.maximum)}",
+                  f"{level*self.indent}lock_range={self.format(iv.lock_range)}"]
         if iv.terms:
             if len(iv.terms) == 1:
-                terms = f"{self.indent}terms=[{self.term(iv.terms[0])}]"
+                terms = f"{level*self.indent}terms=[{self.term(iv.terms[0])}]"
             else:
-                terms = (f"{self.indent}terms=[\n"
-                         + ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in iv.terms)
-                         + f"\n{self.indent}]")
+                terms = (f"{level*self.indent}terms=[\n"
+                         + ",\n".join(f"{(level+1)*self.indent}{self.term(term)}"
+                                      for term in iv.terms)
+                         + f"\n{level*self.indent}]")
             result += [terms]
 
-        return "fl.InputVariable(\n%s\n)" % ',\n'.join(result)
+        input_variable = ["fl.InputVariable("]
+        input_variable += [",\n".join(result)]
+        input_variable += [f"{max(0, level-1)*self.indent})"]
 
-    def output_variable(self, ov: 'OutputVariable') -> str:
-        result = [f"{self.indent}name={self.format(ov.name)}",
-                  f"{self.indent}description={self.format(ov.description)}",
-                  f"{self.indent}enabled={self.format(ov.enabled)}",
-                  f"{self.indent}minimum={self.format(ov.minimum)}",
-                  f"{self.indent}maximum={self.format(ov.maximum)}",
-                  f"{self.indent}lock_range={self.format(ov.lock_range)}",
-                  f"{self.indent}aggregation={self.norm(ov.aggregation)}",
-                  f"{self.indent}defuzzifier={self.defuzzifier(ov.defuzzifier)}",
-                  f"{self.indent}lock_previous={self.format(ov.lock_previous)}"]
+        return '\n'.join(input_variable)
+
+    def output_variable(self, ov: 'OutputVariable', level: int = 1) -> str:
+        result = [f"{level*self.indent}name={self.format(ov.name)}",
+                  f"{level*self.indent}description={self.format(ov.description)}",
+                  f"{level*self.indent}enabled={self.format(ov.enabled)}",
+                  f"{level*self.indent}minimum={self.format(ov.minimum)}",
+                  f"{level*self.indent}maximum={self.format(ov.maximum)}",
+                  f"{level*self.indent}lock_range={self.format(ov.lock_range)}",
+                  f"{level*self.indent}aggregation={self.norm(ov.aggregation)}",
+                  f"{level*self.indent}defuzzifier={self.defuzzifier(ov.defuzzifier)}",
+                  f"{level*self.indent}lock_previous={self.format(ov.lock_previous)}"]
         if ov.terms:
             if len(ov.terms) == 1:
-                terms = f"{self.indent}terms=[{self.term(ov.terms[0])}]"
+                terms = f"{level*self.indent}terms=[{self.term(ov.terms[0])}]"
             else:
-                terms = (f"{self.indent}terms=[\n"
-                         + ',\n'.join(f"{2*self.indent}{self.term(term)}" for term in ov.terms)
-                         + f"\n{self.indent}]")
+                terms = (f"{level*self.indent}terms=[\n"
+                         + ',\n'.join(f"{(level+1)*self.indent}{self.term(term)}"
+                                      for term in ov.terms)
+                         + f"\n{level*self.indent}]")
             result += [terms]
 
-        return "fl.OutputVariable(\n%s\n)" % ',\n'.join(result)
+        output_variable = ["fl.OutputVariable("]
+        output_variable += [",\n".join(result)]
+        output_variable += [f"{max(0, level-1)*self.indent})"]
 
-    def rule_block(self, rb: 'RuleBlock') -> str:
-        result = [f"{self.indent}name={self.format(rb.name)}",
-                  f"{self.indent}description={self.format(rb.description)}",
-                  f"{self.indent}enabled={self.format(rb.enabled)}",
-                  f"{self.indent}conjunction={self.norm(rb.conjunction)}",
-                  f"{self.indent}disjunction={self.norm(rb.disjunction)}",
-                  f"{self.indent}implication={self.norm(rb.implication)}",
-                  f"{self.indent}activation={self.activation(rb.activation)}"]
+        return '\n'.join(output_variable)
+
+    def rule_block(self, rb: 'RuleBlock', level: int = 1) -> str:
+        result = [f"{level*self.indent}name={self.format(rb.name)}",
+                  f"{level*self.indent}description={self.format(rb.description)}",
+                  f"{level*self.indent}enabled={self.format(rb.enabled)}",
+                  f"{level*self.indent}conjunction={self.norm(rb.conjunction)}",
+                  f"{level*self.indent}disjunction={self.norm(rb.disjunction)}",
+                  f"{level*self.indent}implication={self.norm(rb.implication)}",
+                  f"{level*self.indent}activation={self.activation(rb.activation)}"]
         if rb.rules:
             if len(rb.rules) == 1:
-                rules = f"{self.indent}rules=[{self.rule(rb.rules[0])}]"
+                rules = f"{level*self.indent}rules=[{self.rule(rb.rules[0])}]"
             else:
-                rules = (f"{self.indent}rules=[\n{2*self.indent}"
-                         + f",\n{2*self.indent}".join(self.rule(rule) for rule in rb.rules)
-                         + f"\n{self.indent}]")
+                rules = (f"{level*self.indent}rules=[\n{(level+1)*self.indent}"
+                         + f",\n{(level+1)*self.indent}".join(self.rule(rule)
+                                                              for rule in rb.rules)
+                         + f"\n{level*self.indent}]")
             result += [rules]
-        return "fl.RuleBlock(\n%s\n)" % ',\n'.join(result)
+
+        rule_block = ["fl.RuleBlock("]
+        rule_block += [",\n".join(result)]
+        rule_block += [f"{max(0, level-1)*self.indent})"]
+
+        return '\n'.join(rule_block)
 
     def term(self, term: 'Term') -> str:
         return f"fl.{term.class_name}(%s, %s)" % (self.format(term.name),
