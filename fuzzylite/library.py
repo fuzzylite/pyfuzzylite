@@ -25,8 +25,8 @@ __all__ = ["Library"]
 
 class Library:
 
-    def __init__(self, decimals: int = 3, abs_tolerance: float = 1e-5,
-                 floating_point_type: Type[float] = float,
+    def __init__(self, decimals: int, abs_tolerance: float,
+                 floating_point_type: Type[float],
                  factory_manager: Optional['FactoryManager'] = None) -> None:
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance

@@ -33,7 +33,10 @@ from fuzzylite.rule import *
 from fuzzylite.term import *
 from fuzzylite.variable import *
 
-lib: Library = Library()
+lib: Library = Library(decimals=3,
+                       abs_tolerance=1e-5,
+                       floating_point_type=float,
+                       factory_manager=FactoryManager())
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary
