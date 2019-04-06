@@ -19,6 +19,7 @@ __all__ = ["Exporter", "FllExporter", "PythonExporter", "FldExporter"]
 
 import enum
 import io
+import math
 import typing
 from pathlib import Path
 from typing import Any, IO, List, Optional, Set, Union
@@ -221,7 +222,11 @@ engine = fl.Engine(
             rule_blocks += [f"{(level+1)*self.indent}{self.rule_block(rb, level+2)}"]
         result += [self.key_values("rule_blocks", rule_blocks)]
 
-        return ",\n".join(result)
+        if rule_blocks:
+            result += [f"{level*self.indent}load_rules=True\n"]
+
+        result += [")"]
+        return ",\n".join(result) + "\n"
 
     def to_string(self, instance: object) -> str:
         from .engine import Engine
@@ -258,17 +263,19 @@ engine = fl.Engine(
 
         raise ValueError(f"expected a fuzzylite object, but found '{type(instance).__name__}'")
 
-    def format(self, x: object) -> str:
+    def format(self, x: Any) -> str:
         if isinstance(x, str):
             return f'"{x}"'
         if isinstance(x, float):
+            if math.isinf(x):
+                return ("fl." if x > 0 else "-fl.") + str(math.fabs(x))
             return Op.str(x)
         if isinstance(x, bool):
             return str(x)
         return str(x)
 
     def key_values(self, name: str, values: List[Any], level: int = 1) -> str:
-        result = [f"{level*self.indent}{name} = "]
+        result = [f"{level*self.indent}{name}="]
         if not values:
             result[0] += "[]"
         else:
@@ -350,8 +357,39 @@ engine = fl.Engine(
         return '\n'.join(rule_block)
 
     def term(self, term: 'Term') -> str:
-        return f"fl.{term.class_name}(%s, %s)" % (self.format(term.name),
-                                                  ', '.join(term.parameters().split()))
+        if not term:
+            return str(None)
+        from .term import Discrete, Function, Linear
+        from .operation import Op
+
+        result = [f"fl.{term.class_name}"]
+        if isinstance(term, Discrete):
+            result += ["("
+                       f"{self.format(term.name)}, ",
+                       "[",
+                       ", ".join(self.format(value)
+                                 for value in Discrete.values_from(term.xy)),
+                       "]"
+                       ")"]
+        elif isinstance(term, Function):
+            result += ["(",
+                       f"{self.format(term.name)}, ",
+                       self.format(term.formula),
+                       ")"]
+        elif isinstance(term, Linear):
+            result += ["(",
+                       f"{self.format(term.name)}, ",
+                       "[",
+                       ", ".join(self.format(c) for c in term.coefficients),
+                       "]",
+                       ")"]
+        else:
+            result += ["(",
+                       f"{self.format(term.name)}, ",
+                       ", ".join(self.format(Op.scalar(p))
+                                 for p in term.parameters().split()),
+                       ")"]
+        return "".join(result)
 
     def norm(self, norm: Optional['Norm']) -> str:
         return f"fl.{norm.class_name}()" if norm else str(None)
@@ -360,8 +398,16 @@ engine = fl.Engine(
         return f"fl.{activation.class_name}()" if activation else str(None)
 
     def defuzzifier(self, defuzzifier: Optional['Defuzzifier']) -> str:
-        return (f"fl.{defuzzifier.class_name}(%s)" % defuzzifier.parameters()
-                if defuzzifier else str(None))
+        if not defuzzifier:
+            return str(None)
+
+        from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
+
+        if isinstance(defuzzifier, IntegralDefuzzifier):
+            parameters = defuzzifier.resolution
+        elif isinstance(defuzzifier, WeightedDefuzzifier):
+            parameters = f"\"{defuzzifier.type.name}\""
+        return f"fl.{defuzzifier.class_name}({parameters})"
 
     def rule(self, rule: 'Rule') -> str:
         return f"fl.{rule.create.__qualname__}({self.format(rule.text)})"

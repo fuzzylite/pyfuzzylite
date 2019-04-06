@@ -20,6 +20,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from typing import List
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
@@ -483,42 +484,61 @@ class TestExporters(unittest.TestCase):
 
         fl.lib.decimals = 3
 
-        import examples
-        terms = next(iter(examples.__path__)) + "/terms"  # type: ignore
-        files = list(glob.iglob(terms + '/*.fll', recursive=True))
+        terms = next(iter(fl.examples.__path__)) + "/terms"  # type: ignore
+        files = list(glob.iglob(terms + '/*.py', recursive=True))
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(TestExporters.export, files)
 
         self.assertEqual(fl.lib.decimals, 3)
 
+    def test_exporter(self) -> None:
+        terms = next(iter(fl.examples.__path__)) + "/terms"  # type: ignore
+        TestExporters.export(terms + "/Bell.py")
+
     @staticmethod
     def export(path: str) -> None:
         import io
         import time
+        import pathlib
+        import importlib
 
         fl.lib.decimals = 9
-        importer = fl.FllImporter()
+        path = pathlib.Path(path)
+        if path.suffix == ".fll":
+            with io.open(path, 'r') as file:
+                import_fll = file.read()
+                engine = fl.FllImporter().from_string(import_fll)
+        elif path.suffix == ".py":
+            package: List[str] = []
+            for parent in path.parents:
+                package.append(parent.name)
+                if parent.name == fl.examples.__name__:
+                    break
+            module = ".".join(reversed(package)) + f".{path.stem}"
+            engine = importlib.import_module(module).engine
+            for rb in engine.rule_blocks:
+                rb.load_rules(engine)
+        else:
+            raise Exception(f"unknown importer of files like {path}")
+
         exporters = [
             fl.FllExporter(), fl.PythonExporter(),  # fl.FldExporter()
         ]
 
-        with io.open(path, 'r') as file:
-            import_fll = file.read()
-            engine = importer.from_string(import_fll)
-            file_name = file.name[file.name.rfind('/'):file.name.rfind('.')]
-            for exporter in exporters:
-                start = time.time()
-                if isinstance(exporter, fl.FldExporter):
-                    exporter.to_file_from_scope(
-                        Path("/tmp/fl/" + file_name + ".fld"), engine, 100_000)
+        file_name = path.stem
+        for exporter in exporters:
+            start = time.time()
+            if isinstance(exporter, fl.FldExporter):
+                exporter.to_file_from_scope(
+                    Path("/tmp/fl/" + file_name + ".fld"), engine, 100_000)
 
-                elif isinstance(exporter, fl.FllExporter):
-                    exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
+            elif isinstance(exporter, fl.FllExporter):
+                exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
 
-                elif isinstance(exporter, fl.PythonExporter):
-                    exporter.to_file(Path("/tmp/fl/" + file_name + ".py"), engine)
+            elif isinstance(exporter, fl.PythonExporter):
+                exporter.to_file(Path("/tmp/fl/" + file_name + ".py"), engine)
 
-                fl.lib.logger.info(str(path) + f".fld\t{time.time() - start}")
+            fl.lib.logger.info(str(path) + f".fld\t{time.time() - start}")
 
 
 if __name__ == '__main__':

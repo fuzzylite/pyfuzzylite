@@ -403,6 +403,8 @@ class Cosine(Term):
 
 
 class Discrete(Term):
+    Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
+
     class Pair:
 
         def __init__(self, x: float = nan, y: float = nan) -> None:
@@ -462,12 +464,14 @@ class Discrete(Term):
         def values(self, xy: Tuple[float, float]) -> None:
             self.x, self.y = xy
 
-    def __init__(self, name: str = "", xy: Optional[Iterable[Pair]] = None,
+    def __init__(self,
+                 name: str = "",
+                 xy: Optional[Sequence[Floatable]] = None,
                  height: float = 1.0) -> None:
         super().__init__(name, height)
         self.xy: List[Discrete.Pair] = []
         if xy:
-            self.xy.extend(xy)
+            self.xy = Discrete.pairs_from(xy)
 
     def __iter__(self) -> Iterator['Discrete.Pair']:
         return iter(self.xy)
@@ -521,12 +525,9 @@ class Discrete(Term):
     def sort(self) -> None:
         self.xy.sort()
 
-    Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
-
     @staticmethod
     def pairs_from(values: Union[Sequence[Floatable],
-                                 Dict[Floatable, Floatable]]) -> \
-            List['Discrete.Pair']:
+                                 Dict[Floatable, Floatable]]) -> List['Discrete.Pair']:
         if isinstance(values, dict):
             return [Discrete.Pair(Op.scalar(x), Op.scalar(y)) for x, y in values.items()]
 

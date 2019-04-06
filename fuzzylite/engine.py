@@ -38,7 +38,8 @@ class Engine:
                  description: str = "",
                  input_variables: Optional[Iterable[InputVariable]] = None,
                  output_variables: Optional[Iterable[OutputVariable]] = None,
-                 rule_blocks: Optional[Iterable[RuleBlock]] = None) -> None:
+                 rule_blocks: Optional[Iterable[RuleBlock]] = None,
+                 load_rules: bool = False) -> None:
         self.name = name
         self.description = description
         self.input_variables: List[InputVariable] = []
@@ -50,6 +51,9 @@ class Engine:
             self.output_variables.extend(output_variables)
         if rule_blocks:
             self.rule_blocks.extend(rule_blocks)
+        if load_rules:
+            for rb in self.rule_blocks:
+                rb.load_rules(self)
 
     def __str__(self) -> str:
         return FllExporter().engine(self)
