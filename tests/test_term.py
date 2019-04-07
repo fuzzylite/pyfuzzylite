@@ -449,7 +449,7 @@ class TestTerm(unittest.TestCase):
                               math.inf: 0.0,
                               -math.inf: 0.0}, height=0.5)
 
-        xy = fl.Discrete("name", fl.Discrete.pairs_from("0 1 2 3 4 5 6 7".split()))
+        xy = fl.Discrete("name", ("0 1 2 3 4 5 6 7".split()))
         self.assertSequenceEqual(tuple(xy.x()), (0, 2, 4, 6))
         self.assertSequenceEqual(tuple(xy.y()), (1, 3, 5, 7))
         self.assertEqual(3, xy.membership(2))

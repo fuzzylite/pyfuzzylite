@@ -1179,7 +1179,7 @@ class Function(Term):
             return " ".join(result)
 
     def __init__(self, name: str = "", formula: str = "", engine: Optional['Engine'] = None,
-                 variables: Optional[Dict[str, float]] = None) -> None:
+                 variables: Optional[Dict[str, float]] = None, load: bool = False) -> None:
         super().__init__(name)
         self.root: Optional[Function.Node] = None
         self.formula = formula
@@ -1187,6 +1187,8 @@ class Function(Term):
         self.variables: Dict[str, float] = {}
         if variables:
             self.variables.update(variables)
+        if load:
+            self.load()
 
     def parameters(self) -> str:
         return self.formula

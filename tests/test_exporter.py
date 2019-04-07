@@ -28,6 +28,9 @@ import fuzzylite as fl
 
 class TestExporter(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.maxDiff = None
+
     def test_class_name(self) -> None:
         self.assertEqual(fl.Exporter().class_name, "Exporter")
 
@@ -240,21 +243,26 @@ RuleBlock: rb
 
 class TestPythonExporter(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.maxDiff = None
+
     def test_empty_engine(self) -> None:
         engine = fl.Engine(
             name="engine",
             description="an engine")
         self.assertEqual(fl.PythonExporter().to_string(engine),
                          fl.PythonExporter().engine(engine))
-        self.assertEqual(fl.PythonExporter().engine(engine), """\
+        self.assertEqual(second=fl.PythonExporter().engine(engine), first="""\
 import fuzzylite as fl
 
 engine = fl.Engine(
     name="engine",
-    description="an engine",
-    input_variables = [],
-    output_variables = [],
-    rule_blocks = []""")
+    description="an engine"
+)
+engine.input_variables = []
+engine.output_variables = []
+engine.rule_blocks = []
+""")
 
     def test_engine(self) -> None:
         engine = fl.Engine(
@@ -290,44 +298,46 @@ import fuzzylite as fl
 
 engine = fl.Engine(
     name="engine",
-    description="an engine",
-    input_variables = [
-        fl.InputVariable(
-            name="input_variable",
-            description="an input variable",
-            enabled=True,
-            minimum=0,
-            maximum=1,
-            lock_range=False,
-            terms=[fl.Triangle("A", nan, nan, nan)]
-        )
-    ],
-    output_variables = [
-        fl.OutputVariable(
-            name="output_variable",
-            description="an output variable",
-            enabled=True,
-            minimum=0,
-            maximum=1,
-            lock_range=False,
-            aggregation=None,
-            defuzzifier=None,
-            lock_previous=False,
-            terms=[fl.Triangle("A", nan, nan, nan)]
-        )
-    ],
-    rule_blocks = [
-        fl.RuleBlock(
-            name="rb",
-            description="a rule block",
-            enabled=True,
-            conjunction=None,
-            disjunction=None,
-            implication=None,
-            activation=None,
-            rules=[fl.Rule.create("if a then z")]
-        )
-    ]""")
+    description="an engine"
+)
+engine.input_variables = [
+    fl.InputVariable(
+        name="input_variable",
+        description="an input variable",
+        enabled=True,
+        minimum=0,
+        maximum=1,
+        lock_range=False,
+        terms=[fl.Triangle("A", nan, nan, nan)]
+    )
+]
+engine.output_variables = [
+    fl.OutputVariable(
+        name="output_variable",
+        description="an output variable",
+        enabled=True,
+        minimum=0,
+        maximum=1,
+        lock_range=False,
+        aggregation=None,
+        defuzzifier=None,
+        lock_previous=False,
+        terms=[fl.Triangle("A", nan, nan, nan)]
+    )
+]
+engine.rule_blocks = [
+    fl.RuleBlock(
+        name="rb",
+        description="a rule block",
+        enabled=True,
+        conjunction=None,
+        disjunction=None,
+        implication=None,
+        activation=None,
+        rules=[fl.Rule.create("if a then z", engine)]
+    )
+]
+""")
 
     def test_input_variable(self) -> None:
         iv = fl.InputVariable(name="input_variable",
@@ -413,7 +423,7 @@ fl.RuleBlock(
     disjunction=None,
     implication=None,
     activation=None,
-    rules=[fl.Rule.create("if a then z")]
+    rules=[fl.Rule.create("if a then z", engine)]
 )""")
         rb.rules.append(fl.Rule.create("if b then y"))
         self.assertEqual(fl.PythonExporter().rule_block(rb), """\
@@ -426,8 +436,8 @@ fl.RuleBlock(
     implication=None,
     activation=None,
     rules=[
-        fl.Rule.create("if a then z"),
-        fl.Rule.create("if b then y")
+        fl.Rule.create("if a then z", engine),
+        fl.Rule.create("if b then y", engine)
     ]
 )""")
 
@@ -443,7 +453,7 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().to_string(rule),
                          fl.PythonExporter().rule(rule))
         self.assertEqual(fl.PythonExporter().rule(rule),
-                         "fl.Rule.create(\"if a then z\")")
+                         "fl.Rule.create(\"if a then z\", engine)")
 
     def test_norm(self) -> None:
         self.assertEqual(fl.PythonExporter().norm(None), "None")
@@ -484,7 +494,7 @@ class TestExporters(unittest.TestCase):
 
         fl.lib.decimals = 3
 
-        terms = next(iter(fl.examples.__path__)) + "/terms"  # type: ignore
+        terms = next(iter(fl.examples.terms.__path__))  # type: ignore
         files = list(glob.iglob(terms + '/*.py', recursive=True))
         with concurrent.futures.ProcessPoolExecutor() as executor:
             executor.map(TestExporters.export, files)
@@ -492,18 +502,18 @@ class TestExporters(unittest.TestCase):
         self.assertEqual(fl.lib.decimals, 3)
 
     def test_exporter(self) -> None:
-        terms = next(iter(fl.examples.__path__)) + "/terms"  # type: ignore
-        TestExporters.export(terms + "/Bell.py")
+        terms = next(iter(fl.examples.terms.__path__))  # type: ignore
+        TestExporters.export(terms + "/Function.fll")
 
     @staticmethod
-    def export(path: str) -> None:
+    def export(file_path: str) -> None:
         import io
         import time
         import pathlib
         import importlib
 
         fl.lib.decimals = 9
-        path = pathlib.Path(path)
+        path = pathlib.Path(file_path)
         if path.suffix == ".fll":
             with io.open(path, 'r') as file:
                 import_fll = file.read()
@@ -512,12 +522,10 @@ class TestExporters(unittest.TestCase):
             package: List[str] = []
             for parent in path.parents:
                 package.append(parent.name)
-                if parent.name == fl.examples.__name__:
+                if parent.name == "fuzzylite":
                     break
             module = ".".join(reversed(package)) + f".{path.stem}"
-            engine = importlib.import_module(module).engine
-            for rb in engine.rule_blocks:
-                rb.load_rules(engine)
+            engine = importlib.import_module(module).engine  # type: ignore
         else:
             raise Exception(f"unknown importer of files like {path}")
 

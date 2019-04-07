@@ -199,34 +199,31 @@ class PythonExporter(Exporter):
     def __init__(self, indent: str = "    ") -> None:
         self.indent = indent
 
-    def engine(self, engine: 'Engine', level: int = 1) -> str:
-        result = [f"""\
-import fuzzylite as fl
-
-engine = fl.Engine(
-{level*self.indent}name={self.format(engine.name)},
-{level*self.indent}description={self.format(engine.description)}"""]
+    def engine(self, engine: 'Engine', level: int = 0) -> str:
+        result = [f"""{level*self.indent}import fuzzylite as fl""", ""]
+        result += [
+            f"{level*self.indent}engine = fl.Engine(",
+            f"{(level+1)*self.indent}name={self.format(engine.name)},",
+            f"{(level+1)*self.indent}description={self.format(engine.description)}",
+            ")"
+        ]
 
         input_variables: List[str] = []
         for iv in engine.input_variables:
             input_variables += [f"{(level+1)*self.indent}{self.input_variable(iv, level+2)}"]
-        result += [self.key_values("input_variables", input_variables)]
+        result += [self.key_values("engine.input_variables", input_variables)]
 
         output_variables: List[str] = []
         for ov in engine.output_variables:
             output_variables += [f"{(level+1)*self.indent}{self.output_variable(ov, level+2)}"]
-        result += [self.key_values("output_variables", output_variables)]
+        result += [self.key_values("engine.output_variables", output_variables)]
 
         rule_blocks: List[str] = []
         for rb in engine.rule_blocks:
             rule_blocks += [f"{(level+1)*self.indent}{self.rule_block(rb, level+2)}"]
-        result += [self.key_values("rule_blocks", rule_blocks)]
-
-        if rule_blocks:
-            result += [f"{level*self.indent}load_rules=True\n"]
-
-        result += [")"]
-        return ",\n".join(result) + "\n"
+        result += [self.key_values("engine.rule_blocks", rule_blocks)]
+        result += [""]
+        return "\n".join(result)
 
     def to_string(self, instance: object) -> str:
         from .engine import Engine
@@ -274,8 +271,8 @@ engine = fl.Engine(
             return str(x)
         return str(x)
 
-    def key_values(self, name: str, values: List[Any], level: int = 1) -> str:
-        result = [f"{level*self.indent}{name}="]
+    def key_values(self, name: str, values: List[Any], level: int = 0) -> str:
+        result = [f"{level*self.indent}{name} = "]
         if not values:
             result[0] += "[]"
         else:
@@ -372,9 +369,10 @@ engine = fl.Engine(
                        "]"
                        ")"]
         elif isinstance(term, Function):
-            result += ["(",
+            result += [f".{Function.create.__qualname__}(",
                        f"{self.format(term.name)}, ",
                        self.format(term.formula),
+                       ", engine",
                        ")"]
         elif isinstance(term, Linear):
             result += ["(",
@@ -382,6 +380,7 @@ engine = fl.Engine(
                        "[",
                        ", ".join(self.format(c) for c in term.coefficients),
                        "]",
+                       ", engine",
                        ")"]
         else:
             result += ["(",
@@ -404,13 +403,13 @@ engine = fl.Engine(
         from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
 
         if isinstance(defuzzifier, IntegralDefuzzifier):
-            parameters = defuzzifier.resolution
+            parameters = f"{defuzzifier.resolution}"
         elif isinstance(defuzzifier, WeightedDefuzzifier):
             parameters = f"\"{defuzzifier.type.name}\""
         return f"fl.{defuzzifier.class_name}({parameters})"
 
     def rule(self, rule: 'Rule') -> str:
-        return f"fl.{rule.create.__qualname__}({self.format(rule.text)})"
+        return f"fl.{rule.create.__qualname__}({self.format(rule.text)}, engine)"
 
 
 class FldExporter(Exporter):

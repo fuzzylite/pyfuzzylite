@@ -19,6 +19,7 @@
 # noinspection PyUnresolvedReferences
 from math import inf, isinf, isnan, nan
 
+from fuzzylite import examples
 from fuzzylite.activation import *
 from fuzzylite.defuzzifier import *
 from fuzzylite.engine import *

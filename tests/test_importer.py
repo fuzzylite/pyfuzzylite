@@ -297,8 +297,8 @@ class TestFllImporterBatch(unittest.TestCase):
         fl.lib.decimals = 9
         import logging
         fl.lib.logger.setLevel(logging.INFO)
-        import examples
-        terms = next(iter(examples.__path__)) + "/terms"  # type: ignore
+        import fuzzylite.examples.terms
+        terms = next(iter(fuzzylite.examples.terms.__path__))  # type: ignore
         counter = 0
         for fll_file in glob.iglob(terms + '/*.fll', recursive=True):
             counter += 1
