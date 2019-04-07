@@ -485,7 +485,7 @@ fl.RuleBlock(
 
 class TestExporters(unittest.TestCase):
 
-    # @unittest.skip("Re-enable after test coverage improved independently")
+    @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         import concurrent.futures
         import logging
@@ -501,6 +501,7 @@ class TestExporters(unittest.TestCase):
 
         self.assertEqual(fl.lib.decimals, 3)
 
+    @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         terms = next(iter(fl.examples.terms.__path__))  # type: ignore
         TestExporters.export(terms + "/Function.fll")
