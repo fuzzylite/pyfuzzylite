@@ -23,39 +23,52 @@ import fuzzylite
 class TestLibrary(unittest.TestCase):
 
     def test_library_exports_dir(self) -> None:
-        expected = {'Activated', 'Activation', 'ActivationFactory', 'Aggregated',
-                    'AlgebraicProduct', 'AlgebraicSum', 'Antecedent', 'Any', 'Bell', 'Binary',
-                    'Bisector', 'BoundedDifference', 'BoundedSum', 'Centroid', 'CloningFactory',
-                    'Concave', 'Consequent', 'Constant', 'ConstructionFactory', 'Cosine',
-                    'Defuzzifier', 'DefuzzifierFactory', 'Discrete', 'DrasticProduct', 'DrasticSum',
-                    'EinsteinProduct', 'EinsteinSum', 'Engine', 'Exporter', 'Expression',
-                    'Extremely', 'FactoryManager', 'First', 'FldExporter', 'FllExporter',
-                    'FllImporter', 'Function', 'FunctionFactory', 'Gaussian',
-                    'GaussianProduct', 'General', 'HamacherProduct', 'HamacherSum', 'Hedge',
-                    'HedgeFactory', 'HedgeFunction', 'HedgeLambda', 'Highest', 'Importer',
-                    'InputVariable', 'IntegralDefuzzifier', 'LargestOfMaximum', 'Last', 'Library',
-                    'Linear', 'Lowest', 'Maximum', 'MeanOfMaximum', 'Minimum', 'NilpotentMaximum',
-                    'NilpotentMinimum', 'Norm', 'NormFunction', 'NormLambda', 'NormalizedSum',
-                    'Not', 'Op', 'Operation', 'Operator', 'OutputVariable', 'PiShape',
-                    'Proportional', 'Proposition', 'PythonExporter', 'Ramp', 'Rectangle', 'Rule',
-                    'RuleBlock',
-                    'SNorm', 'SNormFactory', 'SShape', 'Seldom', 'Sigmoid', 'SigmoidDifference',
-                    'SigmoidProduct', 'SmallestOfMaximum', 'Somewhat', 'Spike', 'TNorm',
-                    'TNormFactory', 'Term', 'TermFactory', 'Threshold', 'Trapezoid', 'Triangle',
-                    'UnboundedSum', 'Variable', 'Very', 'WeightedAverage', 'WeightedDefuzzifier',
-                    'WeightedSum', 'ZShape', '__annotations__', '__builtins__', '__cached__',
-                    '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__',
-                    '__spec__', '__version__', 'activation', 'defuzzifier', 'engine', 'exporter',
-                    'factory', 'hedge', 'importer', 'inf', 'isinf', 'isnan', 'lib', 'library',
-                    'nan', 'norm',
-                    'operation', 'rule', 'scalar', 'term', 'variable'}
+        expected = """
+__annotations__ __builtins__ __cached__ __doc__ __file__ __loader__
+__name__ __package__ __path__ __spec__ __version__
 
-        self.assertSetEqual(expected, set(dir(fuzzylite)))
+inf isinf isnan lib nan scalar
+
+activation Activation First General Highest Last Lowest Proportional Threshold
+
+defuzzifier Bisector Centroid Defuzzifier IntegralDefuzzifier LargestOfMaximum MeanOfMaximum
+SmallestOfMaximum WeightedAverage WeightedDefuzzifier WeightedSum
+
+engine Engine
+
+examples
+
+exporter Exporter FldExporter FllExporter PythonExporter
+
+factory ActivationFactory CloningFactory ConstructionFactory DefuzzifierFactory FactoryManager
+FunctionFactory HedgeFactory SNormFactory TNormFactory TermFactory
+
+hedge Any Extremely Hedge HedgeFunction HedgeLambda Maximum Minimum NilpotentMaximum
+NilpotentMinimum Norm NormFunction NormLambda NormalizedSum Not Seldom Somewhat Very
+
+importer FllImporter Importer
+
+library Library
+
+norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
+EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum
+
+operation Op Operation
+
+rule Antecedent Consequent Expression Operator Proposition Rule RuleBlock
+
+term Activated Aggregated Bell Binary Concave Constant Cosine Discrete Function Gaussian
+GaussianProduct Linear PiShape Ramp Rectangle SShape Sigmoid SigmoidDifference SigmoidProduct
+Spike Term Trapezoid Triangle ZShape
+
+variable InputVariable OutputVariable Variable
+"""
+        self.assertSetEqual(set(expected.split()), set(dir(fuzzylite)))
 
     def test_library_vars(self) -> None:
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
         self.assertEqual(fuzzylite.__version__, "7.0")
-        self.assertEqual(fuzzylite.__doc__, fuzzylite.Library().summary)
+        self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)
 
 
 if __name__ == '__main__':
