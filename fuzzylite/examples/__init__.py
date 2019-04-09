@@ -1,1 +1,1 @@
-from . import terms
+from . import hybrid, mamdani, takagi_sugeno, terms, tsukamoto

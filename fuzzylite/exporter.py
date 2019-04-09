@@ -359,9 +359,9 @@ class PythonExporter(Exporter):
         from .term import Discrete, Function, Linear
         from .operation import Op
 
-        result = [f"fl.{term.class_name}"]
+        result = [f"fl."]
         if isinstance(term, Discrete):
-            result += ["("
+            result += [f"{term.class_name}("
                        f"{self.format(term.name)}, ",
                        "[",
                        ", ".join(self.format(value)
@@ -369,13 +369,13 @@ class PythonExporter(Exporter):
                        "]"
                        ")"]
         elif isinstance(term, Function):
-            result += [f".{Function.create.__qualname__}(",
+            result += [f"{Function.create.__qualname__}(",
                        f"{self.format(term.name)}, ",
                        self.format(term.formula),
                        ", engine",
                        ")"]
         elif isinstance(term, Linear):
-            result += ["(",
+            result += [f"{term.class_name}(",
                        f"{self.format(term.name)}, ",
                        "[",
                        ", ".join(self.format(c) for c in term.coefficients),
@@ -383,7 +383,7 @@ class PythonExporter(Exporter):
                        ", engine",
                        ")"]
         else:
-            result += ["(",
+            result += [f"{term.class_name}(",
                        f"{self.format(term.name)}, ",
                        ", ".join(self.format(Op.scalar(p))
                                  for p in term.parameters().split()),

@@ -1,0 +1,34 @@
+Engine: tippersg
+InputVariable: service
+  enabled: true
+  range: 0.000000000 10.000000000
+  lock-range: false
+  term: poor Gaussian 0.000000000 1.500000000
+  term: average Gaussian 5.000000000 1.500000000
+  term: good Gaussian 10.000000000 1.500000000
+InputVariable: food
+  enabled: true
+  range: 0.000000000 10.000000000
+  lock-range: false
+  term: rancid Trapezoid -5.000000000 0.000000000 1.000000000 3.000000000
+  term: delicious Trapezoid 7.000000000 9.000000000 10.000000000 15.000000000
+OutputVariable: tip
+  enabled: true
+  range: -30.000000000 30.000000000
+  lock-range: false
+  aggregation: none
+  defuzzifier: WeightedAverage TakagiSugeno
+  default: nan
+  lock-previous: false
+  term: cheap Linear 0.000000000 0.000000000 5.000000000
+  term: average Linear 0.000000000 0.000000000 15.000000000
+  term: generous Linear 0.000000000 0.000000000 25.000000000
+RuleBlock: 
+  enabled: true
+  conjunction: none
+  disjunction: Maximum
+  implication: none
+  activation: General
+  rule: if service is poor or food is rancid then tip is cheap
+  rule: if service is average then tip is average
+  rule: if service is good or food is delicious then tip is generous

@@ -14,7 +14,6 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-import glob
 import io
 import os
 import tempfile
@@ -489,22 +488,35 @@ class TestExporters(unittest.TestCase):
     def test_exporters(self) -> None:
         import concurrent.futures
         import logging
+        import pathlib
 
         fl.lib.configure_logging(logging.INFO)
 
         fl.lib.decimals = 3
+        import numpy as np  # type: ignore
+        np.seterr(divide="ignore", invalid="ignore")
+        fl.lib.floating_point_type = np.float64
 
-        terms = next(iter(fl.examples.terms.__path__))  # type: ignore
-        files = list(glob.iglob(terms + '/*.py', recursive=True))
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(TestExporters.export, files)
+        path = "/tmp/source/"
+        examples = pathlib.Path(path)
+        files = list(examples.rglob("*.fll"))
+        print(files)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            threads = [executor.submit(TestExporters.export, file) for file in files]
+        concurrent.futures.wait(threads, return_when=concurrent.futures.FIRST_EXCEPTION)
+        for t in threads:
+            print(t.result())
 
         self.assertEqual(fl.lib.decimals, 3)
 
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
-        terms = next(iter(fl.examples.terms.__path__))  # type: ignore
-        TestExporters.export(terms + "/Function.fll")
+        import numpy as np
+        np.seterr(divide="ignore", invalid="ignore")
+        fl.lib.floating_point_type = np.float64
+
+        examples = "/tmp/source/takagi_sugeno/"
+        TestExporters.export(examples + "/approximation.fll")
 
     @staticmethod
     def export(file_path: str) -> None:
@@ -513,7 +525,10 @@ class TestExporters(unittest.TestCase):
         import pathlib
         import importlib
 
-        fl.lib.decimals = 9
+        import numpy as np
+        np.seterr(divide="ignore", invalid="ignore")
+        fl.lib.floating_point_type = np.float64
+
         path = pathlib.Path(file_path)
         if path.suffix == ".fll":
             with io.open(path, 'r') as file:
@@ -531,23 +546,27 @@ class TestExporters(unittest.TestCase):
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
-            fl.FllExporter(), fl.PythonExporter(),  # fl.FldExporter()
+            fl.FllExporter(), fl.PythonExporter(), fl.FldExporter()
         ]
 
         file_name = path.stem
         for exporter in exporters:
             start = time.time()
+            target_path = Path("/tmp/fl/") / path.parent.parent.stem / path.parent.stem
+            target_path.mkdir(parents=True, exist_ok=True)
+            fl.lib.decimals = 3
+            fl.lib.logger.info(str(path) + f" -> {exporter.class_name}")
             if isinstance(exporter, fl.FldExporter):
-                exporter.to_file_from_scope(
-                    Path("/tmp/fl/" + file_name + ".fld"), engine, 100_000)
+                fl.lib.decimals = 9
+                exporter.to_file_from_scope(target_path / (file_name + ".fld"), engine, 1024)
 
             elif isinstance(exporter, fl.FllExporter):
-                exporter.to_file(Path("/tmp/fl/" + file_name + ".fll"), engine)
+                exporter.to_file(target_path / (file_name + ".fll"), engine)
 
             elif isinstance(exporter, fl.PythonExporter):
-                exporter.to_file(Path("/tmp/fl/" + file_name + ".py"), engine)
+                exporter.to_file(target_path / (file_name + ".py"), engine)
 
-            fl.lib.logger.info(str(path) + f".fld\t{time.time() - start}")
+            fl.lib.logger.info(str(path) + f" -> {exporter.class_name}\t{time.time() - start}")
 
 
 if __name__ == '__main__':
