@@ -354,8 +354,6 @@ class PythonExporter(Exporter):
         return '\n'.join(rule_block)
 
     def term(self, term: 'Term') -> str:
-        if not term:
-            return str(None)
         from .term import Discrete, Function, Linear
         from .operation import Op
 
@@ -418,7 +416,7 @@ class FldExporter(Exporter):
         EachVariable, AllVariables = range(2)
 
     def __init__(self,
-                 separator: str = ' ',
+                 separator: str = " ",
                  headers: bool = True,
                  input_values: bool = True,
                  output_values: bool = True) -> None:
@@ -509,17 +507,18 @@ class FldExporter(Exporter):
             try:
                 input_values = [Op.scalar(x) for x in line.split()]
             except ValueError:
-                if line == 0:  # ignore headers
+                if i == 0:  # ignore headers
                     continue
                 raise
             self.write(engine, writer, input_values, active_variables)
 
     def write(self, engine: 'Engine', writer: IO[str], input_values: List[float],
               active_variables: Set['InputVariable']) -> None:
-        if not input_values:
-            writer.writelines("\n")
-        if len(input_values) != len(engine.input_variables):
-            raise ValueError()
+        # if not input_values:
+        #     writer.writelines("\n")
+        if len(input_values) < len(engine.input_variables):
+            raise ValueError(f"not enough input values ({len(input_values)}) "
+                             f"for the input variables ({len(engine.input_variables)})")
 
         values: List[str] = []
         for i, iv in enumerate(engine.input_variables):

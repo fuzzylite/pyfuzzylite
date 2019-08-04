@@ -447,6 +447,24 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().term(term),
                          "fl.Triangle(\"A\", 0.000, 1.000, 2.000, 0.500)")
 
+        term = fl.Discrete("B", [0.0, 0.0, 0.5, 1.0, 1.0, 0.0])
+        self.assertEqual(fl.PythonExporter().to_string(term),
+                         fl.PythonExporter().term(term))
+        self.assertEqual(fl.PythonExporter().term(term),
+                         "fl.Discrete(\"B\", [0.000, 0.000, 0.500, 1.000, 1.000, 0.000])")
+
+        term = fl.Function("C", "x + 1")
+        self.assertEqual(fl.PythonExporter().to_string(term),
+                         fl.PythonExporter().term(term))
+        self.assertEqual(fl.PythonExporter().term(term),
+                         "fl.Function.create(\"C\", \"x + 1\", engine)")
+
+        term = fl.Linear("D", [0.0, 1.0, 2.0])
+        self.assertEqual(fl.PythonExporter().to_string(term),
+                         fl.PythonExporter().term(term))
+        self.assertEqual(fl.PythonExporter().term(term),
+                         "fl.Linear(\"D\", [0.000, 1.000, 2.000], engine)")
+
     def test_rule(self) -> None:
         rule = fl.Rule.create("if a then z")
         self.assertEqual(fl.PythonExporter().to_string(rule),
@@ -471,15 +489,92 @@ fl.RuleBlock(
 
     def test_defuzzifier(self) -> None:
         self.assertEqual(fl.PythonExporter().defuzzifier(None), "None")
+
         defuzzifier = fl.Centroid()
         self.assertEqual(fl.PythonExporter().to_string(defuzzifier),
                          fl.PythonExporter().defuzzifier(defuzzifier))
         self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier),
                          "fl.Centroid(100)")
 
+        defuzzifier = fl.WeightedAverage()
+        self.assertEqual(fl.PythonExporter().to_string(defuzzifier),
+                         fl.PythonExporter().defuzzifier(defuzzifier))
+        self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier),
+                         "fl.WeightedAverage(\"Automatic\")")
+
     def test_object(self) -> None:
-        with self.assertRaisesRegex(ValueError, rf"expected a fuzzylite object, but found 'object"):
+        with self.assertRaisesRegex(ValueError, f"expected a fuzzylite object, but found 'object'"):
             fl.PythonExporter().to_string(object())
+
+
+class TestFldExporter(unittest.TestCase):
+
+    def test_default_constructor(self) -> None:
+        exporter = fl.FldExporter()
+        self.assertEqual(" ", exporter.separator)
+        self.assertTrue(exporter.headers)
+        self.assertTrue(exporter.input_values)
+        self.assertTrue(exporter.output_values)
+
+    def test_write(self) -> None:
+        # Empty write
+        writer = io.StringIO()
+        fl.FldExporter().write(fl.Engine(), writer, [], set())
+        self.assertEqual("\n", writer.getvalue())
+
+        # Not enough values
+        with self.assertRaisesRegex(ValueError, "not enough input values"):
+            fl.FldExporter().write(fl.Engine(
+                input_variables=[fl.InputVariable()]), writer, [], set())
+
+        # input and output values
+        writer = io.StringIO()
+        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+        fl.FldExporter(input_values=True, output_values=True).write(
+            engine, writer, [0.25], set(engine.input_variables))
+        self.assertEqual("0.250 0.750\n", writer.getvalue())
+
+        # input values only
+        writer = io.StringIO()
+        fl.FldExporter(input_values=True, output_values=False).write(
+            engine, writer, [0.25], set(engine.input_variables))
+        self.assertEqual("0.250\n", writer.getvalue())
+
+        # output values only
+        writer = io.StringIO()
+        fl.FldExporter(input_values=False, output_values=True).write(
+            engine, writer, [0.25], set(engine.input_variables))
+        self.assertEqual("0.750\n", writer.getvalue())
+
+        # no values
+        writer = io.StringIO()
+        engine.process = MagicMock()
+        fl.FldExporter(input_values=False, output_values=False).write(
+            engine, writer, [0.25], set(engine.input_variables))
+        self.assertEqual("\n", writer.getvalue())
+        engine.process.assert_called_once()
+
+        # active variables
+        writer = io.StringIO()
+        engine.input_variables[0].value = 0.250
+        test_variable = fl.InputVariable("test")
+        test_variable.value = 0.0
+        engine.input_variables.append(test_variable)
+
+        fl.FldExporter().write(engine, writer, [fl.inf, fl.inf], set([test_variable]))
+        self.assertEqual("0.250 inf 0.750\n", writer.getvalue())
+
+    def test_header(self) -> None:
+        engine = fl.Engine(
+            input_variables=[
+                fl.InputVariable("A"), fl.InputVariable("B")
+            ],
+            output_variables=[
+                fl.OutputVariable("X"), fl.OutputVariable("Y"), fl.OutputVariable("Z")
+            ]
+        )
+        self.assertEqual("A B X Y Z", fl.FldExporter().header(engine))
+        self.assertEqual("A\tB\tX\tY\tZ", fl.FldExporter(separator="\t").header(engine))
 
 
 class TestExporters(unittest.TestCase):
