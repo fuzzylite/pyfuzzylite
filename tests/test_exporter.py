@@ -441,7 +441,7 @@ fl.RuleBlock(
 )""")
 
     def test_term(self) -> None:
-        term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
+        term: fl.Term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
         self.assertEqual(fl.PythonExporter().to_string(term),
                          fl.PythonExporter().term(term))
         self.assertEqual(fl.PythonExporter().term(term),
@@ -490,7 +490,7 @@ fl.RuleBlock(
     def test_defuzzifier(self) -> None:
         self.assertEqual(fl.PythonExporter().defuzzifier(None), "None")
 
-        defuzzifier = fl.Centroid()
+        defuzzifier: fl.Defuzzifier = fl.Centroid()
         self.assertEqual(fl.PythonExporter().to_string(defuzzifier),
                          fl.PythonExporter().defuzzifier(defuzzifier))
         self.assertEqual(fl.PythonExporter().defuzzifier(defuzzifier),
@@ -548,11 +548,11 @@ class TestFldExporter(unittest.TestCase):
 
         # no values
         writer = io.StringIO()
-        engine.process = MagicMock()
+        engine.process = MagicMock()  # type: ignore
         fl.FldExporter(input_values=False, output_values=False).write(
             engine, writer, [0.25], set(engine.input_variables))
         self.assertEqual("\n", writer.getvalue())
-        engine.process.assert_called_once()
+        engine.process.assert_called_once()  # type: ignore
 
         # active variables
         writer = io.StringIO()
