@@ -459,11 +459,11 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().term(term),
                          "fl.Function.create(\"C\", \"x + 1\", engine)")
 
-        term = fl.Linear("D", [0.0, 1.0, 2.0])
+        term = fl.Linear("D", [0.0, 1.0, 2.0, -fl.inf, fl.inf])
         self.assertEqual(fl.PythonExporter().to_string(term),
                          fl.PythonExporter().term(term))
         self.assertEqual(fl.PythonExporter().term(term),
-                         "fl.Linear(\"D\", [0.000, 1.000, 2.000], engine)")
+                         "fl.Linear(\"D\", [0.000, 1.000, 2.000, -fl.inf, fl.inf], engine)")
 
     def test_rule(self) -> None:
         rule = fl.Rule.create("if a then z")
@@ -515,6 +515,15 @@ class TestFldExporter(unittest.TestCase):
         self.assertTrue(exporter.headers)
         self.assertTrue(exporter.input_values)
         self.assertTrue(exporter.output_values)
+
+    def test_to_string(self) -> None:
+        with self.assertRaisesRegex(ValueError, "expected an Engine, but got object"):
+            fl.FldExporter().to_string(object())
+
+        exporter = fl.FldExporter()
+        exporter.to_string_from_scope = MagicMock()  # type: ignore
+        exporter.to_string(fl.Engine(input_variables=[fl.InputVariable("A")]))
+        exporter.to_string_from_scope.assert_called_once()  # type: ignore
 
     def test_write(self) -> None:
         # Empty write

@@ -437,7 +437,7 @@ class FldExporter(Exporter):
         from .engine import Engine
         if isinstance(instance, Engine):
             return self.to_string_from_scope(instance)
-        raise ValueError(f"expected an Engine, but got {type(instance)}")
+        raise ValueError(f"expected an Engine, but got {type(instance).__name__}")
 
     def to_string_from_scope(self, engine: 'Engine', values: int = 1024,
                              scope: ScopeOfValues = ScopeOfValues.AllVariables,
@@ -464,6 +464,8 @@ class FldExporter(Exporter):
             writer.writelines(self.header(engine) + "\n")
 
         if scope == FldExporter.ScopeOfValues.AllVariables:
+            if len(engine.input_variables) == 0:
+                raise ValueError("expected input variables in engine, but got none")
             resolution = max(1, int(pow(values, (1.0 / len(engine.input_variables)))))
         else:
             resolution = values
