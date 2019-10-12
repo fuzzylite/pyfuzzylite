@@ -494,11 +494,9 @@ class FldExporter(Exporter):
         while incremented:
             for i, iv in enumerate(engine.input_variables):
                 if iv in active_variables:
-                    input_values[i] = (
-                            iv.minimum
-                            + sample_values[i]
-                            * iv.drange / max(1.0, resolution)
-                    )
+                    input_values[i] = (iv.minimum
+                                       + sample_values[i]
+                                       * iv.drange / max(1.0, resolution))
                 else:
                     input_values[i] = iv.value
             self.write(engine, writer, input_values, active_variables)

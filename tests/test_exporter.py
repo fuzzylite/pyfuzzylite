@@ -651,12 +651,10 @@ Ambient Power
         0.510742188 0.484743908
         """
 
-        file_name = (
-                "file-"
-                + ''.join(random.choice(string.ascii_lowercase)
-                          for _ in range(5))
-                + ".fld"
-        )
+        file_name = ("file-"
+                     + ''.join(random.choice(string.ascii_lowercase)
+                               for _ in range(5))
+                     + ".fld")
         fl.FldExporter().to_file_from_reader(
             Path(file_name), engine, io.StringIO(reader), skip_lines=1)
         self.assertTrue(Path(file_name).exists())
@@ -794,12 +792,10 @@ service food mTip tsTip
     def test_to_file_from_scope(self) -> None:
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
 
-        file_name = (
-                "file-"
-                + ''.join(random.choice(string.ascii_lowercase)
-                          for _ in range(5))
-                + ".fld"
-        )
+        file_name = ("file-"
+                     + ''.join(random.choice(string.ascii_lowercase)
+                               for _ in range(5))
+                     + ".fld")
 
         fl.FldExporter().to_file_from_scope(
             Path(file_name), engine, values=4,
