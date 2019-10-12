@@ -703,6 +703,15 @@ Ambient Power
 1.000 nan
 """, writer.getvalue())
 
+    def test_write_from_scope_all_variables_on_empty_engine(self) -> None:
+        engine = fl.Engine()
+        writer = io.StringIO()
+        with self.assertRaisesRegex(ValueError, "expected input variables in engine, but got none"):
+            fl.FldExporter().write_from_scope(
+                engine, writer, values=16,
+                scope=fl.FldExporter.ScopeOfValues.AllVariables,
+                active_variables=set(engine.input_variables))
+
     def test_write_from_scope_all_variables_1(self) -> None:
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         writer = io.StringIO()
@@ -789,6 +798,40 @@ service food mTip tsTip
 10.000 10.000 25.001 25.000
 """, writer.getvalue())
 
+    def test_write_from_scope_each_variable_one_inactive(self) -> None:
+        from fuzzylite.examples.hybrid import tipper
+        engine = fl.FllImporter().from_string(str(tipper.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=4,
+            scope=fl.FldExporter.ScopeOfValues.EachVariable,
+            active_variables={engine.input_variables[0]})
+
+        self.assertEqual("""\
+service food mTip tsTip
+0.000 nan nan nan
+3.333 nan 15.000 15.000
+6.667 nan 15.000 15.000
+10.000 nan nan nan
+""", writer.getvalue())
+
+    def test_write_from_scope_all_variables_one_inactive(self) -> None:
+        from fuzzylite.examples.hybrid import tipper
+        engine = fl.FllImporter().from_string(str(tipper.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=16,
+            scope=fl.FldExporter.ScopeOfValues.AllVariables,
+            active_variables={engine.input_variables[0]})
+
+        self.assertEqual("""\
+service food mTip tsTip
+0.000 nan nan nan
+3.333 nan 15.000 15.000
+6.667 nan 15.000 15.000
+10.000 nan nan nan
+""", writer.getvalue())
+
     def test_to_file_from_scope(self) -> None:
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
 
@@ -831,6 +874,9 @@ Ambient Power
 """, obtained)
 
     def test_to_string(self) -> None:
+        with self.assertRaisesRegex(ValueError, "expected an Engine, but got InputVariable"):
+            fl.FldExporter().to_string(fl.InputVariable())
+
         from fuzzylite.examples.takagi_sugeno import SimpleDimmer
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
 
