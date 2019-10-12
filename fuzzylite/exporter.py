@@ -439,83 +439,113 @@ class FldExporter(Exporter):
             return self.to_string_from_scope(instance)
         raise ValueError(f"expected an Engine, but got {type(instance).__name__}")
 
-    def to_string_from_scope(self, engine: 'Engine', values: int = 1024,
-                             scope: ScopeOfValues = ScopeOfValues.AllVariables,
-                             active_variables: Optional[Set['InputVariable']] = None) -> str:
-        if not active_variables:
-            active_variables = set(engine.input_variables)
-
+    def to_string_from_scope(
+            self,
+            engine: 'Engine',
+            values: int = 1024,
+            scope: ScopeOfValues = ScopeOfValues.AllVariables,
+            active_variables: Optional[Set['InputVariable']] = None
+    ) -> str:
         writer = io.StringIO()
         self.write_from_scope(engine, writer, values, scope, active_variables)
         return writer.getvalue()
 
-    def to_file_from_scope(self, path: Path, engine: 'Engine', values: int = 1024,
-                           scope: ScopeOfValues = ScopeOfValues.AllVariables,
-                           active_variables: Optional[Set['InputVariable']] = None) -> None:
-        if not active_variables:
-            active_variables = set(engine.input_variables)
-
+    def to_file_from_scope(
+            self,
+            path: Path,
+            engine: 'Engine',
+            values: int = 1024,
+            scope: ScopeOfValues = ScopeOfValues.AllVariables,
+            active_variables: Optional[Set['InputVariable']] = None
+    ) -> None:
         with path.open('w') as writer:
             self.write_from_scope(engine, writer, values, scope, active_variables)
 
-    def write_from_scope(self, engine: 'Engine', writer: IO[str], values: int,
-                         scope: ScopeOfValues, active_variables: Set['InputVariable']) -> None:
+    def write_from_scope(
+            self,
+            engine: 'Engine',
+            writer: IO[str],
+            values: int,
+            scope: ScopeOfValues,
+            active_variables: Optional[Set['InputVariable']] = None
+    ) -> None:
+        if active_variables is None:
+            active_variables = set(engine.input_variables)
+
         if self.headers:
             writer.writelines(self.header(engine) + "\n")
 
         if scope == FldExporter.ScopeOfValues.AllVariables:
             if len(engine.input_variables) == 0:
                 raise ValueError("expected input variables in engine, but got none")
-            resolution = max(1, int(pow(values, (1.0 / len(engine.input_variables)))))
+            resolution = -1 + max(1, int(pow(values, (1.0 / len(engine.input_variables)))))
         else:
-            resolution = values
+            resolution = values - 1
 
         sample_values = [0] * len(engine.input_variables)
         min_values = [0] * len(engine.input_variables)
-        max_values = [resolution if iv in active_variables else 0
-                      for iv in engine.input_variables]
+        max_values = [
+            resolution if iv in active_variables else 0
+            for iv in engine.input_variables
+        ]
 
         input_values = [Op.scalar('nan')] * len(engine.input_variables)
         incremented = True
         while incremented:
             for i, iv in enumerate(engine.input_variables):
                 if iv in active_variables:
-                    input_values[i] = (iv.minimum
-                                       + sample_values[i]
-                                       * iv.drange / max(1.0, resolution))
+                    input_values[i] = (
+                            iv.minimum
+                            + sample_values[i]
+                            * iv.drange / max(1.0, resolution)
+                    )
                 else:
                     input_values[i] = iv.value
             self.write(engine, writer, input_values, active_variables)
 
             incremented = Op.increment(sample_values, min_values, max_values)
 
-    def to_string_from_reader(self, engine: 'Engine', reader: IO[str]) -> str:
+    def to_string_from_reader(self, engine: 'Engine', reader: IO[str], skip_lines: int = 0) -> str:
         writer = io.StringIO()
-        self.write_from_reader(engine, writer, reader)
+        self.write_from_reader(engine, writer, reader, skip_lines)
         return writer.getvalue()
 
-    def to_file_from_reader(self, path: Path, engine: 'Engine', reader: IO[str]) -> None:
+    def to_file_from_reader(
+            self,
+            path: Path,
+            engine: 'Engine',
+            reader: IO[str],
+            skip_lines: int = 0
+    ) -> None:
         with path.open('w') as writer:
-            self.write_from_reader(engine, writer, reader)
+            self.write_from_reader(engine, writer, reader, skip_lines)
 
-    def write_from_reader(self, engine: 'Engine', writer: IO[str], reader: IO[str]) -> None:
+    def write_from_reader(
+            self,
+            engine: 'Engine',
+            writer: IO[str],
+            reader: IO[str],
+            skip_lines: int = 0
+    ) -> None:
         if self.headers:
             writer.writelines(self.header(engine) + "\n")
         active_variables = set(engine.input_variables)
         for i, line in enumerate(reader.readlines()):
+            if i < skip_lines:
+                continue
             line = line.strip()
             if not line or line[0] == '#':
                 continue
-            try:
-                input_values = [Op.scalar(x) for x in line.split()]
-            except ValueError:
-                if i == 0:  # ignore headers
-                    continue
-                raise
+            input_values = [Op.scalar(x) for x in line.split()]
             self.write(engine, writer, input_values, active_variables)
 
-    def write(self, engine: 'Engine', writer: IO[str], input_values: List[float],
-              active_variables: Set['InputVariable']) -> None:
+    def write(
+            self,
+            engine: 'Engine',
+            writer: IO[str],
+            input_values: List[float],
+            active_variables: Set['InputVariable']
+    ) -> None:
         # if not input_values:
         #     writer.writelines("\n")
         if len(input_values) < len(engine.input_variables):

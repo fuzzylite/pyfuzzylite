@@ -16,6 +16,8 @@
 """
 import io
 import os
+import random
+import string
 import tempfile
 import unittest
 from pathlib import Path
@@ -23,6 +25,7 @@ from typing import List
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
+from fuzzylite.examples.mamdani import SimpleDimmer
 
 
 class TestExporter(unittest.TestCase):
@@ -516,14 +519,17 @@ class TestFldExporter(unittest.TestCase):
         self.assertTrue(exporter.input_values)
         self.assertTrue(exporter.output_values)
 
-    def test_to_string(self) -> None:
-        with self.assertRaisesRegex(ValueError, "expected an Engine, but got object"):
-            fl.FldExporter().to_string(object())
-
-        exporter = fl.FldExporter()
-        exporter.to_string_from_scope = MagicMock()  # type: ignore
-        exporter.to_string(fl.Engine(input_variables=[fl.InputVariable("A")]))
-        exporter.to_string_from_scope.assert_called_once()  # type: ignore
+    def test_header(self) -> None:
+        engine = fl.Engine(
+            input_variables=[
+                fl.InputVariable("A"), fl.InputVariable("B")
+            ],
+            output_variables=[
+                fl.OutputVariable("X"), fl.OutputVariable("Y"), fl.OutputVariable("Z")
+            ]
+        )
+        self.assertEqual("A B X Y Z", fl.FldExporter().header(engine))
+        self.assertEqual("A\tB\tX\tY\tZ", fl.FldExporter(separator="\t").header(engine))
 
     def test_write(self) -> None:
         # Empty write
@@ -538,7 +544,7 @@ class TestFldExporter(unittest.TestCase):
 
         # input and output values
         writer = io.StringIO()
-        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         fl.FldExporter(input_values=True, output_values=True).write(
             engine, writer, [0.25], set(engine.input_variables))
         self.assertEqual("0.250 0.750\n", writer.getvalue())
@@ -570,20 +576,277 @@ class TestFldExporter(unittest.TestCase):
         test_variable.value = 0.0
         engine.input_variables.append(test_variable)
 
-        fl.FldExporter().write(engine, writer, [fl.inf, fl.inf], set([test_variable]))
+        fl.FldExporter().write(engine, writer, [fl.inf, fl.inf], {test_variable})
         self.assertEqual("0.250 inf 0.750\n", writer.getvalue())
 
-    def test_header(self) -> None:
+    def test_write_from_reader_empty_engine_empty(self) -> None:
+        engine = fl.Engine()
+
+        writer = io.StringIO()
+        fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual("\n", writer.getvalue())
+
+        writer = io.StringIO()
+        fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual("", writer.getvalue())
+
+    def test_write_from_reader_empty_engine_not_empty(self) -> None:
         engine = fl.Engine(
-            input_variables=[
-                fl.InputVariable("A"), fl.InputVariable("B")
-            ],
-            output_variables=[
-                fl.OutputVariable("X"), fl.OutputVariable("Y"), fl.OutputVariable("Z")
-            ]
+            input_variables=[fl.InputVariable("Input")],
+            output_variables=[fl.OutputVariable("Output")]
         )
-        self.assertEqual("A B X Y Z", fl.FldExporter().header(engine))
-        self.assertEqual("A\tB\tX\tY\tZ", fl.FldExporter(separator="\t").header(engine))
+
+        writer = io.StringIO()
+        fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual("Input Output\n", writer.getvalue())
+
+        writer = io.StringIO()
+        fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual("", writer.getvalue())
+
+    def test_write_from_reader_empty_or_commented(self) -> None:
+        reader = """\
+
+# commented line 0.000
+            """
+        writer = io.StringIO()
+        fl.FldExporter().write_from_reader(fl.Engine(), writer, io.StringIO(reader))
+        self.assertEqual("\n", writer.getvalue())
+
+    def test_write_from_reader(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        reader = """\
+Ambient Power
+0.000000000 nan
+0.499023438 0.501459144
+#0.500000000 0.500000000
+
+0.509765625 0.486065263
+0.510742188 0.484743908
+"""
+        # Fails with headers
+        with self.assertRaisesRegex(ValueError, r"could not convert string to float: 'Ambient'"):
+            fl.FldExporter().write_from_reader(
+                engine, io.StringIO(), io.StringIO(reader), skip_lines=0)
+
+        # Success skipping headers
+        writer = io.StringIO()
+        fl.FldExporter().write_from_reader(engine, writer, io.StringIO(reader), skip_lines=1)
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.499 0.501
+0.510 0.486
+0.511 0.485\n""", writer.getvalue())
+
+    def test_to_file_from_reader(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        reader = """\
+        Ambient Power
+        0.000000000 nan
+        0.499023438 0.501459144
+        #0.500000000 0.500000000
+
+        0.509765625 0.486065263
+        0.510742188 0.484743908
+        """
+
+        file_name = (
+                "file-"
+                + ''.join(random.choice(string.ascii_lowercase)
+                          for _ in range(5))
+                + ".fld"
+        )
+        fl.FldExporter().to_file_from_reader(
+            Path(file_name), engine, io.StringIO(reader), skip_lines=1)
+        self.assertTrue(Path(file_name).exists())
+        obtained = Path(file_name).read_text()
+        Path(file_name).unlink()
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.499 0.501
+0.510 0.486
+0.511 0.485\n""", obtained)
+
+    def test_to_string_from_reader(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        reader = """\
+            Ambient Power
+            0.000000000 nan
+            0.499023438 0.501459144
+            #0.500000000 0.500000000
+
+            0.509765625 0.486065263
+            0.510742188 0.484743908
+            """
+
+        obtained = fl.FldExporter().to_string_from_reader(engine, io.StringIO(reader), skip_lines=1)
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.499 0.501
+0.510 0.486
+0.511 0.485\n""", obtained)
+
+    def test_write_from_scope_each_variable_1(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=4,
+            scope=fl.FldExporter.ScopeOfValues.EachVariable,
+            active_variables=set(engine.input_variables))
+
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.333 0.659
+0.667 0.341
+1.000 nan
+""", writer.getvalue())
+
+    def test_write_from_scope_all_variables_1(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=16,
+            scope=fl.FldExporter.ScopeOfValues.AllVariables,
+            active_variables=set(engine.input_variables))
+
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.067 0.750
+0.133 0.750
+0.200 0.750
+0.267 0.727
+0.333 0.659
+0.400 0.605
+0.467 0.543
+0.533 0.457
+0.600 0.395
+0.667 0.341
+0.733 0.273
+0.800 0.250
+0.867 0.250
+0.933 0.250
+1.000 nan
+""", writer.getvalue())
+
+    def test_write_from_scope_each_variable_2(self) -> None:
+        from fuzzylite.examples.hybrid import tipper
+        engine = fl.FllImporter().from_string(str(tipper.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=4,
+            scope=fl.FldExporter.ScopeOfValues.EachVariable,
+            active_variables=set(engine.input_variables))
+
+        self.assertEqual("""\
+service food mTip tsTip
+0.000 0.000 4.999 5.000
+0.000 3.333 7.756 6.538
+0.000 6.667 12.949 10.882
+0.000 10.000 13.571 11.667
+3.333 0.000 8.569 7.500
+3.333 3.333 10.110 8.673
+3.333 6.667 13.770 12.925
+3.333 10.000 14.368 13.889
+6.667 0.000 12.895 11.000
+6.667 3.333 13.204 12.797
+6.667 6.667 17.986 20.636
+6.667 10.000 21.156 22.778
+10.000 0.000 13.571 11.667
+10.000 3.333 13.709 13.889
+10.000 6.667 20.216 22.778
+10.000 10.000 25.001 25.000
+""", writer.getvalue())
+
+    def test_write_from_scope_all_variables_2(self) -> None:
+        from fuzzylite.examples.hybrid import tipper
+        engine = fl.FllImporter().from_string(str(tipper.engine))
+        writer = io.StringIO()
+        fl.FldExporter().write_from_scope(
+            engine, writer, values=16,
+            scope=fl.FldExporter.ScopeOfValues.AllVariables,
+            active_variables=set(engine.input_variables))
+
+        self.assertEqual("""\
+service food mTip tsTip
+0.000 0.000 4.999 5.000
+0.000 3.333 7.756 6.538
+0.000 6.667 12.949 10.882
+0.000 10.000 13.571 11.667
+3.333 0.000 8.569 7.500
+3.333 3.333 10.110 8.673
+3.333 6.667 13.770 12.925
+3.333 10.000 14.368 13.889
+6.667 0.000 12.895 11.000
+6.667 3.333 13.204 12.797
+6.667 6.667 17.986 20.636
+6.667 10.000 21.156 22.778
+10.000 0.000 13.571 11.667
+10.000 3.333 13.709 13.889
+10.000 6.667 20.216 22.778
+10.000 10.000 25.001 25.000
+""", writer.getvalue())
+
+    def test_to_file_from_scope(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+
+        file_name = (
+                "file-"
+                + ''.join(random.choice(string.ascii_lowercase)
+                          for _ in range(5))
+                + ".fld"
+        )
+
+        fl.FldExporter().to_file_from_scope(
+            Path(file_name), engine, values=4,
+            scope=fl.FldExporter.ScopeOfValues.EachVariable,
+            active_variables=set(engine.input_variables))
+
+        self.assertTrue(Path(file_name).exists())
+        obtained = Path(file_name).read_text()
+        Path(file_name).unlink()
+
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.333 0.659
+0.667 0.341
+1.000 nan
+""", obtained)
+
+    def test_to_string_from_scope(self) -> None:
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+
+        obtained = fl.FldExporter().to_string_from_scope(
+            engine, values=4,
+            scope=fl.FldExporter.ScopeOfValues.EachVariable,
+            active_variables=set(engine.input_variables))
+
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.333 0.659
+0.667 0.341
+1.000 nan
+""", obtained)
+
+    def test_to_string(self) -> None:
+        from fuzzylite.examples.takagi_sugeno import SimpleDimmer
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+
+        obtained = fl.FldExporter().to_string(engine)
+        self.assertEqual(1025 + 1, len(obtained.split("\n")))
+
+        self.assertEqual("""\
+Ambient Power
+0.000 nan
+0.001 0.750
+0.002 0.750
+0.003 0.750""", '\n'.join(obtained.split("\n")[:5]))
 
 
 class TestExporters(unittest.TestCase):
