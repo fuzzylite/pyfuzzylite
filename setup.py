@@ -15,7 +15,6 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import distutils.core
-import io
 
 from typing import List  # noqa: I202
 
@@ -38,41 +37,40 @@ class PyTest(distutils.core.Command):
 
 
 def setup_package() -> None:
-    with io.open('README.md', encoding='utf-8') as file:
-        long_description = file.read()
+    import fuzzylite as fl
 
     distutils.core.setup(
-        name="pyfuzzylite",
-        version="7.0",
-        description="a fuzzy logic control library in Python",
-        long_description=long_description,
+        name=fl.lib.name,
+        version=fl.lib.version,
+        description=fl.lib.description,
+        long_description=fl.lib.summary,
         # long_description_content_type='text/markdown',
         keywords=['fuzzy logic control', 'soft computing', 'artificial intelligence'],
-        url='https://www.fuzzylite.com/python/',
-        download_url='https://www.fuzzylite.com/downloads/',
+        url=fl.lib.website,
+        download_url='https://github.com/fuzzylite/pyfuzzylite.git',
         # project_urls={
         #     'Home': 'https://www.fuzzylite.com/',
         #     'Documentation': 'https://www.fuzzylite.com/documentation',
         #     'Bug Tracker': 'https://github.com/fuzzylite/pyfuzzylite/issues',
         #     'Source Code': 'https://github.com/fuzzylite/pyfuzzylite',
         # },
-        author="Juan Rada-Vilela, Ph.D.",
-        author_email="jcrada@fuzzylite.com",
-        maintainer="Juan Rada-Vilela, Ph.D.",
-        maintainer_email="jcrada@fuzzylite.com",
-        license="Affero GNU General Public License v3",
+        author=fl.lib.author,
+        author_email=fl.lib.author_email,
+        maintainer=fl.lib.author,
+        maintainer_email=fl.lib.author_email,
+        license=fl.lib.license,
         packages=['fuzzylite'],
         package_dir={'fuzzylite': '.'},
         # entry_points={
         #     'console_scripts': ['fuzzylite=fuzzylite:console']
         # },
         platforms=['OS Independent'],
-        provides=['pyfuzzylite'],
+        provides=[fl.lib.name],
         # python_requires='>=3.6',
         # setup_requires=['pytest-runner'],
 
         classifiers=[
-            'Development Status :: 2 - Pre-Alpha',
+            'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
             'License :: OSI Approved :: Affero GNU General Public License v3 or later (AGPLv3+)',

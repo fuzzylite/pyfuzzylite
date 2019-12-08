@@ -57,11 +57,11 @@ class Library:
 
     @property
     def version(self) -> str:
-        return "7.0"
+        return "7.0b1"
 
     @property
     def license(self) -> str:
-        return "GNU General Public License v3.0"
+        return "Affero GNU General Public License v3"
 
     @property
     def description(self) -> str:
