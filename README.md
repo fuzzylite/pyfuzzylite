@@ -124,36 +124,6 @@ RuleBlock: mamdani
   rule: if obstacle is left then mSteer is right
   rule: if obstacle is right then mSteer is left
 ```
-### <a name="compile-build-execute">Compile, Link, and Execute</a>
-
-
-
-
-
-***
-
-
-### <a name="building">Building  from Source</a>
-
-
-
-
-#### Documentation
-
-
-
-***
-
-### <a name="binaries">Binaries</a>
-
-
-
-#### Console
-
-***
-
-### <a name="whatsnew">What's New?</a>
-
 
 ***
 

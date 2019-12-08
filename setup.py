@@ -14,12 +14,12 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-import distutils.core
-
 from typing import List  # noqa: I202
 
+import setuptools
 
-class PyTest(distutils.core.Command):
+
+class PyTest(setuptools.Command):
     user_options: List[str] = []
 
     def initialize_options(self) -> None:
@@ -39,21 +39,21 @@ class PyTest(distutils.core.Command):
 def setup_package() -> None:
     import fuzzylite as fl
 
-    distutils.core.setup(
+    setuptools.setup(
         name=fl.lib.name,
         version=fl.lib.version,
         description=fl.lib.description,
         long_description=fl.lib.summary,
-        # long_description_content_type='text/markdown',
+        long_description_content_type='text/markdown',
         keywords=['fuzzy logic control', 'soft computing', 'artificial intelligence'],
         url=fl.lib.website,
         download_url='https://github.com/fuzzylite/pyfuzzylite.git',
-        # project_urls={
-        #     'Home': 'https://www.fuzzylite.com/',
-        #     'Documentation': 'https://www.fuzzylite.com/documentation',
-        #     'Bug Tracker': 'https://github.com/fuzzylite/pyfuzzylite/issues',
-        #     'Source Code': 'https://github.com/fuzzylite/pyfuzzylite',
-        # },
+        project_urls={
+            'Home': fl.lib.website,
+            'Documentation': 'https://www.fuzzylite.com/documentation',
+            'Bug Tracker': 'https://github.com/fuzzylite/pyfuzzylite/issues',
+            'Source Code': 'https://github.com/fuzzylite/pyfuzzylite',
+        },
         author=fl.lib.author,
         author_email=fl.lib.author_email,
         maintainer=fl.lib.author,
@@ -66,14 +66,14 @@ def setup_package() -> None:
         # },
         platforms=['OS Independent'],
         provides=[fl.lib.name],
-        # python_requires='>=3.6',
+        python_requires='>=3.6',
         # setup_requires=['pytest-runner'],
 
         classifiers=[
             'Development Status :: 4 - Beta',
             'Intended Audience :: Developers',
             'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: Affero GNU General Public License v3 or later (AGPLv3+)',
+            'License :: OSI Approved :: GNU Affero General Public License v3',
             'License :: Other/Proprietary License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3.6',
