@@ -59,8 +59,8 @@ def setup_package() -> None:
         maintainer=fl.lib.author,
         maintainer_email=fl.lib.author_email,
         license=fl.lib.license,
-        packages=['fuzzylite'],
-        package_dir={'fuzzylite': '.'},
+        packages=setuptools.find_packages(),
+        # package_dir={'fuzzylite': '.'},
         # entry_points={
         #     'console_scripts': ['fuzzylite=fuzzylite:console']
         # },
