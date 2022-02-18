@@ -57,7 +57,7 @@ class Library:
 
     @property
     def version(self) -> str:
-        return "7.0b3"
+        return "7.0.0"
 
     @property
     def license(self) -> str:
