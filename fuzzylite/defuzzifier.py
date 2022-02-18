@@ -15,9 +15,18 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-__all__ = ["Defuzzifier", "IntegralDefuzzifier", "Bisector", "Centroid", "LargestOfMaximum",
-           "MeanOfMaximum", "SmallestOfMaximum", "WeightedDefuzzifier", "WeightedAverage",
-           "WeightedSum"]
+__all__ = [
+    "Defuzzifier",
+    "IntegralDefuzzifier",
+    "Bisector",
+    "Centroid",
+    "LargestOfMaximum",
+    "MeanOfMaximum",
+    "SmallestOfMaximum",
+    "WeightedDefuzzifier",
+    "WeightedAverage",
+    "WeightedSum",
+]
 
 import enum
 import math
@@ -29,7 +38,6 @@ from .term import Aggregated, Constant, Function, Linear, Term
 
 
 class Defuzzifier:
-
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
@@ -48,7 +56,9 @@ class IntegralDefuzzifier(Defuzzifier):
     default_resolution = 100
 
     def __init__(self, resolution: Optional[int] = None) -> None:
-        self.resolution = resolution if resolution else IntegralDefuzzifier.default_resolution
+        self.resolution = (
+            resolution if resolution else IntegralDefuzzifier.default_resolution
+        )
 
     def __str__(self) -> str:
         return f"{self.class_name} {self.parameters()}"
@@ -65,7 +75,6 @@ class IntegralDefuzzifier(Defuzzifier):
 
 
 class Bisector(IntegralDefuzzifier):
-
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -96,7 +105,6 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -115,7 +123,6 @@ class Centroid(IntegralDefuzzifier):
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
-
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -136,7 +143,6 @@ class LargestOfMaximum(IntegralDefuzzifier):
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
-
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -165,7 +171,6 @@ class MeanOfMaximum(IntegralDefuzzifier):
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
-
     def __init__(self, resolution: Optional[int] = None) -> None:
         super().__init__(resolution)
 
@@ -190,7 +195,9 @@ class WeightedDefuzzifier(Defuzzifier):
     class Type(enum.Enum):
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
-    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+    def __init__(
+        self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
+    ) -> None:
         if type is None:
             type = WeightedDefuzzifier.Type.Automatic
         elif isinstance(type, str):
@@ -210,21 +217,28 @@ class WeightedDefuzzifier(Defuzzifier):
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
         raise NotImplementedError()
 
-    def infer_type(self, term: Term) -> 'WeightedDefuzzifier.Type':
+    def infer_type(self, term: Term) -> "WeightedDefuzzifier.Type":
         if isinstance(term, (Constant, Linear, Function)):
             return WeightedDefuzzifier.Type.TakagiSugeno
         return WeightedDefuzzifier.Type.Tsukamoto
 
 
 class WeightedAverage(WeightedDefuzzifier):
-
-    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+    def __init__(
+        self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
+    ) -> None:
         super().__init__(type)
 
-    def defuzzify(self, fuzzy_output: Term,
-                  unused_minimum: float = nan, unused_maximum: float = nan) -> float:
+    def defuzzify(
+        self,
+        fuzzy_output: Term,
+        unused_minimum: float = nan,
+        unused_maximum: float = nan,
+    ) -> float:
         if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
+            raise ValueError(
+                f"expected an Aggregated term, but found {type(fuzzy_output)}"
+            )
 
         if not self.type:
             raise ValueError("expected a type of defuzzifier, but found none")
@@ -247,7 +261,9 @@ class WeightedAverage(WeightedDefuzzifier):
         else:
             for activated in fuzzy_output.terms:
                 w = activated.degree
-                z = activated.term.tsukamoto(w, fuzzy_output.minimum, fuzzy_output.maximum)
+                z = activated.term.tsukamoto(
+                    w, fuzzy_output.minimum, fuzzy_output.maximum
+                )
                 weighted_sum += w * z
                 weights += w
 
@@ -255,14 +271,21 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-
-    def __init__(self, type: Optional[Union[str, 'WeightedDefuzzifier.Type']] = None) -> None:
+    def __init__(
+        self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
+    ) -> None:
         super().__init__(type)
 
-    def defuzzify(self, fuzzy_output: Term,
-                  unused_minimum: float = nan, unused_maximum: float = nan) -> float:
+    def defuzzify(
+        self,
+        fuzzy_output: Term,
+        unused_minimum: float = nan,
+        unused_maximum: float = nan,
+    ) -> float:
         if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
+            raise ValueError(
+                f"expected an Aggregated term, but found {type(fuzzy_output)}"
+            )
 
         if not self.type:
             raise ValueError("expected a type of defuzzifier, but found none")
@@ -284,7 +307,9 @@ class WeightedSum(WeightedDefuzzifier):
         else:
             for activated in fuzzy_output.terms:
                 w = activated.degree
-                z = activated.term.tsukamoto(w, fuzzy_output.minimum, fuzzy_output.maximum)
+                z = activated.term.tsukamoto(
+                    w, fuzzy_output.minimum, fuzzy_output.maximum
+                )
                 weighted_sum += w * z
 
         return weighted_sum

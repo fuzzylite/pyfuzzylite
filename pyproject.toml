@@ -24,8 +24,14 @@ Documentation = "https://www.fuzzylite.com/documentation"
 python = "^3.6.2"
 
 [tool.poetry.dev-dependencies]
+# remove unused variables and more
+autoflake = "^1.4"
 # Source code formatting
 black = "^22.1.0"
+# coverage metrics
+coveralls = "^3.3.1"
+# sort import depedencies
+isort = "^5.10.1"
 # Source code type annotations checker
 mypy = "^0.931"
 # Format jupyter notebooks
@@ -36,4 +42,3 @@ numpy = "^1.19.5"
 pytest = "^7.0.1"
 # Read .toml files
 toml = "^0.10.2"
-coveralls = "^3.3.1"

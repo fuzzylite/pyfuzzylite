@@ -60,7 +60,6 @@ RuleBlock: steer_away
 
 
 class TestImporter(unittest.TestCase):
-
     def test_class_name(self) -> None:
         self.assertEqual(fl.Importer().class_name, "Importer")
 
@@ -71,10 +70,11 @@ class TestImporter(unittest.TestCase):
     def test_from_file(self) -> None:
         importer = fl.Importer()
         importer.from_string = MagicMock(  # type: ignore
-            side_effect=lambda string: fl.Engine(description=string))
+            side_effect=lambda string: fl.Engine(description=string)
+        )
 
         path = tempfile.mkstemp(text=True)[1]
-        with io.open(path, 'w') as file:
+        with io.open(path, "w") as file:
             file.write(BELL_FLL)
 
         engine = importer.from_file(path)
@@ -85,7 +85,6 @@ class TestImporter(unittest.TestCase):
 
 
 class TestFllImporter(unittest.TestCase):
-
     def test_from_string(self) -> None:
         engine = fl.FllImporter().from_string(BELL_FLL)
         self.assertEqual(BELL_FLL, str(engine))
@@ -96,7 +95,9 @@ Engine: Bell
 
   description: obstacle avoidance for self-driving cars
 """
-        self.assertEqual(engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine)))
+        self.assertEqual(
+            engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine))
+        )
 
     def test_input_variable(self) -> None:
         iv = """\
@@ -108,7 +109,9 @@ InputVariable: obstacle
 
   term: left Triangle 0.000 0.333 0.666
   term: right Triangle 0.333 0.666 1.000"""
-        self.assertEqual(iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv)))
+        self.assertEqual(
+            iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv))
+        )
 
     def test_output_variable(self) -> None:
         ov = """\
@@ -124,7 +127,9 @@ OutputVariable: steer
 
   term: left Bell 0.333 0.167 3.000
   term: right Bell 0.666 0.167 3.000"""
-        self.assertEqual(ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov)))
+        self.assertEqual(
+            ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov))
+        )
 
     def test_rule_block(self) -> None:
         rb = """\
@@ -147,10 +152,16 @@ RuleBlock: steer_away
         term = "term: function Function 1 + 1"
         self.assertEqual(term, str(fl.FllImporter().term(term)))
         self.assertEqual(None, cast(fl.Function, fl.FllImporter().term(term)).engine)
-        self.assertEqual(engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine)
+        self.assertEqual(
+            engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine
+        )
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "expected format 'term: name Term [parameters]', but got 'term: name'")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
+                "expected format 'term: name Term [parameters]', but got 'term: name'"
+            ),
+        ):
             fl.FllImporter().term("term: name")
 
     def test_rule(self) -> None:
@@ -169,8 +180,10 @@ RuleBlock: steer_away
         self.assertEqual(None, fl.FllImporter().tnorm(""))
         self.assertEqual(None, fl.FllImporter().tnorm("none"))
 
-        with self.assertRaisesRegex(ValueError, re.escape(
-                "constructor of 'AlgebraicSum' not found in TNormFactory")):
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("constructor of 'AlgebraicSum' not found in TNormFactory"),
+        ):
             fl.FllImporter().tnorm("AlgebraicSum")
 
     def test_snorm(self) -> None:
@@ -180,8 +193,10 @@ RuleBlock: steer_away
         self.assertEqual(None, fl.FllImporter().snorm(""))
         self.assertEqual(None, fl.FllImporter().snorm("none"))
 
-        with self.assertRaisesRegex(ValueError, re.escape(
-                "constructor of 'AlgebraicProduct' not found in SNormFactory")):
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("constructor of 'AlgebraicProduct' not found in SNormFactory"),
+        ):
             fl.FllImporter().snorm("AlgebraicProduct")
 
     def test_activation(self) -> None:
@@ -192,28 +207,36 @@ RuleBlock: steer_away
 
         self.assertEqual(None, fl.FllImporter().activation("none"))
 
-        with self.assertRaisesRegex(ValueError, re.escape(
-                "constructor of 'Invalid' not found in ActivationFactory")):
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("constructor of 'Invalid' not found in ActivationFactory"),
+        ):
             fl.FllImporter().activation("Invalid")
 
     def test_defuzzifier(self) -> None:
         defuzzifier = "Centroid"
-        self.assertEqual(defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier)))
+        self.assertEqual(
+            defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier))
+        )
         defuzzifier = "WeightedAverage TakagiSugeno"
         self.assertEqual(defuzzifier, str(fl.FllImporter().defuzzifier(defuzzifier)))
 
         self.assertEqual(None, fl.FllImporter().defuzzifier("none"))
 
-        with self.assertRaisesRegex(ValueError, re.escape(
-                "constructor of 'Invalid' not found in DefuzzifierFactory")):
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("constructor of 'Invalid' not found in DefuzzifierFactory"),
+        ):
             fl.FllImporter().defuzzifier("Invalid")
 
     def test_range(self) -> None:
         self.assertEqual((1.0, 1.0), fl.FllImporter().range("1.0000 1.0000"))
         self.assertEqual((-fl.inf, fl.inf), fl.FllImporter().range("-inf\tinf"))
         self.assertEqual(str((fl.nan, fl.nan)), str(fl.FllImporter().range("-nan nan")))
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "expected range of two values, but got ['1', '2', '3']")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape("expected range of two values, but got ['1', '2', '3']"),
+        ):
             fl.FllImporter().range("1 2 3")
 
     def test_boolean(self) -> None:
@@ -222,73 +245,119 @@ RuleBlock: steer_away
         self.assertEqual(False, fl.FllImporter().boolean("false"))
         self.assertEqual(False, fl.FllImporter().boolean("  false  "))
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "expected boolean in ['true', 'false'], but got 'True'")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape("expected boolean in ['true', 'false'], but got 'True'"),
+        ):
             fl.FllImporter().boolean("True")
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                r"expected boolean in ['true', 'false'], but got 'False'")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(r"expected boolean in ['true', 'false'], but got 'False'"),
+        ):
             fl.FllImporter().boolean("False")
 
     def test_extract_key_value(self) -> None:
-        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key: value"))
-        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key : value"))
-        self.assertEqual(("Key", "value1 : value2"), fl.FllImporter().extract_key_value(
-            "Key: value1 : value2", "Key"))
-        self.assertEqual(("Key", "value1 : value2 : value 3"),
-                         fl.FllImporter().extract_key_value(
-                             "Key: value1 : value2 : value 3", "Key"))
+        self.assertEqual(
+            ("Key", "value"), fl.FllImporter().extract_key_value("Key: value")
+        )
+        self.assertEqual(
+            ("Key", "value"), fl.FllImporter().extract_key_value("Key : value")
+        )
+        self.assertEqual(
+            ("Key", "value1 : value2"),
+            fl.FllImporter().extract_key_value("Key: value1 : value2", "Key"),
+        )
+        self.assertEqual(
+            ("Key", "value1 : value2 : value 3"),
+            fl.FllImporter().extract_key_value("Key: value1 : value2 : value 3", "Key"),
+        )
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
+                "expected 'key: value' definition, but found 'key value1 value2'"
+            ),
+        ):
             fl.FllImporter().extract_key_value("key value1 value2")
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
                 "expected 'DESCRIPTION: value' definition, "
-                "but found 'description: value1 value2'")):
-            fl.FllImporter().extract_key_value("description: value1 value2", "DESCRIPTION")
+                "but found 'description: value1 value2'"
+            ),
+        ):
+            fl.FllImporter().extract_key_value(
+                "description: value1 value2", "DESCRIPTION"
+            )
 
     def test_extract_value(self) -> None:
         self.assertEqual("value", fl.FllImporter().extract_value("Key: value"))
         self.assertEqual("value", fl.FllImporter().extract_value("Key : value"))
-        self.assertEqual("value1 : value2", fl.FllImporter().extract_value(
-            "Key: value1 : value2", "Key"))
-        self.assertEqual("value1 : value2 : value 3", fl.FllImporter().extract_value(
-            "Key: value1 : value2 : value 3", "Key"))
+        self.assertEqual(
+            "value1 : value2",
+            fl.FllImporter().extract_value("Key: value1 : value2", "Key"),
+        )
+        self.assertEqual(
+            "value1 : value2 : value 3",
+            fl.FllImporter().extract_value("Key: value1 : value2 : value 3", "Key"),
+        )
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'")):
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
+                "expected 'key: value' definition, but found 'key value1 value2'"
+            ),
+        ):
             fl.FllImporter().extract_value("key value1 value2")
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
                 "expected 'DESCRIPTION: value' definition, "
-                "but found 'description: value1 value2'")):
+                "but found 'description: value1 value2'"
+            ),
+        ):
             fl.FllImporter().extract_value("description: value1 value2", "DESCRIPTION")
 
     def test_invalid_components(self) -> None:
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "'invalid' is not a valid component of 'Engine'")):
+        with self.assertRaisesRegex(
+            SyntaxError, re.escape("'invalid' is not a valid component of 'Engine'")
+        ):
             fl.FllImporter().engine("""Engine: name\n  invalid: component""")
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "'invalid' is not a valid component of 'InputVariable'")):
-            fl.FllImporter().input_variable("""InputVariable: name\n  invalid: component""")
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape("'invalid' is not a valid component of 'InputVariable'"),
+        ):
+            fl.FllImporter().input_variable(
+                """InputVariable: name\n  invalid: component"""
+            )
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "'invalid' is not a valid component of 'OutputVariable'")):
-            fl.FllImporter().output_variable("""OutputVariable: name\n  invalid: component""")
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape("'invalid' is not a valid component of 'OutputVariable'"),
+        ):
+            fl.FllImporter().output_variable(
+                """OutputVariable: name\n  invalid: component"""
+            )
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
-                "'invalid' is not a valid component of 'RuleBlock'")):
+        with self.assertRaisesRegex(
+            SyntaxError, re.escape("'invalid' is not a valid component of 'RuleBlock'")
+        ):
             fl.FllImporter().rule_block("""RuleBlock: name\n  invalid: component""")
 
-        with self.assertRaisesRegex(SyntaxError, re.escape(
+        with self.assertRaisesRegex(
+            SyntaxError,
+            re.escape(
                 "factory manager does not contain a factory named 'variable' "
-                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'")):
+                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'"
+            ),
+        ):
             fl.FllImporter().component(fl.Variable, """Variable: Invalid""")  # type: ignore
 
 
 class TestFllImporterBatch(unittest.TestCase):
-
     @unittest.skip("Re-enable after test coverage improved independently")
     def test_import_examples(self) -> None:
         self.maxDiff = None  # show all differences
@@ -296,13 +365,15 @@ class TestFllImporterBatch(unittest.TestCase):
         exporter = fl.FllExporter()
         fl.lib.decimals = 9
         import logging
+
         fl.lib.logger.setLevel(logging.INFO)
         import fuzzylite.examples.terms
+
         terms = next(iter(fuzzylite.examples.terms.__path__))  # type: ignore
         counter = 0
-        for fll_file in glob.iglob(terms + '/*.fll', recursive=True):
+        for fll_file in glob.iglob(terms + "/*.fll", recursive=True):
             counter += 1
-            with open(fll_file, 'r') as file:
+            with open(fll_file, "r") as file:
                 fl.lib.logger.info(fll_file)
                 fll_from_string = file.read()
                 engine = importer.from_string(fll_from_string)
@@ -312,5 +383,5 @@ class TestFllImporterBatch(unittest.TestCase):
         fl.lib.decimals = 3
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

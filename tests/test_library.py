@@ -21,7 +21,6 @@ import fuzzylite
 
 
 class TestLibrary(unittest.TestCase):
-
     def test_library_exports_dir(self) -> None:
         expected = """
 __annotations__ __builtins__ __cached__ __doc__ __file__ __loader__
@@ -71,5 +70,5 @@ variable InputVariable OutputVariable Variable
         self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

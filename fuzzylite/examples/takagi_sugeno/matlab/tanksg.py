@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="tanksg",
-    description=""
-)
+engine = fl.Engine(name="tanksg", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="level",
@@ -15,8 +12,8 @@ engine.input_variables = [
         terms=[
             fl.Gaussian("high", -1.000, 0.300),
             fl.Gaussian("okay", 0.004, 0.300),
-            fl.Gaussian("low", 1.000, 0.300)
-        ]
+            fl.Gaussian("low", 1.000, 0.300),
+        ],
     ),
     fl.InputVariable(
         name="rate",
@@ -28,9 +25,9 @@ engine.input_variables = [
         terms=[
             fl.Gaussian("negative", -0.100, 0.030),
             fl.Gaussian("none", 0.000, 0.030),
-            fl.Gaussian("positive", 0.100, 0.030)
-        ]
-    )
+            fl.Gaussian("positive", 0.100, 0.030),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -48,8 +45,8 @@ engine.output_variables = [
             fl.Constant("close_slow", -0.500),
             fl.Constant("no_change", 0.000),
             fl.Constant("open_slow", 0.300),
-            fl.Constant("open_fast", 0.900)
-        ]
+            fl.Constant("open_fast", 0.900),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -65,8 +62,12 @@ engine.rule_blocks = [
             fl.Rule.create("if level is okay then valve is no_change", engine),
             fl.Rule.create("if level is low then valve is open_fast", engine),
             fl.Rule.create("if level is high then valve is close_fast", engine),
-            fl.Rule.create("if level is okay and rate is positive then valve is close_slow", engine),
-            fl.Rule.create("if level is okay and rate is negative then valve is open_slow", engine)
-        ]
+            fl.Rule.create(
+                "if level is okay and rate is positive then valve is close_slow", engine
+            ),
+            fl.Rule.create(
+                "if level is okay and rate is negative then valve is open_slow", engine
+            ),
+        ],
     )
 ]

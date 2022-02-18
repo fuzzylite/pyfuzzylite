@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="invkine1",
-    description=""
-)
+engine = fl.Engine(name="invkine1", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="input1",
@@ -19,8 +16,8 @@ engine.input_variables = [
             fl.Bell("in1mf4", 4.962, 2.790, 2.508),
             fl.Bell("in1mf5", 9.338, 2.506, 1.812),
             fl.Bell("in1mf6", 13.150, 2.363, 2.267),
-            fl.Bell("in1mf7", 17.789, 1.310, 1.756)
-        ]
+            fl.Bell("in1mf7", 17.789, 1.310, 1.756),
+        ],
     ),
     fl.InputVariable(
         name="input2",
@@ -36,9 +33,9 @@ engine.input_variables = [
             fl.Bell("in2mf4", 8.087, 1.941, 1.929),
             fl.Bell("in2mf5", 11.428, 2.333, 2.022),
             fl.Bell("in2mf6", 14.579, 2.221, 1.858),
-            fl.Bell("in2mf7", 17.813, 0.820, 1.577)
-        ]
-    )
+            fl.Bell("in2mf7", 17.813, 0.820, 1.577),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -100,8 +97,8 @@ engine.output_variables = [
             fl.Linear("out1mf46", [1.334, -3.017, -2.871], engine),
             fl.Linear("out1mf47", [2.561, -0.864, -0.557], engine),
             fl.Linear("out1mf48", [17.123, 11.150, 1.006], engine),
-            fl.Linear("out1mf49", [0.220, 0.154, 0.010], engine)
-        ]
+            fl.Linear("out1mf49", [0.220, 0.154, 0.010], engine),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -114,55 +111,202 @@ engine.rule_blocks = [
         implication=None,
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf1 then output is out1mf1", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf2 then output is out1mf2", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf3 then output is out1mf3", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf4 then output is out1mf4", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf5 then output is out1mf5", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf6 then output is out1mf6", engine),
-            fl.Rule.create("if input1 is in1mf1 and input2 is in2mf7 then output is out1mf7", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf1 then output is out1mf8", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf2 then output is out1mf9", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf3 then output is out1mf10", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf4 then output is out1mf11", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf5 then output is out1mf12", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf6 then output is out1mf13", engine),
-            fl.Rule.create("if input1 is in1mf2 and input2 is in2mf7 then output is out1mf14", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf1 then output is out1mf15", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf2 then output is out1mf16", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf3 then output is out1mf17", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf4 then output is out1mf18", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf5 then output is out1mf19", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf6 then output is out1mf20", engine),
-            fl.Rule.create("if input1 is in1mf3 and input2 is in2mf7 then output is out1mf21", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf1 then output is out1mf22", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf2 then output is out1mf23", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf3 then output is out1mf24", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf4 then output is out1mf25", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf5 then output is out1mf26", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf6 then output is out1mf27", engine),
-            fl.Rule.create("if input1 is in1mf4 and input2 is in2mf7 then output is out1mf28", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf1 then output is out1mf29", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf2 then output is out1mf30", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf3 then output is out1mf31", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf4 then output is out1mf32", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf5 then output is out1mf33", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf6 then output is out1mf34", engine),
-            fl.Rule.create("if input1 is in1mf5 and input2 is in2mf7 then output is out1mf35", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf1 then output is out1mf36", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf2 then output is out1mf37", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf3 then output is out1mf38", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf4 then output is out1mf39", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf5 then output is out1mf40", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf6 then output is out1mf41", engine),
-            fl.Rule.create("if input1 is in1mf6 and input2 is in2mf7 then output is out1mf42", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf1 then output is out1mf43", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf2 then output is out1mf44", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf3 then output is out1mf45", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf4 then output is out1mf46", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf5 then output is out1mf47", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf6 then output is out1mf48", engine),
-            fl.Rule.create("if input1 is in1mf7 and input2 is in2mf7 then output is out1mf49", engine)
-        ]
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf1 then output is out1mf1",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf2 then output is out1mf2",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf3 then output is out1mf3",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf4 then output is out1mf4",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf5 then output is out1mf5",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf6 then output is out1mf6",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf1 and input2 is in2mf7 then output is out1mf7",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf1 then output is out1mf8",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf2 then output is out1mf9",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf3 then output is out1mf10",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf4 then output is out1mf11",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf5 then output is out1mf12",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf6 then output is out1mf13",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf2 and input2 is in2mf7 then output is out1mf14",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf1 then output is out1mf15",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf2 then output is out1mf16",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf3 then output is out1mf17",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf4 then output is out1mf18",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf5 then output is out1mf19",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf6 then output is out1mf20",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf3 and input2 is in2mf7 then output is out1mf21",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf1 then output is out1mf22",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf2 then output is out1mf23",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf3 then output is out1mf24",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf4 then output is out1mf25",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf5 then output is out1mf26",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf6 then output is out1mf27",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf4 and input2 is in2mf7 then output is out1mf28",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf1 then output is out1mf29",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf2 then output is out1mf30",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf3 then output is out1mf31",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf4 then output is out1mf32",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf5 then output is out1mf33",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf6 then output is out1mf34",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf5 and input2 is in2mf7 then output is out1mf35",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf1 then output is out1mf36",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf2 then output is out1mf37",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf3 then output is out1mf38",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf4 then output is out1mf39",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf5 then output is out1mf40",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf6 then output is out1mf41",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf6 and input2 is in2mf7 then output is out1mf42",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf1 then output is out1mf43",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf2 then output is out1mf44",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf3 then output is out1mf45",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf4 then output is out1mf46",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf5 then output is out1mf47",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf6 then output is out1mf48",
+                engine,
+            ),
+            fl.Rule.create(
+                "if input1 is in1mf7 and input2 is in2mf7 then output is out1mf49",
+                engine,
+            ),
+        ],
     )
 ]

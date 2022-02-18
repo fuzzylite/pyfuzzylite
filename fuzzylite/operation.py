@@ -31,59 +31,53 @@ class Operation:
     def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return (a == b
-                or abs(a - b) < abs_tolerance
-                or (a != a and b != b))
+        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b)
 
     @staticmethod
     def neq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return not (a == b
-                    or abs(a - b) < abs_tolerance
-                    or (a != a and b != b))
+        return not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b))
 
     @staticmethod
     def gt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return not (a == b
-                    or abs(a - b) < abs_tolerance
-                    or (a != a and b != b)
-                    ) and a > b
+        return (
+            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a > b
+        )
 
     @staticmethod
     def ge(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return (a == b
-                or abs(a - b) < abs_tolerance
-                or (a != a and b != b)
-                or a > b)
+        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a > b
 
     @staticmethod
     def le(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return (a == b
-                or abs(a - b) < abs_tolerance
-                or (a != a and b != b)
-                or a < b)
+        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a < b
 
     @staticmethod
     def lt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         if abs_tolerance is None:
             from . import lib
+
             abs_tolerance = lib.abs_tolerance
-        return not (a == b
-                    or abs(a - b) < abs_tolerance
-                    or (a != a and b != b)
-                    ) and a < b
+        return (
+            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a < b
+        )
 
     @staticmethod
     def logical_and(a: float, b: float) -> bool:
@@ -95,14 +89,20 @@ class Operation:
 
     @staticmethod
     def as_identifier(name: str) -> str:
-        result = ''.join([x for x in name if x in ("_", ".") or x.isalnum()])
+        result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
         return result if result else "unnamed"
 
     @staticmethod
-    def scale(x: float, from_minimum: float, from_maximum: float, to_minimum: float,
-              to_maximum: float) -> float:
-        return ((to_maximum - to_minimum) / (from_maximum - from_minimum) * (x - from_minimum)
-                + to_minimum)
+    def scale(
+        x: float,
+        from_minimum: float,
+        from_maximum: float,
+        to_minimum: float,
+        to_maximum: float,
+    ) -> float:
+        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
+            x - from_minimum
+        ) + to_minimum
 
     @staticmethod
     def bound(x: float, minimum: float, maximum: float) -> float:
@@ -115,8 +115,11 @@ class Operation:
     @staticmethod
     def arity_of(method: Callable) -> int:  # type: ignore
         signature = inspect.signature(method)
-        required_parameters = [parameter for parameter in signature.parameters.values()
-                               if parameter.default == inspect.Parameter.empty]
+        required_parameters = [
+            parameter
+            for parameter in signature.parameters.values()
+            if parameter.default == inspect.Parameter.empty
+        ]
         return len(required_parameters)
 
     @staticmethod
@@ -124,8 +127,12 @@ class Operation:
         return math.pi
 
     @staticmethod
-    def describe(instance: object, slots: bool = True, variables: bool = True,
-                 class_hierarchy: bool = False) -> str:
+    def describe(
+        instance: object,
+        slots: bool = True,
+        variables: bool = True,
+        class_hierarchy: bool = False,
+    ) -> str:
         if not instance:
             return str(None)
         key_values = {}
@@ -141,7 +148,8 @@ class Operation:
             if class_hierarchy:
                 key_values["__hierarchy__"] = ", ".join(
                     f"{cls.__module__}.{cls.__name__}"
-                    for cls in inspect.getmro(instance.__class__))
+                    for cls in inspect.getmro(instance.__class__)
+                )
 
         class_name = instance.__class__.__name__
         sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
@@ -150,7 +158,7 @@ class Operation:
     @staticmethod
     def strip_comments(fll: str, delimiter: str = "#") -> str:
         lines: List[str] = []
-        for line in fll.split('\n'):
+        for line in fll.split("\n"):
             ignore = line.find(delimiter)
             if ignore != -1:
                 line = line[:ignore]
@@ -162,11 +170,16 @@ class Operation:
     @staticmethod
     def scalar(x: Union[SupportsFloat, str, bytes]) -> float:
         from . import lib
+
         return lib.floating_point(x)
 
     @staticmethod
-    def increment(x: List[int], minimum: List[int], maximum: List[int],
-                  position: Optional[int] = None) -> bool:
+    def increment(
+        x: List[int],
+        minimum: List[int],
+        maximum: List[int],
+        position: Optional[int] = None,
+    ) -> bool:
         if position is None:
             position = len(x) - 1
         if not x or position < 0:
@@ -188,6 +201,7 @@ class Operation:
     def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
         if not decimals:
             from . import lib
+
             decimals = lib.decimals
         if isinstance(x, float):
             return f"{x:.{decimals}f}"

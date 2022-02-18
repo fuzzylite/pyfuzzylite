@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="SimpleDimmer",
-    description=""
-)
+engine = fl.Engine(name="SimpleDimmer", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="Ambient",
@@ -15,8 +12,8 @@ engine.input_variables = [
         terms=[
             fl.Triangle("DARK", 0.000, 0.250, 0.500),
             fl.Triangle("MEDIUM", 0.250, 0.500, 0.750),
-            fl.Triangle("BRIGHT", 0.500, 0.750, 1.000)
-        ]
+            fl.Triangle("BRIGHT", 0.500, 0.750, 1.000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -33,8 +30,8 @@ engine.output_variables = [
         terms=[
             fl.Triangle("LOW", 0.000, 0.250, 0.500),
             fl.Triangle("MEDIUM", 0.250, 0.500, 0.750),
-            fl.Triangle("HIGH", 0.500, 0.750, 1.000)
-        ]
+            fl.Triangle("HIGH", 0.500, 0.750, 1.000),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -49,7 +46,7 @@ engine.rule_blocks = [
         rules=[
             fl.Rule.create("if Ambient is DARK then Power is HIGH", engine),
             fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine),
-            fl.Rule.create("if Ambient is BRIGHT then Power is LOW", engine)
-        ]
+            fl.Rule.create("if Ambient is BRIGHT then Power is LOW", engine),
+        ],
     )
 ]

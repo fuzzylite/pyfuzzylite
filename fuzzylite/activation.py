@@ -15,8 +15,16 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-__all__ = ["Activation", "General", "First", "Last", "Highest", "Lowest", "Proportional",
-           "Threshold"]
+__all__ = [
+    "Activation",
+    "General",
+    "First",
+    "Last",
+    "Highest",
+    "Lowest",
+    "Proportional",
+    "Threshold",
+]
 
 import enum
 import heapq
@@ -28,7 +36,6 @@ from .rule import Rule, RuleBlock
 
 
 class Activation:
-
     @property
     def class_name(self) -> str:
         return self.__class__.__name__
@@ -51,7 +58,6 @@ class Activation:
 
 
 class General(Activation):
-
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -64,7 +70,9 @@ class General(Activation):
                 rule.trigger(implication)
 
 
-def _activate_positional(activation: Union['First', 'Last'], rule_block: RuleBlock) -> None:
+def _activate_positional(
+    activation: Union["First", "Last"], rule_block: RuleBlock
+) -> None:
     conjunction = rule_block.conjunction
     disjunction = rule_block.disjunction
     implication = rule_block.implication
@@ -82,22 +90,22 @@ def _activate_positional(activation: Union['First', 'Last'], rule_block: RuleBlo
 
         if rule.is_loaded():
             activation_degree = rule.activate_with(conjunction, disjunction)
-            if (activated < activation.rules
-                    and Op.gt(activation_degree, 0.0)
-                    and activation_degree >= activation.threshold):
+            if (
+                activated < activation.rules
+                and Op.gt(activation_degree, 0.0)
+                and activation_degree >= activation.threshold
+            ):
                 rule.trigger(implication)
                 activated += 1
 
 
 class First(Activation):
-
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
         self.rules = rules
         self.threshold = threshold
 
     def parameters(self) -> str:
-        return " ".join([Op.str(self.rules),
-                         Op.str(self.threshold)])
+        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
 
     def configure(self, parameters: str) -> None:
         if parameters:
@@ -110,14 +118,12 @@ class First(Activation):
 
 
 class Last(Activation):
-
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
         self.rules = rules
         self.threshold = threshold
 
     def parameters(self) -> str:
-        return " ".join([Op.str(self.rules),
-                         Op.str(self.threshold)])
+        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
 
     def configure(self, parameters: str) -> None:
         if parameters:
@@ -129,7 +135,9 @@ class Last(Activation):
         _activate_positional(self, rule_block)
 
 
-def _activate_ranking(activation: Union['Highest', 'Lowest'], rule_block: RuleBlock) -> None:
+def _activate_ranking(
+    activation: Union["Highest", "Lowest"], rule_block: RuleBlock
+) -> None:
     conjunction = rule_block.conjunction
     disjunction = rule_block.disjunction
     implication = rule_block.implication
@@ -158,7 +166,6 @@ def _activate_ranking(activation: Union['Highest', 'Lowest'], rule_block: RuleBl
 
 
 class Highest(Activation):
-
     def __init__(self, rules: int = 1) -> None:
         self.rules = rules
 
@@ -174,7 +181,6 @@ class Highest(Activation):
 
 
 class Lowest(Activation):
-
     def __init__(self, rules: int = 1) -> None:
         self.rules = rules
 
@@ -190,7 +196,6 @@ class Lowest(Activation):
 
 
 class Proportional(Activation):
-
     def activate(self, rule_block: RuleBlock) -> None:
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -228,15 +233,18 @@ class Threshold(Activation):
             EqualTo: operator.eq,
             NotEqualTo: operator.ne,
             GreaterThanOrEqualTo: operator.ge,
-            GreaterThan: operator.gt
+            GreaterThan: operator.gt,
         }
 
         @property
         def operator(self) -> Callable[[object, object], bool]:
-            return Threshold.Comparator.__operator__[self.value]  # type:ignore
+            return Threshold.Comparator.__operator__[self.value]
 
-    def __init__(self, comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
-                 threshold: float = 0.0) -> None:
+    def __init__(
+        self,
+        comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
+        threshold: float = 0.0,
+    ) -> None:
         if isinstance(comparator, str):
             comparator = Threshold.Comparator(comparator)
         self.comparator = comparator

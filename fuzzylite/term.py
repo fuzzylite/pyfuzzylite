@@ -15,10 +15,32 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-__all__ = ["Activated", "Aggregated", "Bell", "Binary", "Concave", "Constant", "Cosine",
-           "Discrete", "Function", "Gaussian", "GaussianProduct", "Linear", "PiShape", "Ramp",
-           "Rectangle", "SShape", "Sigmoid", "SigmoidDifference", "SigmoidProduct", "Spike",
-           "Term", "Trapezoid", "Triangle", "ZShape"]
+__all__ = [
+    "Activated",
+    "Aggregated",
+    "Bell",
+    "Binary",
+    "Concave",
+    "Constant",
+    "Cosine",
+    "Discrete",
+    "Function",
+    "Gaussian",
+    "GaussianProduct",
+    "Linear",
+    "PiShape",
+    "Ramp",
+    "Rectangle",
+    "SShape",
+    "Sigmoid",
+    "SigmoidDifference",
+    "SigmoidProduct",
+    "Spike",
+    "Term",
+    "Trapezoid",
+    "Triangle",
+    "ZShape",
+]
 
 import bisect
 import enum
@@ -26,8 +48,21 @@ import logging
 import re
 import typing
 from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import (Callable, Deque, Dict, Iterable, Iterator, List, Optional, Sequence, Set,
-                    SupportsFloat, Tuple, TypeVar, Union)
+from typing import (
+    Callable,
+    Deque,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    SupportsFloat,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
@@ -39,31 +74,31 @@ if typing.TYPE_CHECKING:
 
 class Term:
     """
-      The Term class is the abstract class for linguistic terms. The linguistic
-      terms in this library can be divided in four groups as: `basic`,
-      `extended`, `edge`, and `function`. The `basic` terms are Triangle,
-      Trapezoid, Rectangle, and Discrete. The `extended` terms are Bell,
-      Binary, Cosine, Gaussian, GaussianProduct, PiShape, SigmoidDifference,
-      SigmoidProduct, and Spike. The `edge` terms are Concave, Ramp, Sigmoid,
-      SShape, and ZShape. The `function` terms are Constant, Linear, and
-      Function.
+    The Term class is the abstract class for linguistic terms. The linguistic
+    terms in this library can be divided in four groups as: `basic`,
+    `extended`, `edge`, and `function`. The `basic` terms are Triangle,
+    Trapezoid, Rectangle, and Discrete. The `extended` terms are Bell,
+    Binary, Cosine, Gaussian, GaussianProduct, PiShape, SigmoidDifference,
+    SigmoidProduct, and Spike. The `edge` terms are Concave, Ramp, Sigmoid,
+    SShape, and ZShape. The `function` terms are Constant, Linear, and
+    Function.
 
-      In the figure below, the `basic` terms are represented in the first
-      column, and the `extended` terms in the second and third columns. The
-      `edge` terms are represented in the fifth and sixth rows, and the
-      `function` terms in the last row.
+    In the figure below, the `basic` terms are represented in the first
+    column, and the `extended` terms in the second and third columns. The
+    `edge` terms are represented in the fifth and sixth rows, and the
+    `function` terms in the last row.
 
-      @image html terms.svg
+    @image html terms.svg
 
-      @author Juan Rada-Vilela, Ph.D.
-      @see Variable
-      @see InputVariable
-      @see OutputVariable
-      @since 4.0
+    @author Juan Rada-Vilela, Ph.D.
+    @see Variable
+    @see InputVariable
+    @see OutputVariable
+    @since 4.0
 
-      Attributes:
-          name is the name of the term
-          height is the height of the term
+    Attributes:
+        name is the name of the term
+        height is the height of the term
     """
 
     def __init__(self, name: str = "", height: float = 1.0) -> None:
@@ -72,9 +107,9 @@ class Term:
 
     def __str__(self) -> str:
         """
-         Returns the representation of the term in the FuzzyLite Language
-          :return the representation of the term in FuzzyLite Language
-          @see FllExporter
+        Returns the representation of the term in the FuzzyLite Language
+         :return the representation of the term in FuzzyLite Language
+         @see FllExporter
         """
         return FllExporter().term(self)
 
@@ -84,12 +119,12 @@ class Term:
 
     def parameters(self) -> str:
         """
-          Returns the parameters to configure the term. The parameters are
-          separated by spaces. If there is one additional parameter, the
-          parameter will be considered as the height of the term; otherwise,
-          the height will be set to @f$1.0@f$
-          :return the parameters to configure the term (@see Term::configure())
-         """
+        Returns the parameters to configure the term. The parameters are
+        separated by spaces. If there is one additional parameter, the
+        parameter will be considered as the height of the term; otherwise,
+        the height will be set to @f$1.0@f$
+        :return the parameters to configure the term (@see Term::configure())
+        """
         return self._parameters()
 
     def _parameters(self, *args: object) -> str:
@@ -107,43 +142,43 @@ class Term:
 
     def configure(self, parameters: str) -> None:
         """
-          Configures the term with the given takes_parameters. The takes_parameters are
-          separated by spaces. If there is one additional parameter, the
-          parameter will be considered as the height of the term; otherwise,
-          the height will be set to @f$1.0@f$
-          :param parameters is the takes_parameters to configure the term
+        Configures the term with the given takes_parameters. The takes_parameters are
+        separated by spaces. If there is one additional parameter, the
+        parameter will be considered as the height of the term; otherwise,
+        the height will be set to @f$1.0@f$
+        :param parameters is the takes_parameters to configure the term
         """
-        pass
 
     def membership(self, x: float) -> float:
         r"""
-          Computes the has_membership function value at @f$x@f$
-          :param x
-          :return the has_membership function value @f$\mu(x)@f$
+        Computes the has_membership function value at @f$x@f$
+        :param x
+        :return the has_membership function value @f$\mu(x)@f$
         """
         raise NotImplementedError()
 
-    def update_reference(self, engine: Optional['Engine']) -> None:
+    def update_reference(self, engine: Optional["Engine"]) -> None:
         """
-          Updates the references (if any) to point to the current engine (useful
-          when cloning engines or creating terms within Importer objects
-          :param engine: is the engine to which this term belongs to
+        Updates the references (if any) to point to the current engine (useful
+        when cloning engines or creating terms within Importer objects
+        :param engine: is the engine to which this term belongs to
         """
-        pass
 
-    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
+    def tsukamoto(
+        self, activation_degree: float, minimum: float, maximum: float
+    ) -> float:
         r"""
-          For monotonic terms, computes the tsukamoto value of the term for the
-          given activation degree @f$\alpha@f$, that is,
-          @f$ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
-          the term is not monotonic (or does not override this method) the
-          method computes the has_membership function @f$\mu(\alpha)@f$.
-          :param activation_degree: is the activationDegree
-          :param minimum is the minimum value of the range of the term
-          :param maximum is the maximum value of the range of the term
-          :return the tsukamoto value of the term for the given activation degree
-                  if the term is monotonic (or overrides this method), or
-                  the has_membership function for the activation degree otherwise.
+        For monotonic terms, computes the tsukamoto value of the term for the
+        given activation degree @f$\alpha@f$, that is,
+        @f$ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
+        the term is not monotonic (or does not override this method) the
+        method computes the has_membership function @f$\mu(\alpha)@f$.
+        :param activation_degree: is the activationDegree
+        :param minimum is the minimum value of the range of the term
+        :param maximum is the maximum value of the range of the term
+        :return the tsukamoto value of the term for the given activation degree
+                if the term is monotonic (or overrides this method), or
+                the has_membership function for the activation degree otherwise.
         """
         return self.membership(activation_degree)
 
@@ -154,8 +189,9 @@ class Term:
         """
         return False
 
-    def discretize(self, start: float, end: float, resolution: int = 100,
-                   bounded_mf: bool = True) -> 'Discrete':
+    def discretize(
+        self, start: float, end: float, resolution: int = 100, bounded_mf: bool = True
+    ) -> "Discrete":
         result = Discrete(self.name)
         dx = (end - start) / resolution
         for i in range(0, resolution + 1):
@@ -168,9 +204,9 @@ class Term:
 
 
 class Activated(Term):
-
-    def __init__(self, term: Term, degree: float = 1.0,
-                 implication: Optional[TNorm] = None) -> None:
+    def __init__(
+        self, term: Term, degree: float = 1.0, implication: Optional[TNorm] = None
+    ) -> None:
         super().__init__("_")
         self.term = term
         self.degree = degree
@@ -179,8 +215,9 @@ class Activated(Term):
     def parameters(self) -> str:
         name = self.term.name if self.term else "none"
         if self.implication:
-            result = "{0}({1},{2})".format(FllExporter().norm(self.implication),
-                                           Op.str(self.degree), name)
+            result = "{0}({1},{2})".format(
+                FllExporter().norm(self.implication), Op.str(self.degree), name
+            )
         else:
             result = "({0}*{1})".format(Op.str(self.degree), name)
         return result
@@ -199,10 +236,14 @@ class Activated(Term):
 
 
 class Aggregated(Term):
-
-    def __init__(self, name: str = "", minimum: float = nan, maximum: float = nan,
-                 aggregation: Optional[SNorm] = None,
-                 terms: Optional[Iterable[Activated]] = None) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        minimum: float = nan,
+        maximum: float = nan,
+        aggregation: Optional[SNorm] = None,
+        terms: Optional[Iterable[Activated]] = None,
+    ) -> None:
         super().__init__(name)
         self.minimum = minimum
         self.maximum = maximum
@@ -215,8 +256,11 @@ class Aggregated(Term):
         result = []
         activated = [term.parameters() for term in self.terms]
         if self.aggregation:
-            result.append("{0}[{1}]".format(FllExporter().norm(self.aggregation),
-                                            ",".join(activated)))
+            result.append(
+                "{0}[{1}]".format(
+                    FllExporter().norm(self.aggregation), ",".join(activated)
+                )
+            )
         else:
             result.append("[{0}]".format("+".join(activated)))
 
@@ -263,9 +307,14 @@ class Aggregated(Term):
 
 
 class Bell(Term):
-
-    def __init__(self, name: str = "", center: float = nan, width: float = nan, slope: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        center: float = nan,
+        width: float = nan,
+        slope: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.center = center
         self.width = width
@@ -274,8 +323,9 @@ class Bell(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * (1.0 / (1.0 + (fabs((x - self.center) / self.width)
-                                            ** (2.0 * self.slope))))
+        return self.height * (  # type: ignore
+            1.0 / (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope)))
+        )
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width, self.slope)
@@ -287,9 +337,13 @@ class Bell(Term):
 
 
 class Binary(Term):
-
-    def __init__(self, name: str = "", start: float = nan, direction: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        start: float = nan,
+        direction: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.start = start
         self.direction = direction
@@ -316,9 +370,13 @@ class Binary(Term):
 
 
 class Concave(Term):
-
-    def __init__(self, name: str = "", inflection: float = nan, end: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        inflection: float = nan,
+        end: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.inflection = inflection
         self.end = end
@@ -329,20 +387,28 @@ class Concave(Term):
 
         if self.inflection <= self.end:  # Concave increasing
             if x < self.end:
-                return (self.height * (self.end - self.inflection)
-                        / (2.0 * self.end - self.inflection - x))
+                return (
+                    self.height
+                    * (self.end - self.inflection)
+                    / (2.0 * self.end - self.inflection - x)
+                )
 
         else:  # Concave decreasing
             if x > self.end:
-                return (self.height * (self.inflection - self.end)
-                        / (self.inflection - 2.0 * self.end + x))
+                return (
+                    self.height
+                    * (self.inflection - self.end)
+                    / (self.inflection - 2.0 * self.end + x)
+                )
 
         return self.height * 1.0
 
     def is_monotonic(self) -> bool:
         return True
 
-    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
+    def tsukamoto(
+        self, activation_degree: float, minimum: float, maximum: float
+    ) -> float:
         i = self.inflection
         e = self.end
         return (i - e) / self.membership(activation_degree) + 2 * e - i
@@ -357,7 +423,6 @@ class Concave(Term):
 
 
 class Constant(Term):
-
     def __init__(self, name: str = "", value: float = nan) -> None:
         super().__init__(name)
         self.value = value
@@ -377,9 +442,13 @@ class Constant(Term):
 
 
 class Cosine(Term):
-
-    def __init__(self, name: str = "", center: float = nan, width: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        center: float = nan,
+        width: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.center = center
         self.width = width
@@ -391,7 +460,9 @@ class Cosine(Term):
         if x < self.center - 0.5 * self.width or x > self.center + 0.5 * self.width:
             return self.height * 0.0
 
-        return self.height * 0.5 * (1.0 + cos(2.0 / self.width * pi * (x - self.center)))
+        return (
+            self.height * 0.5 * (1.0 + cos(2.0 / self.width * pi * (x - self.center)))
+        )
 
     def parameters(self) -> str:
         return super()._parameters(self.center, self.width)
@@ -406,7 +477,6 @@ class Discrete(Term):
     Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
 
     class Pair:
-
         def __init__(self, x: float = nan, y: float = nan) -> None:
             self.x = x
             self.y = y
@@ -424,37 +494,45 @@ class Discrete(Term):
                 return not (self.values == other.values)
             return self.values != other
 
-        def __lt__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+        def __lt__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
             if isinstance(other, Discrete.Pair):
                 return self.values < other.values
             if isinstance(other, tuple):
                 return self.values < other
-            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
-                             f"but found {type(other)}")
+            raise ValueError(
+                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                f"but found {type(other)}"
+            )
 
-        def __le__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+        def __le__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
             if isinstance(other, Discrete.Pair):
                 return self.values <= other.values
             if isinstance(other, tuple):
                 return self.values <= other
-            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
-                             f"but found {type(other)}")
+            raise ValueError(
+                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                f"but found {type(other)}"
+            )
 
-        def __gt__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+        def __gt__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
             if isinstance(other, Discrete.Pair):
                 return self.values > other.values
             if isinstance(other, tuple):
                 return self.values >= other
-            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
-                             f"but found {type(other)}")
+            raise ValueError(
+                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                f"but found {type(other)}"
+            )
 
-        def __ge__(self, other: Union[Tuple[float, float], 'Discrete.Pair']) -> bool:
+        def __ge__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
             if isinstance(other, Discrete.Pair):
                 return self.values >= other.values
             if isinstance(other, tuple):
                 return self.values >= other
-            raise ValueError("expected Union[Tuple[float, float], 'Discrete.Pair'], "
-                             f"but found {type(other)}")
+            raise ValueError(
+                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                f"but found {type(other)}"
+            )
 
         @property
         def values(self) -> Tuple[float, float]:
@@ -464,16 +542,18 @@ class Discrete(Term):
         def values(self, xy: Tuple[float, float]) -> None:
             self.x, self.y = xy
 
-    def __init__(self,
-                 name: str = "",
-                 xy: Optional[Sequence[Floatable]] = None,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        xy: Optional[Sequence[Floatable]] = None,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.xy: List[Discrete.Pair] = []
         if xy:
             self.xy = Discrete.pairs_from(xy)
 
-    def __iter__(self) -> Iterator['Discrete.Pair']:
+    def __iter__(self) -> Iterator["Discrete.Pair"]:
         return iter(self.xy)
 
     def membership(self, x: float) -> float:
@@ -497,9 +577,13 @@ class Discrete(Term):
 
         lower_bound = self.xy[index - 1]
 
-        return self.height * Op.scale(x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y)
+        return self.height * Op.scale(
+            x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y
+        )
 
-    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
+    def tsukamoto(
+        self, activation_degree: float, minimum: float, maximum: float
+    ) -> float:
         # todo: approximate tsukamoto
         pass
 
@@ -526,36 +610,47 @@ class Discrete(Term):
         self.xy.sort()
 
     @staticmethod
-    def pairs_from(values: Union[Sequence[Floatable],
-                                 Dict[Floatable, Floatable]]) -> List['Discrete.Pair']:
+    def pairs_from(
+        values: Union[Sequence[Floatable], Dict[Floatable, Floatable]]
+    ) -> List["Discrete.Pair"]:
         if isinstance(values, dict):
-            return [Discrete.Pair(Op.scalar(x), Op.scalar(y)) for x, y in values.items()]
+            return [
+                Discrete.Pair(Op.scalar(x), Op.scalar(y)) for x, y in values.items()
+            ]
 
         if len(values) % 2 != 0:
-            raise ValueError("not enough values to unpack (expected an even number, "
-                             f"but got {len(values)}) in {values}")
+            raise ValueError(
+                "not enough values to unpack (expected an even number, "
+                f"but got {len(values)}) in {values}"
+            )
 
-        result = [Discrete.Pair(Op.scalar(values[i]), Op.scalar(values[i + 1]))
-                  for i in range(0, len(values) - 1, 2)]
+        result = [
+            Discrete.Pair(Op.scalar(values[i]), Op.scalar(values[i + 1]))
+            for i in range(0, len(values) - 1, 2)
+        ]
         return result
 
     # TODO: More pythonic?
     @staticmethod
-    def values_from(pairs: List['Discrete.Pair']) -> List[float]:
+    def values_from(pairs: List["Discrete.Pair"]) -> List[float]:
         result: List[float] = []
         for xy in pairs:
             result.extend([xy.x, xy.y])
         return result
 
     @staticmethod
-    def dict_from(pairs: List['Discrete.Pair']) -> Dict[float, float]:
+    def dict_from(pairs: List["Discrete.Pair"]) -> Dict[float, float]:
         return {pair.x: pair.y for pair in pairs}
 
 
 class Gaussian(Term):
-
-    def __init__(self, name: str = "", mean: float = nan, standard_deviation: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        mean: float = nan,
+        standard_deviation: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.mean = mean
         self.standard_deviation = standard_deviation
@@ -563,8 +658,10 @@ class Gaussian(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * exp((-(x - self.mean) * (x - self.mean))
-                                 / (2.0 * self.standard_deviation * self.standard_deviation))
+        return self.height * exp(
+            (-(x - self.mean) * (x - self.mean))
+            / (2.0 * self.standard_deviation * self.standard_deviation)
+        )
 
     def parameters(self) -> str:
         return super()._parameters(self.mean, self.standard_deviation)
@@ -576,10 +673,15 @@ class Gaussian(Term):
 
 
 class GaussianProduct(Term):
-
-    def __init__(self, name: str = "", mean_a: float = nan, standard_deviation_a: float = nan,
-                 mean_b: float = nan, standard_deviation_b: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        mean_a: float = nan,
+        standard_deviation_a: float = nan,
+        mean_b: float = nan,
+        standard_deviation_b: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.mean_a = mean_a
         self.standard_deviation_a = standard_deviation_a
@@ -593,29 +695,45 @@ class GaussianProduct(Term):
         a = b = 1.0
 
         if x < self.mean_a:
-            a = exp((-(x - self.mean_a) * (x - self.mean_a))
-                    / (2.0 * self.standard_deviation_a * self.standard_deviation_a))
+            a = exp(
+                (-(x - self.mean_a) * (x - self.mean_a))
+                / (2.0 * self.standard_deviation_a * self.standard_deviation_a)
+            )
 
         if x > self.mean_b:
-            b = exp((-(x - self.mean_b) * (x - self.mean_b))
-                    / (2.0 * self.standard_deviation_b * self.standard_deviation_b))
+            b = exp(
+                (-(x - self.mean_b) * (x - self.mean_b))
+                / (2.0 * self.standard_deviation_b * self.standard_deviation_b)
+            )
 
         return self.height * a * b
 
     def parameters(self) -> str:
-        return super()._parameters(self.mean_a, self.standard_deviation_a,
-                                   self.mean_b, self.standard_deviation_b)
+        return super()._parameters(
+            self.mean_a,
+            self.standard_deviation_a,
+            self.mean_b,
+            self.standard_deviation_b,
+        )
 
     def configure(self, parameters: str) -> None:
         values = tuple(Op.scalar(x) for x in parameters.split())
-        self.mean_a, self.standard_deviation_a, self.mean_b, self.standard_deviation_b = values[0:4]
+        (
+            self.mean_a,
+            self.standard_deviation_a,
+            self.mean_b,
+            self.standard_deviation_b,
+        ) = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
 
 class Linear(Term):
-
-    def __init__(self, name: str = "", coefficients: Optional[Iterable[float]] = None,
-                 engine: Optional['Engine'] = None) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        coefficients: Optional[Iterable[float]] = None,
+        engine: Optional["Engine"] = None,
+    ) -> None:
         super().__init__(name)
         self.coefficients: List[float] = []
         if coefficients:
@@ -643,14 +761,20 @@ class Linear(Term):
     def parameters(self) -> str:
         return self._parameters(*self.coefficients)
 
-    def update_reference(self, engine: Optional['Engine']) -> None:
+    def update_reference(self, engine: Optional["Engine"]) -> None:
         self.engine = engine
 
 
 class PiShape(Term):
-
-    def __init__(self, name: str = "", bottom_left: float = nan, top_left: float = nan,
-                 top_right: float = nan, bottom_right: float = nan, height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        bottom_left: float = nan,
+        top_left: float = nan,
+        top_right: float = nan,
+        bottom_right: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.bottom_left = bottom_left
         self.top_left = top_left
@@ -664,26 +788,39 @@ class PiShape(Term):
         if x <= self.bottom_left:
             s_shape = 0.0
         elif x <= 0.5 * (self.bottom_left + self.top_left):
-            s_shape = 2.0 * ((x - self.bottom_left) / (self.top_left - self.bottom_left)) ** 2
+            s_shape = (
+                2.0 * ((x - self.bottom_left) / (self.top_left - self.bottom_left)) ** 2
+            )
         elif x < self.top_left:
-            s_shape = 1.0 - 2.0 * ((x - self.top_left) / (self.top_left - self.bottom_left)) ** 2
+            s_shape = (
+                1.0
+                - 2.0 * ((x - self.top_left) / (self.top_left - self.bottom_left)) ** 2
+            )
         else:
             s_shape = 1.0
 
         if x <= self.top_right:
             z_shape = 1.0
         elif x <= 0.5 * (self.top_right + self.bottom_right):
-            z_shape = 1.0 - 2.0 * ((x - self.top_right) / (self.bottom_right - self.top_right)) ** 2
+            z_shape = (
+                1.0
+                - 2.0
+                * ((x - self.top_right) / (self.bottom_right - self.top_right)) ** 2
+            )
         elif x < self.bottom_right:
-            z_shape = 2.0 * ((x - self.bottom_right) / (self.bottom_right - self.top_right)) ** 2
+            z_shape = (
+                2.0
+                * ((x - self.bottom_right) / (self.bottom_right - self.top_right)) ** 2
+            )
         else:
             z_shape = 0.0
 
         return self.height * s_shape * z_shape
 
     def parameters(self) -> str:
-        return super()._parameters(self.bottom_left, self.top_left,
-                                   self.top_right, self.bottom_right)
+        return super()._parameters(
+            self.bottom_left, self.top_left, self.top_right, self.bottom_right
+        )
 
     def configure(self, parameters: str) -> None:
         values = tuple(Op.scalar(x) for x in parameters.split())
@@ -692,9 +829,9 @@ class PiShape(Term):
 
 
 class Ramp(Term):
-
-    def __init__(self, name: str = "", start: float = nan, end: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+    ) -> None:
         super().__init__(name, height)
         self.start = start
         self.end = end
@@ -723,7 +860,9 @@ class Ramp(Term):
     def is_monotonic(self) -> bool:
         return True
 
-    def tsukamoto(self, activation_degree: float, minimum: float, maximum: float) -> float:
+    def tsukamoto(
+        self, activation_degree: float, minimum: float, maximum: float
+    ) -> float:
         if isnan(activation_degree):
             return nan
         return Op.scale(activation_degree, 0.0, self.height * 1.0, self.start, self.end)
@@ -738,9 +877,9 @@ class Ramp(Term):
 
 
 class Rectangle(Term):
-
-    def __init__(self, name: str = "", start: float = nan, end: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+    ) -> None:
         super().__init__(name, height)
         self.start = start
         self.end = end
@@ -765,9 +904,13 @@ class Rectangle(Term):
 
 # TODO: Tsukamoto
 class Sigmoid(Term):
-
-    def __init__(self, name: str = "", inflection: float = nan, slope: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        inflection: float = nan,
+        slope: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.inflection = inflection
         self.slope = slope
@@ -790,9 +933,15 @@ class Sigmoid(Term):
 
 
 class SigmoidDifference(Term):
-
-    def __init__(self, name: str = "", left: float = nan, rising: float = nan,
-                 falling: float = nan, right: float = nan, height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        left: float = nan,
+        rising: float = nan,
+        falling: float = nan,
+        right: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.left = left
         self.rising = rising
@@ -818,9 +967,15 @@ class SigmoidDifference(Term):
 
 
 class SigmoidProduct(Term):
-
-    def __init__(self, name: str = "", left: float = nan, rising: float = nan,
-                 falling: float = nan, right: float = nan, height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        left: float = nan,
+        rising: float = nan,
+        falling: float = nan,
+        right: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.left = left
         self.rising = rising
@@ -846,9 +1001,13 @@ class SigmoidProduct(Term):
 
 
 class Spike(Term):
-
-    def __init__(self, name: str = "", inflection: float = nan, slope: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        inflection: float = nan,
+        slope: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.center = inflection
         self.width = slope
@@ -869,9 +1028,9 @@ class Spike(Term):
 
 # TODO: Tsukamoto
 class SShape(Term):
-
-    def __init__(self, name: str = "", start: float = nan, end: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+    ) -> None:
         super().__init__(name, height)
         self.start = start
         self.end = end
@@ -887,7 +1046,9 @@ class SShape(Term):
             return self.height * 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
 
         if x < self.end:
-            return self.height * (1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2)
+            return self.height * (
+                1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2
+            )
 
         return self.height * 1.0
 
@@ -904,9 +1065,15 @@ class SShape(Term):
 
 
 class Trapezoid(Term):
-
-    def __init__(self, name: str = "", vertex_a: float = nan, vertex_b: float = nan,
-                 vertex_c: float = nan, vertex_d: float = nan, height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        vertex_a: float = nan,
+        vertex_b: float = nan,
+        vertex_c: float = nan,
+        vertex_d: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.vertex_a = vertex_a
         self.vertex_b = vertex_b
@@ -941,7 +1108,9 @@ class Trapezoid(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
-        return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d)
+        return super()._parameters(
+            self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d
+        )
 
     def configure(self, parameters: str) -> None:
         values = tuple(Op.scalar(x) for x in parameters.split())
@@ -950,9 +1119,14 @@ class Trapezoid(Term):
 
 
 class Triangle(Term):
-
-    def __init__(self, name: str = "", vertex_a: float = nan, vertex_b: float = nan,
-                 vertex_c: float = nan, height: float = 1.0) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        vertex_a: float = nan,
+        vertex_b: float = nan,
+        vertex_c: float = nan,
+        height: float = 1.0,
+    ) -> None:
         super().__init__(name, height)
         self.vertex_a = vertex_a
         self.vertex_b = vertex_b
@@ -994,9 +1168,9 @@ class Triangle(Term):
 
 # TODO: Tsukamoto
 class ZShape(Term):
-
-    def __init__(self, name: str = "", start: float = nan, end: float = nan,
-                 height: float = 1.0) -> None:
+    def __init__(
+        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+    ) -> None:
         super().__init__(name, height)
         self.start = start
         self.end = end
@@ -1009,7 +1183,9 @@ class ZShape(Term):
             return self.height * 1.0
 
         if x <= 0.5 * (self.start + self.end):
-            return self.height * (1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2)
+            return self.height * (
+                1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
+            )
 
         if x < self.end:
             return self.height * 2.0 * ((x - self.end) / (self.end - self.start)) ** 2
@@ -1034,10 +1210,16 @@ class Function(Term):
         class Type(enum.Enum):
             Operator, Function = range(2)
 
-        def __init__(self, name: str, description: str, type: 'Function.Element.Type',
-                     method: Callable[..., float],
-                     arity: int = 0, precedence: int = 0,
-                     associativity: int = -1) -> None:
+        def __init__(
+            self,
+            name: str,
+            description: str,
+            type: "Function.Element.Type",
+            method: Callable[..., float],
+            arity: int = 0,
+            precedence: int = 0,
+            associativity: int = -1,
+        ) -> None:
             self.name = name
             self.description = description
             self.type = type
@@ -1047,13 +1229,15 @@ class Function(Term):
             self.associativity = associativity
 
         def __str__(self) -> str:
-            result = [f"name='{self.name}'",
-                      f"description='{self.description}'",
-                      f"element_type='{str(self.type)}'",
-                      f"method='{str(self.method)}'",
-                      f"arity={self.arity}",
-                      f"precedence={self.precedence}",
-                      f"associativity={self.associativity}"]
+            result = [
+                f"name='{self.name}'",
+                f"description='{self.description}'",
+                f"element_type='{str(self.type)}'",
+                f"method='{str(self.method)}'",
+                f"arity={self.arity}",
+                f"precedence={self.precedence}",
+                f"associativity={self.associativity}",
+            ]
             return "{0}: {1}".format(self.__class__.__name__, ", ".join(result))
 
         def is_function(self) -> bool:
@@ -1063,11 +1247,14 @@ class Function(Term):
             return self.type == Function.Element.Type.Operator
 
     class Node(object):
-
-        def __init__(self, element: Optional['Function.Element'] = None,
-                     variable: str = "", constant: float = nan,
-                     right: Optional['Function.Node'] = None,
-                     left: Optional['Function.Node'] = None) -> None:
+        def __init__(
+            self,
+            element: Optional["Function.Element"] = None,
+            variable: str = "",
+            constant: float = nan,
+            right: Optional["Function.Node"] = None,
+            left: Optional["Function.Node"] = None,
+        ) -> None:
             self.element = element
             self.variable = variable
             self.constant = constant
@@ -1086,8 +1273,7 @@ class Function(Term):
                 result = Op.str(self.constant)
             return result
 
-        def evaluate(self,
-                     local_variables: Optional[Dict[str, float]] = None) -> float:
+        def evaluate(self, local_variables: Optional[Dict[str, float]] = None) -> float:
             result = nan
             if self.element:
                 if not self.element.method:
@@ -1098,8 +1284,7 @@ class Function(Term):
                 elif arity == 1:
                     if not self.right:
                         raise ValueError("expected a right node, but found none")
-                    result = self.element.method(
-                        self.right.evaluate(local_variables))
+                    result = self.element.method(self.right.evaluate(local_variables))
                 elif arity == 2:
                     if not self.right:
                         raise ValueError("expected a right node, but found none")
@@ -1107,12 +1292,14 @@ class Function(Term):
                         raise ValueError("expected a left node, but found none")
                     result = self.element.method(
                         self.left.evaluate(local_variables),
-                        self.right.evaluate(local_variables))
+                        self.right.evaluate(local_variables),
+                    )
             elif self.variable:
                 if not local_variables or self.variable not in local_variables:
                     raise ValueError(
                         f"expected a map of variables containing the value for '{self.variable}', "
-                        f"but the map contains: {local_variables}")
+                        f"but the map contains: {local_variables}"
+                    )
                 result = local_variables[self.variable]
 
             else:
@@ -1120,7 +1307,7 @@ class Function(Term):
 
             return result
 
-        def prefix(self, node: Optional['Function.Node'] = None) -> str:
+        def prefix(self, node: Optional["Function.Node"] = None) -> str:
             if not node:
                 return self.prefix(self)
 
@@ -1136,7 +1323,7 @@ class Function(Term):
                 result.append(self.prefix(node.right))
             return " ".join(result)
 
-        def infix(self, node: Optional['Function.Node'] = None) -> str:
+        def infix(self, node: Optional["Function.Node"] = None) -> str:
             if not node:
                 return self.infix(self)
 
@@ -1151,8 +1338,9 @@ class Function(Term):
             if node.right:
                 children.append(self.infix(node.right))
 
-            is_function = (node.element
-                           and node.element.type == Function.Element.Type.Function)
+            is_function = (
+                node.element and node.element.type == Function.Element.Type.Function
+            )
 
             if is_function:
                 result = node.value() + f" ( {' '.join(children)} )"
@@ -1161,7 +1349,7 @@ class Function(Term):
 
             return result
 
-        def postfix(self, node: Optional['Function.Node'] = None) -> str:
+        def postfix(self, node: Optional["Function.Node"] = None) -> str:
             if not node:
                 return self.postfix(self)
 
@@ -1178,8 +1366,14 @@ class Function(Term):
             result.append(node.value())
             return " ".join(result)
 
-    def __init__(self, name: str = "", formula: str = "", engine: Optional['Engine'] = None,
-                 variables: Optional[Dict[str, float]] = None, load: bool = False) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        formula: str = "",
+        engine: Optional["Engine"] = None,
+        variables: Optional[Dict[str, float]] = None,
+        load: bool = False,
+    ) -> None:
         super().__init__(name)
         self.root: Optional[Function.Node] = None
         self.formula = formula
@@ -1197,36 +1391,44 @@ class Function(Term):
         self.formula = parameters
         self.load()
 
-    def update_reference(self, engine: Optional['Engine']) -> None:
+    def update_reference(self, engine: Optional["Engine"]) -> None:
         self.engine = engine
         if self.is_loaded():
             self.load()
 
     @staticmethod
-    def create(name: str, formula: str, engine: Optional['Engine'] = None) -> 'Function':
+    def create(
+        name: str, formula: str, engine: Optional["Engine"] = None
+    ) -> "Function":
         result = Function(name, formula, engine)
         result.load()
         return result
 
     def membership(self, x: float) -> float:
-        if 'x' in self.variables:
-            raise ValueError("variable 'x' is reserved for internal use of Function term, please "
-                             f"remove it from the map of variables: {self.variables}")
+        if "x" in self.variables:
+            raise ValueError(
+                "variable 'x' is reserved for internal use of Function term, please "
+                f"remove it from the map of variables: {self.variables}"
+            )
 
         engine_variables: Dict[str, float] = {}
         if self.engine:
             for variable in self.engine.variables:
                 engine_variables[variable.name] = variable.value
 
-            if 'x' in engine_variables:
-                raise ValueError("variable 'x' is reserved for internal use of Function term, "
-                                 f"please rename the engine variable: {self.engine.variable('x')}")
-        engine_variables['x'] = x
+            if "x" in engine_variables:
+                raise ValueError(
+                    "variable 'x' is reserved for internal use of Function term, "
+                    f"please rename the engine variable: {self.engine.variable('x')}"
+                )
+        engine_variables["x"] = x
 
         overrides = self.variables.keys() & engine_variables.keys()
         if overrides:
-            raise ValueError("function variables cannot override engine variables, please "
-                             f"resolve the name ambiguity of the following variables: {overrides}")
+            raise ValueError(
+                "function variables cannot override engine variables, please "
+                f"resolve the name ambiguity of the following variables: {overrides}"
+            )
         engine_variables.update(self.variables)
         return self.evaluate(engine_variables)
 
@@ -1252,12 +1454,12 @@ class Function(Term):
         from .rule import Rule
 
         factory: FunctionFactory = lib.factory_manager.function
-        operators: Set[str] = set(factory.operators().keys()).union({'(', ')', ','})
+        operators: Set[str] = set(factory.operators().keys()).union({"(", ")", ","})
         operators -= {Rule.AND, Rule.OR}
 
         # sorted to have multi-char operators separated first (eg., ** and *)
         regex = "|".join(re.escape(o) for o in sorted(operators, reverse=True))
-        spaced = re.sub(fr"({regex})", r' \1 ', formula)
+        spaced = re.sub(rf"({regex})", r" \1 ", formula)
         result = re.sub(r"\s+", " ", spaced).strip()
         return result
 
@@ -1271,6 +1473,7 @@ class Function(Term):
         factory: FunctionFactory = lib.factory_manager.function
 
         from collections import deque
+
         queue: Deque[str] = deque()
         stack: List[str] = []
 
@@ -1281,8 +1484,9 @@ class Function(Term):
                 lib.logger.debug(f"queue: {queue}")
                 lib.logger.debug(f"stack: {stack}")
 
-            element: Optional[Function.Element] = (factory.objects[token]
-                                                   if token in factory.objects else None)
+            element: Optional[Function.Element] = (
+                factory.objects[token] if token in factory.objects else None
+            )
             is_operand = not element and token not in {"(", ")", ","}
 
             if is_operand:
@@ -1291,31 +1495,36 @@ class Function(Term):
             elif element and element.is_function():
                 stack.append(token)
 
-            elif token == ',':
-                while stack and stack[-1] != '(':
+            elif token == ",":
+                while stack and stack[-1] != "(":
                     queue.append(stack.pop())
-                if not stack or stack[-1] != '(':
+                if not stack or stack[-1] != "(":
                     raise SyntaxError(f"mismatching parentheses in: {formula}")
 
             elif element and element.is_operator():
                 while stack and stack[-1] in factory.objects:
                     top = factory.objects[stack[-1]]
-                    if ((element.associativity < 0 and element.precedence <= top.precedence)
-                            or (element.associativity > 0 and element.precedence < top.precedence)):
+                    if (
+                        element.associativity < 0
+                        and element.precedence <= top.precedence
+                    ) or (
+                        element.associativity > 0
+                        and element.precedence < top.precedence
+                    ):
                         queue.append(stack.pop())
                     else:
                         break
 
                 stack.append(token)
 
-            elif token == '(':
+            elif token == "(":
                 stack.append(token)
 
-            elif token == ')':
-                while stack and stack[-1] != '(':
+            elif token == ")":
+                while stack and stack[-1] != "(":
                     queue.append(stack.pop())
 
-                if not stack or stack[-1] != '(':
+                if not stack or stack[-1] != "(":
                     raise SyntaxError(f"mismatching parentheses in: {formula}")
 
                 stack.pop()  # get rid of "("
@@ -1327,7 +1536,7 @@ class Function(Term):
                 raise RuntimeError(f"unexpected error with token: {token}")
 
         while stack:
-            if stack[-1] in {'(', ')'}:
+            if stack[-1] in {"(", ")"}:
                 raise SyntaxError(f"mismatching parentheses in: {formula}")
             queue.append(stack.pop())
 
@@ -1338,7 +1547,7 @@ class Function(Term):
         return postfix
 
     @classmethod
-    def parse(cls, formula: str) -> 'Function.Node':
+    def parse(cls, formula: str) -> "Function.Node":
         from . import lib
 
         postfix = cls.infix_to_postfix(formula)
@@ -1346,14 +1555,17 @@ class Function(Term):
         factory = lib.factory_manager.function
 
         for token in postfix.split():
-            element: Optional[Function.Element] = (factory.objects[token]
-                                                   if token in factory.objects else None)
+            element: Optional[Function.Element] = (
+                factory.objects[token] if token in factory.objects else None
+            )
             is_operand = not element and token not in {"(", ")", ","}
 
             if element:
                 if element.arity > len(stack):
-                    raise SyntaxError(f"function element {element.name} has arity {element.arity}, "
-                                      f"but the size of the stack is {len(stack)}")
+                    raise SyntaxError(
+                        f"function element {element.name} has arity {element.arity}, "
+                        f"but the size of the stack is {len(stack)}"
+                    )
                 node = Function.Node(factory.copy(token))
                 if element.arity >= 1:
                     node.right = stack.pop()
@@ -1373,6 +1585,7 @@ class Function(Term):
         if lib.debugging:
             lib.logger.debug("-" * 20)
             lib.logger.debug(f"postfix={postfix}")
-            lib.logger.debug("\n  ".join(Op.describe(node, class_hierarchy=False)
-                                         for node in stack))
+            lib.logger.debug(
+                "\n  ".join(Op.describe(node, class_hierarchy=False) for node in stack)
+            )
         return stack[-1]

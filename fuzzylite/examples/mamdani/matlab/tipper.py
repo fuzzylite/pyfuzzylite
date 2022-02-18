@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="tipper",
-    description=""
-)
+engine = fl.Engine(name="tipper", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="service",
@@ -15,8 +12,8 @@ engine.input_variables = [
         terms=[
             fl.Gaussian("poor", 0.000, 1.500),
             fl.Gaussian("good", 5.000, 1.500),
-            fl.Gaussian("excellent", 10.000, 1.500)
-        ]
+            fl.Gaussian("excellent", 10.000, 1.500),
+        ],
     ),
     fl.InputVariable(
         name="food",
@@ -27,9 +24,9 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Trapezoid("rancid", 0.000, 0.000, 1.000, 3.000),
-            fl.Trapezoid("delicious", 7.000, 9.000, 10.000, 10.000)
-        ]
-    )
+            fl.Trapezoid("delicious", 7.000, 9.000, 10.000, 10.000),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -45,8 +42,8 @@ engine.output_variables = [
         terms=[
             fl.Triangle("cheap", 0.000, 5.000, 10.000),
             fl.Triangle("average", 10.000, 15.000, 20.000),
-            fl.Triangle("generous", 20.000, 25.000, 30.000)
-        ]
+            fl.Triangle("generous", 20.000, 25.000, 30.000),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -59,9 +56,14 @@ engine.rule_blocks = [
         implication=fl.Minimum(),
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if service is poor or food is rancid then tip is cheap", engine),
+            fl.Rule.create(
+                "if service is poor or food is rancid then tip is cheap", engine
+            ),
             fl.Rule.create("if service is good then tip is average", engine),
-            fl.Rule.create("if service is excellent or food is delicious then tip is generous", engine)
-        ]
+            fl.Rule.create(
+                "if service is excellent or food is delicious then tip is generous",
+                engine,
+            ),
+        ],
     )
 ]
