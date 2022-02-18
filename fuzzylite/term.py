@@ -323,7 +323,7 @@ class Bell(Term):
     def membership(self, x: float) -> float:
         if isnan(x):
             return nan
-        return self.height * (
+        return self.height * (  # type: ignore
             1.0 / (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope)))
         )
 

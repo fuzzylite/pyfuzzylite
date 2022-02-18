@@ -238,7 +238,7 @@ class Threshold(Activation):
 
         @property
         def operator(self) -> Callable[[object, object], bool]:
-            return Threshold.Comparator.__operator__[self.value]  # type:ignore
+            return Threshold.Comparator.__operator__[self.value]
 
     def __init__(
         self,

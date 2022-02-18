@@ -30,7 +30,12 @@ def lint(session: nox.Session) -> None:
     """runs static code analysis and checks format is correct"""
     session.run("mypy", "--version", external=True)
     session.run(
-        "mypy", "fuzzylite/", "tests/", "--strict", external=True, success_codes=[0, 1]
+        "mypy",
+        "fuzzylite/",
+        # "tests/",
+        "--strict",
+        external=True,
+        success_codes=[0],
     )
     files = ["fuzzylite/", "tests/", "noxfile.py"]
     session.run("black", "--check", *files, external=True, success_codes=[0])
@@ -41,7 +46,7 @@ def lint(session: nox.Session) -> None:
         "-tpy36",
         *black_notebook_folders(),
         external=True,
-        success_codes=[0, 1],
+        success_codes=[0],
     )
 
 
