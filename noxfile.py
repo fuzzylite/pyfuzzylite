@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import List
 
 import nox
-import toml
 
 
 @nox.session(python=False)
@@ -104,10 +103,11 @@ def black_notebook_folders() -> List[str]:
 
 @nox.session(python=False)
 def prepublish(session: nox.Session) -> None:
+    import fuzzylite as fl
+    import toml
+
     file = Path("pyproject.toml")
     pyproject = toml.load(str(file))
-
-    import fuzzylite as fl
 
     pyproject["tool"]["poetry"]["name"] = fl.lib.name
     pyproject["tool"]["poetry"]["version"] = fl.lib.version
