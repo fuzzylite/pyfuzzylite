@@ -33,7 +33,6 @@ def test(session: nox.Session) -> None:
         "run",
         "-m",
         "pytest",
-        "--cov=fuzzylite/",
         "tests/",
         external=True,
     )
@@ -44,15 +43,16 @@ def test(session: nox.Session) -> None:
         external=True,
     )
 
+
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
     """runs static code analysis and checks format is correct"""
     session.run("mypy", "--version", external=True)
     session.run(
-        "mypy", "fuzzylite/", "tests/", "--strict", external=True, success_codes=[0]
+        "mypy", "fuzzylite/", "tests/", "--strict", external=True, success_codes=[0, 1]
     )
     files = ["fuzzylite/", "tests/", "noxfile.py"]
-    session.run("black", "--check", *files, external=True)
+    session.run("black", "--check", *files, external=True, success_codes=[0, 1])
     session.run(
         "nbqa",
         "black",
@@ -60,6 +60,7 @@ def lint(session: nox.Session) -> None:
         "-tpy36",
         *black_notebook_folders(),
         external=True,
+        success_codes=[0, 1],
     )
 
 
@@ -95,10 +96,10 @@ def black_notebook_folders() -> List[str]:
     # include
     notebooks = [
         str(folder)
-        for folder in Path("/tests/notebooks").glob("*.ipynb")
+        for folder in Path("tests/notebooks").glob("*.ipynb")
         if folder.is_dir()
     ]
-    return notebooks
+    return notebooks or ["tests"]
 
 
 @nox.session(python=False)
@@ -112,7 +113,11 @@ def prepublish(session: nox.Session) -> None:
     pyproject["tool"]["poetry"]["name"] = fl.lib.name
     pyproject["tool"]["poetry"]["version"] = fl.lib.version
     pyproject["tool"]["poetry"]["description"] = fl.lib.description
-    pyproject["tool"]["poetry"]["authors"] = [f"{fl.lib.author} <{fl.lib.author_email}>"]
-    pyproject["tool"]["poetry"]["maintainers"] = [f"{fl.lib.author} <{fl.lib.author_email}>"]
+    pyproject["tool"]["poetry"]["authors"] = [
+        f"{fl.lib.author} <{fl.lib.author_email}>"
+    ]
+    pyproject["tool"]["poetry"]["maintainers"] = [
+        f"{fl.lib.author} <{fl.lib.author_email}>"
+    ]
 
     file.write_text(toml.dumps(pyproject))
