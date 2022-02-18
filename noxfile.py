@@ -11,6 +11,12 @@ def check(session: nox.Session) -> None:
 
 
 @nox.session(python=False)
+def freeze(session: nox.Session) -> None:
+    """prints all the versions of libraries"""
+    session.run("poetry", "export", "--without-hashes", external=True)
+
+
+@nox.session(python=False)
 def install(session: nox.Session) -> None:
     """installs the project using poetry"""
     # lock all dependencies to the latest available compatible versions (faster than update)
@@ -20,9 +26,23 @@ def install(session: nox.Session) -> None:
 
 
 @nox.session(python=False)
-def freeze(session: nox.Session) -> None:
-    """prints all the versions of libraries"""
-    session.run("poetry", "export", "--without-hashes", external=True)
+def lint(session: nox.Session) -> None:
+    """runs static code analysis and checks format is correct"""
+    session.run("mypy", "--version", external=True)
+    session.run(
+        "mypy", "fuzzylite/", "tests/", "--strict", external=True, success_codes=[0, 1]
+    )
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    session.run("black", "--check", *files, external=True, success_codes=[0])
+    session.run(
+        "nbqa",
+        "black",
+        "--check",
+        "-tpy36",
+        *black_notebook_folders(),
+        external=True,
+        success_codes=[0, 1],
+    )
 
 
 @nox.session(python=False)
@@ -45,26 +65,6 @@ def test(session: nox.Session) -> None:
 
 
 @nox.session(python=False)
-def lint(session: nox.Session) -> None:
-    """runs static code analysis and checks format is correct"""
-    session.run("mypy", "--version", external=True)
-    session.run(
-        "mypy", "fuzzylite/", "tests/", "--strict", external=True, success_codes=[0, 1]
-    )
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
-    session.run("black", "--check", *files, external=True, success_codes=[0, 1])
-    session.run(
-        "nbqa",
-        "black",
-        "--check",
-        "-tpy36",
-        *black_notebook_folders(),
-        external=True,
-        success_codes=[0, 1],
-    )
-
-
-@nox.session(python=False)
 def format(session: nox.Session) -> None:
     """runs code formatting"""
     files = ["fuzzylite/", "tests/", "noxfile.py"]
@@ -75,6 +75,8 @@ def format(session: nox.Session) -> None:
         "--remove-all-unused-imports",
         "--remove-unused-variables",
         "fuzzylite/",
+        "tests/",
+        "noxfile.py",
         external=True,
     )
     session.run("isort", *files, external=True)
@@ -103,9 +105,10 @@ def black_notebook_folders() -> List[str]:
 
 
 @nox.session(python=False)
-def prepublish(session: nox.Session) -> None:
-    import fuzzylite as fl
+def prepublish(_: nox.Session) -> None:
     import toml
+
+    import fuzzylite as fl
 
     file = Path("pyproject.toml")
     pyproject = toml.load(str(file))

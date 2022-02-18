@@ -32,14 +32,25 @@ from .variable import InputVariable, OutputVariable, Variable
 class Engine:
     @enum.unique
     class Type(enum.Enum):
-        Unknown, Mamdani, Larsen, TakagiSugeno, Tsukamoto, InverseTsukamoto, Hybrid = range(7)
+        (
+            Unknown,
+            Mamdani,
+            Larsen,
+            TakagiSugeno,
+            Tsukamoto,
+            InverseTsukamoto,
+            Hybrid,
+        ) = range(7)
 
-    def __init__(self, name: str = "",
-                 description: str = "",
-                 input_variables: Optional[Iterable[InputVariable]] = None,
-                 output_variables: Optional[Iterable[OutputVariable]] = None,
-                 rule_blocks: Optional[Iterable[RuleBlock]] = None,
-                 load_rules: bool = False) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        description: str = "",
+        input_variables: Optional[Iterable[InputVariable]] = None,
+        output_variables: Optional[Iterable[OutputVariable]] = None,
+        rule_blocks: Optional[Iterable[RuleBlock]] = None,
+        load_rules: bool = False,
+    ) -> None:
         self.name = name
         self.description = description
         self.input_variables: List[InputVariable] = []
@@ -58,14 +69,17 @@ class Engine:
     def __str__(self) -> str:
         return FllExporter().engine(self)
 
-    def configure(self,
-                  conjunction: Optional[Union[TNorm, str]] = None,
-                  disjunction: Optional[Union[SNorm, str]] = None,
-                  implication: Optional[Union[TNorm, str]] = None,
-                  aggregation: Optional[Union[SNorm, str]] = None,
-                  defuzzifier: Optional[Union[Defuzzifier, str]] = None,
-                  activation: Optional[Union[Activation, str]] = None) -> None:
+    def configure(
+        self,
+        conjunction: Optional[Union[TNorm, str]] = None,
+        disjunction: Optional[Union[SNorm, str]] = None,
+        implication: Optional[Union[TNorm, str]] = None,
+        aggregation: Optional[Union[SNorm, str]] = None,
+        defuzzifier: Optional[Union[Defuzzifier, str]] = None,
+        activation: Optional[Union[Activation, str]] = None,
+    ) -> None:
         from . import lib
+
         factory = lib.factory_manager
         if isinstance(conjunction, str):
             conjunction = factory.tnorm.construct(conjunction)
@@ -98,27 +112,35 @@ class Engine:
         for variable in self.variables:
             if variable.name == name:
                 return variable
-        raise ValueError(f"variable '{name}' not found in {v.name for v in self.variables}")
+        raise ValueError(
+            f"variable '{name}' not found in {v.name for v in self.variables}"
+        )
 
     def input_variable(self, name: str) -> InputVariable:
         for variable in self.input_variables:
             if variable.name == name:
                 return variable
-        raise ValueError(f"input variable '{name}' not found in "
-                         f"{v.name for v in self.input_variables}")
+        raise ValueError(
+            f"input variable '{name}' not found in "
+            f"{v.name for v in self.input_variables}"
+        )
 
     def output_variable(self, name: str) -> OutputVariable:
         for variable in self.output_variables:
             if variable.name == name:
                 return variable
-        raise ValueError(f"output variable '{name}' not found in "
-                         f"{v.name for v in self.output_variables}")
+        raise ValueError(
+            f"output variable '{name}' not found in "
+            f"{v.name for v in self.output_variables}"
+        )
 
     def rule_block(self, name: str) -> RuleBlock:
         for block in self.rule_blocks:
             if block.name == name:
                 return block
-        raise ValueError(f"rule block '{name}' not found in {r.name for r in self.rule_blocks}")
+        raise ValueError(
+            f"rule block '{name}' not found in {r.name for r in self.rule_blocks}"
+        )
 
     def restart(self) -> None:
         for input_variable in self.input_variables:
@@ -155,5 +177,5 @@ class Engine:
     def is_ready(self) -> Tuple[bool, str]:
         raise NotImplementedError()
 
-    def infer_type(self) -> Tuple['Engine.Type', str]:
+    def infer_type(self) -> Tuple["Engine.Type", str]:
         raise NotImplementedError()

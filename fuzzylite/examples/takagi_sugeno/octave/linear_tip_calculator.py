@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="linear_tip_calculator",
-    description=""
-)
+engine = fl.Engine(name="linear_tip_calculator", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="FoodQuality",
@@ -14,8 +11,8 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Trapezoid("Bad", 0.000, 1.000, 3.000, 7.000),
-            fl.Trapezoid("Good", 3.000, 7.000, 10.000, 11.000)
-        ]
+            fl.Trapezoid("Good", 3.000, 7.000, 10.000, 11.000),
+        ],
     ),
     fl.InputVariable(
         name="Service",
@@ -26,9 +23,9 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Trapezoid("Bad", 0.000, 1.000, 3.000, 7.000),
-            fl.Trapezoid("Good", 3.000, 7.000, 10.000, 11.000)
-        ]
-    )
+            fl.Trapezoid("Good", 3.000, 7.000, 10.000, 11.000),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -44,8 +41,8 @@ engine.output_variables = [
         terms=[
             fl.Linear("TenPercent", [0.000, 0.000, 10.000], engine),
             fl.Linear("FifteenPercent", [0.000, 0.000, 15.000], engine),
-            fl.Linear("TwentyPercent", [0.000, 0.000, 20.000], engine)
-        ]
+            fl.Linear("TwentyPercent", [0.000, 0.000, 20.000], engine),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -58,10 +55,22 @@ engine.rule_blocks = [
         implication=None,
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if FoodQuality is Bad and Service is Bad then Tip is TenPercent", engine),
-            fl.Rule.create("if FoodQuality is Bad and Service is Good then Tip is FifteenPercent", engine),
-            fl.Rule.create("if FoodQuality is Good and Service is Bad then Tip is FifteenPercent", engine),
-            fl.Rule.create("if FoodQuality is Good and Service is Good then Tip is TwentyPercent", engine)
-        ]
+            fl.Rule.create(
+                "if FoodQuality is Bad and Service is Bad then Tip is TenPercent",
+                engine,
+            ),
+            fl.Rule.create(
+                "if FoodQuality is Bad and Service is Good then Tip is FifteenPercent",
+                engine,
+            ),
+            fl.Rule.create(
+                "if FoodQuality is Good and Service is Bad then Tip is FifteenPercent",
+                engine,
+            ),
+            fl.Rule.create(
+                "if FoodQuality is Good and Service is Good then Tip is TwentyPercent",
+                engine,
+            ),
+        ],
     )
 ]

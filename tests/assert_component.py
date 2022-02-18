@@ -20,11 +20,10 @@ from typing import Any, Generic, TypeVar
 
 import fuzzylite as fl
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class BaseAssert(Generic[T]):
-
     def __init__(self, test: unittest.TestCase, actual: T) -> None:
         self.test = test
         self.actual = actual
@@ -36,13 +35,17 @@ class BaseAssert(Generic[T]):
         return self
 
     def has_name(self, name: str) -> Any:
-        self.test.assertTrue(hasattr(self.actual, "name"),
-                             f"{type(self.actual)} does not have a 'name' attribute")
+        self.test.assertTrue(
+            hasattr(self.actual, "name"),
+            f"{type(self.actual)} does not have a 'name' attribute",
+        )
         self.test.assertEqual(getattr(self.actual, "name"), name)
         return self
 
     def has_description(self, description: str) -> Any:
-        self.test.assertTrue(hasattr(self.actual, "description"),
-                             f"{type(self.actual)} does not have a 'description' attribute")
+        self.test.assertTrue(
+            hasattr(self.actual, "description"),
+            f"{type(self.actual)} does not have a 'description' attribute",
+        )
         self.test.assertEqual(getattr(self.actual, "description"), description)
         return self

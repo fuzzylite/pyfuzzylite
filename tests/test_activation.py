@@ -24,14 +24,15 @@ from tests.assert_component import BaseAssert
 
 
 class ActivationAssert(BaseAssert[fl.Activation]):
-
-    def fuzzy_values(self, fuzzification: Dict[float, str]) -> 'ActivationAssert':
+    def fuzzy_values(self, fuzzification: Dict[float, str]) -> "ActivationAssert":
         for x in fuzzification:
             # self.test.assertEqual(self.actual.fuzzify(x), fuzzification[x], f"when x={x}")
             pass
         return self
 
-    def highest_memberships(self, x_mf: Dict[float, Tuple[float, fl.Term]]) -> 'ActivationAssert':
+    def highest_memberships(
+        self, x_mf: Dict[float, Tuple[float, fl.Term]]
+    ) -> "ActivationAssert":
         for x in x_mf:
             # self.test.assertEqual(self.actual.highest_membership(x), x_mf[x], f"when x={x}")
             pass
@@ -39,7 +40,6 @@ class ActivationAssert(BaseAssert[fl.Activation]):
 
 
 class TestActivation(unittest.TestCase):
-
     def test_class_name(self) -> None:
         self.assertEqual("Activation", fl.Activation().class_name)
 
@@ -58,5 +58,5 @@ class TestActivation(unittest.TestCase):
         self.assertEqual("Activation param1 param2", str(activation))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

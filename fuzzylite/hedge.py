@@ -15,8 +15,17 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-__all__ = ["Hedge", "Any", "Extremely", "Not", "Seldom", "Somewhat", "Very", "HedgeLambda",
-           "HedgeFunction"]
+__all__ = [
+    "Hedge",
+    "Any",
+    "Extremely",
+    "Not",
+    "Seldom",
+    "Somewhat",
+    "Very",
+    "HedgeLambda",
+    "HedgeFunction",
+]
 
 import math
 import typing
@@ -27,7 +36,6 @@ if typing.TYPE_CHECKING:
 
 
 class Hedge:
-
     @property
     def name(self) -> str:
         return self.__class__.__name__.lower()
@@ -37,43 +45,36 @@ class Hedge:
 
 
 class Any(Hedge):
-
     def hedge(self, x: float) -> float:
         return 1.0
 
 
 class Extremely(Hedge):
-
     def hedge(self, x: float) -> float:
         return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
 
 
 class Not(Hedge):
-
     def hedge(self, x: float) -> float:
         return 1.0 - x
 
 
 class Seldom(Hedge):
-
     def hedge(self, x: float) -> float:
         return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
 
 
 class Somewhat(Hedge):
-
     def hedge(self, x: float) -> float:
         return math.sqrt(x)
 
 
 class Very(Hedge):
-
     def hedge(self, x: float) -> float:
         return x * x
 
 
 class HedgeLambda(Hedge):
-
     def __init__(self, name: str, function: Callable[[float], float]) -> None:
         self._name = name
         self.function = function
@@ -87,8 +88,7 @@ class HedgeLambda(Hedge):
 
 
 class HedgeFunction(Hedge):
-
-    def __init__(self, function: 'Function') -> None:
+    def __init__(self, function: "Function") -> None:
         self.function = function
 
     @property

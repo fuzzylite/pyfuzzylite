@@ -16,10 +16,9 @@
 """
 # flake8: noqa
 
-# noinspection PyUnresolvedReferences
-from math import inf, isinf, isnan, nan
+from math import inf, isinf, isnan, nan  # noqa
 
-from fuzzylite import examples
+from fuzzylite import examples  # noqa
 from fuzzylite.activation import *
 from fuzzylite.defuzzifier import *
 from fuzzylite.engine import *
@@ -34,10 +33,12 @@ from fuzzylite.rule import *
 from fuzzylite.term import *
 from fuzzylite.variable import *
 
-lib: Library = Library(decimals=3,
-                       abs_tolerance=1e-5,
-                       floating_point_type=float,
-                       factory_manager=FactoryManager())
+lib: Library = Library(
+    decimals=3,
+    abs_tolerance=1e-5,
+    floating_point_type=float,
+    factory_manager=FactoryManager(),
+)
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary

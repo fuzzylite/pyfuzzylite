@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="slcpp1",
-    description=""
-)
+engine = fl.Engine(name="slcpp1", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="in1",
@@ -11,7 +8,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-0.300,
         maximum=0.300,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="in2",
@@ -19,7 +16,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-1.000,
         maximum=1.000,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="in3",
@@ -27,7 +24,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-3.000,
         maximum=3.000,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="in4",
@@ -35,7 +32,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-3.000,
         maximum=3.000,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="in5",
@@ -43,7 +40,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-3.000,
         maximum=3.000,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="in6",
@@ -51,7 +48,7 @@ engine.input_variables = [
         enabled=True,
         minimum=-3.000,
         maximum=3.000,
-        lock_range=False
+        lock_range=False,
     ),
     fl.InputVariable(
         name="pole_length",
@@ -71,9 +68,9 @@ engine.input_variables = [
             fl.PiShape("mf8", 1.100, 1.200, 1.200, 1.300),
             fl.PiShape("mf9", 1.200, 1.300, 1.300, 1.400),
             fl.PiShape("mf10", 1.300, 1.400, 1.400, 1.500),
-            fl.SShape("mf11", 1.400, 1.500)
-        ]
-    )
+            fl.SShape("mf11", 1.400, 1.500),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -87,18 +84,62 @@ engine.output_variables = [
         defuzzifier=fl.WeightedAverage("TakagiSugeno"),
         lock_previous=False,
         terms=[
-            fl.Linear("outmf1", [168.400, 31.000, -188.050, -49.250, -1.000, -2.700, 0.000, 0.000], engine),
-            fl.Linear("outmf2", [233.950, 47.190, -254.520, -66.580, -1.000, -2.740, 0.000, 0.000], engine),
-            fl.Linear("outmf3", [342.940, 74.730, -364.370, -95.230, -1.000, -2.780, 0.000, 0.000], engine),
-            fl.Linear("outmf4", [560.710, 130.670, -582.960, -152.240, -1.000, -2.810, 0.000, 0.000], engine),
-            fl.Linear("outmf5", [1213.880, 300.190, -1236.900, -322.800, -1.000, -2.840, 0.000, 0.000], engine),
-            fl.Linear("outmf6", [0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000], engine),
-            fl.Linear("outmf7", [-1399.120, -382.950, 1374.630, 358.340, -1.000, -2.900, 0.000, 0.000], engine),
-            fl.Linear("outmf8", [-746.070, -213.420, 720.900, 187.840, -1.000, -2.930, 0.000, 0.000], engine),
-            fl.Linear("outmf9", [-528.520, -157.460, 502.680, 130.920, -1.000, -2.960, 0.000, 0.000], engine),
-            fl.Linear("outmf10", [-419.870, -129.890, 393.380, 102.410, -1.000, -2.980, 0.000, 0.000], engine),
-            fl.Linear("outmf11", [-354.770, -113.680, 327.650, 85.270, -1.000, -3.010, 0.000, 0.000], engine)
-        ]
+            fl.Linear(
+                "outmf1",
+                [168.400, 31.000, -188.050, -49.250, -1.000, -2.700, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf2",
+                [233.950, 47.190, -254.520, -66.580, -1.000, -2.740, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf3",
+                [342.940, 74.730, -364.370, -95.230, -1.000, -2.780, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf4",
+                [560.710, 130.670, -582.960, -152.240, -1.000, -2.810, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf5",
+                [1213.880, 300.190, -1236.900, -322.800, -1.000, -2.840, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf6",
+                [0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf7",
+                [-1399.120, -382.950, 1374.630, 358.340, -1.000, -2.900, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf8",
+                [-746.070, -213.420, 720.900, 187.840, -1.000, -2.930, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf9",
+                [-528.520, -157.460, 502.680, 130.920, -1.000, -2.960, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf10",
+                [-419.870, -129.890, 393.380, 102.410, -1.000, -2.980, 0.000, 0.000],
+                engine,
+            ),
+            fl.Linear(
+                "outmf11",
+                [-354.770, -113.680, 327.650, 85.270, -1.000, -3.010, 0.000, 0.000],
+                engine,
+            ),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -121,7 +162,7 @@ engine.rule_blocks = [
             fl.Rule.create("if pole_length is mf8 then out is outmf8", engine),
             fl.Rule.create("if pole_length is mf9 then out is outmf9", engine),
             fl.Rule.create("if pole_length is mf10 then out is outmf10", engine),
-            fl.Rule.create("if pole_length is mf11 then out is outmf11", engine)
-        ]
+            fl.Rule.create("if pole_length is mf11 then out is outmf11", engine),
+        ],
     )
 ]

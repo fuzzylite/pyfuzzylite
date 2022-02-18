@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="Bell",
-    description="obstacle avoidance for self-driving cars"
-)
+engine = fl.Engine(name="Bell", description="obstacle avoidance for self-driving cars")
 engine.input_variables = [
     fl.InputVariable(
         name="obstacle",
@@ -14,8 +11,8 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Triangle("left", 0.000000000, 0.333000000, 0.666000000),
-            fl.Triangle("right", 0.333000000, 0.666000000, 1.000000000)
-        ]
+            fl.Triangle("right", 0.333000000, 0.666000000, 1.000000000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -31,8 +28,8 @@ engine.output_variables = [
         lock_previous=False,
         terms=[
             fl.Bell("left", 0.333000000, 0.166500000, 3.000000000),
-            fl.Bell("right", 0.666500000, 0.166750000, 3.000000000)
-        ]
+            fl.Bell("right", 0.666500000, 0.166750000, 3.000000000),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -46,7 +43,7 @@ engine.rule_blocks = [
         activation=fl.General(),
         rules=[
             fl.Rule.create("if obstacle is left then steer is right", engine),
-            fl.Rule.create("if obstacle is right then steer is left", engine)
-        ]
+            fl.Rule.create("if obstacle is right then steer is left", engine),
+        ],
     )
 ]

@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="tipper",
-    description="(service and food) -> (tip)"
-)
+engine = fl.Engine(name="tipper", description="(service and food) -> (tip)")
 engine.input_variables = [
     fl.InputVariable(
         name="service",
@@ -15,8 +12,8 @@ engine.input_variables = [
         terms=[
             fl.Trapezoid("poor", 0.000, 0.000, 2.500, 5.000),
             fl.Triangle("good", 2.500, 5.000, 7.500),
-            fl.Trapezoid("excellent", 5.000, 7.500, 10.000, 10.000)
-        ]
+            fl.Trapezoid("excellent", 5.000, 7.500, 10.000, 10.000),
+        ],
     ),
     fl.InputVariable(
         name="food",
@@ -27,9 +24,9 @@ engine.input_variables = [
         lock_range=True,
         terms=[
             fl.Trapezoid("rancid", 0.000, 0.000, 2.500, 7.500),
-            fl.Trapezoid("delicious", 2.500, 7.500, 10.000, 10.000)
-        ]
-    )
+            fl.Trapezoid("delicious", 2.500, 7.500, 10.000, 10.000),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -45,8 +42,8 @@ engine.output_variables = [
         terms=[
             fl.Triangle("cheap", 0.000, 5.000, 10.000),
             fl.Triangle("average", 10.000, 15.000, 20.000),
-            fl.Triangle("generous", 20.000, 25.000, 30.000)
-        ]
+            fl.Triangle("generous", 20.000, 25.000, 30.000),
+        ],
     ),
     fl.OutputVariable(
         name="tsTip",
@@ -61,9 +58,9 @@ engine.output_variables = [
         terms=[
             fl.Constant("cheap", 5.000),
             fl.Constant("average", 15.000),
-            fl.Constant("generous", 25.000)
-        ]
-    )
+            fl.Constant("generous", 25.000),
+        ],
+    ),
 ]
 engine.rule_blocks = [
     fl.RuleBlock(
@@ -75,11 +72,19 @@ engine.rule_blocks = [
         implication=fl.Minimum(),
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if service is poor or food is rancid then mTip is cheap", engine),
+            fl.Rule.create(
+                "if service is poor or food is rancid then mTip is cheap", engine
+            ),
             fl.Rule.create("if service is good then mTip is average", engine),
-            fl.Rule.create("if service is excellent or food is delicious then mTip is generous with 0.500", engine),
-            fl.Rule.create("if service is excellent and food is delicious then mTip is generous", engine)
-        ]
+            fl.Rule.create(
+                "if service is excellent or food is delicious then mTip is generous with 0.500",
+                engine,
+            ),
+            fl.Rule.create(
+                "if service is excellent and food is delicious then mTip is generous",
+                engine,
+            ),
+        ],
     ),
     fl.RuleBlock(
         name="takagiSugeno",
@@ -90,10 +95,18 @@ engine.rule_blocks = [
         implication=None,
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if service is poor or food is rancid then tsTip is cheap", engine),
+            fl.Rule.create(
+                "if service is poor or food is rancid then tsTip is cheap", engine
+            ),
             fl.Rule.create("if service is good then tsTip is average", engine),
-            fl.Rule.create("if service is excellent or food is delicious then tsTip is generous with 0.500", engine),
-            fl.Rule.create("if service is excellent and food is delicious then tsTip is generous", engine)
-        ]
-    )
+            fl.Rule.create(
+                "if service is excellent or food is delicious then tsTip is generous with 0.500",
+                engine,
+            ),
+            fl.Rule.create(
+                "if service is excellent and food is delicious then tsTip is generous",
+                engine,
+            ),
+        ],
+    ),
 ]

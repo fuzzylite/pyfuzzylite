@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="SimpleDimmerInverse",
-    description=""
-)
+engine = fl.Engine(name="SimpleDimmerInverse", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="Ambient",
@@ -15,8 +12,8 @@ engine.input_variables = [
         terms=[
             fl.Triangle("DARK", 0.000, 0.250, 0.500),
             fl.Triangle("MEDIUM", 0.250, 0.500, 0.750),
-            fl.Triangle("BRIGHT", 0.500, 0.750, 1.000)
-        ]
+            fl.Triangle("BRIGHT", 0.500, 0.750, 1.000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -33,8 +30,8 @@ engine.output_variables = [
         terms=[
             fl.Triangle("LOW", 0.000, 0.250, 0.500),
             fl.Triangle("MEDIUM", 0.250, 0.500, 0.750),
-            fl.Triangle("HIGH", 0.500, 0.750, 1.000)
-        ]
+            fl.Triangle("HIGH", 0.500, 0.750, 1.000),
+        ],
     ),
     fl.OutputVariable(
         name="InversePower",
@@ -49,9 +46,9 @@ engine.output_variables = [
         terms=[
             fl.Cosine("LOW", 0.200, 0.500),
             fl.Cosine("MEDIUM", 0.500, 0.500),
-            fl.Cosine("HIGH", 0.800, 0.500)
-        ]
-    )
+            fl.Cosine("HIGH", 0.800, 0.500),
+        ],
+    ),
 ]
 engine.rule_blocks = [
     fl.RuleBlock(
@@ -68,7 +65,7 @@ engine.rule_blocks = [
             fl.Rule.create("if Ambient is BRIGHT then Power is LOW", engine),
             fl.Rule.create("if Power is LOW then InversePower is HIGH", engine),
             fl.Rule.create("if Power is MEDIUM then InversePower is MEDIUM", engine),
-            fl.Rule.create("if Power is HIGH then InversePower is LOW", engine)
-        ]
+            fl.Rule.create("if Power is HIGH then InversePower is LOW", engine),
+        ],
     )
 ]

@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="fpeaks",
-    description=""
-)
+engine = fl.Engine(name="fpeaks", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="in1",
@@ -16,8 +13,8 @@ engine.input_variables = [
             fl.Bell("in1mf1", -2.233, 1.578, 2.151),
             fl.Bell("in1mf2", -0.394, 0.753, 1.838),
             fl.Bell("in1mf3", 0.497, 0.689, 1.844),
-            fl.Bell("in1mf4", 2.270, 1.528, 2.156)
-        ]
+            fl.Bell("in1mf4", 2.270, 1.528, 2.156),
+        ],
     ),
     fl.InputVariable(
         name="in2",
@@ -30,9 +27,9 @@ engine.input_variables = [
             fl.Bell("in1mf1", -2.686, 1.267, 2.044),
             fl.Bell("in1mf2", -0.836, 1.266, 1.796),
             fl.Bell("in1mf3", 0.859, 1.314, 1.937),
-            fl.Bell("in1mf4", 2.727, 1.214, 2.047)
-        ]
-    )
+            fl.Bell("in1mf4", 2.727, 1.214, 2.047),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -61,8 +58,8 @@ engine.output_variables = [
             fl.Linear("out1mf13", [0.092, -1.126, -4.527], engine),
             fl.Linear("out1mf14", [-0.304, -4.434, -6.561], engine),
             fl.Linear("out1mf15", [-0.166, -6.284, 7.307], engine),
-            fl.Linear("out1mf16", [0.107, -2.028, 8.159], engine)
-        ]
+            fl.Linear("out1mf16", [0.107, -2.028, 8.159], engine),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -75,22 +72,54 @@ engine.rule_blocks = [
         implication=None,
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if in1 is in1mf1 and in2 is in1mf1 then out1 is out1mf1", engine),
-            fl.Rule.create("if in1 is in1mf1 and in2 is in1mf2 then out1 is out1mf2", engine),
-            fl.Rule.create("if in1 is in1mf1 and in2 is in1mf3 then out1 is out1mf3", engine),
-            fl.Rule.create("if in1 is in1mf1 and in2 is in1mf4 then out1 is out1mf4", engine),
-            fl.Rule.create("if in1 is in1mf2 and in2 is in1mf1 then out1 is out1mf5", engine),
-            fl.Rule.create("if in1 is in1mf2 and in2 is in1mf2 then out1 is out1mf6", engine),
-            fl.Rule.create("if in1 is in1mf2 and in2 is in1mf3 then out1 is out1mf7", engine),
-            fl.Rule.create("if in1 is in1mf2 and in2 is in1mf4 then out1 is out1mf8", engine),
-            fl.Rule.create("if in1 is in1mf3 and in2 is in1mf1 then out1 is out1mf9", engine),
-            fl.Rule.create("if in1 is in1mf3 and in2 is in1mf2 then out1 is out1mf10", engine),
-            fl.Rule.create("if in1 is in1mf3 and in2 is in1mf3 then out1 is out1mf11", engine),
-            fl.Rule.create("if in1 is in1mf3 and in2 is in1mf4 then out1 is out1mf12", engine),
-            fl.Rule.create("if in1 is in1mf4 and in2 is in1mf1 then out1 is out1mf13", engine),
-            fl.Rule.create("if in1 is in1mf4 and in2 is in1mf2 then out1 is out1mf14", engine),
-            fl.Rule.create("if in1 is in1mf4 and in2 is in1mf3 then out1 is out1mf15", engine),
-            fl.Rule.create("if in1 is in1mf4 and in2 is in1mf4 then out1 is out1mf16", engine)
-        ]
+            fl.Rule.create(
+                "if in1 is in1mf1 and in2 is in1mf1 then out1 is out1mf1", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf1 and in2 is in1mf2 then out1 is out1mf2", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf1 and in2 is in1mf3 then out1 is out1mf3", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf1 and in2 is in1mf4 then out1 is out1mf4", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf2 and in2 is in1mf1 then out1 is out1mf5", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf2 and in2 is in1mf2 then out1 is out1mf6", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf2 and in2 is in1mf3 then out1 is out1mf7", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf2 and in2 is in1mf4 then out1 is out1mf8", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf3 and in2 is in1mf1 then out1 is out1mf9", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf3 and in2 is in1mf2 then out1 is out1mf10", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf3 and in2 is in1mf3 then out1 is out1mf11", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf3 and in2 is in1mf4 then out1 is out1mf12", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf4 and in2 is in1mf1 then out1 is out1mf13", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf4 and in2 is in1mf2 then out1 is out1mf14", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf4 and in2 is in1mf3 then out1 is out1mf15", engine
+            ),
+            fl.Rule.create(
+                "if in1 is in1mf4 and in2 is in1mf4 then out1 is out1mf16", engine
+            ),
+        ],
     )
 ]

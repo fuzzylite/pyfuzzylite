@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="approximation",
-    description=""
-)
+engine = fl.Engine(name="approximation", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="inputX",
@@ -21,8 +18,8 @@ engine.input_variables = [
             fl.Triangle("NEAR_6", 5.000, 6.000, 7.000),
             fl.Triangle("NEAR_7", 6.000, 7.000, 8.000),
             fl.Triangle("NEAR_8", 7.000, 8.000, 9.000),
-            fl.Triangle("NEAR_9", 8.000, 9.000, 10.000)
-        ]
+            fl.Triangle("NEAR_9", 8.000, 9.000, 10.000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -45,8 +42,8 @@ engine.output_variables = [
             fl.Constant("f6", -0.040),
             fl.Constant("f7", 0.090),
             fl.Constant("f8", 0.120),
-            fl.Constant("f9", 0.040)
-        ]
+            fl.Constant("f9", 0.040),
+        ],
     ),
     fl.OutputVariable(
         name="trueFx",
@@ -58,7 +55,7 @@ engine.output_variables = [
         aggregation=None,
         defuzzifier=fl.WeightedAverage("Automatic"),
         lock_previous=True,
-        terms=[fl.Function.create("fx", "sin(inputX)/inputX", engine)]
+        terms=[fl.Function.create("fx", "sin(inputX)/inputX", engine)],
     ),
     fl.OutputVariable(
         name="diffFx",
@@ -70,8 +67,8 @@ engine.output_variables = [
         aggregation=None,
         defuzzifier=fl.WeightedAverage("Automatic"),
         lock_previous=False,
-        terms=[fl.Function.create("diff", "fabs(outputFx-trueFx)", engine)]
-    )
+        terms=[fl.Function.create("diff", "fabs(outputFx-trueFx)", engine)],
+    ),
 ]
 engine.rule_blocks = [
     fl.RuleBlock(
@@ -92,7 +89,9 @@ engine.rule_blocks = [
             fl.Rule.create("if inputX is NEAR_7 then outputFx is f7", engine),
             fl.Rule.create("if inputX is NEAR_8 then outputFx is f8", engine),
             fl.Rule.create("if inputX is NEAR_9 then outputFx is f9", engine),
-            fl.Rule.create("if inputX is any then trueFx is fx and diffFx is diff", engine)
-        ]
+            fl.Rule.create(
+                "if inputX is any then trueFx is fx and diffFx is diff", engine
+            ),
+        ],
     )
 ]

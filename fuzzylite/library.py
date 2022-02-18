@@ -24,10 +24,13 @@ __all__ = ["Library"]
 
 
 class Library:
-
-    def __init__(self, decimals: int, abs_tolerance: float,
-                 floating_point_type: Type[float],
-                 factory_manager: Optional['FactoryManager'] = None) -> None:
+    def __init__(
+        self,
+        decimals: int,
+        abs_tolerance: float,
+        floating_point_type: Type[float],
+        factory_manager: Optional["FactoryManager"] = None,
+    ) -> None:
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance
         self.floating_point_type = floating_point_type
@@ -41,11 +44,13 @@ class Library:
         if reset:
             for handler in logging.root.handlers[:]:
                 logging.root.removeHandler(handler)
-        logging.basicConfig(level=level,
-                            datefmt='%Y-%m-%d %H:%M:%S',
-                            format='%(asctime)s %(levelname)s '
-                                   '%(module)s::%(funcName)s()[%(lineno)d]'
-                                   '\n%(message)s')
+        logging.basicConfig(
+            level=level,
+            datefmt="%Y-%m-%d %H:%M:%S",
+            format="%(asctime)s %(levelname)s "
+            "%(module)s::%(funcName)s()[%(lineno)d]"
+            "\n%(message)s",
+        )
 
     @property
     def debugging(self) -> bool:
@@ -85,8 +90,7 @@ class Library:
 
     @property
     def summary(self) -> str:
-        result = (
-            """\
+        result = """\
 # pyfuzzylite: A Fuzzy Logic Control Library in Python
 
 ##  Introduction
@@ -184,5 +188,4 @@ In addition, you can easily:
 * Download the sources, documentation, and binaries for the major platforms in
   the [**Downloads**](www.fuzzylite.com/downloads) tab.\
 """
-        )
         return result

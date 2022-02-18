@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="mam22",
-    description=""
-)
+engine = fl.Engine(name="mam22", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="angle",
@@ -14,8 +11,8 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Bell("small", -5.000, 5.000, 8.000),
-            fl.Bell("big", 5.000, 5.000, 8.000)
-        ]
+            fl.Bell("big", 5.000, 5.000, 8.000),
+        ],
     ),
     fl.InputVariable(
         name="velocity",
@@ -26,9 +23,9 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Bell("small", -5.000, 5.000, 2.000),
-            fl.Bell("big", 5.000, 5.000, 2.000)
-        ]
-    )
+            fl.Bell("big", 5.000, 5.000, 2.000),
+        ],
+    ),
 ]
 engine.output_variables = [
     fl.OutputVariable(
@@ -45,8 +42,8 @@ engine.output_variables = [
             fl.Bell("negBig", -5.000, 1.670, 8.000),
             fl.Bell("negSmall", -1.670, 1.670, 8.000),
             fl.Bell("posSmall", 1.670, 1.670, 8.000),
-            fl.Bell("posBig", 5.000, 1.670, 8.000)
-        ]
+            fl.Bell("posBig", 5.000, 1.670, 8.000),
+        ],
     ),
     fl.OutputVariable(
         name="force2",
@@ -62,9 +59,9 @@ engine.output_variables = [
             fl.Bell("negBig2", -3.000, 1.670, 8.000),
             fl.Bell("negSmall2", -1.000, 1.670, 8.000),
             fl.Bell("posSmall2", 1.000, 1.670, 8.000),
-            fl.Bell("posBig2", 3.000, 1.670, 8.000)
-        ]
-    )
+            fl.Bell("posBig2", 3.000, 1.670, 8.000),
+        ],
+    ),
 ]
 engine.rule_blocks = [
     fl.RuleBlock(
@@ -76,10 +73,22 @@ engine.rule_blocks = [
         implication=fl.Minimum(),
         activation=fl.General(),
         rules=[
-            fl.Rule.create("if angle is small and velocity is small then force is negBig and force2 is posBig2", engine),
-            fl.Rule.create("if angle is small and velocity is big then force is negSmall and force2 is posSmall2", engine),
-            fl.Rule.create("if angle is big and velocity is small then force is posSmall and force2 is negSmall2", engine),
-            fl.Rule.create("if angle is big and velocity is big then force is posBig and force2 is negBig2", engine)
-        ]
+            fl.Rule.create(
+                "if angle is small and velocity is small then force is negBig and force2 is posBig2",
+                engine,
+            ),
+            fl.Rule.create(
+                "if angle is small and velocity is big then force is negSmall and force2 is posSmall2",
+                engine,
+            ),
+            fl.Rule.create(
+                "if angle is big and velocity is small then force is posSmall and force2 is negSmall2",
+                engine,
+            ),
+            fl.Rule.create(
+                "if angle is big and velocity is big then force is posBig and force2 is negBig2",
+                engine,
+            ),
+        ],
     )
 ]

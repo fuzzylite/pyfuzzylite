@@ -28,20 +28,21 @@ from .operation import Op
 from .term import Aggregated
 
 if typing.TYPE_CHECKING:
-    from .term import Term
     from .defuzzifier import Defuzzifier  # noqa: F401
+    from .term import Term
 
 
 class Variable:
-
-    def __init__(self,
-                 name: str = "",
-                 description: str = "",
-                 enabled: bool = True,
-                 minimum: float = -inf,
-                 maximum: float = inf,
-                 lock_range: bool = False,
-                 terms: Optional[Iterable['Term']] = None) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Optional[Iterable["Term"]] = None,
+    ) -> None:
         self.name = name
         self.description = description
         self.enabled = enabled
@@ -56,7 +57,7 @@ class Variable:
     def __str__(self) -> str:
         return FllExporter().variable(self)
 
-    def term(self, name: str) -> 'Term':
+    def term(self, name: str) -> "Term":
         for term in self.terms:
             if term.name == name:
                 return term
@@ -80,7 +81,9 @@ class Variable:
 
     @value.setter
     def value(self, value: float) -> None:
-        self._value = Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
+        self._value = (
+            Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
+        )
 
     def fuzzify(self, x: float) -> str:
         result: List[str] = []
@@ -93,12 +96,12 @@ class Variable:
             if not result:
                 result.append(f"{Op.str(fx)}/{term.name}")
             else:
-                pm = '+' if Op.ge(fx, 0.0) or isnan(fx) else '-'
+                pm = "+" if Op.ge(fx, 0.0) or isnan(fx) else "-"
                 result.append(f" {pm} {Op.str(fx)}/{term.name}")
 
         return "".join(result)
 
-    def highest_membership(self, x: float) -> Tuple[float, Optional['Term']]:
+    def highest_membership(self, x: float) -> Tuple[float, Optional["Term"]]:
         result: Tuple[float, Optional[Term]] = (0.0, None)
         for term in self.terms:
             y = nan
@@ -112,22 +115,25 @@ class Variable:
 
 
 class InputVariable(Variable):
-
-    def __init__(self,
-                 name: str = "",
-                 description: str = "",
-                 enabled: bool = True,
-                 minimum: float = -inf,
-                 maximum: float = inf,
-                 lock_range: bool = False,
-                 terms: Optional[Iterable['Term']] = None) -> None:
-        super().__init__(name=name,
-                         description=description,
-                         enabled=enabled,
-                         minimum=minimum,
-                         maximum=maximum,
-                         lock_range=lock_range,
-                         terms=terms)
+    def __init__(
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Optional[Iterable["Term"]] = None,
+    ) -> None:
+        super().__init__(
+            name=name,
+            description=description,
+            enabled=enabled,
+            minimum=minimum,
+            maximum=maximum,
+            lock_range=lock_range,
+            terms=terms,
+        )
 
     def __str__(self) -> str:
         return FllExporter().input_variable(self)
@@ -137,31 +143,34 @@ class InputVariable(Variable):
 
 
 class OutputVariable(Variable):
-
-    def __init__(self,
-                 name: str = "",
-                 description: str = "",
-                 enabled: bool = True,
-                 minimum: float = -inf,
-                 maximum: float = inf,
-                 lock_range: bool = False,
-                 lock_previous: bool = False,
-                 default_value: float = nan,
-                 aggregation: Optional[SNorm] = None,
-                 defuzzifier: Optional['Defuzzifier'] = None,
-                 terms: Optional[Iterable['Term']] = None) -> None:
+    def __init__(
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        lock_previous: bool = False,
+        default_value: float = nan,
+        aggregation: Optional[SNorm] = None,
+        defuzzifier: Optional["Defuzzifier"] = None,
+        terms: Optional[Iterable["Term"]] = None,
+    ) -> None:
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
         self.fuzzy = Aggregated(aggregation=aggregation)
         # initialize parent members
-        super().__init__(name=name,
-                         description=description,
-                         enabled=enabled,
-                         minimum=minimum,
-                         maximum=maximum,
-                         lock_range=lock_range,
-                         terms=terms)
+        super().__init__(
+            name=name,
+            description=description,
+            enabled=enabled,
+            minimum=minimum,
+            maximum=maximum,
+            lock_range=lock_range,
+            terms=terms,
+        )
         # set values of output variable
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
@@ -221,13 +230,17 @@ class OutputVariable(Variable):
             is_valid = False
             if self.defuzzifier:
                 try:
-                    result = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)
+                    result = self.defuzzifier.defuzzify(
+                        self.fuzzy, self.minimum, self.maximum
+                    )
                     is_valid = True
                 except ValueError as ex:
                     exception = ex
             else:
-                exception = ValueError(f"expected a defuzzifier in output variable {self.name}, "
-                                       "but found none")
+                exception = ValueError(
+                    f"expected a defuzzifier in output variable {self.name}, "
+                    "but found none"
+                )
 
         if not is_valid:
             # if a previous defuzzification was successfully performed and
@@ -255,6 +268,11 @@ class OutputVariable(Variable):
             if not result:
                 result.append("{0}/{1}".format(Op.str(degree), term.name))
             else:
-                result.append(" {0} {1}/{2}".format("+" if isnan(degree) or degree >= 0 else "-",
-                                                    Op.str(math.fabs(degree)), term.name))
+                result.append(
+                    " {0} {1}/{2}".format(
+                        "+" if isnan(degree) or degree >= 0 else "-",
+                        Op.str(math.fabs(degree)),
+                        term.name,
+                    )
+                )
         return "".join(result)

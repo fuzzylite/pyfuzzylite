@@ -1,9 +1,6 @@
 import fuzzylite as fl
 
-engine = fl.Engine(
-    name="AllTerms",
-    description=""
-)
+engine = fl.Engine(name="AllTerms", description="")
 engine.input_variables = [
     fl.InputVariable(
         name="AllInputTerms",
@@ -20,7 +17,10 @@ engine.input_variables = [
             fl.Trapezoid("E", 1.000, 1.250, 1.750, 2.000),
             fl.Concave("F", 0.850, 0.250),
             fl.Rectangle("G", 1.750, 2.250),
-            fl.Discrete("H", [2.000, 0.000, 2.250, 1.000, 2.500, 0.500, 2.750, 1.000, 3.000, 0.000]),
+            fl.Discrete(
+                "H",
+                [2.000, 0.000, 2.250, 1.000, 2.500, 0.500, 2.750, 1.000, 3.000, 0.000],
+            ),
             fl.Gaussian("I", 3.000, 0.200),
             fl.Cosine("J", 3.250, 0.650),
             fl.GaussianProduct("K", 3.500, 0.100, 3.300, 0.300),
@@ -32,8 +32,8 @@ engine.input_variables = [
             fl.SigmoidProduct("Q", 5.250, 20.000, -10.000, 5.750),
             fl.Ramp("R", 5.500, 6.500),
             fl.SShape("S", 5.500, 6.500),
-            fl.Sigmoid("T", 6.000, 20.000)
-        ]
+            fl.Sigmoid("T", 6.000, 20.000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -55,7 +55,10 @@ engine.output_variables = [
             fl.Trapezoid("E", 1.000, 1.250, 1.750, 2.000),
             fl.Concave("F", 0.850, 0.250),
             fl.Rectangle("G", 1.750, 2.250),
-            fl.Discrete("H", [2.000, 0.000, 2.250, 1.000, 2.500, 0.500, 2.750, 1.000, 3.000, 0.000]),
+            fl.Discrete(
+                "H",
+                [2.000, 0.000, 2.250, 1.000, 2.500, 0.500, 2.750, 1.000, 3.000, 0.000],
+            ),
             fl.Gaussian("I", 3.000, 0.200),
             fl.Cosine("J", 3.250, 0.650),
             fl.GaussianProduct("K", 3.500, 0.100, 3.300, 0.300),
@@ -67,8 +70,8 @@ engine.output_variables = [
             fl.SigmoidProduct("Q", 5.250, 20.000, -10.000, 5.750),
             fl.Ramp("R", 5.500, 6.500),
             fl.SShape("S", 5.500, 6.500),
-            fl.Sigmoid("T", 6.000, 20.000)
-        ]
+            fl.Sigmoid("T", 6.000, 20.000),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -100,7 +103,7 @@ engine.rule_blocks = [
             fl.Rule.create("if AllInputTerms is Q then AllOutputTerms is D", engine),
             fl.Rule.create("if AllInputTerms is R then AllOutputTerms is C", engine),
             fl.Rule.create("if AllInputTerms is S then AllOutputTerms is B", engine),
-            fl.Rule.create("if AllInputTerms is T then AllOutputTerms is A", engine)
-        ]
+            fl.Rule.create("if AllInputTerms is T then AllOutputTerms is A", engine),
+        ],
     )
 ]

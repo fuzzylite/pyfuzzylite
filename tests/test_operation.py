@@ -22,10 +22,11 @@ import fuzzylite as fl
 
 
 class TestOperation(unittest.TestCase):
-
     def test_valid_identifier(self) -> None:
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
-        self.assertEqual(fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed")
+        self.assertEqual(
+            fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed"
+        )
         self.assertEqual(fl.Op.as_identifier("abc123_.ABC"), "abc123_.ABC")
         self.assertEqual(fl.Op.as_identifier("      "), "unnamed")
 
@@ -50,11 +51,11 @@ class TestOperation(unittest.TestCase):
 
     def test_scale(self) -> None:
         self.assertEqual(fl.Op.scale(0, 0, 1, -10, 10), -10.0)
-        self.assertEqual(fl.Op.scale(.5, 0, 1, -10, 10), 0.0)
+        self.assertEqual(fl.Op.scale(0.5, 0, 1, -10, 10), 0.0)
         self.assertEqual(fl.Op.scale(1, 0, 1, -10, 10), 10)
 
         self.assertEqual(fl.Op.scale(0, 0, 1, 0, 10), 0.0)
-        self.assertEqual(fl.Op.scale(.5, 0, 1, 0, 10), 5.0)
+        self.assertEqual(fl.Op.scale(0.5, 0, 1, 0, 10), 5.0)
         self.assertEqual(fl.Op.scale(1, 0, 1, 0, 10), 10)
 
         self.assertEqual(fl.Op.scale(-1, 0, 1, 0, 10), -10.0)
@@ -66,17 +67,19 @@ class TestOperation(unittest.TestCase):
 
     @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:
-        self.assertEqual("OutputVariable[{"
-                         "'default_value': 'nan', 'defuzzifier': 'None', "
-                         "'fuzzy': 'term: x Aggregated []', "
-                         "'lock_previous': 'False', 'previous_value': 'nan'"
-                         "}]",
-                         fl.Op.describe(
-                             fl.OutputVariable("x", "an x", terms=[fl.Triangle("t")])))
-        self.assertEqual("InputVariable[{}]",
-                         fl.Op.describe(
-                             fl.InputVariable("x", "an x", terms=[fl.Triangle("t")])))
+        self.assertEqual(
+            "OutputVariable[{"
+            "'default_value': 'nan', 'defuzzifier': 'None', "
+            "'fuzzy': 'term: x Aggregated []', "
+            "'lock_previous': 'False', 'previous_value': 'nan'"
+            "}]",
+            fl.Op.describe(fl.OutputVariable("x", "an x", terms=[fl.Triangle("t")])),
+        )
+        self.assertEqual(
+            "InputVariable[{}]",
+            fl.Op.describe(fl.InputVariable("x", "an x", terms=[fl.Triangle("t")])),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -22,49 +22,66 @@ from tests.assert_component import BaseAssert
 
 
 class EngineAssert(BaseAssert[fl.Engine]):
-
-    def has_type(self, expected: fl.Engine.Type) -> 'EngineAssert':
+    def has_type(self, expected: fl.Engine.Type) -> "EngineAssert":
         type = self.actual.infer_type()
-        self.test.assertEqual(type, expected,
-                              f"expected engine of type {expected}, but found {type}")
+        self.test.assertEqual(
+            type, expected, f"expected engine of type {expected}, but found {type}"
+        )
         return self
 
-    def is_ready(self, expected: bool, status: str = "") -> 'EngineAssert':
+    def is_ready(self, expected: bool, status: str = "") -> "EngineAssert":
         ready, message = self.actual.is_ready()
-        self.test.assertEqual(ready, expected,
-                              (f"expected engine {'*not*' if not expected else ''} to be ready,"
-                               f"but was {'*not*' if not ready else ''} ready"))
+        self.test.assertEqual(
+            ready,
+            expected,
+            (
+                f"expected engine {'*not*' if not expected else ''} to be ready,"
+                f"but was {'*not*' if not ready else ''} ready"
+            ),
+        )
         self.test.assertEqual(message, status)
         return self
 
-    def has_n_inputs(self, n: int) -> 'EngineAssert':
+    def has_n_inputs(self, n: int) -> "EngineAssert":
         n_inputs = len(self.actual.input_variables)
-        self.test.assertEqual(n_inputs, n, f"expected {n} input variables, but found {n_inputs}")
+        self.test.assertEqual(
+            n_inputs, n, f"expected {n} input variables, but found {n_inputs}"
+        )
         return self
 
-    def has_inputs(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([iv.name for iv in self.actual.input_variables], names)
+    def has_inputs(self, names: List[str]) -> "EngineAssert":
+        self.test.assertSequenceEqual(
+            [iv.name for iv in self.actual.input_variables], names
+        )
         return self
 
-    def has_n_outputs(self, n: int) -> 'EngineAssert':
+    def has_n_outputs(self, n: int) -> "EngineAssert":
         n_outputs = len(self.actual.output_variables)
-        self.test.assertEqual(n_outputs, n, f"expected {n} output variables, but found {n_outputs}")
+        self.test.assertEqual(
+            n_outputs, n, f"expected {n} output variables, but found {n_outputs}"
+        )
         return self
 
-    def has_outputs(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([ov.name for ov in self.actual.output_variables], names)
+    def has_outputs(self, names: List[str]) -> "EngineAssert":
+        self.test.assertSequenceEqual(
+            [ov.name for ov in self.actual.output_variables], names
+        )
         return self
 
-    def has_n_blocks(self, n: int) -> 'EngineAssert':
+    def has_n_blocks(self, n: int) -> "EngineAssert":
         n_blocks = len(self.actual.rule_blocks)
-        self.test.assertEqual(n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}")
+        self.test.assertEqual(
+            n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}"
+        )
         return self
 
-    def has_blocks(self, names: List[str]) -> 'EngineAssert':
-        self.test.assertSequenceEqual([rb.name for rb in self.actual.rule_blocks], names)
+    def has_blocks(self, names: List[str]) -> "EngineAssert":
+        self.test.assertSequenceEqual(
+            [rb.name for rb in self.actual.rule_blocks], names
+        )
         return self
 
-    def evaluate_fld(self, fld: str, decimals: Optional[int] = None) -> 'EngineAssert':
+    def evaluate_fld(self, fld: str, decimals: Optional[int] = None) -> "EngineAssert":
         if decimals is None:
             decimals = fl.lib.decimals
         for line, evaluation in enumerate(fld.split("\n")):
@@ -76,8 +93,10 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
             expected = evaluation.split()
             if len(expected) != len(self.actual.variables):
-                raise ValueError(f"expected {len(self.actual.variables)} values, "
-                                 f"but got {len(expected)}: [line: {line}] {evaluation}")
+                raise ValueError(
+                    f"expected {len(self.actual.variables)} values, "
+                    f"but got {len(expected)}: [line: {line}] {evaluation}"
+                )
 
             obtained: List[str] = []
             for i, input_variable in enumerate(self.actual.input_variables):
@@ -86,21 +105,26 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
             self.actual.process()
 
-            obtained.extend(fl.Op.str(ov.value, decimals) for ov in self.actual.output_variables)
+            obtained.extend(
+                fl.Op.str(ov.value, decimals) for ov in self.actual.output_variables
+            )
 
-            self.test.assertListEqual(expected, obtained, msg=f"in evaluation line {line}")
+            self.test.assertListEqual(
+                expected, obtained, msg=f"in evaluation line {line}"
+            )
         return self
 
 
 class TestEngine(unittest.TestCase):
-
     def test_empty_engine(self) -> None:
         flc = fl.Engine("name", "description")
-        EngineAssert(self, flc) \
-            .has_name("name").has_description("description") \
-            .has_n_inputs(0).has_inputs([]) \
-            .has_n_outputs(0).has_outputs([]) \
-            .has_n_blocks(0).has_blocks([])
+        EngineAssert(self, flc).has_name("name").has_description(
+            "description"
+        ).has_n_inputs(0).has_inputs([]).has_n_outputs(0).has_outputs([]).has_n_blocks(
+            0
+        ).has_blocks(
+            []
+        )
 
     def test_engine(self) -> None:
         engine = fl.Engine()
@@ -167,12 +191,25 @@ class TestEngine(unittest.TestCase):
         mamdani.implication = fl.Minimum()
         mamdani.activation = fl.General()
         mamdani.rules.append(
-            fl.Rule.create("if service is poor or food is rancid then mTip is cheap", engine))
-        mamdani.rules.append(fl.Rule.create("if service is good then mTip is average", engine))
-        mamdani.rules.append(fl.Rule.create(
-            "if service is excellent or food is delicious then mTip is generous with 0.5", engine))
-        mamdani.rules.append(fl.Rule.create(
-            "if service is excellent and food is delicious then mTip is generous with 1.0", engine))
+            fl.Rule.create(
+                "if service is poor or food is rancid then mTip is cheap", engine
+            )
+        )
+        mamdani.rules.append(
+            fl.Rule.create("if service is good then mTip is average", engine)
+        )
+        mamdani.rules.append(
+            fl.Rule.create(
+                "if service is excellent or food is delicious then mTip is generous with 0.5",
+                engine,
+            )
+        )
+        mamdani.rules.append(
+            fl.Rule.create(
+                "if service is excellent and food is delicious then mTip is generous with 1.0",
+                engine,
+            )
+        )
         engine.rule_blocks.append(mamdani)
 
         takagiSugeno = fl.RuleBlock()  # noqa N806 should be lowercase
@@ -183,24 +220,37 @@ class TestEngine(unittest.TestCase):
         takagiSugeno.disjunction = fl.AlgebraicSum()
         takagiSugeno.implication = None
         takagiSugeno.activation = fl.General()
-        takagiSugeno.rules.append(fl.Rule.create(
-            "if service is poor or food is rancid then tsTip is cheap", engine))
-        takagiSugeno.rules.append(fl.Rule.create(
-            "if service is good then tsTip is average", engine))
-        takagiSugeno.rules.append(fl.Rule.create(
-            "if service is excellent or food is delicious then tsTip is generous with 0.5", engine))
-        takagiSugeno.rules.append(fl.Rule.create(
-            "if service is excellent and food is delicious then tsTip is generous with 1.0",
-            engine))
+        takagiSugeno.rules.append(
+            fl.Rule.create(
+                "if service is poor or food is rancid then tsTip is cheap", engine
+            )
+        )
+        takagiSugeno.rules.append(
+            fl.Rule.create("if service is good then tsTip is average", engine)
+        )
+        takagiSugeno.rules.append(
+            fl.Rule.create(
+                "if service is excellent or food is delicious then tsTip is generous with 0.5",
+                engine,
+            )
+        )
+        takagiSugeno.rules.append(
+            fl.Rule.create(
+                "if service is excellent and food is delicious then tsTip is generous with 1.0",
+                engine,
+            )
+        )
         engine.rule_blocks.append(takagiSugeno)
 
-        EngineAssert(self, engine) \
-            .has_name("tipper") \
-            .has_description("(service and food) -> (tip)") \
-            .has_n_inputs(2).has_inputs(["service", "food"]) \
-            .has_n_outputs(2).has_outputs(["mTip", "tsTip"]) \
-            .has_n_blocks(2).has_blocks(["mamdani", "takagiSugeno"]) \
-            .evaluate_fld(
+        EngineAssert(self, engine).has_name("tipper").has_description(
+            "(service and food) -> (tip)"
+        ).has_n_inputs(2).has_inputs(["service", "food"]).has_n_outputs(2).has_outputs(
+            ["mTip", "tsTip"]
+        ).has_n_blocks(
+            2
+        ).has_blocks(
+            ["mamdani", "takagiSugeno"]
+        ).evaluate_fld(
             """\
 #service food mTip tsTip
 0.0000000000000000 0.0000000000000000 4.9989502099580099 5.0000000000000000
@@ -219,22 +269,29 @@ class TestEngine(unittest.TestCase):
 10.0000000000000000 3.3333333333333335 13.7092196934510024 13.8888888888888875
 10.0000000000000000 6.6666666666666670 20.2157800031293959 22.7777777777777821
 10.0000000000000000 10.0000000000000000 25.0010497900419928 25.0000000000000000
-""", decimals=16)
+""",
+            decimals=16,
+        )
 
     def test_engine_from_fll(self) -> None:
         pass
 
     def test_inputs(self) -> None:
-        flc = fl.Engine("name", "description",
-                        [fl.InputVariable("A"), fl.InputVariable("B")])
-        EngineAssert(self, flc) \
-            .has_name("name").has_description("description") \
-            .has_n_inputs(2).has_inputs(["A", "B"])
+        flc = fl.Engine(
+            "name", "description", [fl.InputVariable("A"), fl.InputVariable("B")]
+        )
+        EngineAssert(self, flc).has_name("name").has_description(
+            "description"
+        ).has_n_inputs(2).has_inputs(["A", "B"])
 
         flc.input_variables = []
         EngineAssert(self, flc).has_n_inputs(0).has_inputs([])
 
-        flc.input_variables = [fl.InputVariable("X"), fl.InputVariable("Y"), fl.InputVariable("Z")]
+        flc.input_variables = [
+            fl.InputVariable("X"),
+            fl.InputVariable("Y"),
+            fl.InputVariable("Z"),
+        ]
         EngineAssert(self, flc).has_n_inputs(3).has_inputs(["X", "Y", "Z"])
 
         names = ["X", "Y", "Z"]
@@ -242,17 +299,21 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(iv.name, names[i])
 
     def test_outputs(self) -> None:
-        flc = fl.Engine("name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")])
-        EngineAssert(self, flc) \
-            .has_name("name").has_description("description") \
-            .has_n_outputs(2).has_outputs(["A", "B"])
+        flc = fl.Engine(
+            "name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")]
+        )
+        EngineAssert(self, flc).has_name("name").has_description(
+            "description"
+        ).has_n_outputs(2).has_outputs(["A", "B"])
 
         flc.output_variables = []
         EngineAssert(self, flc).has_n_outputs(0).has_outputs([])
 
-        flc.output_variables = [fl.OutputVariable("X"),
-                                fl.OutputVariable("Y"),
-                                fl.OutputVariable("Z")]
+        flc.output_variables = [
+            fl.OutputVariable("X"),
+            fl.OutputVariable("Y"),
+            fl.OutputVariable("Z"),
+        ]
         EngineAssert(self, flc).has_n_outputs(3).has_outputs(["X", "Y", "Z"])
 
         names = ["X", "Y", "Z"]
@@ -260,5 +321,5 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(iv.name, names[i])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

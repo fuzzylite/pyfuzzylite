@@ -1,8 +1,7 @@
 import fuzzylite as fl
 
 engine = fl.Engine(
-    name="Gaussian",
-    description="obstacle avoidance for self-driving cars"
+    name="Gaussian", description="obstacle avoidance for self-driving cars"
 )
 engine.input_variables = [
     fl.InputVariable(
@@ -14,8 +13,8 @@ engine.input_variables = [
         lock_range=False,
         terms=[
             fl.Triangle("left", 0.000000000, 0.333000000, 0.666000000),
-            fl.Triangle("right", 0.333000000, 0.666000000, 1.000000000)
-        ]
+            fl.Triangle("right", 0.333000000, 0.666000000, 1.000000000),
+        ],
     )
 ]
 engine.output_variables = [
@@ -31,8 +30,8 @@ engine.output_variables = [
         lock_previous=False,
         terms=[
             fl.Gaussian("left", 0.333000000, 0.143534483),
-            fl.Gaussian("right", 0.666500000, 0.143750000)
-        ]
+            fl.Gaussian("right", 0.666500000, 0.143750000),
+        ],
     )
 ]
 engine.rule_blocks = [
@@ -46,7 +45,7 @@ engine.rule_blocks = [
         activation=fl.General(),
         rules=[
             fl.Rule.create("if obstacle is left then steer is right", engine),
-            fl.Rule.create("if obstacle is right then steer is left", engine)
-        ]
+            fl.Rule.create("if obstacle is right then steer is left", engine),
+        ],
     )
 ]

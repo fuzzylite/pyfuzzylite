@@ -7,13 +7,14 @@ logger = logging.getLogger()
 
 
 class TestTerms(unittest.TestCase):
-
     def test_examples(self) -> None:
         import fuzzylite.examples
+
         examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))  # type: ignore
         self.assertTrue(examples.exists() and examples.is_dir())
 
-        expected = set("""\
+        expected = set(
+            """\
 fuzzylite.examples.hybrid.ObstacleAvoidance
 fuzzylite.examples.hybrid.tipper
 fuzzylite.examples.mamdani.AllTerms
@@ -73,11 +74,12 @@ fuzzylite.examples.terms.Trapezoid
 fuzzylite.examples.terms.Triangle
 fuzzylite.examples.terms.ZSShape
 fuzzylite.examples.tsukamoto.tsukamoto
-""".split())
+""".split()
+        )
 
         obtained = set()
         for file_py in examples.rglob("*.py"):
-            if file_py.suffix == ".py" and file_py.name != '__init__.py':
+            if file_py.suffix == ".py" and file_py.name != "__init__.py":
                 package = []
                 for parent in file_py.parents:
                     package.append(parent.stem)
