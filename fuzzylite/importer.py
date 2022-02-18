@@ -36,21 +36,23 @@ class Importer:
     def class_name(self) -> str:
         return self.__class__.__name__
 
-    def from_string(self, fll: str) -> "Engine":
+    def from_string(self, fll: str) -> Engine:
         raise NotImplementedError()
 
-    def from_file(self, path: Union[Path, str]) -> "Engine":
+    def from_file(self, path: Union[Path, str]) -> Engine:
         if isinstance(path, str):
             path = Path(path)
-        with path.open() as fll:
+        with path.open(encoding="UTF8") as fll:
             return self.from_string(fll.read())
 
 
 class FllImporter(Importer):
+    T = TypeVar("T", Activation, Defuzzifier, SNorm, TNorm)
+
     def __init__(self, separator: str = "\n") -> None:
         self.separator = separator
 
-    def _process(self, component: str, block: List[str], engine: "Engine") -> None:
+    def _process(self, component: str, block: List[str], engine: Engine) -> None:
         if component == "Engine":
             for line in block:
                 line = Op.strip_comments(line)
@@ -74,10 +76,10 @@ class FllImporter(Importer):
             rule_block = self.rule_block(self.separator.join(block), engine)
             engine.rule_blocks.append(rule_block)
 
-    def from_string(self, fll: str) -> "Engine":
+    def from_string(self, fll: str) -> Engine:
         return self.engine(fll)
 
-    def engine(self, fll: str) -> "Engine":
+    def engine(self, fll: str) -> Engine:
         engine = Engine()
         component = ""
         block: List[str] = []
@@ -86,7 +88,7 @@ class FllImporter(Importer):
             line = Op.strip_comments(line)
             if not line:
                 continue
-            key, value = self.extract_key_value(line)
+            key, _ = self.extract_key_value(line)
             if key in {"Engine", "InputVariable", "OutputVariable", "RuleBlock"}:
                 if component:
                     # Process previous block
@@ -100,8 +102,8 @@ class FllImporter(Importer):
         return engine
 
     def input_variable(
-        self, fll: str, engine: Optional["Engine"] = None
-    ) -> "InputVariable":
+        self, fll: str, engine: Optional[Engine] = None
+    ) -> InputVariable:
 
         iv = InputVariable()
         for line in fll.split(self.separator):
@@ -129,8 +131,8 @@ class FllImporter(Importer):
         return iv
 
     def output_variable(
-        self, fll: str, engine: Optional["Engine"] = None
-    ) -> "OutputVariable":
+        self, fll: str, engine: Optional[Engine] = None
+    ) -> OutputVariable:
         ov = OutputVariable()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -164,7 +166,7 @@ class FllImporter(Importer):
         ov.name = Op.as_identifier(ov.name)
         return ov
 
-    def rule_block(self, fll: str, engine: Optional["Engine"] = None) -> "RuleBlock":
+    def rule_block(self, fll: str, engine: Optional[Engine] = None) -> RuleBlock:
         rb = RuleBlock()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -195,7 +197,7 @@ class FllImporter(Importer):
                 )
         return rb
 
-    def term(self, fll: str, engine: Optional["Engine"] = None) -> "Term":
+    def term(self, fll: str, engine: Optional[Engine] = None) -> Term:
         from . import lib
 
         values = self.extract_value(fll, "term").split(maxsplit=2)
@@ -211,28 +213,26 @@ class FllImporter(Importer):
             term.configure(values[2])
         return term
 
-    def rule(self, fll: str, engine: Optional["Engine"] = None) -> Optional["Rule"]:
+    def rule(self, fll: str, engine: Optional[Engine] = None) -> Optional[Rule]:
         return Rule.create(self.extract_value(fll, "rule"), engine)
 
-    def tnorm(self, fll: str) -> Optional["TNorm"]:
+    def tnorm(self, fll: str) -> Optional[TNorm]:
         return self.component(TNorm, fll)
 
-    def snorm(self, fll: str) -> Optional["SNorm"]:
+    def snorm(self, fll: str) -> Optional[SNorm]:
         return self.component(SNorm, fll)
 
-    def activation(self, fll: str) -> Optional["Activation"]:
+    def activation(self, fll: str) -> Optional[Activation]:
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
         return self.component(Activation, name, parameters)
 
-    def defuzzifier(self, fll: str) -> Optional["Defuzzifier"]:
+    def defuzzifier(self, fll: str) -> Optional[Defuzzifier]:
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
         return self.component(Defuzzifier, name, parameters)
-
-    T = TypeVar("T", "Activation", "Defuzzifier", "SNorm", "TNorm")
 
     def component(
         self, cls: Type["FllImporter.T"], fll: str, parameters: Optional[str] = None

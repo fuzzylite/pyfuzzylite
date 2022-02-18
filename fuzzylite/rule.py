@@ -36,14 +36,15 @@ from .operation import Op
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:
-    from .activation import Activation  # noqa: F401
+    from .activation import Activation
     from .engine import Engine
     from .hedge import Hedge
-    from .term import Term  # noqa: F401
-    from .variable import Variable  # noqa: F401
+    from .term import Term
+    from .variable import Variable
 
 
 class Expression:
+    # pylint: disable = R0903 # Too few public methods (1/2) (too-few-public-methods)
     pass
 
 
@@ -55,7 +56,7 @@ class Proposition(Expression):
         term: Optional["Term"] = None,
     ) -> None:
         self.variable = variable
-        self.hedges: List[Hedge] = []
+        self.hedges: List["Hedge"] = []
         if hedges:
             self.hedges.extend(hedges)
         self.term = term
@@ -93,7 +94,7 @@ class Operator(Expression):
         return self.name
 
 
-class Antecedent(object):
+class Antecedent:
     def __init__(self, text: str = "") -> None:
         self.text: str = text
         self.expression: Optional[Expression] = None
@@ -108,7 +109,7 @@ class Antecedent(object):
         self.expression = None
 
     def activation_degree(
-        self,  # noqa C901 'Antecedent.activation_degree' is too complex (20)
+        self,
         conjunction: Optional[TNorm] = None,
         disjunction: Optional[SNorm] = None,
         node: Optional[Expression] = None,
@@ -189,9 +190,7 @@ class Antecedent(object):
 
         raise RuntimeError(f"unexpected type of node '{node}': {type(node)}")
 
-    def load(
-        self, engine: "Engine"
-    ) -> None:  # noqa: C901 'Antecedent.load' is too complex (23)
+    def load(self, engine: "Engine") -> None:
         from collections import deque
 
         from . import lib
@@ -218,6 +217,7 @@ class Antecedent(object):
 
         proposition: Optional[Proposition] = None
         variables = {v.name: v for v in engine.variables}
+        token: Optional[str] = None
         for token in postfix.split():
             if state & s_variable:
                 variable = variables.get(token, None)
@@ -285,7 +285,7 @@ class Antecedent(object):
             raise SyntaxError(f"unexpected token '{token}'")
 
         # check final state for errors (outside of for-loop)
-        if not (state & (s_variable | s_and_or)):  # only acceptable final states
+        if not state & (s_variable | s_and_or):  # only acceptable final states
             if state & s_is:
                 raise SyntaxError(f"expected keyword '{Rule.IS}' after '{token}'")
             if stack & (s_hedge | s_term):
@@ -375,7 +375,7 @@ class Consequent:
         from .term import Activated
 
         if not self.conclusions:
-            raise RuntimeError(f"consequent is not loaded")
+            raise RuntimeError("consequent is not loaded")
 
         for proposition in self.conclusions:
             if not proposition.variable:
@@ -405,9 +405,7 @@ class Consequent:
                         f"'{type(proposition.variable)}'"
                     )
 
-    def load(
-        self, engine: "Engine"
-    ) -> None:  # noqa C901 'Consequent.load' is too complex (21)
+    def load(self, engine: "Engine") -> None:
         from . import lib
 
         self.unload()
@@ -432,6 +430,7 @@ class Consequent:
         proposition: Optional[Proposition] = None
         conclusions: List[Proposition] = []
         output_variables = {v.name: v for v in engine.output_variables}
+        token: Optional[str] = None
         for token in self.text.split():
             if state & s_variable:
                 variable = output_variables.get(token, None)
@@ -484,7 +483,7 @@ class Consequent:
             raise SyntaxError(f"unexpected token '{token}'")
 
         # final states
-        if not (state & (s_and | s_with)):
+        if not state & (s_and | s_with):
             if state & s_variable:
                 raise SyntaxError(
                     f"consequent expected output variable after '{token}'"
@@ -499,7 +498,7 @@ class Consequent:
         self.conclusions = conclusions
 
 
-class Rule(object):
+class Rule:
     IF = "if"
     IS = "is"
     THEN = "then"
@@ -665,9 +664,10 @@ class RuleBlock:
             rule.unload()
 
     def load_rules(self, engine: "Engine") -> None:
-        exceptions: List[str] = []  # noqa E701 (False Positive)
+        exceptions: List[str] = []
         for rule in self.rules:
             rule.unload()
+            # pylint: disable = W0703 # Catching too general exception Exception (broad-except)
             try:
                 rule.load(engine)
             except Exception as ex:

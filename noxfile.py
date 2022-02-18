@@ -28,6 +28,14 @@ def install(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
     """runs static code analysis and checks format is correct"""
+    session.run("pylint", "--version", external=True)
+    session.run(
+        "pylint",
+        "fuzzylite/",
+        # "tests/",
+        external=True,
+        success_codes=[0],
+    )
     session.run("mypy", "--version", external=True)
     session.run(
         "mypy",

@@ -14,7 +14,6 @@
  pyfuzzylite is a trademark of FuzzyLite Limited
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-# flake8: noqa
 
 from math import inf, isinf, isnan, nan  # noqa
 
@@ -39,6 +38,7 @@ lib: Library = Library(
     floating_point_type=float,
     factory_manager=FactoryManager(),
 )
+# pylint: disable =  W0622 # Redefining built-in '__name__' (redefined-builtin)
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary

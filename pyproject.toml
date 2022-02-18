@@ -42,3 +42,4 @@ numpy = "^1.19.5"
 pytest = "^7.0.1"
 # Read .toml files
 toml = "^0.10.2"
+pylint = "^2.12.2"

@@ -69,7 +69,7 @@ from .norm import SNorm, TNorm
 from .operation import Op
 
 if typing.TYPE_CHECKING:
-    from .engine import Engine  # noqa F401
+    from .engine import Engine
 
 
 class Term:
@@ -165,7 +165,11 @@ class Term:
         """
 
     def tsukamoto(
-        self, activation_degree: float, minimum: float, maximum: float
+        # pylint: disable = W0613 # Unused argument (unused-argument)
+        self,
+        activation_degree: float,
+        minimum: float,
+        maximum: float,
     ) -> float:
         r"""
         For monotonic terms, computes the tsukamoto value of the term for the
@@ -215,11 +219,11 @@ class Activated(Term):
     def parameters(self) -> str:
         name = self.term.name if self.term else "none"
         if self.implication:
-            result = "{0}({1},{2})".format(
-                FllExporter().norm(self.implication), Op.str(self.degree), name
+            result = (
+                f"{FllExporter().norm(self.implication)}({Op.str(self.degree)},{name})"
             )
         else:
-            result = "({0}*{1})".format(Op.str(self.degree), name)
+            result = f"({Op.str(self.degree)}*{name})"
         return result
 
     def membership(self, x: float) -> float:
@@ -257,12 +261,10 @@ class Aggregated(Term):
         activated = [term.parameters() for term in self.terms]
         if self.aggregation:
             result.append(
-                "{0}[{1}]".format(
-                    FllExporter().norm(self.aggregation), ",".join(activated)
-                )
+                f"{FllExporter().norm(self.aggregation)}[{','.join(activated)}]"
             )
         else:
-            result.append("[{0}]".format("+".join(activated)))
+            result.append(f"[{'+'.join(activated)}]")
 
         return " ".join(result)
 
@@ -491,7 +493,7 @@ class Discrete(Term):
 
         def __ne__(self, other: object) -> bool:
             if isinstance(other, Discrete.Pair):
-                return not (self.values == other.values)
+                return not self.values == other.values
             return self.values != other
 
         def __lt__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
@@ -843,6 +845,7 @@ class Ramp(Term):
         if self.start == self.end:
             return self.height * 0.0
 
+        # pylint: disable = R1705 # Unnecessary "else" after "return" (no-else-return)
         if self.start < self.end:
             if x <= self.start:
                 return self.height * 0.0
@@ -1210,6 +1213,7 @@ class Function(Term):
         class Type(enum.Enum):
             Operator, Function = range(2)
 
+        # pylint: disable = W0622 # Redefining built-in 'type' (redefined-builtin)
         def __init__(
             self,
             name: str,
@@ -1238,7 +1242,7 @@ class Function(Term):
                 f"precedence={self.precedence}",
                 f"associativity={self.associativity}",
             ]
-            return "{0}: {1}".format(self.__class__.__name__, ", ".join(result))
+            return f"{self.__class__.__name__}: {', '.join(result)}"
 
         def is_function(self) -> bool:
             return self.type == Function.Element.Type.Function
@@ -1246,7 +1250,7 @@ class Function(Term):
         def is_operator(self) -> bool:
             return self.type == Function.Element.Type.Operator
 
-    class Node(object):
+    class Node:
         def __init__(
             self,
             element: Optional["Function.Element"] = None,
@@ -1463,7 +1467,7 @@ class Function(Term):
         result = re.sub(r"\s+", " ", spaced).strip()
         return result
 
-    @classmethod  # noqa: C901 mccabe complexity=19
+    @classmethod
     def infix_to_postfix(cls, formula: str) -> str:
         # TODO: support for unary and binary (+,-)
         from . import lib
