@@ -36,3 +36,4 @@ numpy = "^1.19.5"
 pytest = "^7.0.1"
 # Read .toml files
 toml = "^0.10.2"
+coveralls = "^3.3.1"
