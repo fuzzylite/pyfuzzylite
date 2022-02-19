@@ -113,7 +113,7 @@ class Engine:
             if variable.name == name:
                 return variable
         raise ValueError(
-            f"variable '{name}' not found in {v.name for v in self.variables}"
+            f"variable '{name}' not found in {[v.name for v in self.variables]}"
         )
 
     def input_variable(self, name: str) -> InputVariable:
@@ -122,7 +122,7 @@ class Engine:
                 return variable
         raise ValueError(
             f"input variable '{name}' not found in "
-            f"{v.name for v in self.input_variables}"
+            f"{[v.name for v in self.input_variables]}"
         )
 
     def output_variable(self, name: str) -> OutputVariable:
@@ -131,7 +131,7 @@ class Engine:
                 return variable
         raise ValueError(
             f"output variable '{name}' not found in "
-            f"{v.name for v in self.output_variables}"
+            f"{[v.name for v in self.output_variables]}"
         )
 
     def rule_block(self, name: str) -> RuleBlock:
@@ -139,7 +139,7 @@ class Engine:
             if block.name == name:
                 return block
         raise ValueError(
-            f"rule block '{name}' not found in {r.name for r in self.rule_blocks}"
+            f"rule block '{name}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
     def restart(self) -> None:

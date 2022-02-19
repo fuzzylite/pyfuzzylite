@@ -61,7 +61,7 @@ class Variable:
         for term in self.terms:
             if term.name == name:
                 return term
-        raise ValueError(f"term '{name}' not found in {t.name for t in self.terms}")
+        raise ValueError(f"term '{name}' not found in {[t.name for t in self.terms]}")
 
     @property
     def drange(self) -> float:
