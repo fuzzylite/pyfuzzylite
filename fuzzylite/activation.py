@@ -28,6 +28,8 @@ __all__ = [
 
 import enum
 import heapq
+
+# pylint: disable = W0611 # Unused import operator (unused-import) [False Positive]
 import operator
 from typing import Callable, List, Tuple, Union
 

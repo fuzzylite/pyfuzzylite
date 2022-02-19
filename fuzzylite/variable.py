@@ -28,7 +28,7 @@ from .operation import Op
 from .term import Aggregated
 
 if typing.TYPE_CHECKING:
-    from .defuzzifier import Defuzzifier  # noqa: F401
+    from .defuzzifier import Defuzzifier
     from .term import Term
 
 
@@ -49,7 +49,7 @@ class Variable:
         self.minimum = minimum
         self.maximum = maximum
         self.lock_range = lock_range
-        self.terms: List[Term] = []
+        self.terms: List["Term"] = []
         if terms:
             self.terms.extend(terms)
         self._value = nan
@@ -102,7 +102,7 @@ class Variable:
         return "".join(result)
 
     def highest_membership(self, x: float) -> Tuple[float, Optional["Term"]]:
-        result: Tuple[float, Optional[Term]] = (0.0, None)
+        result: Tuple[float, Optional["Term"]] = (0.0, None)
         for term in self.terms:
             y = nan
             try:
@@ -266,13 +266,9 @@ class OutputVariable(Variable):
             degree = self.fuzzy.activation_degree(term)
 
             if not result:
-                result.append("{0}/{1}".format(Op.str(degree), term.name))
+                result.append(f"{Op.str(degree)}/{term.name}")
             else:
                 result.append(
-                    " {0} {1}/{2}".format(
-                        "+" if isnan(degree) or degree >= 0 else "-",
-                        Op.str(math.fabs(degree)),
-                        term.name,
-                    )
+                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(math.fabs(degree))}/{term.name}"
                 )
         return "".join(result)

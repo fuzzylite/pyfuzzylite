@@ -15,6 +15,8 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+# pylint: disable =  W0622 # Redefining built-in 'type' (redefined-builtin)
+
 __all__ = [
     "Defuzzifier",
     "IntegralDefuzzifier",
@@ -231,10 +233,11 @@ class WeightedAverage(WeightedDefuzzifier):
 
     def defuzzify(
         self,
-        fuzzy_output: Term,
+        term: Term,
         unused_minimum: float = nan,
         unused_maximum: float = nan,
     ) -> float:
+        fuzzy_output = term
         if not isinstance(fuzzy_output, Aggregated):
             raise ValueError(
                 f"expected an Aggregated term, but found {type(fuzzy_output)}"
@@ -278,10 +281,11 @@ class WeightedSum(WeightedDefuzzifier):
 
     def defuzzify(
         self,
-        fuzzy_output: Term,
+        term: Term,
         unused_minimum: float = nan,
         unused_maximum: float = nan,
     ) -> float:
+        fuzzy_output = term
         if not isinstance(fuzzy_output, Aggregated):
             raise ValueError(
                 f"expected an Aggregated term, but found {type(fuzzy_output)}"
