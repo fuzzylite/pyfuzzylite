@@ -89,11 +89,11 @@ from .term import (
     PiShape,
     Ramp,
     Rectangle,
+    SShape,
     Sigmoid,
     SigmoidDifference,
     SigmoidProduct,
     Spike,
-    SShape,
     Term,
     Trapezoid,
     Triangle,
@@ -104,6 +104,15 @@ T = TypeVar("T")
 
 
 class ConstructionFactory(Generic[T]):
+    """
+    The ConstructionFactory class is the base class for a factory whose
+    objects are created from a registered ConstructionFactory::Constructor.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see FactoryManager
+    @since 5.0
+    """
+
     def __init__(self) -> None:
         self.constructors: Dict[str, Callable[[], T]] = {}
 
@@ -112,15 +121,34 @@ class ConstructionFactory(Generic[T]):
 
     @property
     def class_name(self) -> str:
+        """
+        Returns the class name of the factory
+        @return the class name of the factory
+        """
         return self.__class__.__name__
 
     def construct(self, key: str) -> T:
+        """
+        Creates an object by executing the constructor associated to the given key
+        @param key is the unique name by which constructors are registered
+        @return an object by executing the constructor associated to the given key
+        @throws ValueError if the key is not in the registered constructors
+        """
         if key in self.constructors:
             return self.constructors[key]()
         raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
 
 
 class CloningFactory(Generic[T]):
+    """
+    The CloningFactory class is the base class for a factory whose objects
+    are created from a registered object by creating a deep copy.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see FactoryManager
+    @since 5.0
+    """
+
     def __init__(self) -> None:
         self.objects: Dict[str, T] = {}
 
@@ -129,133 +157,215 @@ class CloningFactory(Generic[T]):
 
     @property
     def class_name(self) -> str:
+        """
+        Returns the class name of the factory
+        @return the class name of the factory
+        """
         return self.__class__.__name__
 
     def copy(self, key: str) -> T:
+        """
+        Creates a deep copy of the registered object
+        @param key is the unique name by which the object is registered
+        @return a deep copy of the registered object
+        @throws ValueError if the key is not in the registered objected
+        """
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
         raise ValueError(f"object with key '{key}' not found in {self.class_name}")
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
-    def __init__(self) -> None:
-        super().__init__()
-        # self.constructors[""] = type(None)
+    """
+    e ActivationFactory class is a ConstructionFactory of Activation
+    methods for RuleBlock%s.
 
-        for activation in [
-            First,
-            General,
-            Highest,
-            Last,
-            Lowest,
-            Proportional,
-            Threshold,
-        ]:
-            self.constructors[activation().class_name] = activation
+    @author Juan Rada-Vilela, Ph.D.
+    @see Activation
+    @see RuleBlock
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 6.0
+    """
+
+    def __init__(self) -> None:
+        # TODO: maybe this super call is not necessary?
+        super().__init__()
+        self.constructors = {
+            activation().class_name: activation
+            for activation in [
+                First,
+                General,
+                Highest,
+                Last,
+                Lowest,
+                Proportional,
+                Threshold,
+            ]
+        }
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
+    """
+    The DefuzzifierFactory class is a ConstructionFactory of Defuzzifier%s.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Defuzzifier
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 4.0
+    """
+
     def __init__(self) -> None:
+        # TODO: maybe this super call is not necessary?
         super().__init__()
-        # self.constructors[""] = type(None)
+        self.constructors = {
+            defuzzifier().class_name: defuzzifier
+            for defuzzifier in [
+                Bisector,
+                Centroid,
+                LargestOfMaximum,
+                MeanOfMaximum,
+                SmallestOfMaximum,
+                WeightedAverage,
+                WeightedSum,
+            ]
+        }
 
-        for defuzzifier in [
-            Bisector,
-            Centroid,
-            LargestOfMaximum,
-            MeanOfMaximum,
-            SmallestOfMaximum,
-            WeightedAverage,
-            WeightedSum,
-        ]:
-            self.constructors[defuzzifier().class_name] = defuzzifier
-
-            # # TODO: Implement?
-            # def construct(self, key: str, parameter: Union[int, str]):
-            #     raise NotImplementedError()
+    # TODO: Implement?
+    # def construct(self, key: str, parameter: Union[int, str]):
+    #     raise NotImplementedError()
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):
-    def __init__(self) -> None:
-        super().__init__()
-        # self.constructors[""] = type(None)
+    """
+    The HedgeFactory class is a ConstructionFactory of Hedge%s.
 
-        hedges = [Any, Extremely, Not, Seldom, Somewhat, Very]
-        for hedge in hedges:
-            self.constructors[hedge().name] = hedge
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 4.0
+    """
+
+    def __init__(self) -> None:
+        # TODO: maybe this super call is not necessary?
+        super().__init__()
+        self.constructors = {
+            hedge().name: hedge
+            for hedge in [Any, Extremely, Not, Seldom, Somewhat, Very]
+        }
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
+    """
+    The SNormFactory class is a ConstructionFactory of SNorm%s.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see SNorm
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 4.0
+    """
+
     def __init__(self) -> None:
         super().__init__()
-        # self.constructors[""] = type(None)
-
-        snorms = [
-            AlgebraicSum,
-            BoundedSum,
-            DrasticSum,
-            EinsteinSum,
-            HamacherSum,
-            Maximum,
-            NilpotentMaximum,
-            NormalizedSum,
-            UnboundedSum,
-        ]
-        for snorm in snorms:
-            self.constructors[snorm().class_name] = snorm
+        self.constructors = {
+            snorm().class_name: snorm
+            for snorm in [
+                AlgebraicSum,
+                BoundedSum,
+                DrasticSum,
+                EinsteinSum,
+                HamacherSum,
+                Maximum,
+                NilpotentMaximum,
+                NormalizedSum,
+                UnboundedSum,
+            ]
+        }
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
+    """
+    The TNormFactory class is a ConstructionFactory of TNorm%s.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see TNorm
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 4.0
+    """
+
     def __init__(self) -> None:
         super().__init__()
-        # self.constructors[""] = type(None)
-
-        tnorms = [
-            AlgebraicProduct,
-            BoundedDifference,
-            DrasticProduct,
-            EinsteinProduct,
-            HamacherProduct,
-            Minimum,
-            NilpotentMinimum,
-        ]
-        for tnorm in tnorms:
-            self.constructors[tnorm().class_name] = tnorm
+        self.constructors = {
+            tnorm().class_name: tnorm
+            for tnorm in [
+                AlgebraicProduct,
+                BoundedDifference,
+                DrasticProduct,
+                EinsteinProduct,
+                HamacherProduct,
+                Minimum,
+                NilpotentMinimum,
+            ]
+        }
 
 
 class TermFactory(ConstructionFactory[Term]):
+    """
+    The TermFactory class is a ConstructionFactory of Term%s.
+
+      @author Juan Rada-Vilela, Ph.D.
+      @see Term
+      @see ConstructionFactory
+      @see FactoryManager
+      @since 4.0
+    """
+
     def __init__(self) -> None:
         super().__init__()
-        # self.constructors[""] = type(None)
-
-        terms = [
-            Bell,
-            Binary,
-            Concave,
-            Constant,
-            Cosine,
-            Discrete,
-            Function,
-            Gaussian,
-            GaussianProduct,
-            Linear,
-            PiShape,
-            Ramp,
-            Rectangle,
-            Sigmoid,
-            SigmoidDifference,
-            SigmoidProduct,
-            Spike,
-            SShape,
-            Trapezoid,
-            Triangle,
-            ZShape,
-        ]
-        for term in terms:
-            self.constructors[term().class_name] = term
+        self.constructors = {
+            term().class_name: term
+            for term in [
+                Bell,
+                Binary,
+                Concave,
+                Constant,
+                Cosine,
+                Discrete,
+                Function,
+                Gaussian,
+                GaussianProduct,
+                Linear,
+                PiShape,
+                Ramp,
+                Rectangle,
+                Sigmoid,
+                SigmoidDifference,
+                SigmoidProduct,
+                Spike,
+                SShape,
+                Trapezoid,
+                Triangle,
+                ZShape,
+            ]
+        }
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
+    """
+    The FunctionFactory class is a CloningFactory of operators and functions
+    utilized by the Function term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Function
+    @see Element
+    @see CloningFactory
+    @see FactoryManager
+    @since 5.0
+    """
     def __init__(self) -> None:
         super().__init__()
         self._register_operators()
@@ -459,6 +569,10 @@ class FunctionFactory(CloningFactory[Function.Element]):
             self.objects[f.name] = f
 
     def operators(self) -> Dict[str, Function.Element]:
+        """
+        Returns a dictionary of the operators available
+        @return a dictionary of the operators available
+        """
         result = {
             key: prototype
             for key, prototype in self.objects.items()
@@ -467,6 +581,11 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return result
 
     def functions(self) -> Dict[str, Function.Element]:
+        """
+        Returns a dictionary of the functions available
+        @return a dictionary of the functions available
+        :return:
+        """
         result = {
             key: prototype
             for key, prototype in self.objects.items()
@@ -476,6 +595,21 @@ class FunctionFactory(CloningFactory[Function.Element]):
 
 
 class FactoryManager:
+    """
+    The FactoryManager class is a central class grouping different factories
+    of objects, together with a singleton instance to access each of the
+    factories throughout the library.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see TermFactory
+    @see TNormFactory
+    @see SNormFactory
+    @see HedgeFactory
+    @see ActivationFactory
+    @see DefuzzifierFactory
+    @see FunctionFactory
+    @since 4.0
+    """
     def __init__(
         self,
         tnorm: Optional[TNormFactory] = None,
@@ -486,6 +620,16 @@ class FactoryManager:
         hedge: Optional[HedgeFactory] = None,
         function: Optional[FunctionFactory] = None,
     ) -> None:
+        """
+        Creates a factory manager with the given factories (or default factories if none supplied)
+        @param tnorm is the factory of TNorm%s
+        @param snorm is the factory of SNorm%s
+        @param activation is the factory of Activation methods
+        @param defuzzifier is the factory of Defuzzifier%s
+        @param term is the factory of Term%s
+        @param hedge is the factory of Hedge%s
+        @param function is the factory of Function Element%s
+        """
         self.tnorm = tnorm if tnorm else TNormFactory()
         self.snorm = snorm if snorm else SNormFactory()
         self.activation = activation if activation else ActivationFactory()
