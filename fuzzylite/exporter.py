@@ -22,7 +22,7 @@ import io
 import math
 import typing
 from pathlib import Path
-from typing import Any, IO, List, Optional, Set, Union
+from typing import IO, Any, List, Optional, Set, Union
 
 from .operation import Op
 

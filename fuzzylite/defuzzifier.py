@@ -36,8 +36,8 @@ from typing import Optional, Union
 from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
 
-
 # pylint: disable =  W0622 # Redefining built-in 'type' (redefined-builtin)
+
 
 class Defuzzifier:
     """
@@ -91,7 +91,7 @@ class IntegralDefuzzifier(Defuzzifier):
     @since 4.0
     """
 
-    """Default resolution for integral defuzzifiers"""
+    # Default resolution for integral defuzzifiers
     default_resolution = 100
 
     def __init__(self, resolution: Optional[int] = None) -> None:
@@ -372,6 +372,7 @@ class WeightedDefuzzifier(Defuzzifier):
         TakagiSugeno: Manually set to TakagiSugeno (or Inverse Tsukamoto)
         Tsukamoto: Manually set to Tsukamoto
         """
+
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
     def __init__(

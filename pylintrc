@@ -110,6 +110,7 @@ disable=raw-checker-failed,
         W0511, # Ignore TODOs (fixme)
         W1203, # Use lazy % formatting in logging functions (logging-fstring-interpolation)
 
+        W1401, # Anomalous backslash in string # Temporal ignore while finding how to include LaTeX in documentation
 
 
 

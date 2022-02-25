@@ -28,6 +28,7 @@ __all__ = [
 
 import enum
 import heapq
+
 # pylint: disable = W0611 # Unused import operator (unused-import) [False Positive]
 import operator
 from typing import Callable, List, Tuple, Union
@@ -84,7 +85,6 @@ class Activation:
         Configures the activation method with the given parameters.
         @param parameters contains a list of space-separated parameter values
         """
-        pass
 
     def __str__(self) -> str:
         """
@@ -112,9 +112,9 @@ class General(Activation):
 
     def activate(self, rule_block: RuleBlock) -> None:
         """
-         Activates every rule in the given rule block following the order in
-         which the rules were added.
-         @param rule_block is the rule block to activate
+        Activates every rule in the given rule block following the order in
+        which the rules were added.
+        @param rule_block is the rule block to activate
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -317,7 +317,7 @@ class Highest(Activation):
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
                 if Op.gt(activation_degree, 0.0):
-                    heapq.heappush(activate, (- activation_degree, index))
+                    heapq.heappush(activate, (-activation_degree, index))
 
         activated = 0
         while activate and activated < self.rules:
@@ -449,17 +449,18 @@ class Threshold(Activation):
         Comparator is an enumerator that provides six comparison operators
         between the activation degree @f$a@f$ and the threshold @f$\theta@f$.
         """
-        """@f$a < \theta@f$"""
+
+        # @f$a < \theta@f$
         LessThan = "<"
-        """@f$a \leq \theta@f$"""
+        # @f$a \leq \theta@f$
         LessThanOrEqualTo = "<="
-        """@f$a = \theta@f$"""
+        # @f$a = \theta@f$
         EqualTo = "=="
-        """@f$a \neq \theta@f$"""
+        # @f$a \neq \theta@f$
         NotEqualTo = "!="
-        """@f$a \geq \theta@f$"""
+        # @f$a \geq \theta@f$
         GreaterThanOrEqualTo = ">="
-        """@f$a > \theta@f$"""
+        # @f$a > \theta@f$
         GreaterThan = ">"
 
         __operator__ = {
