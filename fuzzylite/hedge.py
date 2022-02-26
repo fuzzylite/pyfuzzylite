@@ -36,45 +36,176 @@ if typing.TYPE_CHECKING:
 
 
 class Hedge:
+    """
+    The Hedge class is the abstract class for hedges. Hedges are utilized
+    within the Antecedent and Consequent of a Rule in order to modify the
+    membership function of a linguistic Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Antecedent
+    @see Consequent
+    @see Rule
+    @see HedgeFactory
+    @since 4.0
+    """
     @property
     def name(self) -> str:
+        """
+        Returns the name of the hedge
+        @return the name of the hedge
+        """
         return self.__class__.__name__.lower()
 
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return the hedge of @f$x@f$
+        """
         raise NotImplementedError()
 
 
 class Any(Hedge):
+    """
+    The Any class is a special Hedge that always returns `1.0`. Its
+    position with respect to the other hedges is last in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any). The Antecedent of a Rule
+    considers Any to be a syntactically special hedge because it is not
+    followed by a Term (e.g., `if Variable is any then...`). Amongst hedges,
+    only Any has virtual methods to be overridden due to its particular case.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the given value
+        @param x is irrelevant
+        @return `1.0`
+        """
         return 1.0
 
 
 class Extremely(Hedge):
+    """
+    The Extremely class is a Hedge located fifth in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any).
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return @f$
+        \begin{cases}
+        2x^2 & \mbox{if $x \le 0.5$} \cr
+        1-2(1-x)^2 & \mbox{otherwise} \cr
+        \end{cases}@f$
+        """
         return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
 
 
 class Not(Hedge):
+    """
+    The Not class is a Hedge located first in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any).
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return @f$1-x@f$
+        """
         return 1.0 - x
 
 
 class Seldom(Hedge):
+    """
+    The Seldom class is a Hedge located second in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any).
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return @f$
+        \begin{cases}
+        \sqrt{0.5x} & \mbox{if $x \le 0.5$} \cr
+        1-\sqrt{0.5(1-x)} & \mbox{otherwise}\cr
+        \end{cases}
+        @f$
+        """
         return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
 
 
 class Somewhat(Hedge):
+    """
+    The Somewhat class is a Hedge located third in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any).
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return @f$\sqrt{x}@f$
+        """
         return math.sqrt(x)
 
 
 class Very(Hedge):
+    """
+    The Very class is a Hedge located fourth in the ordered set
+    (Not, Seldom, Somewhat, Very, Extremely, Any).
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Hedge
+    @see HedgeFactory
+    @since 4.0
+    """
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$
+        @param x is a membership function value
+        @return @f$x^2@f$
+        """
         return x * x
 
 
 class HedgeLambda(Hedge):
+    """
+    The HedgeLambda class is a customizable Hedge via Lambda, which
+    computes any function based on the @f$x@f$ value. This hedge is not
+    registered with the HedgeFactory due to issues configuring the formula
+    within. To register the hedge, a static method with the
+    constructor needs to be manually created and registered.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Function
+    @see Hedge
+    @see HedgeFactory
+    @since 7.0
+    """
     def __init__(self, name: str, function: Callable[[float], float]) -> None:
         self._name = name
         self.function = function
@@ -84,10 +215,30 @@ class HedgeLambda(Hedge):
         return self._name
 
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$ utilizing
+        the HedgeFunction::function
+        @param x is a membership function value
+        @return the evaluation of the function
+        """
         return self.function(x)
 
 
 class HedgeFunction(Hedge):
+    """
+    The HedgeFunction class is a customizable Hedge via Function, which
+    computes any function based on the @f$x@f$ value. This hedge is not
+    registered with the HedgeFactory due to issues configuring the formula
+    within. To register the hedge, a static method with the
+    constructor needs to be manually created and registered. Please, check the
+    file `test/hedge/HedgeFunction.cpp` for further details.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see Function
+    @see Hedge
+    @see HedgeFactory
+    @since 6.0
+    """
     def __init__(self, function: "Function") -> None:
         self.function = function
 
@@ -96,4 +247,10 @@ class HedgeFunction(Hedge):
         return self.function.name
 
     def hedge(self, x: float) -> float:
+        """
+        Computes the hedge for the membership function value @f$x@f$ utilizing
+        the HedgeFunction::function
+        @param x is a membership function value
+        @return the evaluation of the function
+        """
         return self.function.membership(x)
