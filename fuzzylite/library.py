@@ -24,13 +24,26 @@ __all__ = ["Library"]
 
 
 class Library:
+    """
+     The Library class contains global settings and information about the library.
+      @author Juan Rada-Vilela, Ph.D.
+      @since 4.0
+    """
     def __init__(
         self,
         decimals: int,
         abs_tolerance: float,
-        floating_point_type: Type[float],
+        floating_point_type: Type[float] = float,
         factory_manager: Optional["FactoryManager"] = None,
     ) -> None:
+        """
+        Creates an instance of the library.
+        @param decimals is the number of decimals utilized when formatting scalar values
+        @param abs_tolerance is the minimum difference at which two scalar values are considered equivalent
+        @param floating_point_type is the type of floating point (default is float, but numpy.float_ can also be used)
+        @param factory_manager is the central manager of fuzzylite object factories
+        @param logger is the logger of fuzzylite
+        """
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance
         self.floating_point_type = floating_point_type
@@ -38,58 +51,95 @@ class Library:
         self.logger = logging.getLogger("fuzzylite")
 
     def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
+        """
+        Convert the value into a floating point defined by the library
+        @param value is the value to convert
+        """
         return self.floating_point_type(value)
 
     def configure_logging(self, level: int, reset: bool = True) -> None:
-        if reset:
-            for handler in logging.root.handlers[:]:
-                logging.root.removeHandler(handler)
+        """
+        Configure the logging service.
+        @param level is the level of logging (see levels in Logging module)
+        @param reset is whether to remove all previous logger handlers before configuring
+        """
         logging.basicConfig(
             level=level,
             datefmt="%Y-%m-%d %H:%M:%S",
             format="%(asctime)s %(levelname)s "
             "%(module)s::%(funcName)s()[%(lineno)d]"
             "\n%(message)s",
+            force=reset
         )
 
     @property
     def debugging(self) -> bool:
+        """
+        Return whether the logger level is debugging
+        """
         return self.logger.level == logging.DEBUG
 
     @property
     def name(self) -> str:
+        """
+        Return the name of the `fuzzylite` library
+        """
         return "pyfuzzylite"
 
     @property
     def version(self) -> str:
+        """
+        Return the version of the `fuzzylite` library
+        """
         return "7.0.0"
 
     @property
     def license(self) -> str:
+        """
+        Return the license of the `fuzzylite` library
+        """
         return "GNU Affero General Public License v3"
 
     @property
     def description(self) -> str:
+        """
+        Return the description of the `fuzzylite` library
+        """
         return "a fuzzy logic control library in Python"
 
     @property
     def author(self) -> str:
+        """
+        Return the author of the `fuzzylite` library
+        """
         return "Juan Rada-Vilela, Ph.D."
 
     @property
     def author_email(self) -> str:
+        """
+        Return the email of the author of the `fuzzylite` library
+        """
         return "jcrada@fuzzylite.com"
 
     @property
     def company(self) -> str:
+        """
+        Return the name of the company that owns the `fuzzylite` library
+        """
         return "FuzzyLite Limited"
 
     @property
     def website(self) -> str:
-        return "https://www.fuzzylite.com/"
+        """
+        Return the website of the `fuzzylite` library
+        """
+        return "https://fuzzylite.com/"
 
     @property
     def summary(self) -> str:
+        """
+        Return a Markdown summary of the `fuzzylite` library
+        """
         result = """\
 # pyfuzzylite: A Fuzzy Logic Control Library in Python
 
