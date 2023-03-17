@@ -36,7 +36,7 @@ class TermAssert(BaseAssert[fl.Term]):
     def takes_parameters(self, parameters: int) -> "TermAssert":
         with self.test.assertRaisesRegex(
             ValueError,
-            re.escape("not enough values to unpack " f"(expected {parameters}, got 0)"),
+            re.escape(f"not enough values to unpack (expected {parameters}, got 0)"),
         ):
             self.actual.__class__().configure("")
         return self
@@ -74,7 +74,7 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_memberships(
         self, x_mf: Dict[float, float], height: float = 1.0
     ) -> "TermAssert":
-        for x in x_mf.keys():
+        for x in x_mf:
             self.has_membership(x, height * x_mf[x])
         return self
 
@@ -113,7 +113,7 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_tsukamotos(
         self, x_mf: Dict[float, float], minimum: float = -1.0, maximum: float = 1.0
     ) -> "TermAssert":
-        for x in x_mf.keys():
+        for x in x_mf:
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
@@ -582,7 +582,7 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError,
             re.escape(
-                "not enough values to unpack " "(expected an even number, but got 3)"
+                "not enough values to unpack (expected an even number, but got 3)"
             ),
         ):
             fl.Discrete.pairs_from([1, 2, 3])
@@ -1555,7 +1555,15 @@ class TestTerm(unittest.TestCase):
         ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
-        import numpy as np  # type: ignore
+        try:
+            import numpy as np  # type: ignore
+
+            fl.lib.logger.warning("testing with numpy library")
+        except ModuleNotFoundError:
+            fl.lib.logger.warning(
+                "skipping test because the numpy library is not installed"
+            )
+            return
 
         fl.lib.floating_point_type = np.float_
         np.seterr("ignore")  # ignore "errors", (e.g., division by zero)
@@ -1722,17 +1730,17 @@ class TestFunction(unittest.TestCase):
     def test_element(self) -> None:
         element = fl.Function.Element(
             "function",
-            "math function()",  # type: ignore
+            "math function()",
             fl.Function.Element.Type.Function,
-            None,
-            0,
-            0,
-            -1,
+            method=any,
+            arity=0,
+            precedence=0,
+            associativity=-1,
         )
         self.assertEqual(
             str(element),
             "Element: name='function', description='math function()', "
-            "element_type='Type.Function', method='None', arity=0, "
+            "element_type='Type.Function', method='<built-in function any>', arity=0, "
             "precedence=0, associativity=-1",
         )
 
@@ -1941,7 +1949,7 @@ class TestFunction(unittest.TestCase):
         )
         self.assertEqual(
             "sqrt ( a + b * 1 + sin ( pi / 2 ) - ~ 3 )",
-            fl.Function.format_infix(f"sqrt(a+b*1+sin(pi/2)-~3)"),
+            fl.Function.format_infix("sqrt(a+b*1+sin(pi/2)-~3)"),
         )
 
     def test_function_postfix(self) -> None:

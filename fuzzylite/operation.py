@@ -15,13 +15,11 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-# pylint: disable =  R0124 # Redundant comparison (comparison-with-itself) [nan]
-
 __all__ = ["Operation", "Op"]
 
 import inspect
 import math
-from typing import Callable, List, Optional, SupportsFloat, Text, Union
+from typing import Callable, List, Optional, SupportsFloat, Union
 
 
 class Operation:
@@ -89,7 +87,6 @@ class Operation:
     def logical_or(a: float, b: float) -> bool:
         return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
 
-    # pylint: disable = E0601 # Using variable 'str' before assignment (used-before-assignment) [False Positive]
     @staticmethod
     def as_identifier(name: str) -> str:
         result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
@@ -192,7 +189,7 @@ class Operation:
         if x[position] < maximum[position]:
             x[position] += 1
         else:
-            incremented = not position == 0
+            incremented = position != 0
             x[position] = minimum[position]
             position -= 1
             if position >= 0:
@@ -201,7 +198,7 @@ class Operation:
 
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
+    def str(x: Union[float, object], decimals: Optional[int] = None) -> str:
         if not decimals:
             from . import lib
 

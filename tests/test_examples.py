@@ -10,7 +10,7 @@ class TestTerms(unittest.TestCase):
     def test_examples(self) -> None:
         import fuzzylite.examples
 
-        examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))  # type: ignore
+        examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))
         self.assertTrue(examples.exists() and examples.is_dir())
 
         expected = set(
@@ -92,5 +92,5 @@ fuzzylite.examples.tsukamoto.tsukamoto
         for module in obtained:
             logger.info(f"Importing: {module}")
             # if an example is incorrect, an exception will be thrown below
-            engine = importlib.import_module(module).engine  # type: ignore
+            engine = importlib.import_module(module).engine
             logger.info(str(engine))

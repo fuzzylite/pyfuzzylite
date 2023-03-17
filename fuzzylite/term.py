@@ -165,7 +165,6 @@ class Term:
         """
 
     def tsukamoto(
-        # pylint: disable = W0613 # Unused argument (unused-argument)
         self,
         activation_degree: float,
         minimum: float,
@@ -571,7 +570,7 @@ class Discrete(Term):
         if x >= self.xy[-1].x:
             return self.height * self.xy[-1].y
 
-        index = bisect.bisect(self.xy, (x, -inf))
+        index = bisect.bisect(self.xy, (x, -inf))  # type: ignore
 
         upper_bound = self.xy[index]
         if Op.eq(x, upper_bound.x):
@@ -587,7 +586,7 @@ class Discrete(Term):
         self, activation_degree: float, minimum: float, maximum: float
     ) -> float:
         # todo: approximate tsukamoto
-        pass
+        raise NotImplementedError()
 
     def parameters(self) -> str:
         return super()._parameters(*Discrete.values_from(self.xy))
@@ -845,7 +844,6 @@ class Ramp(Term):
         if self.start == self.end:
             return self.height * 0.0
 
-        # pylint: disable = R1705 # Unnecessary "else" after "return" (no-else-return)
         if self.start < self.end:
             if x <= self.start:
                 return self.height * 0.0
@@ -1213,7 +1211,6 @@ class Function(Term):
         class Type(enum.Enum):
             Operator, Function = range(2)
 
-        # pylint: disable = W0622 # Redefining built-in 'type' (redefined-builtin)
         def __init__(
             self,
             name: str,
@@ -1280,7 +1277,7 @@ class Function(Term):
         def evaluate(self, local_variables: Optional[Dict[str, float]] = None) -> float:
             result = nan
             if self.element:
-                if not self.element.method:
+                if self.element.method is None:
                     raise ValueError("expected a method reference, but found none")
                 arity = self.element.arity
                 if arity == 0:

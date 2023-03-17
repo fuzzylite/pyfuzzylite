@@ -39,7 +39,7 @@ class BaseAssert(Generic[T]):
             hasattr(self.actual, "name"),
             f"{type(self.actual)} does not have a 'name' attribute",
         )
-        self.test.assertEqual(getattr(self.actual, "name"), name)
+        self.test.assertEqual(self.actual.name, name)  # type: ignore
         return self
 
     def has_description(self, description: str) -> Any:
@@ -47,5 +47,5 @@ class BaseAssert(Generic[T]):
             hasattr(self.actual, "description"),
             f"{type(self.actual)} does not have a 'description' attribute",
         )
-        self.test.assertEqual(getattr(self.actual, "description"), description)
+        self.test.assertEqual(self.actual.description, description)  # type: ignore
         return self

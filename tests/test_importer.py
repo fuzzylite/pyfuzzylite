@@ -16,7 +16,6 @@
 """
 
 import glob
-import io
 import os
 import re
 import tempfile
@@ -74,7 +73,7 @@ class TestImporter(unittest.TestCase):
         )
 
         path = tempfile.mkstemp(text=True)[1]
-        with io.open(path, "w") as file:
+        with open(path, "w") as file:
             file.write(BELL_FLL)
 
         engine = importer.from_file(path)
@@ -369,11 +368,11 @@ class TestFllImporterBatch(unittest.TestCase):
         fl.lib.logger.setLevel(logging.INFO)
         import fuzzylite.examples.terms
 
-        terms = next(iter(fuzzylite.examples.terms.__path__))  # type: ignore
+        terms = next(iter(fuzzylite.examples.terms.__path__))
         counter = 0
         for fll_file in glob.iglob(terms + "/*.fll", recursive=True):
             counter += 1
-            with open(fll_file, "r") as file:
+            with open(fll_file) as file:
                 fl.lib.logger.info(fll_file)
                 fll_from_string = file.read()
                 engine = importer.from_string(fll_from_string)

@@ -44,7 +44,6 @@ if typing.TYPE_CHECKING:
 
 
 class Expression:
-    # pylint: disable = R0903 # Too few public methods (1/2) (too-few-public-methods)
     pass
 
 
@@ -440,10 +439,9 @@ class Consequent:
                     state = s_is
                     continue
 
-            if state & s_is:
-                if Rule.IS == token:
-                    state = s_hedge | s_term
-                    continue
+            if state & s_is and Rule.IS == token:
+                state = s_hedge | s_term
+                continue
 
             if state & s_hedge:
                 factory = lib.factory_manager.hedge
@@ -461,23 +459,22 @@ class Consequent:
                     state = s_and | s_with
                     continue
 
-            if state & s_and:
-                if Rule.AND == token:
-                    state = s_variable
-                    continue
+            if state & s_and and Rule.AND == token:
+                state = s_variable
+                continue
 
             # if reached this point, there was an error:
             if state & s_variable:
                 raise SyntaxError(
-                    f"consequent expected an output variable, " f"but found '{token}'"
+                    f"consequent expected an output variable, but found '{token}'"
                 )
             if state & s_is:
                 raise SyntaxError(
-                    f"consequent expected keyword '{Rule.IS}', " f"but found '{token}'"
+                    f"consequent expected keyword '{Rule.IS}', but found '{token}'"
                 )
             if state & (s_hedge | s_term):
                 raise SyntaxError(
-                    f"consequent expected a hedge or term, " f"but found '{token}'"
+                    f"consequent expected a hedge or term, but found '{token}'"
                 )
 
             raise SyntaxError(f"unexpected token '{token}'")
@@ -667,7 +664,6 @@ class RuleBlock:
         exceptions: List[str] = []
         for rule in self.rules:
             rule.unload()
-            # pylint: disable = W0703 # Catching too general exception Exception (broad-except)
             try:
                 rule.load(engine)
             except Exception as ex:

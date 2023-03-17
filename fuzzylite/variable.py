@@ -17,6 +17,7 @@
 
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
+import contextlib
 import math
 import typing
 from math import inf, isnan, nan
@@ -89,10 +90,8 @@ class Variable:
         result: List[str] = []
         for term in self.terms:
             fx = nan
-            try:
+            with contextlib.suppress(ValueError):
                 fx = term.membership(x)
-            except ValueError:
-                pass
             if not result:
                 result.append(f"{Op.str(fx)}/{term.name}")
             else:
@@ -105,10 +104,8 @@ class Variable:
         result: Tuple[float, Optional["Term"]] = (0.0, None)
         for term in self.terms:
             y = nan
-            try:
+            with contextlib.suppress(ValueError):
                 y = term.membership(x)
-            except ValueError:
-                pass
             if y > result[0]:
                 result = (y, term)
         return result
@@ -180,24 +177,24 @@ class OutputVariable(Variable):
     def __str__(self) -> str:
         return FllExporter().output_variable(self)
 
-    @property  # type: ignore
-    def name(self) -> str:  # type: ignore
+    @property
+    def name(self) -> str:
         return self.fuzzy.name
 
     @name.setter
     def name(self, value: str) -> None:
         self.fuzzy.name = value
 
-    @property  # type: ignore
-    def minimum(self) -> float:  # type: ignore
+    @property
+    def minimum(self) -> float:
         return self.fuzzy.minimum
 
     @minimum.setter
     def minimum(self, value: float) -> None:
         self.fuzzy.minimum = value
 
-    @property  # type: ignore
-    def maximum(self) -> float:  # type: ignore
+    @property
+    def maximum(self) -> float:
         return self.fuzzy.maximum
 
     @maximum.setter

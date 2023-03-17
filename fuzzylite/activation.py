@@ -28,10 +28,7 @@ __all__ = [
 
 import enum
 import heapq
-
-# pylint: disable = W0611 # Unused import operator (unused-import) [False Positive]
-import operator
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 from .operation import Op
 from .rule import Rule, RuleBlock
@@ -463,17 +460,17 @@ class Threshold(Activation):
         # @f$a > \theta@f$
         GreaterThan = ">"
 
-        __operator__ = {
-            LessThan: operator.lt,
-            LessThanOrEqualTo: operator.le,
-            EqualTo: operator.eq,
-            NotEqualTo: operator.ne,
-            GreaterThanOrEqualTo: operator.ge,
-            GreaterThan: operator.gt,
+        __operator__: Dict[str, Callable[[float, float], bool]] = {
+            LessThan: Op.lt,
+            LessThanOrEqualTo: Op.le,
+            EqualTo: Op.eq,
+            NotEqualTo: Op.neq,
+            GreaterThanOrEqualTo: Op.ge,
+            GreaterThan: Op.gt,
         }
 
         @property
-        def operator(self) -> Callable[[object, object], bool]:
+        def operator(self) -> Callable[[float, float], bool]:
             return Threshold.Comparator.__operator__[self.value]
 
     def __init__(

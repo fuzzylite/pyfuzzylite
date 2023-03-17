@@ -104,7 +104,6 @@ class FllImporter(Importer):
     def input_variable(
         self, fll: str, engine: Optional[Engine] = None
     ) -> InputVariable:
-
         iv = InputVariable()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -255,7 +254,7 @@ class FllImporter(Importer):
         )
         result = factory.construct(fll)
         if parameters and hasattr(result, "configure"):
-            getattr(result, "configure")(parameters)
+            result.configure(parameters)
         return result
 
     def range(self, fll: str) -> Tuple[float, float]:
