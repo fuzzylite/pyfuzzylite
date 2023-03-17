@@ -266,6 +266,9 @@ class Operation:
 
     @staticmethod
     def scalar(x: Union[SupportsFloat, str, bytes]) -> float:
+        """Convert the value into a floating point defined by the library
+        @param x is the value to convert
+        """
         from . import lib
 
         return lib.floating_point(x)
@@ -299,7 +302,6 @@ class Operation:
         """Returns a string representation of the given value
           @param x is the value
           @param decimals is the number of decimals to display
-          @param scalarFormat are the flags for the underlying std::ostringstream
           @return a string representation of the given value
         """
         if not decimals:
