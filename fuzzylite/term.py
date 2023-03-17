@@ -196,6 +196,12 @@ class Term:
     def discretize(
         self, start: float, end: float, resolution: int = 100, bounded_mf: bool = True
     ) -> "Discrete":
+        """Discretise the term.
+        @param start is the start of the range
+        @param end is the end of the range
+        @param resolution is the number of points to discretise
+        @param bounded_mf whether to bound the membership values to [0.0, 1.0]
+        """
         result = Discrete(self.name)
         dx = (end - start) / resolution
         for i in range(0, resolution + 1):
@@ -208,15 +214,33 @@ class Term:
 
 
 class Activated(Term):
+    """The Activated class is a special Term that contains pointers to the
+      necessary information of a term that has been activated as part of the
+      Antecedent of a Rule. The ownership of the pointers is not transferred to
+      objects of this class. The Activated class was named
+      `Thresholded` in versions 4.0 and earlier.
+      @author Juan Rada-Vilela, Ph.D.
+      @see OutputVariable
+      @see Term
+      @since 5.0
+    """
     def __init__(
         self, term: Term, degree: float = 1.0, implication: Optional[TNorm] = None
     ) -> None:
+        """Create the term.
+        @param term is the activated term
+        @param degree is the activation degree of the term
+        @param implication is the implication operator
+        """
         super().__init__("_")
         self.term = term
         self.degree = degree
         self.implication = implication
 
     def parameters(self) -> str:
+        """Returns the parameters of the term
+          @return `"degree implication term"`
+        """
         name = self.term.name if self.term else "none"
         if self.implication:
             result = (
@@ -227,6 +251,11 @@ class Activated(Term):
         return result
 
     def membership(self, x: float) -> float:
+        """Computes the implication of the activation degree and the membership
+          function value of @f$x@f$
+          @param x is a value
+          @return @f$d \otimes \mu(x)@f$, where @f$d@f$ is the activation degree
+        """
         if isnan(x):
             return nan
 
@@ -240,6 +269,20 @@ class Activated(Term):
 
 
 class Aggregated(Term):
+    """The Aggregated class is a special Term that stores a fuzzy set with the
+      Activated terms from the Antecedent%s of a Rule, thereby serving mainly
+      as the fuzzy output value of the OutputVariable%s. The ownership of the
+      activated terms will be transfered to objects of this class, and
+      therefore their destructors will be called upon destruction of this term
+      (or calling Aggregated::clear()).
+      @author Juan Rada-Vilela, Ph.D.
+      @see Antecedent
+      @see Rule
+      @see OutputVariable
+      @see Activated
+      @see Term
+      @since 6.0
+      """
     def __init__(
         self,
         name: str = "",
@@ -248,6 +291,13 @@ class Aggregated(Term):
         aggregation: Optional[SNorm] = None,
         terms: Optional[Iterable[Activated]] = None,
     ) -> None:
+        """Create the term.
+        @param name is the name of the aggregated term
+        @param minimum is the minimum of the range of the fuzzy set
+        @param maximum is the maximum of the range of the fuzzy set
+        @param aggregation is the aggregation operator
+        @param terms is the list of activated terms
+        """
         super().__init__(name)
         self.minimum = minimum
         self.maximum = maximum
@@ -257,6 +307,9 @@ class Aggregated(Term):
             self.terms.extend(terms)
 
     def parameters(self) -> str:
+        """Returns the parameters of the term
+          @return `"aggregation minimum maximum terms"`
+        """
         result = []
         activated = [term.parameters() for term in self.terms]
         if self.aggregation:
@@ -269,9 +322,18 @@ class Aggregated(Term):
         return " ".join(result)
 
     def range(self) -> float:
+        """Returns the magnitude of the range of the fuzzy set,
+          @return the magnitude of the range of the fuzzy set,
+          i.e., `maximum - minimum`
+        """
         return self.maximum - self.minimum
 
     def membership(self, x: float) -> float:
+        """Aggregates the membership function values of @f$x@f$ utilizing the
+          aggregation operator
+          @param x is a value
+          @return @f$\sum_i{\mu_i(x)}, i \in \mbox{terms}@f$
+        """
         if isnan(x):
             return nan
         if self.terms and not self.aggregation:
@@ -284,6 +346,14 @@ class Aggregated(Term):
         return result
 
     def activation_degree(self, term: Term) -> float:
+        """Computes the aggregated activation degree for the given term.
+          If the same term is present multiple times, the aggregation operator
+          is utilized to sum the activation degrees of the term. If the
+          aggregation operator is fl::null, a regular sum is performed.
+          @param forTerm is the term for which to compute the aggregated
+          activation degree
+          @return the aggregated activation degree for the given term
+        """
         result = 0.0
 
         for activation in self.terms:
@@ -296,6 +366,10 @@ class Aggregated(Term):
         return result
 
     def highest_activated_term(self) -> Optional[Activated]:
+        """Iterates over the Activated terms to find the term with the maximum
+          activation degree
+          @return the term with the maximum activation degree
+        """
         result = None
         maximum_activation = -inf
         for activated in self.terms:
@@ -305,10 +379,19 @@ class Aggregated(Term):
         return result
 
     def clear(self) -> None:
+        """Clears the list of activated terms"""
         self.terms.clear()
 
 
 class Bell(Term):
+    """The Bell class is an extended Term that represents the generalized bell
+      curve membership function.
+      @image html bell.svg
+      @author Juan Rada-Vilela, Ph.D.
+      @see Term
+      @see Variable
+      @since 4.0
+    """
     def __init__(
         self,
         name: str = "",
@@ -317,12 +400,27 @@ class Bell(Term):
         slope: float = nan,
         height: float = 1.0,
     ) -> None:
+        """Create the term.
+        @param name is the name of the term
+        @param center is the center of the bell curve
+        @param width is the width of the bell curve
+        @param slope is the slope of the bell curve
+        @param height is the height of the term
+        """
         super().__init__(name, height)
         self.center = center
         self.width = width
         self.slope = slope
 
     def membership(self, x: float) -> float:
+        """Computes the membership function evaluated at @f$x@f$
+          @param x
+          @return @f$h / (1 + \left(|x-c|/w\right)^{2s}@f$
+          where @f$h@f$ is the height of the Term,
+                @f$c@f$ is the center of the Bell,
+                @f$w@f$ is the width of the Bell,
+                @f$s@f$ is the slope of the Bell
+        """
         if isnan(x):
             return nan
         return self.height * (  # type: ignore
@@ -330,15 +428,29 @@ class Bell(Term):
         )
 
     def parameters(self) -> str:
+        """Returns the parameters of the term
+          @return `"center width slope [height]"`
+        """
         return super()._parameters(self.center, self.width, self.slope)
 
     def configure(self, parameters: str) -> None:
+        """Configures the term with the parameters
+          @param parameters as `"center width slope [height]"`
+        """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width, self.slope = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
 
 class Binary(Term):
+    """The Binary class is an edge Term that represents the binary membership
+      function.
+      @image html binary.svg
+      @author Juan Rada-Vilela, Ph.D.
+      @see Term
+      @see Variable
+      @since 6.0
+    """
     def __init__(
         self,
         name: str = "",
@@ -346,11 +458,27 @@ class Binary(Term):
         direction: float = nan,
         height: float = 1.0,
     ) -> None:
+        """Create the term
+        @param name is the name of the term
+        @param start is the start of the binary edge
+        @param direction is the direction of the binary edge
+        """
         super().__init__(name, height)
         self.start = start
         self.direction = direction
 
     def membership(self, x: float) -> float:
+        """Computes the membership function evaluated at @f$x@f$
+          @param x
+          @return @f$\begin{cases}
+          1h & \mbox{if $ \left(s < d \vedge x \in [s, d)\right) \wedge
+          \left( s > d \vedge x \in (d, s] \right) $} \cr
+          0h & \mbox{otherwise}
+          \end{cases}@f$
+          where @f$h@f$ is the height of the Term,
+                @f$s@f$ is the start of the Binary edge,
+                @f$d@f$ is the direction of the Binary edge.
+        """
         if isnan(x):
             return nan
 
@@ -363,9 +491,15 @@ class Binary(Term):
         return self.height * 0.0
 
     def parameters(self) -> str:
+        """Returns the parameters of the term
+          @return `"start direction [height]"`
+        """
         return super()._parameters(self.start, self.direction)
 
     def configure(self, parameters: str) -> None:
+        """Configures the term with the parameters
+          @param parameters as `"start direction [height]"`
+        """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.direction = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
