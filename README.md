@@ -12,11 +12,10 @@ By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
 
-| Branch | Status  | Coverage |
-|--------|---------|----------|
-|[master](https://github.com/fuzzylite/pyfuzzylite/tree/master) |[![Build Status](https://travis-ci.org/fuzzylite/pyfuzzylite.svg?branch=master)](https://travis-ci.org/fuzzylite/pyfuzzylite) |[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=master)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=master) 
-
-
+| Branch | Status  | 
+|--------|---------|
+|[main](https://github.com/fuzzylite/pyfuzzylite/tree/main) | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)
+|[development](https://github.com/fuzzylite/pyfuzzylite/tree/development) | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)
 ***
 
 
@@ -142,4 +141,4 @@ pyfuzzylite&trade; is a trademark of FuzzyLite Limited.<br>
 QtFuzzyLite&trade; is a trademark of FuzzyLite Limited.<br>
 
 
-Copyright &#xa9; 2010-2018 FuzzyLite Limited. All rights reserved.
+Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved.
