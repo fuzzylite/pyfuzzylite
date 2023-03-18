@@ -52,7 +52,6 @@ class Expression:
     @since 4.0
     """
 
-    # pylint: disable = R0903 # Too few public methods (1/2) (too-few-public-methods)
     pass
 
 
