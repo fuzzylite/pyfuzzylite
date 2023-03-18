@@ -1558,7 +1558,9 @@ class TestTerm(unittest.TestCase):
         try:
             import numpy as np  # type: ignore
         except ModuleNotFoundError:
-            raise unittest.SkipTest("skipping test because the numpy library is not installed")
+            raise unittest.SkipTest(
+                "skipping test because the numpy library is not installed"
+            ) from None
 
         fl.lib.floating_point_type = np.float_
         np.seterr("ignore")  # ignore "errors", (e.g., division by zero)

@@ -95,7 +95,7 @@ class Library:
         """
         Return the version of the `fuzzylite` library
         """
-        return "7.0.0"
+        return "7.1.0"
 
     @property
     def license(self) -> str:

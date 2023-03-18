@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.0.0"
+version = "7.1.0"
 description = "a fuzzy logic control library in Python"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
 authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
@@ -12,6 +12,11 @@ maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
 repository = "https://github.com/fuzzylite/pyfuzzylite.git"
 include = [
     "fuzzylite/",
+    "tests/",
+    "noxfile.py",
+    "poetry.lock",
+    "poetry.toml",
+    "pyproject.toml",
     "AUTHOR",
     "CHANGELOG",
     "COPYING",
@@ -21,6 +26,7 @@ include = [
     "README.md",
     "THANKS",
 ]
+
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -33,6 +39,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries",
 ]
+
 [[tool.poetry.packages]]
 include = "fuzzylite"
 
@@ -56,7 +63,6 @@ pyhamcrest = "^2.0.4"
 pytest = "^7.2.2"
 ruff = "^0.0.256"
 nbqa = "^1.5"
-# toml = "^0.10.2"
 
 [tool.black]
 target-version = ["py37"]
@@ -191,5 +197,5 @@ strict = true
 
 
 [[tool.mypy.overrides]]
-module = "toml.*"
+module = []
 ignore_missing_imports = true
