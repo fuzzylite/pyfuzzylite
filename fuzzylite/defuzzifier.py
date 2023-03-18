@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 __all__ = [
@@ -38,8 +38,7 @@ from .term import Aggregated, Constant, Function, Linear, Term
 
 
 class Defuzzifier:
-    """
-    The Defuzzifier class is the abstract class for defuzzifiers.
+    """The Defuzzifier class is the abstract class for defuzzifiers.
 
     @author Juan Rada-Vilela, Ph.D.
     @see IntegralDefuzzifier
@@ -49,40 +48,35 @@ class Defuzzifier:
 
     @property
     def class_name(self) -> str:
-        """
-        Returns the name of the class of the defuzzifier
-        @return the name of the class of the defuzzifier
+        """Returns the name of the class of the defuzzifier
+        @return the name of the class of the defuzzifier.
         """
         return self.__class__.__name__
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the defuzzifier with the given parameters.
-        @param parameters contains a list of space-separated parameter values
+        """Configures the defuzzifier with the given parameters.
+        @param parameters contains a list of space-separated parameter values.
         """
         raise NotImplementedError()
 
     def parameters(self) -> str:
-        """
-        Returns the parameters of the defuzzifier.
-        @return the parameters of the defuzzifier
+        """Returns the parameters of the defuzzifier.
+        @return the parameters of the defuzzifier.
         """
         raise NotImplementedError()
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Defuzzifies the given fuzzy term utilizing the range `[minimum,maximum]`
+        """Defuzzifies the given fuzzy term utilizing the range `[minimum,maximum]`
         @param term is the term to defuzzify, typically an Aggregated term
         @param minimum is the minimum value of the range
         @param maximum is the maximum value of the range
-        @return the defuzzified value of the given fuzzy term
+        @return the defuzzified value of the given fuzzy term.
         """
         raise NotImplementedError()
 
 
 class IntegralDefuzzifier(Defuzzifier):
-    """
-    The IntegralDefuzzifier class is the base class for defuzzifiers which integrate
+    """The IntegralDefuzzifier class is the base class for defuzzifiers which integrate
     over the fuzzy set.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -93,10 +87,9 @@ class IntegralDefuzzifier(Defuzzifier):
     default_resolution = 100
 
     def __init__(self, resolution: Optional[int] = None) -> None:
-        """
-        Creates an integral defuzzifier, where the resolution refers to the
+        """Creates an integral defuzzifier, where the resolution refers to the
         number of divisions in which the range `[minimum,maximum]` is divided
-        in order to integrate the area under the curve
+        in order to integrate the area under the curve.
 
         @param resolution is the resolution of the defuzzifier
         """
@@ -105,34 +98,39 @@ class IntegralDefuzzifier(Defuzzifier):
         )
 
     def __str__(self) -> str:
-        """
-        Returns the FLL code for the defuzzifier
-        @return FLL code for the activation method
+        """Returns the FLL code for the defuzzifier
+        @return FLL code for the activation method.
         """
         return f"{self.class_name} {self.parameters()}"
 
     def parameters(self) -> str:
-        """
-        Returns the parameters to configure the defuzzifier
-        @return the parameters to configure the defuzzifier
+        """Returns the parameters to configure the defuzzifier
+        @return the parameters to configure the defuzzifier.
         """
         return Op.str(self.resolution)
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the defuzzifier with the given parameters
-        @param parameters to configure the defuzzifier
+        """Configures the defuzzifier with the given parameters
+        @param parameters to configure the defuzzifier.
         """
         if parameters:
             self.resolution = int(parameters)
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+        """Defuzzify the term on the given range.
+
+        Args:
+            term: the term to defuzzify
+            minimum: the minimum range value to start defuzzification
+            maximum: the maximum range value to end defuzzification
+        Retur:
+            float: defuzzified value.
+        """
         raise NotImplementedError()
 
 
 class Bisector(IntegralDefuzzifier):
-    """
-    The Bisector class is an IntegralDefuzzifier that computes the bisector
+    """The Bisector class is an IntegralDefuzzifier that computes the bisector
     of a fuzzy set represented in a Term.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -143,8 +141,7 @@ class Bisector(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Computes the bisector of a fuzzy set. The defuzzification process
+        """Computes the bisector of a fuzzy set. The defuzzification process
         integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
         method (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -152,7 +149,7 @@ class Bisector(IntegralDefuzzifier):
         @param term is the fuzzy set
         @param minimum is the minimum value of the fuzzy set
         @param maximum is the maximum value of the fuzzy set
-        @return the @f$x@f$-coordinate of the bisector of the fuzzy set
+        @return the $x$-coordinate of the bisector of the fuzzy set
         """
         if not math.isfinite(minimum + maximum):
             return nan
@@ -180,8 +177,7 @@ class Bisector(IntegralDefuzzifier):
 
 
 class Centroid(IntegralDefuzzifier):
-    """
-    The Centroid class is an IntegralDefuzzifier that computes the centroid
+    """The Centroid class is an IntegralDefuzzifier that computes the centroid
     of a fuzzy set represented in a Term.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -192,8 +188,7 @@ class Centroid(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Computes the centroid of a fuzzy set. The defuzzification process
+        """Computes the centroid of a fuzzy set. The defuzzification process
         integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
         method (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -201,7 +196,7 @@ class Centroid(IntegralDefuzzifier):
         @param term is the fuzzy set
         @param minimum is the minimum value of the fuzzy set
         @param maximum is the maximum value of the fuzzy set
-        @return the @f$x@f$-coordinate of the centroid of the fuzzy set
+        @return the $x$-coordinate of the centroid of the fuzzy set
         """
         if not math.isfinite(minimum + maximum):
             return nan
@@ -217,8 +212,7 @@ class Centroid(IntegralDefuzzifier):
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
-    """
-    The LargestOfMaximum class is an IntegralDefuzzifier that computes the
+    """The LargestOfMaximum class is an IntegralDefuzzifier that computes the
     largest value of the maximum membership function of a fuzzy set
     represented in a Term.
 
@@ -231,8 +225,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Computes the largest value of the maximum membership function of a
+        """Computes the largest value of the maximum membership function of a
         fuzzy set. The largest value is computed by integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
         (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -240,7 +233,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
         @param term is the fuzzy set
         @param minimum is the minimum value of the fuzzy set
         @param maximum is the maximum value of the fuzzy set
-        @return the largest @f$x@f$-coordinate of the maximum membership
+        @return the largest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
         if not math.isfinite(minimum + maximum):
@@ -259,8 +252,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
-    """
-    The MeanOfMaximum class is an IntegralDefuzzifier that computes the mean
+    """The MeanOfMaximum class is an IntegralDefuzzifier that computes the mean
     value of the maximum membership function of a fuzzy set represented in a
     Term.
 
@@ -273,8 +265,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Computes the mean value of the maximum membership function
+        """Computes the mean value of the maximum membership function
         of a fuzzy set. The mean value is computed while integrating
         over the fuzzy set. The integration algorithm is the midpoint
         rectangle method (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -282,7 +273,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
         @param term is the fuzzy set
         @param minimum is the minimum value of the fuzzy set
         @param maximum is the maximum value of the fuzzy set
-        @return the mean @f$x@f$-coordinate of the maximum membership
+        @return the mean $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
         if not math.isfinite(minimum + maximum):
@@ -309,8 +300,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
-    """
-    The SmallestOfMaximum class is an IntegralDefuzzifier that computes the
+    """The SmallestOfMaximum class is an IntegralDefuzzifier that computes the
     smallest value of the maximum membership function of a fuzzy set
     represented in a Term.
 
@@ -323,8 +313,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """
-        Computes the smallest value of the maximum membership function in the
+        """Computes the smallest value of the maximum membership function in the
         fuzzy set. The smallest value is computed while integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
         (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -332,7 +321,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         @param term is the fuzzy set
         @param minimum is the minimum value of the fuzzy set
         @param maximum is the maximum value of the fuzzy set
-        @return the smallest @f$x@f$-coordinate of the maximum membership
+        @return the smallest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
         if not math.isfinite(minimum + maximum):
@@ -351,8 +340,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 
 
 class WeightedDefuzzifier(Defuzzifier):
-    """
-    The WeightedDefuzzifier class is the base class for defuzzifiers which
+    """The WeightedDefuzzifier class is the base class for defuzzifiers which
     compute a weighted function on the fuzzy set without requiring to
     integrate over the fuzzy set.
 
@@ -362,8 +350,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
     @enum.unique
     class Type(enum.Enum):
-        """
-        The Type enum indicates the type of the WeightedDefuzzifier based
+        """The Type enum indicates the type of the WeightedDefuzzifier based
         the terms included in the fuzzy set.
 
         Automatic: Automatically inferred from the terms
@@ -376,9 +363,8 @@ class WeightedDefuzzifier(Defuzzifier):
     def __init__(
         self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
     ) -> None:
-        """
-        Creates a WeightedDefuzzifier
-        @param type of the WeightedDefuzzifier based the terms included in the fuzzy set
+        """Creates a WeightedDefuzzifier
+        @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
         """
         if type is None:
             type = WeightedDefuzzifier.Type.Automatic
@@ -387,23 +373,31 @@ class WeightedDefuzzifier(Defuzzifier):
         self.type = type
 
     def __str__(self) -> str:
+        """Gets a string representation of the defuzzifier."""
         return f"{self.class_name} {self.parameters()}"
 
     def parameters(self) -> str:
-        return self.type.name if self.type else ""
+        """Gets the type of weighted defuzzifier."""
+        return self.type.name
 
     def configure(self, parameters: str) -> None:
+        """Configure defuzzifier based on parameters.
+
+        Args:
+        parameters: type of defuzzifier
+        .
+        """
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+        """Not implemented."""
         raise NotImplementedError()
 
     def infer_type(self, term: Term) -> "WeightedDefuzzifier.Type":
-        """
-        Infers the type of the defuzzifier based on the given term. If the
+        """Infers the type of the defuzzifier based on the given term. If the
         given term is Constant, Linear or Function, then the type is
-        TakagiSugeno; otherwise, the type is Tsukamoto
+        TakagiSugeno; otherwise, the type is Tsukamoto.
 
         @param term is the given term
         @return the inferred type of the defuzzifier based on the given term
@@ -414,8 +408,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
 
 class WeightedAverage(WeightedDefuzzifier):
-    """
-    The WeightedAverage class is a WeightedDefuzzifier that computes the
+    """The WeightedAverage class is a WeightedDefuzzifier that computes the
     weighted average of a fuzzy set represented in an Aggregated Term.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -433,11 +426,10 @@ class WeightedAverage(WeightedDefuzzifier):
         minimum: float = nan,
         maximum: float = nan,
     ) -> float:
-        """
-        Computes the weighted average of the given fuzzy set represented in
-        an Aggregated term as @f$y = \dfrac{\sum_i w_iz_i}{\sum_i w_i} @f$,
-        where @f$w_i@f$ is the activation degree of term @f$i@f$, and
-        @f$z_i = \mu_i(w_i) @f$.
+        r"""Computes the weighted average of the given fuzzy set represented in
+        an Aggregated term as $y = \dfrac{\sum_i w_iz_i}{\sum_i w_i} $,
+        where $w_i$ is the activation degree of term $i$, and
+        $z_i = \mu_i(w_i) $.
 
         From version 6.0, the implication and aggregation operators are not
         utilized for defuzzification.
@@ -484,8 +476,7 @@ class WeightedAverage(WeightedDefuzzifier):
 
 
 class WeightedSum(WeightedDefuzzifier):
-    """
-    The WeightedSum class is a WeightedDefuzzifier that computes the
+    """The WeightedSum class is a WeightedDefuzzifier that computes the
     weighted sum of a fuzzy set represented in an Aggregated Term.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -503,11 +494,10 @@ class WeightedSum(WeightedDefuzzifier):
         minimum: float = nan,
         maximum: float = nan,
     ) -> float:
-        """
-        Computes the weighted sum of the given fuzzy set represented as an
-        Aggregated Term as @f$y = \sum_i{w_iz_i} @f$,
-        where @f$w_i@f$ is the activation degree of term @f$i@f$, and @f$z_i
-        = \mu_i(w_i) @f$.
+        r"""Computes the weighted sum of the given fuzzy set represented as an
+        Aggregated Term as $y = \sum_i{w_iz_i} $,
+        where $w_i$ is the activation degree of term $i$, and $z_i
+        = \mu_i(w_i) $.
 
         From version 6.0, the implication and aggregation operators are not
         utilized for defuzzification.

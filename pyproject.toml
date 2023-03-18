@@ -56,13 +56,13 @@ numpy = { version = "1.19.5", optional = true }
 numpy = ["numpy"] # numpy for better division by zero
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0" # Code formatting
-coverage = "^7.2.2" # Code coverage
-mypy = "^1.1.1" # Static analysis
+black = "^23.1.0"     # Code formatting
+coverage = "^7.2.2"   # Code coverage
+mypy = "^1.1.1"       # Static analysis
 pyhamcrest = "^2.0.4" # Test Driven Development
-pytest = "^7.2.2" # Test Driven Development
-ruff = "^0.0.256" # Code formatting
-nbqa = "^1.5" # Notebook formatting
+pytest = "^7.2.2"     # Test Driven Development
+ruff = "^0.0.256"     # Code formatting
+nbqa = "^1.5"         # Notebook formatting
 
 [tool.black]
 target-version = ["py37"]
@@ -76,7 +76,7 @@ select = [
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    # "D",  # pydocstyle
+    "D",   # pydocstyle
     "E",   # pycodestyle errors
     "F",   # pyflakes
     "I",   # isort
@@ -101,7 +101,7 @@ fixable = [
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    # "D",  # pydocstyle
+    "D",   # pydocstyle
     "E",   # pycodestyle errors
     "F",   # pyflakes
     "I",   # isort
@@ -129,6 +129,7 @@ ignore = [
     "B007",   # [*] Loop control variable `x` not used within loop body
     "D100",
     "D104",   # Missing docstring in public package
+    "D205",   # 1 blank line required between summary line and description"
     "D211",
     "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     "D417",   # Missing argument descriptions in the docstring

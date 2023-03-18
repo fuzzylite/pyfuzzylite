@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
@@ -39,7 +39,7 @@ class Variable:
     @see InputVariable
     @see OutputVariable
     @see Term
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -60,7 +60,7 @@ class Variable:
         @param maximum is the maximum value of the range
         @param lockValueInRange indicates whether to lock the value to the
           range of the variable
-        @param terms is the list of terms
+        @param terms is the list of terms.
         """
         self.name = name
         self.description = description
@@ -77,14 +77,16 @@ class Variable:
         """Gets a string representation of the variable in the FuzzyLite Language
         @return a string representation of the variable in the FuzzyLite
         Language
-        @see FllExporter
+        @see FllExporter.
         """
         return FllExporter().variable(self)
 
     def term(self, name: str) -> "Term":
         """Gets the term by the name.
         @param name is the name of the term
-        @return the term of the given name"""
+        @return the term of the given name
+        .
+        """
         for term in self.terms:
             if term.name == name:
                 return term
@@ -93,26 +95,32 @@ class Variable:
     @property
     def drange(self) -> float:
         """Gets the magnitude of the range of the variable
-        @return `maximum - minimum`"""
+        @return `maximum - minimum`
+        .
+        """
         return self.maximum - self.minimum
 
     @property
     def range(self) -> Tuple[float, float]:
         """Gets the range of the variable
-        @return tuple of (minimum, maximum)"""
+        @return tuple of (minimum, maximum)
+        .
+        """
         return self.minimum, self.maximum
 
     @range.setter
     def range(self, min_max: Tuple[float, float]) -> None:
         """Sets the range of the variable
-        @param min_max is the range of the variable (minimum, maximum)"""
+        @param min_max is the range of the variable (minimum, maximum)
+        .
+        """
         self.minimum, self.maximum = min_max
 
     @property
     def value(self) -> float:
         """Gets the value of the variable
         @return the input value of an InputVariable, or the output value of
-        an OutputVariable
+        an OutputVariable.
         """
         return self._value
 
@@ -120,18 +128,18 @@ class Variable:
     def value(self, value: float) -> None:
         """Sets the value of the variable
         @param value is the input value of an InputVariable, or the output
-        value of an OutputVariable
+        value of an OutputVariable.
         """
         self._value = (
             Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
         )
 
     def fuzzify(self, x: float) -> str:
-        """Evaluates the membership function of value @f$x@f$ for each
-        term @f$i@f$, resulting in a fuzzy value in the form
-        @f$\tilde{x}=\sum_i{\mu_i(x)/i}@f$
+        r"""Evaluates the membership function of value $x$ for each
+        term $i$, resulting in a fuzzy value in the form
+        $\tilde{x}=\sum_i{\mu_i(x)/i}$
         @param x is the value to fuzzify
-        @return the fuzzy value expressed as @f$\sum_i{\mu_i(x)/i}@f$
+        @return the fuzzy value expressed as $\sum_i{\mu_i(x)/i}$.
         """
         result: List[str] = []
         for term in self.terms:
@@ -147,12 +155,12 @@ class Variable:
         return "".join(result)
 
     def highest_membership(self, x: float) -> Tuple[float, Optional["Term"]]:
-        """Gets the term which has the highest membership function value for
-        @f$x@f$.
+        r"""Gets the term which has the highest membership function value for
+        $x$.
         @param x is the value of interest
         @param[out] yhighest is a pointer where the highest membership
         function value will be stored
-        @return the term @f$i@f$ which maximimizes @f$\mu_i(x)@f$
+        @return the term $i$ which maximimizes $\mu_i(x)$.
         """
         result: Tuple[float, Optional["Term"]] = (0.0, None)
         for term in self.terms:
@@ -171,7 +179,7 @@ class InputVariable(Variable):
     @see Variable
     @see OutputVariable
     @see Term
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -192,7 +200,7 @@ class InputVariable(Variable):
         @param maximum is the maximum value of the variable
         @param lockValueInRange indicates whether to lock the value to the
           range of the variable
-        @param terms is the list of terms
+        @param terms is the list of terms.
         """
         super().__init__(
             name=name,
@@ -208,59 +216,59 @@ class InputVariable(Variable):
         """Gets a string representation of the variable in the FuzzyLite Language
         @return a string representation of the variable in the FuzzyLite
         Language
-        @see FllExporter
+        @see FllExporter.
         """
         return FllExporter().input_variable(self)
 
     def fuzzy_value(self) -> str:
-        """Evaluates the membership function of the current input value @f$x@f$
-        for each term @f$i@f$, resulting in a fuzzy input value in the form
-        @f$\tilde{x}=\sum_i{\mu_i(x)/i}@f$. This is equivalent to a call to
-        Variable::fuzzify() passing @f$x@f$ as input value
-        @return the fuzzy input value expressed as @f$\sum_i{\mu_i(x)/i}@f$
+        r"""Evaluates the membership function of the current input value $x$
+        for each term $i$, resulting in a fuzzy input value in the form
+        $\tilde{x}=\sum_i{\mu_i(x)/i}$. This is equivalent to a call to
+        Variable::fuzzify() passing $x$ as input value
+        @return the fuzzy input value expressed as $\sum_i{\mu_i(x)/i}$.
         """
         return super().fuzzify(self.value)
 
 
 class OutputVariable(Variable):
-    """The OutputVariable class is a Variable that represents an output of the
+    r"""The OutputVariable class is a Variable that represents an output of the
     fuzzy logic controller. During the activation of a RuleBlock, the
     Activated terms of each Rule will be Aggregated in the
     OutputVariable::fuzzyOutput(), which represents a fuzzy set hereinafter
-    referred to as @f$\tilde{y}@f$. The defuzzification of @f$\tilde{y}@f$
-    translates the fuzzy output value @f$\tilde{y}@f$ into a crisp output
-    value @f$y@f$, which can be retrieved using Variable::getValue(). The
+    referred to as $\tilde{y}$. The defuzzification of $\tilde{y}$
+    translates the fuzzy output value $\tilde{y}$ into a crisp output
+    value $y$, which can be retrieved using Variable::getValue(). The
     value of the OutputVariable is computed and automatically stored when
     calling OutputVariable::defuzzify(), but the value depends on the
     following properties (expressed in the FuzzyLite Language):
-      - Property `default: scalar` overrides the output value @f$y@f$ with
+      - Property `default: scalar` overrides the output value $y$ with
         the given fl::scalar whenever the defuzzification process results in
         a non-finite value (i.e., fl::nan and fl::inf). For example,
         considering `default: 0.0`, if RuleBlock::activate() does not
         activate any rules whose Consequent contribute to the OutputVariable,
         then the fuzzy output value is empty, the Defuzzifier does not
-        operate, and hence @f$y=0.0@f$. By default, `default: NaN`. Relevant
+        operate, and hence $y=0.0$. By default, `default: NaN`. Relevant
         methods are OutputVariable::getDefaultValue() and
         OutputVariable::setDefaultValue().
       - Property `lock-previous: boolean`, if enabled, overrides the output
-        value @f$y^t@f$ at time @f$t@f$ with the previously defuzzified valid
-        output value @f$y^{t-1}@f$ if defuzzification process results in a
+        value $y^t$ at time $t$ with the previously defuzzified valid
+        output value $y^{t-1}$ if defuzzification process results in a
         non-finite value (i.e., fl::nan and fl::inf). When enabled, the
-        property takes precedence over `default` if @f$y^{t-1}@f$ is a finite
-        value. By default, `lock-previous: false`, @f$y^{t-1}=\mbox{NaN}@f$
-        for @f$t=0@f$, and @f$y^{t-1}=\mbox{NaN}@f$ when
+        property takes precedence over `default` if $y^{t-1}$ is a finite
+        value. By default, `lock-previous: false`, $y^{t-1}=\mbox{NaN}$
+        for $t=0$, and $y^{t-1}=\mbox{NaN}$ when
         OutputVariable::clear(). Relevant methods are
         OutputVariable::lockPreviousValue(),
         OutputVariable::isLockPreviousValue,
         OutputVariable::getPreviousValue(), and
         OutputVariable::setPreviousValue().
-      - Property `lock-range: boolean` overrides the output value @f$y@f$ to
+      - Property `lock-range: boolean` overrides the output value $y$ to
         enforce it lies within the range of the variable determined by
         Variable::getMinimum() and Variable::getMaximum(). When enabled, this
         property takes precedence over `lock-previous` and `default`. For
         example, considering `range: -1.0 1.0` and `lock-range: true`,
-        @f$y=-1.0@f$ if the result from the Defuzzifier is smaller than
-        `-1.0`, and @f$y=1.0@f$ if the result from the Defuzzifier is greater
+        $y=-1.0$ if the result from the Defuzzifier is smaller than
+        `-1.0`, and $y=1.0$ if the result from the Defuzzifier is greater
         than `1.0`. The property `lock-range` was introduced in version 5.0
         to substitute the property `lock-valid` in version 4.0. By default,
         `lock-range: false`. Relevant methods are
@@ -271,7 +279,7 @@ class OutputVariable(Variable):
     @see InputVariable
     @see RuleBlock::activate()
     @see Term
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -301,7 +309,7 @@ class OutputVariable(Variable):
         @param defaultValue is the default value of the output variable
         @param aggregation is the aggregation norm
         @param defuzzifier is the defuzzifier of the output variable
-        @param terms is the list of terms
+        @param terms is the list of terms.
         """
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
@@ -327,59 +335,67 @@ class OutputVariable(Variable):
         """Gets a string representation of the variable in the FuzzyLite Language
         @return a string representation of the variable in the FuzzyLite
         Language
-        @see FllExporter
+        @see FllExporter.
         """
         return FllExporter().output_variable(self)
 
     @property
     def name(self) -> str:
-        """Gets the name of the output variable"""
+        """Gets the name of the output variable."""
         return self.fuzzy.name
 
     @name.setter
     def name(self, value: str) -> None:
         """Sets the name of the output variable
-        @param value is the name of the output variable"""
+        @param value is the name of the output variable
+        .
+        """
         self.fuzzy.name = value
 
     @property
     def minimum(self) -> float:
-        """Gets the minimum value of the range of the output variable"""
+        """Gets the minimum value of the range of the output variable."""
         return self.fuzzy.minimum
 
     @minimum.setter
     def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
-        @param value is the minimum value of the output variable"""
+        @param value is the minimum value of the output variable
+        .
+        """
         self.fuzzy.minimum = value
 
     @property
     def maximum(self) -> float:
-        """Gets the maximum value of the range of the output variable"""
+        """Gets the maximum value of the range of the output variable."""
         return self.fuzzy.maximum
 
     @maximum.setter
     def maximum(self, value: float) -> None:
         """Sets the maximum value of the range of the output variable
-        @param value is the maximum value of the output variable
+        @param value is the maximum value of the output variable.
         """
         self.fuzzy.maximum = value
 
     @property
     def aggregation(self) -> Optional[SNorm]:
         """Gets the aggregation operator
-        @return the aggregation operator"""
+        @return the aggregation operator
+        .
+        """
         return self.fuzzy.aggregation
 
     @aggregation.setter
     def aggregation(self, value: SNorm) -> None:
         """Sets the aggregation operator
-        @param aggregation is the aggregation"""
+        @param aggregation is the aggregation
+        .
+        """
         self.fuzzy.aggregation = value
 
     def defuzzify(self) -> None:
         """Defuzzifies the output variable and stores the output value and the
-        previous output value
+        previous output value.
         """
         if not self.enabled:
             return
@@ -424,17 +440,17 @@ class OutputVariable(Variable):
             raise exception
 
     def clear(self) -> None:
-        """Clears the output variable by setting @f$\tilde{y}=\{\}@f$,
-        @f$y^{t}=\mbox{NaN}@f$, @f$y^{t-1}=\mbox{NaN}@f$
+        r"""Clears the output variable by setting $\tilde{y}=\{\}$,
+        $y^{t}=\mbox{NaN}$, $y^{t-1}=\mbox{NaN}$.
         """
         self.fuzzy.clear()
         self.previous_value = nan
         self._value = nan
 
     def fuzzy_value(self) -> str:
-        """Gets a string representation of the fuzzy output value @f$\tilde{y}@f$
+        r"""Gets a string representation of the fuzzy output value $\tilde{y}$
         @return a string representation of the fuzzy output value
-        @f$\tilde{y}@f$
+        $\tilde{y}$.
         """
         result: List[str] = []
         for term in self.terms:

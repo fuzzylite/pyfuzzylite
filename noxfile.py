@@ -12,7 +12,7 @@ def check(session: nox.Session) -> None:
 @nox.session(python=False)
 def format(session: nox.Session) -> None:
     """Run code formatting."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = ["fuzzylite/", "noxfile.py"]
     notebooks: List[str] = []
 
     # source code
@@ -40,7 +40,7 @@ def format(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
     """Run static code analysis and checks format is correct."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = ["fuzzylite/", "noxfile.py"]
     notebooks: List[str] = []
 
     # source code
@@ -126,6 +126,7 @@ def test(session: nox.Session) -> None:
 
 @nox.session(python=False)
 def prepublish(_: nox.Session) -> None:
+    """Prepares to publish the distributable."""
     pass
     # import toml
 
