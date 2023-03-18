@@ -32,14 +32,36 @@ from .variable import InputVariable, OutputVariable
 
 
 class Importer:
+    """
+      The Importer class is the abstract class for importers to configure an
+      Engine and its components from different text formats.
+      @todo declare methods to import specific components
+      @author Juan Rada-Vilela, Ph.D.
+      @see Exporter
+      @since 4.0
+    """
     @property
     def class_name(self) -> str:
+        """
+         Returns the name of the importer
+          @return the name of the importer
+        """
         return self.__class__.__name__
 
     def from_string(self, fll: str) -> Engine:
+        """
+        Imports the engine from the given text
+          @param text is the string representation of the engine to import from
+          @return the engine represented by the text
+        """
         raise NotImplementedError()
 
     def from_file(self, path: Union[Path, str]) -> Engine:
+        """
+        Imports the engine from the given file
+          @param path is the full path of the file containing the engine to import from
+          @return the engine represented by the file
+        """
         if isinstance(path, str):
             path = Path(path)
         with path.open(encoding="UTF8") as fll:
@@ -47,9 +69,24 @@ class Importer:
 
 
 class FllImporter(Importer):
+    """
+     The FllImporter class is an Importer that configures an Engine and its
+      components utilizing the FuzzyLite Language (FLL), see
+      [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
+      more information.
+      @author Juan Rada-Vilela, Ph.D.
+      @see FllExporter
+      @see Importer
+      @since 4.0
+      @todo parse methods returning respective instances from blocks of text
+    """
     T = TypeVar("T", Activation, Defuzzifier, SNorm, TNorm)
 
     def __init__(self, separator: str = "\n") -> None:
+        """
+        Creates an importer with the specific separator
+          @param separator is the separator of the language
+        """
         self.separator = separator
 
     def _process(self, component: str, block: List[str], engine: Engine) -> None:
