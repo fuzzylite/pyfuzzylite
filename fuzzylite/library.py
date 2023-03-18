@@ -25,10 +25,11 @@ __all__ = ["Library"]
 
 class Library:
     """
-     The Library class contains global settings and information about the library.
-      @author Juan Rada-Vilela, Ph.D.
-      @since 4.0
+    The Library class contains global settings and information about the library.
+     @author Juan Rada-Vilela, Ph.D.
+     @since 4.0
     """
+
     def __init__(
         self,
         decimals: int,
@@ -63,13 +64,16 @@ class Library:
         @param level is the level of logging (see levels in Logging module)
         @param reset is whether to remove all previous logger handlers before configuring
         """
+        if reset:
+            for handler in logging.root.handlers[:]:
+                logging.root.removeHandler(handler)
+                handler.close()
         logging.basicConfig(
             level=level,
             datefmt="%Y-%m-%d %H:%M:%S",
             format="%(asctime)s %(levelname)s "
             "%(module)s::%(funcName)s()[%(lineno)d]"
             "\n%(message)s",
-            force=reset
         )
 
     @property

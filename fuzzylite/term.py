@@ -214,15 +214,16 @@ class Term:
 
 class Activated(Term):
     """The Activated class is a special Term that contains pointers to the
-      necessary information of a term that has been activated as part of the
-      Antecedent of a Rule. The ownership of the pointers is not transferred to
-      objects of this class. The Activated class was named
-      `Thresholded` in versions 4.0 and earlier.
-      @author Juan Rada-Vilela, Ph.D.
-      @see OutputVariable
-      @see Term
-      @since 5.0
+    necessary information of a term that has been activated as part of the
+    Antecedent of a Rule. The ownership of the pointers is not transferred to
+    objects of this class. The Activated class was named
+    `Thresholded` in versions 4.0 and earlier.
+    @author Juan Rada-Vilela, Ph.D.
+    @see OutputVariable
+    @see Term
+    @since 5.0
     """
+
     def __init__(
         self, term: Term, degree: float = 1.0, implication: Optional[TNorm] = None
     ) -> None:
@@ -238,7 +239,7 @@ class Activated(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"degree implication term"`
+        @return `"degree implication term"`
         """
         name = self.term.name if self.term else "none"
         if self.implication:
@@ -251,9 +252,9 @@ class Activated(Term):
 
     def membership(self, x: float) -> float:
         """Computes the implication of the activation degree and the membership
-          function value of @f$x@f$
-          @param x is a value
-          @return @f$d \otimes \mu(x)@f$, where @f$d@f$ is the activation degree
+        function value of @f$x@f$
+        @param x is a value
+        @return @f$d \otimes \mu(x)@f$, where @f$d@f$ is the activation degree
         """
         if isnan(x):
             return nan
@@ -269,19 +270,20 @@ class Activated(Term):
 
 class Aggregated(Term):
     """The Aggregated class is a special Term that stores a fuzzy set with the
-      Activated terms from the Antecedent%s of a Rule, thereby serving mainly
-      as the fuzzy output value of the OutputVariable%s. The ownership of the
-      activated terms will be transfered to objects of this class, and
-      therefore their destructors will be called upon destruction of this term
-      (or calling Aggregated::clear()).
-      @author Juan Rada-Vilela, Ph.D.
-      @see Antecedent
-      @see Rule
-      @see OutputVariable
-      @see Activated
-      @see Term
-      @since 6.0
-      """
+    Activated terms from the Antecedent%s of a Rule, thereby serving mainly
+    as the fuzzy output value of the OutputVariable%s. The ownership of the
+    activated terms will be transfered to objects of this class, and
+    therefore their destructors will be called upon destruction of this term
+    (or calling Aggregated::clear()).
+    @author Juan Rada-Vilela, Ph.D.
+    @see Antecedent
+    @see Rule
+    @see OutputVariable
+    @see Activated
+    @see Term
+    @since 6.0
+    """
+
     def __init__(
         self,
         name: str = "",
@@ -307,7 +309,7 @@ class Aggregated(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"aggregation minimum maximum terms"`
+        @return `"aggregation minimum maximum terms"`
         """
         result = []
         activated = [term.parameters() for term in self.terms]
@@ -322,16 +324,16 @@ class Aggregated(Term):
 
     def range(self) -> float:
         """Returns the magnitude of the range of the fuzzy set,
-          @return the magnitude of the range of the fuzzy set,
-          i.e., `maximum - minimum`
+        @return the magnitude of the range of the fuzzy set,
+        i.e., `maximum - minimum`
         """
         return self.maximum - self.minimum
 
     def membership(self, x: float) -> float:
         """Aggregates the membership function values of @f$x@f$ utilizing the
-          aggregation operator
-          @param x is a value
-          @return @f$\sum_i{\mu_i(x)}, i \in \mbox{terms}@f$
+        aggregation operator
+        @param x is a value
+        @return @f$\sum_i{\mu_i(x)}, i \in \mbox{terms}@f$
         """
         if isnan(x):
             return nan
@@ -346,12 +348,12 @@ class Aggregated(Term):
 
     def activation_degree(self, term: Term) -> float:
         """Computes the aggregated activation degree for the given term.
-          If the same term is present multiple times, the aggregation operator
-          is utilized to sum the activation degrees of the term. If the
-          aggregation operator is fl::null, a regular sum is performed.
-          @param forTerm is the term for which to compute the aggregated
-          activation degree
-          @return the aggregated activation degree for the given term
+        If the same term is present multiple times, the aggregation operator
+        is utilized to sum the activation degrees of the term. If the
+        aggregation operator is fl::null, a regular sum is performed.
+        @param forTerm is the term for which to compute the aggregated
+        activation degree
+        @return the aggregated activation degree for the given term
         """
         result = 0.0
 
@@ -366,8 +368,8 @@ class Aggregated(Term):
 
     def highest_activated_term(self) -> Optional[Activated]:
         """Iterates over the Activated terms to find the term with the maximum
-          activation degree
-          @return the term with the maximum activation degree
+        activation degree
+        @return the term with the maximum activation degree
         """
         result = None
         maximum_activation = -inf
@@ -384,13 +386,14 @@ class Aggregated(Term):
 
 class Bell(Term):
     """The Bell class is an extended Term that represents the generalized bell
-      curve membership function.
-      @image html bell.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    curve membership function.
+    @image html bell.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -413,12 +416,12 @@ class Bell(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$h / (1 + \left(|x-c|/w\right)^{2s}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$c@f$ is the center of the Bell,
-                @f$w@f$ is the width of the Bell,
-                @f$s@f$ is the slope of the Bell
+        @param x
+        @return @f$h / (1 + \left(|x-c|/w\right)^{2s}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$c@f$ is the center of the Bell,
+              @f$w@f$ is the width of the Bell,
+              @f$s@f$ is the slope of the Bell
         """
         if isnan(x):
             return nan
@@ -428,13 +431,13 @@ class Bell(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"center width slope [height]"`
+        @return `"center width slope [height]"`
         """
         return super()._parameters(self.center, self.width, self.slope)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"center width slope [height]"`
+        @param parameters as `"center width slope [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width, self.slope = values[0:3]
@@ -443,13 +446,14 @@ class Bell(Term):
 
 class Binary(Term):
     """The Binary class is an edge Term that represents the binary membership
-      function.
-      @image html binary.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 6.0
+    function.
+    @image html binary.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 6.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -468,15 +472,15 @@ class Binary(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          1h & \mbox{if $ \left(s < d \vedge x \in [s, d)\right) \wedge
-          \left( s > d \vedge x \in (d, s] \right) $} \cr
-          0h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the start of the Binary edge,
-                @f$d@f$ is the direction of the Binary edge.
+        @param x
+        @return @f$\begin{cases}
+        1h & \mbox{if $ \left(s < d \vedge x \in [s, d)\right) \wedge
+        \left( s > d \vedge x \in (d, s] \right) $} \cr
+        0h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the start of the Binary edge,
+              @f$d@f$ is the direction of the Binary edge.
         """
         if isnan(x):
             return nan
@@ -491,13 +495,13 @@ class Binary(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"start direction [height]"`
+        @return `"start direction [height]"`
         """
         return super()._parameters(self.start, self.direction)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"start direction [height]"`
+        @param parameters as `"start direction [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.direction = values[0:2]
@@ -506,13 +510,14 @@ class Binary(Term):
 
 class Concave(Term):
     """The Concave class is an edge Term that represents the concave membership
-      function.
-      @image html concave.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 5.0
+    function.
+    @image html concave.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 5.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -532,17 +537,17 @@ class Concave(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          h \times (e - i) / (2e - i - x) & \mbox{if $i \leq e \wedge x < e$
-          (increasing concave)} \cr
-          h \times (i - e) / (-2e + i + x) & \mbox{if $i > e \wedge x > e$
-          (decreasing concave)} \cr
-          h & \mbox{otherwise} \cr
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$i@f$ is the inflection of the Concave,
-                @f$e@f$ is the end of the Concave
+        @param x
+        @return @f$\begin{cases}
+        h \times (e - i) / (2e - i - x) & \mbox{if $i \leq e \wedge x < e$
+        (increasing concave)} \cr
+        h \times (i - e) / (-2e + i + x) & \mbox{if $i > e \wedge x > e$
+        (decreasing concave)} \cr
+        h & \mbox{otherwise} \cr
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$i@f$ is the inflection of the Concave,
+              @f$e@f$ is the end of the Concave
         """
         if isnan(x):
             return nan
@@ -577,13 +582,13 @@ class Concave(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term as
-          @return `"inflection end [height]"`
+        @return `"inflection end [height]"`
         """
         return super()._parameters(self.inflection, self.end)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters given
-          @param parameters as `"inflection end [height]"`
+        @param parameters as `"inflection end [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.inflection, self.end = values[0:2]
@@ -592,12 +597,13 @@ class Concave(Term):
 
 class Constant(Term):
     """The Constant class is a (zero) polynomial Term that represents a constant
-      value @f$ f(x) = k @f$
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    value @f$ f(x) = k @f$
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(self, name: str = "", value: float = nan) -> None:
         """Create the term.
         @param name is the name of the term
@@ -608,20 +614,20 @@ class Constant(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x is irrelevant
-          @return @f$c@f$, where @f$c@f$ is the constant value
+        @param x is irrelevant
+        @return @f$c@f$, where @f$c@f$ is the constant value
         """
         return self.value
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"value"`
+        @return `"value"`
         """
         return super()._parameters(self.value)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"value"`
+        @param parameters as `"value"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         if not values:
@@ -632,13 +638,14 @@ class Constant(Term):
 
 class Cosine(Term):
     """The Cosine class is an extended Term that represents the cosine
-      membership function.
-      @image html cosine.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 5.0
+    membership function.
+    @image html cosine.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 5.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -658,14 +665,14 @@ class Cosine(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          0h & \mbox{if $x < c - 0.5w \vee x > c + 0.5w$} \cr
-          0.5h \times ( 1 + \cos(2.0 / w\pi(x-c))) & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$c@f$ is the center of the Cosine,
-                @f$w@f$ is the width of the Cosine
+        @param x
+        @return @f$\begin{cases}
+        0h & \mbox{if $x < c - 0.5w \vee x > c + 0.5w$} \cr
+        0.5h \times ( 1 + \cos(2.0 / w\pi(x-c))) & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$c@f$ is the center of the Cosine,
+              @f$w@f$ is the width of the Cosine
         """
         if isnan(x):
             return nan
@@ -679,13 +686,13 @@ class Cosine(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"center width [height]"`
+        @return `"center width [height]"`
         """
         return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"center width [height]"`
+        @param parameters as `"center width [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width = values[0:2]
@@ -694,15 +701,16 @@ class Cosine(Term):
 
 class Discrete(Term):
     """The Discrete class is a basic Term that represents a discrete membership
-      function. The pairs of values in any Discrete term **must** be sorted
-      ascendently because the membership function is computed using binary search
-      to find the lower and upper bounds of @f$x@f$.
-      @image html discrete.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    function. The pairs of values in any Discrete term **must** be sorted
+    ascendently because the membership function is computed using binary search
+    to find the lower and upper bounds of @f$x@f$.
+    @image html discrete.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
 
     class Pair:
@@ -792,15 +800,15 @@ class Discrete(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$ by using binary
-          search to find the lower and upper bounds of @f$x@f$ and then linearly
-          interpolating the membership function between the bounds.
-          @param x
-          @return @f$ \dfrac{h (y_{\max} - y_{\min})}{(x_{\max}- x_{\min})}  (x - x_{\min}) + y_{\min}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$x_{\min}@f$ and @f$x_{\max}@f$is are the lower and upper limits
-                     of @f$x@f$ in `xy` (respectively),
-                @f$y_{\min}@f$ and @f$y_{\max}@f$is are the membership functions
-                     of @f$\mu(x_{\min})@f$ and @f$\mu(x_{\max})@f$ (respectively)
+        search to find the lower and upper bounds of @f$x@f$ and then linearly
+        interpolating the membership function between the bounds.
+        @param x
+        @return @f$ \dfrac{h (y_{\max} - y_{\min})}{(x_{\max}- x_{\min})}  (x - x_{\min}) + y_{\min}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$x_{\min}@f$ and @f$x_{\max}@f$is are the lower and upper limits
+                   of @f$x@f$ in `xy` (respectively),
+              @f$y_{\min}@f$ and @f$y_{\max}@f$is are the membership functions
+                   of @f$\mu(x_{\min})@f$ and @f$\mu(x_{\max})@f$ (respectively)
         """
         if isnan(x):
             return nan
@@ -834,13 +842,13 @@ class Discrete(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term as `x1 y1 xn yn [height]`
-          @return `x1 y1 xn yn [height]`
+        @return `x1 y1 xn yn [height]`
         """
         return super()._parameters(*Discrete.values_from(self.xy))
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters given as `x1 y1 xn yn [height]`
-          @param parameters as `x1 y1 xn yn [height]`
+        @param parameters as `x1 y1 xn yn [height]`
         """
         values = [Op.scalar(x) for x in parameters.split()]
         if len(values) % 2 == 0:
@@ -853,19 +861,19 @@ class Discrete(Term):
 
     def x(self) -> Iterable[float]:
         """An iterable containing the @f$x@f$ values
-          @return an iterable containing the @f$x@f$ values
+        @return an iterable containing the @f$x@f$ values
         """
         return (pair.x for pair in self.xy)
 
     def y(self) -> Iterable[float]:
         """An iterable containing the @f$y@f$ values
-          @return an iterable containing the @f$y@f$ values
+        @return an iterable containing the @f$y@f$ values
         """
         return (pair.y for pair in self.xy)
 
     def sort(self) -> None:
         """Ascendantly sorts the pairs of values in this Discrete term by the
-         @f$x@f$-coordinate
+        @f$x@f$-coordinate
         """
         self.xy.sort()
 
@@ -905,13 +913,14 @@ class Discrete(Term):
 
 class Gaussian(Term):
     """The Gaussian class is an extended Term that represents the %Gaussian
-      curve membership function.
-      @image html gaussian.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    curve membership function.
+    @image html gaussian.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -920,10 +929,10 @@ class Gaussian(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param mean is the mean of the Gaussian curve
-           @param standardDeviation is the standard deviation of the Gaussian curve
-           @param height is the height of the term
+        @param name is the name of the term
+        @param mean is the mean of the Gaussian curve
+        @param standardDeviation is the standard deviation of the Gaussian curve
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.mean = mean
@@ -931,11 +940,11 @@ class Gaussian(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$ h \times \exp(-(x-\mu)^2/(2\sigma^2))@f$
-          where @f$h@f$ is the height of the Term,
-                @f$\mu@f$ is the mean of the Gaussian,
-                @f$\sigma@f$ is the standard deviation of the Gaussian
+        @param x
+        @return @f$ h \times \exp(-(x-\mu)^2/(2\sigma^2))@f$
+        where @f$h@f$ is the height of the Term,
+              @f$\mu@f$ is the mean of the Gaussian,
+              @f$\sigma@f$ is the standard deviation of the Gaussian
         """
         if isnan(x):
             return nan
@@ -946,13 +955,13 @@ class Gaussian(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"mean standardDeviation [height]"`
+        @return `"mean standardDeviation [height]"`
         """
         return super()._parameters(self.mean, self.standard_deviation)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"mean standardDeviation [height]"`
+        @param parameters as `"mean standardDeviation [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.mean, self.standard_deviation = values[0:2]
@@ -961,13 +970,14 @@ class Gaussian(Term):
 
 class GaussianProduct(Term):
     """The GaussianProduct class is an extended Term that represents the
-      two-sided %Gaussian membership function.
-      @image html gaussianProduct.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
-      """
+    two-sided %Gaussian membership function.
+    @image html gaussianProduct.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
+    """
+
     def __init__(
         self,
         name: str = "",
@@ -978,12 +988,12 @@ class GaussianProduct(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param meanA is the mean of the first %Gaussian curve
-           @param standardDeviationA is the standard deviation of the first %Gaussian curve
-           @param meanB is the mean of the second %Gaussian curve
-           @param standardDeviationB is the standard deviation of the second %Gaussian curve
-           @param height is the height of the term
+        @param name is the name of the term
+        @param meanA is the mean of the first %Gaussian curve
+        @param standardDeviationA is the standard deviation of the first %Gaussian curve
+        @param meanB is the mean of the second %Gaussian curve
+        @param standardDeviationB is the standard deviation of the second %Gaussian curve
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.mean_a = mean_a
@@ -993,22 +1003,22 @@ class GaussianProduct(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$ h \left((1 - i) + i \times \exp(-(x - \mu_a)^2 /
-          (2\sigma_a^2))\right)
-          \left((1 - j) + j \times \exp(-(x - \mu_b)^2 / (2 \sigma_b)^2)\right)
-          @f$
-          where @f$h@f$ is the height of the Term,
-                @f$\mu_a@f$ is the mean of the first GaussianProduct,
-                @f$\sigma_a@f$ is the standard deviation of the first
-                GaussianProduct,
-                @f$\mu_b@f$ is the mean of the second GaussianProduct,
-                @f$\sigma_b@f$ is the standard deviation of the second
-                GaussianProduct,
-                @f$i=\begin{cases}1 & \mbox{if $x \leq \mu_a$} \cr 0
-                &\mbox{otherwise}\end{cases}@f$,
-                @f$j=\begin{cases}1 & \mbox{if $x \geq \mu_b$} \cr 0
-                &\mbox{otherwise}\end{cases}@f$
+        @param x
+        @return @f$ h \left((1 - i) + i \times \exp(-(x - \mu_a)^2 /
+        (2\sigma_a^2))\right)
+        \left((1 - j) + j \times \exp(-(x - \mu_b)^2 / (2 \sigma_b)^2)\right)
+        @f$
+        where @f$h@f$ is the height of the Term,
+              @f$\mu_a@f$ is the mean of the first GaussianProduct,
+              @f$\sigma_a@f$ is the standard deviation of the first
+              GaussianProduct,
+              @f$\mu_b@f$ is the mean of the second GaussianProduct,
+              @f$\sigma_b@f$ is the standard deviation of the second
+              GaussianProduct,
+              @f$i=\begin{cases}1 & \mbox{if $x \leq \mu_a$} \cr 0
+              &\mbox{otherwise}\end{cases}@f$,
+              @f$j=\begin{cases}1 & \mbox{if $x \geq \mu_b$} \cr 0
+              &\mbox{otherwise}\end{cases}@f$
         """
         if isnan(x):
             return nan
@@ -1031,7 +1041,7 @@ class GaussianProduct(Term):
 
     def parameters(self) -> str:
         """Provides the parameters of the term
-          @return `"meanA standardDeviationA meanB standardDeviationB [height]"`
+        @return `"meanA standardDeviationA meanB standardDeviationB [height]"`
         """
         return super()._parameters(
             self.mean_a,
@@ -1042,8 +1052,8 @@ class GaussianProduct(Term):
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"meanA standardDeviationA meanB
-          standardDeviationB [height]"`
+        @param parameters as `"meanA standardDeviationA meanB
+        standardDeviationB [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         (
@@ -1057,17 +1067,18 @@ class GaussianProduct(Term):
 
 class Linear(Term):
     """The Linear class is a linear polynomial Term expressed as @f$f(x)=
-      \mathbf{c}\mathbf{v}+k = \sum_i c_iv_i + k@f$, where variable @f$x@f$ is
-      not utilized, @f$\mathbf{v}@f$ is a vector of values from the input
-      variables, @f$\mathbf{c}@f$ is a vector of coefficients, and @f$k@f$ is a
-      constant. Hereinafter, the vector @f$\mathbf{c}^\star=\{c_1, \ldots, c_i,
-      \ldots, c_n, k\}@f$ refers to a vector containing the coefficients of
-      @f$\mathbf{c}@f$ and the constant @f$k@f$.
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    \mathbf{c}\mathbf{v}+k = \sum_i c_iv_i + k@f$, where variable @f$x@f$ is
+    not utilized, @f$\mathbf{v}@f$ is a vector of values from the input
+    variables, @f$\mathbf{c}@f$ is a vector of coefficients, and @f$k@f$ is a
+    constant. Hereinafter, the vector @f$\mathbf{c}^\star=\{c_1, \ldots, c_i,
+    \ldots, c_n, k\}@f$ refers to a vector containing the coefficients of
+    @f$\mathbf{c}@f$ and the constant @f$k@f$.
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -1075,9 +1086,9 @@ class Linear(Term):
         engine: Optional["Engine"] = None,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param coefficients is the vector @f$\mathbf{c}^\star@f$
-           @param height is the height of the term
+        @param name is the name of the term
+        @param coefficients is the vector @f$\mathbf{c}^\star@f$
+        @param height is the height of the term
         """
         super().__init__(name)
         self.coefficients: List[float] = []
@@ -1087,10 +1098,10 @@ class Linear(Term):
 
     def membership(self, _: float) -> float:
         """Computes the linear function @f$f(x)=\sum_i c_iv_i +k@f$,
-          where @f$v_i@f$ is the value of the input variable @f$i@f$ registered
-          in the Linear::getEngine()
-          @param x is not utilized
-          @return @f$\sum_i c_ix_i +k@f$
+        where @f$v_i@f$ is the value of the input variable @f$i@f$ registered
+        in the Linear::getEngine()
+        @param x is not utilized
+        @return @f$\sum_i c_ix_i +k@f$
         """
         if not self.engine:
             raise ValueError("expected the reference to an engine, but found none")
@@ -1108,13 +1119,13 @@ class Linear(Term):
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the values of @f$\mathbf{c}^\star@f$
-          @param parameters as `"c1 ... ci ... cn k"`
+        @param parameters as `"c1 ... ci ... cn k"`
         """
         self.coefficients = [Op.scalar(p) for p in parameters.split()]
 
     def parameters(self) -> str:
         """Returns the vector @f$\mathbf{c}^\star@f$
-          @return `"c1 ... ci ... cn k"`
+        @return `"c1 ... ci ... cn k"`
         """
         return self._parameters(*self.coefficients)
 
@@ -1124,13 +1135,14 @@ class Linear(Term):
 
 class PiShape(Term):
     """The PiShape class is an extended Term that represents the Pi-shaped curve
-      membership function.
-      @image html piShape.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    membership function.
+    @image html piShape.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -1141,12 +1153,12 @@ class PiShape(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param bottomLeft is the bottom-left value of the curve
-           @param topLeft is the top-left value of the curve
-           @param topRight is the top-right value of the curve
-           @param bottomRight is the bottom-right value of the curve
-           @param height is the height of the term
+        @param name is the name of the term
+        @param bottomLeft is the bottom-left value of the curve
+        @param topLeft is the top-left value of the curve
+        @param topRight is the top-right value of the curve
+        @param bottomRight is the bottom-right value of the curve
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.bottom_left = bottom_left
@@ -1156,21 +1168,21 @@ class PiShape(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          0h & \mbox{if $x \leq b_l$}\cr
-          2h \left((x - b_l) / (t_l-b_l)\right)^2 & \mbox{if $x \leq 0.5(a+b)$}\cr
-          h (1 - 2 \left((x - t_l) / (t_l-b_l)\right)^2) & \mbox{if $ x < t_l$}\cr
-          h & \mbox{if $x \leq t_r$}\cr
-          h (1 - 2\left((x - t_r) / (b_r - t_r)\right)^2) & \mbox{if $x \leq 0.5(t_r + b_r)$}\cr
-          2h \left((x - b_r) / (b_r-t_r)\right)^2 & \mbox{if $x < b_r$} \cr
-          0h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$b_l@f$ is the bottom left of the PiShape,
-                @f$t_l@f$ is the top left of the PiShape,
-                @f$t_r@f$ is the top right of the PiShape
-                @f$b_r@f$ is the bottom right of the PiShape,
+        @param x
+        @return @f$\begin{cases}
+        0h & \mbox{if $x \leq b_l$}\cr
+        2h \left((x - b_l) / (t_l-b_l)\right)^2 & \mbox{if $x \leq 0.5(a+b)$}\cr
+        h (1 - 2 \left((x - t_l) / (t_l-b_l)\right)^2) & \mbox{if $ x < t_l$}\cr
+        h & \mbox{if $x \leq t_r$}\cr
+        h (1 - 2\left((x - t_r) / (b_r - t_r)\right)^2) & \mbox{if $x \leq 0.5(t_r + b_r)$}\cr
+        2h \left((x - b_r) / (b_r-t_r)\right)^2 & \mbox{if $x < b_r$} \cr
+        0h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$b_l@f$ is the bottom left of the PiShape,
+              @f$t_l@f$ is the top left of the PiShape,
+              @f$t_r@f$ is the top right of the PiShape
+              @f$b_r@f$ is the bottom right of the PiShape,
         """
         if isnan(x):
             return nan
@@ -1209,7 +1221,7 @@ class PiShape(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"bottomLeft topLeft topRight bottomRight [height]"`
+        @return `"bottomLeft topLeft topRight bottomRight [height]"`
         """
         return super()._parameters(
             self.bottom_left, self.top_left, self.top_right, self.bottom_right
@@ -1217,8 +1229,8 @@ class PiShape(Term):
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"bottomLeft topLeft topRight bottomRight
-          [height]"`
+        @param parameters as `"bottomLeft topLeft topRight bottomRight
+        [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
@@ -1227,21 +1239,22 @@ class PiShape(Term):
 
 class Ramp(Term):
     """The Ramp class is an edge Term that represents the ramp membership
-      function.
-      @image html ramp.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    function.
+    @image html ramp.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param start is the start of the ramp
-           @param end is the end of the ramp
-           @param height is the height of the term
+        @param name is the name of the term
+        @param start is the start of the ramp
+        @param end is the end of the ramp
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.start = start
@@ -1249,24 +1262,24 @@ class Ramp(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return
-          @f$\begin{cases}
-          0h & \mbox{if $x = e$}\cr
-          \begin{cases}
-          0h & \mbox{if $x \leq s$}\cr
-          1h & \mbox{if $x \geq e$}\cr
-          h (x - s) / (e - s) & \mbox{otherwise}\cr
-          \end{cases} & \mbox{if $s < e$}\cr
-          \begin{cases}
-          0h & \mbox{if $x \geq s$}\cr
-          1h & \mbox{if $x \leq e$}\cr
-          h (s - x) / (s - e) & \mbox{otherwise}
-          \end{cases} & \mbox{if $s > e$}\cr
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the start of the Ramp,
-                @f$e@f$ is the end of the Ramp
+        @param x
+        @return
+        @f$\begin{cases}
+        0h & \mbox{if $x = e$}\cr
+        \begin{cases}
+        0h & \mbox{if $x \leq s$}\cr
+        1h & \mbox{if $x \geq e$}\cr
+        h (x - s) / (e - s) & \mbox{otherwise}\cr
+        \end{cases} & \mbox{if $s < e$}\cr
+        \begin{cases}
+        0h & \mbox{if $x \geq s$}\cr
+        1h & \mbox{if $x \leq e$}\cr
+        h (s - x) / (s - e) & \mbox{otherwise}
+        \end{cases} & \mbox{if $s > e$}\cr
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the start of the Ramp,
+              @f$e@f$ is the end of the Ramp
         """
         if isnan(x):
             return nan
@@ -1300,13 +1313,13 @@ class Ramp(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"start end [height]"`
+        @return `"start end [height]"`
         """
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"start end [height]"`
+        @param parameters as `"start end [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
@@ -1315,21 +1328,22 @@ class Ramp(Term):
 
 class Rectangle(Term):
     """The Rectangle class is a basic Term that represents the rectangle
-      membership function.
-      @image html rectangle.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    membership function.
+    @image html rectangle.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param start is the start of the rectangle
-           @param end is the end of the rectangle
-           @param height is the height of the term
+        @param name is the name of the term
+        @param start is the start of the rectangle
+        @param end is the end of the rectangle
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.start = start
@@ -1337,14 +1351,14 @@ class Rectangle(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          1h & \mbox{if $x \in [s, e]$} \cr
-          0h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the start of the Rectangle,
-                @f$e@f$ is the end of the Rectangle.
+        @param x
+        @return @f$\begin{cases}
+        1h & \mbox{if $x \in [s, e]$} \cr
+        0h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the start of the Rectangle,
+              @f$e@f$ is the end of the Rectangle.
         """
         if isnan(x):
             return nan
@@ -1356,13 +1370,13 @@ class Rectangle(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"start end [height]"`
+        @return `"start end [height]"`
         """
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"start end [height]"`
+        @param parameters as `"start end [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
@@ -1372,13 +1386,14 @@ class Rectangle(Term):
 # TODO: Tsukamoto
 class Sigmoid(Term):
     """The Sigmoid class is an edge Term that represents the sigmoid membership
-      function.
-      @image html sigmoid.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    function.
+    @image html sigmoid.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -1387,10 +1402,10 @@ class Sigmoid(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param inflection is the inflection of the sigmoid
-           @param slope is the slope of the sigmoid
-           @param height is the height of the term
+        @param name is the name of the term
+        @param inflection is the inflection of the sigmoid
+        @param slope is the slope of the sigmoid
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.inflection = inflection
@@ -1398,11 +1413,11 @@ class Sigmoid(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$ h / (1 + \exp(-s(x-i)))@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the slope of the Sigmoid,
-                @f$i@f$ is the inflection of the Sigmoid
+        @param x
+        @return @f$ h / (1 + \exp(-s(x-i)))@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the slope of the Sigmoid,
+              @f$i@f$ is the inflection of the Sigmoid
         """
         if isnan(x):
             return nan
@@ -1413,13 +1428,13 @@ class Sigmoid(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"inflection slope [height]"`
+        @return `"inflection slope [height]"`
         """
         return super()._parameters(self.inflection, self.slope)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"inflection slope [height]"`
+        @param parameters as `"inflection slope [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.inflection, self.slope = values[0:2]
@@ -1428,13 +1443,14 @@ class Sigmoid(Term):
 
 class SigmoidDifference(Term):
     """The SigmoidDifference class is an extended Term that represents the
-      difference between two sigmoidal membership functions.
-      @image html sigmoidDifference.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    difference between two sigmoidal membership functions.
+    @image html sigmoidDifference.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -1445,12 +1461,12 @@ class SigmoidDifference(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param left is the inflection of the left sigmoidal curve
-           @param rising is the slope of the left sigmoidal curve
-           @param falling is the slope of the right sigmoidal curve
-           @param right is the inflection of the right sigmoidal curve
-           @param height is the height of the term
+        @param name is the name of the term
+        @param left is the inflection of the left sigmoidal curve
+        @param rising is the slope of the left sigmoidal curve
+        @param falling is the slope of the right sigmoidal curve
+        @param right is the inflection of the right sigmoidal curve
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.left = left
@@ -1460,15 +1476,15 @@ class SigmoidDifference(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$ h (a-b)@f$
-          where @f$h@f$ is the height of the Term,
-                @f$a= 1 / (1 + \exp(-s_l \times (x - i_l))) @f$,
-                @f$b = 1 / (1 + \exp(-s_r \times (x - i_r)))@f$,
-                @f$i_l@f$ is the left inflection of the SigmoidDifference,
-                @f$s_l@f$ is the left slope of the SigmoidDifference,
-                @f$i_r@f$ is the right inflection of the SigmoidDifference,
-                @f$s_r@f$ is the right slope of the SigmoidDifference
+        @param x
+        @return @f$ h (a-b)@f$
+        where @f$h@f$ is the height of the Term,
+              @f$a= 1 / (1 + \exp(-s_l \times (x - i_l))) @f$,
+              @f$b = 1 / (1 + \exp(-s_r \times (x - i_r)))@f$,
+              @f$i_l@f$ is the left inflection of the SigmoidDifference,
+              @f$s_l@f$ is the left slope of the SigmoidDifference,
+              @f$i_r@f$ is the right inflection of the SigmoidDifference,
+              @f$s_r@f$ is the right slope of the SigmoidDifference
         """
         if isnan(x):
             return nan
@@ -1480,12 +1496,12 @@ class SigmoidDifference(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"left rising falling right [height]"`"""
+        @return `"left rising falling right [height]"`"""
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"left rising falling right [height]"`
+        @param parameters as `"left rising falling right [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
@@ -1494,13 +1510,14 @@ class SigmoidDifference(Term):
 
 class SigmoidProduct(Term):
     """The SigmoidProduct class is an extended Term that represents the product
-      of two sigmoidal membership functions.
-      @image html sigmoidProduct.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    of two sigmoidal membership functions.
+    @image html sigmoidProduct.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self,
         name: str = "",
@@ -1511,13 +1528,13 @@ class SigmoidProduct(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param left is the inflection of the left sigmoidal curve  
-           @param rising is the slope of the left sigmoidal curve
-           @param falling is the slope of the right sigmoidal curve
-           @param right is the inflection of the right sigmoidal curve
-           @param height is the height of the term
-        """    
+        @param name is the name of the term
+        @param left is the inflection of the left sigmoidal curve
+        @param rising is the slope of the left sigmoidal curve
+        @param falling is the slope of the right sigmoidal curve
+        @param right is the inflection of the right sigmoidal curve
+        @param height is the height of the term
+        """
         super().__init__(name, height)
         self.left = left
         self.rising = rising
@@ -1526,15 +1543,15 @@ class SigmoidProduct(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$ h (a \times b)@f$
-          where @f$h@f$ is the height,
-                @f$a= 1 / (1 + \exp(-s_l *\times (x - i_l))) @f$,
-                @f$b = 1 / (1 + \exp(-s_r \times (x - i_r)))@f$,
-                @f$i_l@f$ is the left inflection of the SigmoidProduct,
-                @f$s_l@f$ is the left slope of the SigmoidProduct,
-                @f$i_r@f$ is the right inflection of the SigmoidProduct,
-                @f$s_r@f$ is the right slope of the SigmoidProduct
+        @param x
+        @return @f$ h (a \times b)@f$
+        where @f$h@f$ is the height,
+              @f$a= 1 / (1 + \exp(-s_l *\times (x - i_l))) @f$,
+              @f$b = 1 / (1 + \exp(-s_r \times (x - i_r)))@f$,
+              @f$i_l@f$ is the left inflection of the SigmoidProduct,
+              @f$s_l@f$ is the left slope of the SigmoidProduct,
+              @f$i_r@f$ is the right inflection of the SigmoidProduct,
+              @f$s_r@f$ is the right slope of the SigmoidProduct
         """
         if isnan(x):
             return nan
@@ -1546,13 +1563,13 @@ class SigmoidProduct(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"left rising falling right [height]"`
+        @return `"left rising falling right [height]"`
         """
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"left rising falling right [height]"`
+        @param parameters as `"left rising falling right [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
@@ -1561,13 +1578,14 @@ class SigmoidProduct(Term):
 
 class Spike(Term):
     """The Spike class is an extended Term that represents the spike membership
-      function.
-      @image html spike.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 5.0
+    function.
+    @image html spike.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 5.0
     """
+
     # TODO: Properly rename the parameters.
     def __init__(
         self,
@@ -1577,22 +1595,22 @@ class Spike(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param center is the center of the spike
-           @param width is the width of the spike
-           @param height is the height of the term
-        """    
+        @param name is the name of the term
+        @param center is the center of the spike
+        @param width is the width of the spike
+        @param height is the height of the term
+        """
         super().__init__(name, height)
         self.center = inflection
         self.width = slope
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$h \times \exp(-|10 / w (x - c)|)@f$
-          where @f$h@f$ is the height of the Term,
-                @f$w@f$ is the width of the Spike,
-                @f$c@f$ is the center of the Spike
+        @param x
+        @return @f$h \times \exp(-|10 / w (x - c)|)@f$
+        where @f$h@f$ is the height of the Term,
+              @f$w@f$ is the width of the Spike,
+              @f$c@f$ is the center of the Spike
         """
         if isnan(x):
             return nan
@@ -1600,13 +1618,13 @@ class Spike(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"center width [height]"`
+        @return `"center width [height]"`
         """
         return super()._parameters(self.center, self.width)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"center width [height]"`
+        @param parameters as `"center width [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.center, self.width = values[0:2]
@@ -1616,21 +1634,22 @@ class Spike(Term):
 # TODO: Tsukamoto
 class SShape(Term):
     """The SShape class is an edge Term that represents the S-shaped membership
-      function.
-      @image html sShape.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    function.
+    @image html sShape.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param start is the start of the edge 
-           @param end is the end of the edge
-           @param height is the height of the term
+        @param name is the name of the term
+        @param start is the start of the edge
+        @param end is the end of the edge
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.start = start
@@ -1638,16 +1657,16 @@ class SShape(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          0h & \mbox{if $x \leq s$} \cr
-          h(2 \left((x - s) / (e-s)\right)^2) & \mbox{if $x \leq 0.5(s+e)$}\cr
-          h(1 - 2\left((x - e) / (e-s)\right)^2) & \mbox{if $x < e$}\cr
-          1h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the start of the SShape,
-                @f$e@f$ is the end of the SShape.
+        @param x
+        @return @f$\begin{cases}
+        0h & \mbox{if $x \leq s$} \cr
+        h(2 \left((x - s) / (e-s)\right)^2) & \mbox{if $x \leq 0.5(s+e)$}\cr
+        h(1 - 2\left((x - e) / (e-s)\right)^2) & \mbox{if $x < e$}\cr
+        1h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the start of the SShape,
+              @f$e@f$ is the end of the SShape.
         """
         if isnan(x):
             return nan
@@ -1670,13 +1689,13 @@ class SShape(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"start end [height]"`
+        @return `"start end [height]"`
         """
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"start end [height]"`
+        @param parameters as `"start end [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
@@ -1685,13 +1704,14 @@ class SShape(Term):
 
 class Trapezoid(Term):
     """The Trapezoid class is a basic Term that represents the trapezoidal
-      membership function.
-      @image html trapezoid.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    membership function.
+    @image html trapezoid.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     # TODO: properly rename the parameters.
     def __init__(
         self,
@@ -1703,12 +1723,12 @@ class Trapezoid(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param a is the first vertex of the trapezoid
-           @param b is the second vertex of the trapezoid
-           @param c is the third vertex of the trapezoid
-           @param d is the fourth vertex of the trapezoid
-           @param height is the height of the term
+        @param name is the name of the term
+        @param a is the first vertex of the trapezoid
+        @param b is the second vertex of the trapezoid
+        @param c is the third vertex of the trapezoid
+        @param d is the fourth vertex of the trapezoid
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.vertex_a = vertex_a
@@ -1723,19 +1743,19 @@ class Trapezoid(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          0h & \mbox{if $x \not\in[a,d]$}\cr
-          h \times \min(1, (x - a) / (b - a)) & \mbox{if $x < b$}\cr
-          1h & \mbox{if $x \leq c$}\cr
-          h (d - x) / (d - c) & \mbox{if $x < d$}\cr
-          0h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$a@f$ is the first vertex of the Trapezoid,
-                @f$b@f$ is the second vertex of the Trapezoid,
-                @f$c@f$ is the third vertex of the Trapezoid,
-                @f$d@f$ is the fourth vertex of the Trapezoid
+        @param x
+        @return @f$\begin{cases}
+        0h & \mbox{if $x \not\in[a,d]$}\cr
+        h \times \min(1, (x - a) / (b - a)) & \mbox{if $x < b$}\cr
+        1h & \mbox{if $x \leq c$}\cr
+        h (d - x) / (d - c) & \mbox{if $x < d$}\cr
+        0h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$a@f$ is the first vertex of the Trapezoid,
+              @f$b@f$ is the second vertex of the Trapezoid,
+              @f$c@f$ is the third vertex of the Trapezoid,
+              @f$d@f$ is the fourth vertex of the Trapezoid
         """
         if isnan(x):
             return nan
@@ -1760,7 +1780,7 @@ class Trapezoid(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"vertexA vertexB vertexC vertexD [height]"`
+        @return `"vertexA vertexB vertexC vertexD [height]"`
         """
         return super()._parameters(
             self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d
@@ -1768,7 +1788,7 @@ class Trapezoid(Term):
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"vertexA vertexB vertexC vertexD [height]"`
+        @param parameters as `"vertexA vertexB vertexC vertexD [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d = values[0:4]
@@ -1777,13 +1797,14 @@ class Trapezoid(Term):
 
 class Triangle(Term):
     """The Triangle class is a basic Term that represents the triangular
-      membership function.
-      @image html triangle.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    membership function.
+    @image html triangle.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     # TODO: rename parameters properly.
     def __init__(
         self,
@@ -1794,11 +1815,11 @@ class Triangle(Term):
         height: float = 1.0,
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param a is the first vertex of the triangle
-           @param b is the second vertex of the triangle
-           @param c is the third vertex of the triangle
-           @param height is the height of the term
+        @param name is the name of the term
+        @param a is the first vertex of the triangle
+        @param b is the second vertex of the triangle
+        @param c is the third vertex of the triangle
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.vertex_a = vertex_a
@@ -1810,17 +1831,17 @@ class Triangle(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$\begin{cases}
-          0h & \mbox{if $x \not\in [a,c]$}\cr
-          1h & \mbox{if $x = b$}\cr
-          h (x - a) / (b - a) & \mbox{if $x < b$} \cr
-          h (c - x) / (c - b) & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$a@f$ is the first vertex of the Triangle,
-                @f$b@f$ is the second vertex of the Triangle,
-                @f$c@f$ is the third vertex of the Triangle
+        @param x
+        @return @f$\begin{cases}
+        0h & \mbox{if $x \not\in [a,c]$}\cr
+        1h & \mbox{if $x = b$}\cr
+        h (x - a) / (b - a) & \mbox{if $x < b$} \cr
+        h (c - x) / (c - b) & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$a@f$ is the first vertex of the Triangle,
+              @f$b@f$ is the second vertex of the Triangle,
+              @f$c@f$ is the third vertex of the Triangle
         """
         if isnan(x):
             return nan
@@ -1845,13 +1866,13 @@ class Triangle(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"vertexA vertexB vertexC [height]"`
+        @return `"vertexA vertexB vertexC [height]"`
         """
         return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"vertexA vertexB vertexC [height]"`
+        @param parameters as `"vertexA vertexB vertexC [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.vertex_a, self.vertex_b, self.vertex_c = values[0:3]
@@ -1861,21 +1882,22 @@ class Triangle(Term):
 # TODO: Tsukamoto
 class ZShape(Term):
     """The ZShape class is an edge Term that represents the Z-shaped membership
-      function.
-      @image html zShape.svg
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @since 4.0
+    function.
+    @image html zShape.svg
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @since 4.0
     """
+
     def __init__(
         self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
     ) -> None:
         """Create the term.
-           @param name is the name of the term
-           @param start is the start of the edge
-           @param end is the end of the edge
-           @param height is the height of the term
+        @param name is the name of the term
+        @param start is the start of the edge
+        @param end is the end of the edge
+        @param height is the height of the term
         """
         super().__init__(name, height)
         self.start = start
@@ -1883,16 +1905,16 @@ class ZShape(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function evaluated at @f$x@f$
-          @param x
-          @return @f$  \begin{cases}
-          1h & \mbox{if $x \leq s$} \cr
-          h(1 - 2\left((x - s) / (e-s)\right)^2) & \mbox{if $x \leq 0.5(s+e)$}\cr
-          h(2 \left((x - e) / (e-s)\right)^2) & \mbox{if $x < e$}\cr
-          0h & \mbox{otherwise}
-          \end{cases}@f$
-          where @f$h@f$ is the height of the Term,
-                @f$s@f$ is the start of the ZShape,
-                @f$e@f$ is the end of the ZShape.
+        @param x
+        @return @f$  \begin{cases}
+        1h & \mbox{if $x \leq s$} \cr
+        h(1 - 2\left((x - s) / (e-s)\right)^2) & \mbox{if $x \leq 0.5(s+e)$}\cr
+        h(2 \left((x - e) / (e-s)\right)^2) & \mbox{if $x < e$}\cr
+        0h & \mbox{otherwise}
+        \end{cases}@f$
+        where @f$h@f$ is the height of the Term,
+              @f$s@f$ is the start of the ZShape,
+              @f$e@f$ is the end of the ZShape.
         """
         if isnan(x):
             return nan
@@ -1915,13 +1937,13 @@ class ZShape(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-          @return `"start end [height]"`
+        @return `"start end [height]"`
         """
         return super()._parameters(self.start, self.end)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-          @param parameters as `"start end [height]"`
+        @param parameters as `"start end [height]"`
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
         self.start, self.end = values[0:2]
@@ -1930,43 +1952,46 @@ class ZShape(Term):
 
 class Function(Term):
     """The Function class is a polynomial Term that represents a generic
-      function @f$ f : x \mapsto f(x) @f$. Every Function object has a public
-      key-value map, namely Function::variables, that links variable names to
-      fl::scalar values, which are utilized to replace the variable names for
-      their respective values in the given formula whenever the function
-      @f$f@f$ is evaluated. Specifically, when the method
-      Function::membership() is called, the name and value of the variable
-      @f$x@f$ are automatically loaded into the map. Furthermore, if an Engine
-      is given, the names of its InputVariable%s and OutputVariable%s will also
-      be automatically loaded into the map linking to their respective input
-      values and (previously defuzzified) output values. The
-      Function::variables need to be manually loaded whenever variables other
-      than @f$x@f$, input variables, and output variables, are expressed in the
-      given formula, always having in mind that (a) the map replaces existing
-      keys, and (b) the variable @f$x@f$, and input variables and output
-      variables of an engine will automatically be replaced and will also take
-      precedence over previously loaded variables.
-      Besides the use of Function as a linguistic Term, it is also utilized to
-      convert the text of the Antecedent of a Rule, expressed in infix
-      notation, into postfix notation.
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see Variable
-      @see FunctionFactory
-      @see Antecedent::load()
-      @since 4.0
+    function @f$ f : x \mapsto f(x) @f$. Every Function object has a public
+    key-value map, namely Function::variables, that links variable names to
+    fl::scalar values, which are utilized to replace the variable names for
+    their respective values in the given formula whenever the function
+    @f$f@f$ is evaluated. Specifically, when the method
+    Function::membership() is called, the name and value of the variable
+    @f$x@f$ are automatically loaded into the map. Furthermore, if an Engine
+    is given, the names of its InputVariable%s and OutputVariable%s will also
+    be automatically loaded into the map linking to their respective input
+    values and (previously defuzzified) output values. The
+    Function::variables need to be manually loaded whenever variables other
+    than @f$x@f$, input variables, and output variables, are expressed in the
+    given formula, always having in mind that (a) the map replaces existing
+    keys, and (b) the variable @f$x@f$, and input variables and output
+    variables of an engine will automatically be replaced and will also take
+    precedence over previously loaded variables.
+    Besides the use of Function as a linguistic Term, it is also utilized to
+    convert the text of the Antecedent of a Rule, expressed in infix
+    notation, into postfix notation.
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see Variable
+    @see FunctionFactory
+    @see Antecedent::load()
+    @since 4.0
     """
+
     class Element:
         """The Element class represents a single element in a formula, be that
-          either a function or an operator. If the Element represents a
-          function, the function can be Unary or Binary, that is, the function
-          take one or two parameters (respectively). Else, if the Element
-          represents an operator, the parameters to be defined are its `arity`,
-          its `precedence`, and its `associativity`.
+        either a function or an operator. If the Element represents a
+        function, the function can be Unary or Binary, that is, the function
+        take one or two parameters (respectively). Else, if the Element
+        represents an operator, the parameters to be defined are its `arity`,
+        its `precedence`, and its `associativity`.
         """
+
         @enum.unique
         class Type(enum.Enum):
             """Determines the type of the element"""
+
             Operator, Function = range(2)
 
         def __init__(
@@ -2002,7 +2027,7 @@ class Function(Term):
 
         def __str__(self) -> str:
             """Returns a description of the element and its members
-              @return a description of the element and its members
+            @return a description of the element and its members
             """
             result = [
                 f"name='{self.name}'",
@@ -2017,22 +2042,23 @@ class Function(Term):
 
         def is_function(self) -> bool:
             """Indicates whether the element is a Type::Function
-              @return whether the element is a Type::Function
+            @return whether the element is a Type::Function
             """
             return self.type == Function.Element.Type.Function
 
         def is_operator(self) -> bool:
             """Indicates whether the element is a Type::Operator
-              @return whether the element is a Type::Operator
+            @return whether the element is a Type::Operator
             """
             return self.type == Function.Element.Type.Operator
 
     class Node:
         """The Node class structures a binary tree by storing pointers to a left
-          Node and a right Node, and storing its content as a
-          Function::Element, the name of an InputVariable or OutputVariable, or
-          a constant value.
+        Node and a right Node, and storing its content as a
+        Function::Element, the name of an InputVariable or OutputVariable, or
+        a constant value.
         """
+
         def __init__(
             self,
             element: Optional["Function.Element"] = None,
@@ -2055,9 +2081,7 @@ class Function(Term):
             self.left = left
 
         def __str__(self) -> str:
-            """
-
-            """
+            """ """
             return self.postfix()
 
         def value(self) -> str:
@@ -2077,12 +2101,12 @@ class Function(Term):
 
         def evaluate(self, local_variables: Optional[Dict[str, float]] = None) -> float:
             """Evaluates the node and substitutes the variables therein for the
-              values passed in the map. The expression tree is evaluated
-              recursively.
-              @param variables is a map of substitutions of variable names for
-              fl::scalar%s
-              @return a fl::scalar indicating the result of the evaluation of
-              the node
+            values passed in the map. The expression tree is evaluated
+            recursively.
+            @param variables is a map of substitutions of variable names for
+            fl::scalar%s
+            @return a fl::scalar indicating the result of the evaluation of
+            the node
             """
             result = nan
             if self.element:
@@ -2143,11 +2167,11 @@ class Function(Term):
 
         def infix(self, node: Optional["Function.Node"] = None) -> str:
             """Returns an infix representation of the expression tree under the
-              given node
-              @param node is the node to start the infix representation from.
-              If the node is `fl::null`, then the starting point is `this` node
-              @return an infix representation of the expression tree under the
-              given node
+            given node
+            @param node is the node to start the infix representation from.
+            If the node is `fl::null`, then the starting point is `this` node
+            @return an infix representation of the expression tree under the
+            given node
             """
             if not node:
                 return self.infix(self)
@@ -2176,11 +2200,11 @@ class Function(Term):
 
         def postfix(self, node: Optional["Function.Node"] = None) -> str:
             """Returns a postfix representation of the expression tree under the
-              given node
-              @param node is the node to start the postfix representation from.
-              If the node is `fl::null`, then the starting point is `this` node
-              @return a postfix representation of the expression tree under the
-              given node
+            given node
+            @param node is the node to start the postfix representation from.
+            If the node is `fl::null`, then the starting point is `this` node
+            @return a postfix representation of the expression tree under the
+            given node
             """
             if not node:
                 return self.postfix(self)
@@ -2207,11 +2231,11 @@ class Function(Term):
         load: bool = False,
     ) -> None:
         """Create the function.
-           @param name is the name of the term
-           @param formula is the formula defining the membership function
-           @param engine is the engine to which the Function can have access
-           @param variables is a map of substitution variables
-           @param load whether to load the function on creation
+        @param name is the name of the term
+        @param formula is the formula defining the membership function
+        @param engine is the engine to which the Function can have access
+        @param variables is a map of substitution variables
+        @param load whether to load the function on creation
         """
         super().__init__(name)
         self.root: Optional[Function.Node] = None
@@ -2225,13 +2249,13 @@ class Function(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term as `formula`
-          @return `formula`
+        @return `formula`
         """
         return self.formula
 
     def configure(self, parameters: str) -> None:
-        """ Configures the term with the parameters given as `formula`
-          @param parameters as `formula`
+        """Configures the term with the parameters given as `formula`
+        @param parameters as `formula`
         """
         self.formula = parameters
         self.load()
@@ -2246,11 +2270,11 @@ class Function(Term):
         name: str, formula: str, engine: Optional["Engine"] = None
     ) -> "Function":
         """Creates a Function term with the given parameters
-          @param name is the name of the term
-          @param formula is the formula defining the membership function
-          @param engine is the engine to which the Function can have access
-          @return a Function term configured with the given parameters
-          @throws fl::Exception if the formula has a syntax error
+        @param name is the name of the term
+        @param formula is the formula defining the membership function
+        @param engine is the engine to which the Function can have access
+        @return a Function term configured with the given parameters
+        @throws fl::Exception if the formula has a syntax error
         """
         result = Function(name, formula, engine)
         result.load()
@@ -2258,11 +2282,11 @@ class Function(Term):
 
     def membership(self, x: float) -> float:
         """Computes the membership function value of @f$x@f$ at the root node.
-          If the engine has been set, the current values of the input variables
-          and output variables are added to the map of Function::variables. In
-          addition, the variable @f$x@f$ will also be added to the map.
-          @param x
-          @return the membership function value of @f$x@f$ at the root node
+        If the engine has been set, the current values of the input variables
+        and output variables are added to the map of Function::variables. In
+        addition, the variable @f$x@f$ will also be added to the map.
+        @param x
+        @return the membership function value of @f$x@f$ at the root node
         """
         if "x" in self.variables:
             raise ValueError(
@@ -2293,10 +2317,10 @@ class Function(Term):
 
     def evaluate(self, variables: Optional[Dict[str, float]] = None) -> float:
         """Computes the function value of this term using the given map of
-          variable substitutions.
-          @param variables is a map of substitution variables
-          @return the function value of this term using the given map of
-          variable substitutions.
+        variable substitutions.
+        @param variables is a map of substitution variables
+        @return the function value of this term using the given map of
+        variable substitutions.
         """
         if not self.root:
             raise RuntimeError(f"function '{self.formula}' is not loaded")
@@ -2304,7 +2328,7 @@ class Function(Term):
 
     def is_loaded(self) -> bool:
         """Indicates whether the formula is loaded
-          @return whether the formula is loaded
+        @return whether the formula is loaded
         """
         return bool(self.root)
 
@@ -2336,10 +2360,10 @@ class Function(Term):
     @classmethod
     def infix_to_postfix(cls, formula: str) -> str:
         """Translates the given formula to postfix notation
-          @param formula is the right-hand side of a mathematical equation
-          expressed in infix notation
-          @return the formula represented in postfix notation
-          @throws fl::Exception if the formula has syntax errors
+        @param formula is the right-hand side of a mathematical equation
+        expressed in infix notation
+        @return the formula represented in postfix notation
+        @throws fl::Exception if the formula has syntax errors
         """
         # TODO: support for unary and binary (+,-)
         from . import lib
@@ -2425,10 +2449,10 @@ class Function(Term):
     @classmethod
     def parse(cls, formula: str) -> "Function.Node":
         """Creates a node representing a binary expression tree from the given formula
-          @param formula is the right-hand side of a mathematical equation
-          expressed in infix notation
-          @return a node representing a binary expression tree from the given formula
-          @throws fl::Exception if the formula has syntax errors
+        @param formula is the right-hand side of a mathematical equation
+        expressed in infix notation
+        @return a node representing a binary expression tree from the given formula
+        @throws fl::Exception if the formula has syntax errors
         """
         from . import lib
 
