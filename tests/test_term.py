@@ -1557,13 +1557,8 @@ class TestTerm(unittest.TestCase):
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
         try:
             import numpy as np  # type: ignore
-
-            fl.lib.logger.warning("testing with numpy library")
         except ModuleNotFoundError:
-            fl.lib.logger.warning(
-                "skipping test because the numpy library is not installed"
-            )
-            return
+            raise unittest.SkipTest("skipping test because the numpy library is not installed")
 
         fl.lib.floating_point_type = np.float_
         np.seterr("ignore")  # ignore "errors", (e.g., division by zero)
