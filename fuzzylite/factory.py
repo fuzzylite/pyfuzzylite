@@ -89,11 +89,11 @@ from .term import (
     PiShape,
     Ramp,
     Rectangle,
-    SShape,
     Sigmoid,
     SigmoidDifference,
     SigmoidProduct,
     Spike,
+    SShape,
     Term,
     Trapezoid,
     Triangle,
@@ -366,6 +366,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
     @see FactoryManager
     @since 5.0
     """
+
     def __init__(self) -> None:
         super().__init__()
         self._register_operators()
@@ -610,6 +611,7 @@ class FactoryManager:
     @see FunctionFactory
     @since 4.0
     """
+
     def __init__(
         self,
         tnorm: Optional[TNormFactory] = None,

@@ -36,8 +36,6 @@ from typing import Optional, Union
 from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
 
-# pylint: disable =  W0622 # Redefining built-in 'type' (redefined-builtin)
-
 
 class Defuzzifier:
     """

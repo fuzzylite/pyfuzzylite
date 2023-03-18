@@ -438,7 +438,7 @@ class TestOutputVariable(unittest.TestCase):
         variable.default_value = 0.5
         with self.assertRaisesRegex(
             ValueError,
-            "expected a defuzzifier in output variable name, " "but found none",
+            "expected a defuzzifier in output variable name, but found none",
         ):
             variable.defuzzify()
         self.assertEqual(variable.previous_value, 0.4)
@@ -447,15 +447,9 @@ class TestOutputVariable(unittest.TestCase):
         defuzzifier = fl.Defuzzifier()
         from unittest.mock import MagicMock
 
-        setattr(
-            defuzzifier,
-            "defuzzify",
-            MagicMock(
-                side_effect=ValueError("mocking exception during defuzzification")
-            ),
+        defuzzifier.defuzzify = MagicMock(  # type: ignore
+            side_effect=ValueError("mocking exception during defuzzification")
         )
-        # defuzzifier.defuzzify = MagicMock(
-        #     side_effect=ValueError("mocking exception during defuzzification"))
         variable.defuzzifier = defuzzifier
         variable.default_value = 0.6
         with self.assertRaisesRegex(

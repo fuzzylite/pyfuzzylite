@@ -1,5 +1,5 @@
-Version 7.0
-===========
+# Version 7.0
+
 - Postfix output prints left to right operands
 - Expression tree of Function.Node is created right to left such that its output is consistent with
   printing left to right operands
@@ -7,3 +7,7 @@ Version 7.0
 - Unary plus ".+" and minus ".-" operators for functions
 - Function right nodes are first to evaluate
 - NormFunction and NormLambda for dynamic norms
+
+# Version 7.1
+
+- Requires Python >=3.7

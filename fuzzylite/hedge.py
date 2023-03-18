@@ -48,6 +48,7 @@ class Hedge:
     @see HedgeFactory
     @since 4.0
     """
+
     @property
     def name(self) -> str:
         """
@@ -79,6 +80,7 @@ class Any(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the given value
@@ -98,6 +100,7 @@ class Extremely(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the membership function value @f$x@f$
@@ -121,6 +124,7 @@ class Not(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the membership function value @f$x@f$
@@ -140,6 +144,7 @@ class Seldom(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the membership function value @f$x@f$
@@ -164,6 +169,7 @@ class Somewhat(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the membership function value @f$x@f$
@@ -183,6 +189,7 @@ class Very(Hedge):
     @see HedgeFactory
     @since 4.0
     """
+
     def hedge(self, x: float) -> float:
         """
         Computes the hedge for the membership function value @f$x@f$
@@ -206,6 +213,7 @@ class HedgeLambda(Hedge):
     @see HedgeFactory
     @since 7.0
     """
+
     def __init__(self, name: str, function: Callable[[float], float]) -> None:
         self._name = name
         self.function = function
@@ -239,6 +247,7 @@ class HedgeFunction(Hedge):
     @see HedgeFactory
     @since 6.0
     """
+
     def __init__(self, function: "Function") -> None:
         self.function = function
 

@@ -46,7 +46,7 @@ class TestExporter(unittest.TestCase):
 
         exporter.to_file(path, object())
 
-        with io.open(path, "r") as exported:
+        with open(path) as exported:
             self.assertEqual("MagicMock Test", exported.read())
 
         os.remove(path)
@@ -283,7 +283,7 @@ RuleBlock: rb
 
     def test_object(self) -> None:
         with self.assertRaisesRegex(
-            ValueError, rf"expected a fuzzylite object, but found 'object"
+            ValueError, r"expected a fuzzylite object, but found 'object'"
         ):
             fl.FllExporter().to_string(object())
 
@@ -609,7 +609,7 @@ fl.RuleBlock(
 
     def test_object(self) -> None:
         with self.assertRaisesRegex(
-            ValueError, f"expected a fuzzylite object, but found 'object'"
+            ValueError, "expected a fuzzylite object, but found 'object'"
         ):
             fl.PythonExporter().to_string(object())
 
@@ -675,7 +675,7 @@ class TestFldExporter(unittest.TestCase):
             engine, writer, [0.25], set(engine.input_variables)
         )
         self.assertEqual("\n", writer.getvalue())
-        engine.process.assert_called_once()  # type: ignore
+        engine.process.assert_called_once()
 
         # active variables
         writer = io.StringIO()
@@ -1097,7 +1097,7 @@ class TestExporters(unittest.TestCase):
 
         path = "/tmp/source/"
         examples = pathlib.Path(path)
-        files = list(examples.rglob("*.fll"))
+        files = [str(example) for example in examples.rglob("*.fll")]
         print(files)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             threads = [executor.submit(TestExporters.export, file) for file in files]
@@ -1120,7 +1120,6 @@ class TestExporters(unittest.TestCase):
     @staticmethod
     def export(file_path: str) -> None:
         import importlib
-        import io
         import pathlib
         import time
 
@@ -1131,7 +1130,7 @@ class TestExporters(unittest.TestCase):
 
         path = pathlib.Path(file_path)
         if path.suffix == ".fll":
-            with io.open(path, "r") as file:
+            with open(path) as file:
                 import_fll = file.read()
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
@@ -1141,7 +1140,7 @@ class TestExporters(unittest.TestCase):
                 if parent.name == "fuzzylite":
                     break
             module = ".".join(reversed(package)) + f".{path.stem}"
-            engine = importlib.import_module(module).engine  # type: ignore
+            engine = importlib.import_module(module).engine
         else:
             raise Exception(f"unknown importer of files like {path}")
 

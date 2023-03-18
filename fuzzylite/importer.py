@@ -33,18 +33,19 @@ from .variable import InputVariable, OutputVariable
 
 class Importer:
     """
-      The Importer class is the abstract class for importers to configure an
-      Engine and its components from different text formats.
-      @todo declare methods to import specific components
-      @author Juan Rada-Vilela, Ph.D.
-      @see Exporter
-      @since 4.0
+    The Importer class is the abstract class for importers to configure an
+    Engine and its components from different text formats.
+    @todo declare methods to import specific components
+    @author Juan Rada-Vilela, Ph.D.
+    @see Exporter
+    @since 4.0
     """
+
     @property
     def class_name(self) -> str:
         """
-         Returns the name of the importer
-          @return the name of the importer
+        Returns the name of the importer
+         @return the name of the importer
         """
         return self.__class__.__name__
 
@@ -70,16 +71,17 @@ class Importer:
 
 class FllImporter(Importer):
     """
-     The FllImporter class is an Importer that configures an Engine and its
-      components utilizing the FuzzyLite Language (FLL), see
-      [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
-      more information.
-      @author Juan Rada-Vilela, Ph.D.
-      @see FllExporter
-      @see Importer
-      @since 4.0
-      @todo parse methods returning respective instances from blocks of text
+    The FllImporter class is an Importer that configures an Engine and its
+     components utilizing the FuzzyLite Language (FLL), see
+     [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
+     more information.
+     @author Juan Rada-Vilela, Ph.D.
+     @see FllExporter
+     @see Importer
+     @since 4.0
+     @todo parse methods returning respective instances from blocks of text
     """
+
     T = TypeVar("T", Activation, Defuzzifier, SNorm, TNorm)
 
     def __init__(self, separator: str = "\n") -> None:
@@ -141,7 +143,6 @@ class FllImporter(Importer):
     def input_variable(
         self, fll: str, engine: Optional[Engine] = None
     ) -> InputVariable:
-
         iv = InputVariable()
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -292,7 +293,7 @@ class FllImporter(Importer):
         )
         result = factory.construct(fll)
         if parameters and hasattr(result, "configure"):
-            getattr(result, "configure")(parameters)
+            result.configure(parameters)
         return result
 
     def range(self, fll: str) -> Tuple[float, float]:

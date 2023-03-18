@@ -15,13 +15,11 @@
  fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-# pylint: disable =  R0124 # Redundant comparison (comparison-with-itself) [nan]
-
 __all__ = ["Operation", "Op"]
 
 import inspect
 import math
-from typing import Callable, List, Optional, SupportsFloat, Text, Union
+from typing import Callable, List, Optional, SupportsFloat, Union
 
 
 class Operation:
@@ -36,11 +34,11 @@ class Operation:
     @staticmethod
     def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is equal to @f$b@f$ at the given tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is equal to @f$b@f$ at the given tolerance
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is equal to @f$b@f$ at the given tolerance
         """
         if abs_tolerance is None:
             from . import lib
@@ -51,11 +49,11 @@ class Operation:
     @staticmethod
     def neq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is not equal to @f$b@f$ at the given tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is equal to @f$b@f$ at the given tolerance"""
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is equal to @f$b@f$ at the given tolerance"""
         if abs_tolerance is None:
             from . import lib
 
@@ -65,11 +63,11 @@ class Operation:
     @staticmethod
     def gt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is greater than @f$b@f$ at the given tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is greater than @f$b@f$ at the given tolerance
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is greater than @f$b@f$ at the given tolerance
         """
         if abs_tolerance is None:
             from . import lib
@@ -82,13 +80,13 @@ class Operation:
     @staticmethod
     def ge(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is greater than or equal to @f$b@f$ at the
-          given tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is greater than or equal to @f$b@f$ at the
-          given tolerance
+        given tolerance
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is greater than or equal to @f$b@f$ at the
+        given tolerance
         """
         if abs_tolerance is None:
             from . import lib
@@ -99,13 +97,13 @@ class Operation:
     @staticmethod
     def le(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is less than or equal to @f$b@f$ at the given
-          tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is less than or equal to @f$b@f$ at the given
-          tolerance
+        tolerance
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is less than or equal to @f$b@f$ at the given
+        tolerance
         """
         if abs_tolerance is None:
             from . import lib
@@ -116,11 +114,11 @@ class Operation:
     @staticmethod
     def lt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
         """Returns whether @f$a@f$ is less than @f$b@f$ at the given tolerance
-          @param a
-          @param b
-          @param macheps is the minimum difference upon which two
-          floating-point values are considered equivalent
-          @return whether @f$a@f$ is less than @f$b@f$ at the given tolerance
+        @param a
+        @param b
+        @param macheps is the minimum difference upon which two
+        floating-point values are considered equivalent
+        @return whether @f$a@f$ is less than @f$b@f$ at the given tolerance
         """
         if abs_tolerance is None:
             from . import lib
@@ -133,32 +131,31 @@ class Operation:
     @staticmethod
     def logical_and(a: float, b: float) -> bool:
         """Computes the logical AND
-          @param a
-          @param b
-          @return @f$
-          \begin{cases}
-          1.0 & \mbox{if $a=1 \wedge b=1$}\cr
-          0.0 & \mbox{otherwise}
-          \end{cases}
-          @f$
+        @param a
+        @param b
+        @return @f$
+        \begin{cases}
+        1.0 & \mbox{if $a=1 \wedge b=1$}\cr
+        0.0 & \mbox{otherwise}
+        \end{cases}
+        @f$
         """
         return Operation.eq(a, 1.0) and Operation.eq(b, 1.0)
 
     @staticmethod
     def logical_or(a: float, b: float) -> bool:
         """Computes the logical OR
-          @param a
-          @param b
-          @return @f$
-          \begin{cases}
-          1.0 & \mbox{if $a=1 \vee b=1$}\cr
-          0.0 & \mbox{otherwise}
-          \end{cases}
-          @f$
+        @param a
+        @param b
+        @return @f$
+        \begin{cases}
+        1.0 & \mbox{if $a=1 \vee b=1$}\cr
+        0.0 & \mbox{otherwise}
+        \end{cases}
+        @f$
         """
         return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
 
-    # pylint: disable = E0601 # Using variable 'str' before assignment (used-before-assignment) [False Positive]
     @staticmethod
     def as_identifier(name: str) -> str:
         result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
@@ -173,17 +170,17 @@ class Operation:
         to_maximum: float,
     ) -> float:
         """Linearly interpolates the parameter @f$x@f$ in range
-          `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
-          truncated to the range `[toMin,toMax]` if bounded is `true`.
-          @param x is the source value to interpolate
-          @param fromMin is the minimum value of the source range
-          @param fromMax is the maximum value of the source range
-          @param toMin is the minimum value of the target range
-          @param toMax is the maximum value of the target range
-          @param bounded determines whether the resulting value is bounded to
-          the range
-          @return the source value linearly interpolated to the target range:
-          @f$ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} @f$
+        `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
+        truncated to the range `[toMin,toMax]` if bounded is `true`.
+        @param x is the source value to interpolate
+        @param fromMin is the minimum value of the source range
+        @param fromMax is the maximum value of the source range
+        @param toMin is the minimum value of the target range
+        @param toMax is the maximum value of the target range
+        @param bounded determines whether the resulting value is bounded to
+        the range
+        @return the source value linearly interpolated to the target range:
+        @f$ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} @f$
         """
         return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
             x - from_minimum
@@ -192,16 +189,16 @@ class Operation:
     @staticmethod
     def bound(x: float, minimum: float, maximum: float) -> float:
         """Returns @f$x@f$ bounded in @f$[\min,\max]@f$
-          @param x is the value to be bounded
-          @param min is the minimum value of the range
-          @param max is the maximum value of the range
-          @return @f$
-          \begin{cases}
-          \min & \mbox{if $x < \min$} \cr
-          \max & \mbox{if $x > \max$} \cr
-          x & \mbox{otherwise}
-          \end{cases}
-          @f$
+        @param x is the value to be bounded
+        @param min is the minimum value of the range
+        @param max is the maximum value of the range
+        @return @f$
+        \begin{cases}
+        \min & \mbox{if $x < \min$} \cr
+        \max & \mbox{if $x > \max$} \cr
+        x & \mbox{otherwise}
+        \end{cases}
+        @f$
         """
         if x > maximum:
             return maximum
@@ -289,7 +286,7 @@ class Operation:
         if x[position] < maximum[position]:
             x[position] += 1
         else:
-            incremented = not position == 0
+            incremented = position != 0
             x[position] = minimum[position]
             position -= 1
             if position >= 0:
@@ -298,11 +295,11 @@ class Operation:
 
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Union[float, object], decimals: Optional[int] = None) -> Text:
+    def str(x: Union[float, object], decimals: Optional[int] = None) -> str:
         """Returns a string representation of the given value
-          @param x is the value
-          @param decimals is the number of decimals to display
-          @return a string representation of the given value
+        @param x is the value
+        @param decimals is the number of decimals to display
+        @return a string representation of the given value
         """
         if not decimals:
             from . import lib

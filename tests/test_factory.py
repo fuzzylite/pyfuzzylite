@@ -253,7 +253,7 @@ class TestFactory(unittest.TestCase):
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("CloningFactory").copies_exactly({})
 
-        class Example(object):
+        class Example:
             def __init__(self, value: str) -> None:
                 self.property = value
 

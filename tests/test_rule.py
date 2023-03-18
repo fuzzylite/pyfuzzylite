@@ -232,7 +232,7 @@ class TestAntecedent(unittest.TestCase):
         )
 
         AssertAntecedent(self, engine).cannot_load_antecedent(
-            f"Ambient is any DARK",
+            "Ambient is any DARK",
             SyntaxError,
             "expected variable or logical operator, but found 'DARK'",
         )
@@ -496,7 +496,7 @@ class TestAntecedent(unittest.TestCase):
 
 
 class AssertConsequent:
-    def __init__(self, test: unittest.TestCase, engine: fl.Engine):
+    def __init__(self, test: unittest.TestCase, engine: fl.Engine) -> None:
         self.test = test
         self.engine = engine
 
@@ -529,7 +529,7 @@ class AssertConsequent:
         consequent = fl.Consequent(text)
         consequent.load(self.engine)
         consequent.modify(activation_degree, implication)
-        for variable in expected.keys():
+        for variable in expected:
             expected_terms = {t.term.name: t.degree for t in expected[variable]}
             obtained_terms = {t.term.name: t.degree for t in variable.fuzzy.terms}
             self.test.assertSetEqual(
@@ -559,7 +559,7 @@ class AssertConsequent:
         activation_degree: float,
         implication: Optional[fl.TNorm] = None,
     ) -> "AssertConsequent":
-        pass
+        raise NotImplementedError()
 
 
 class TestConsequent(unittest.TestCase):
@@ -700,7 +700,7 @@ class TestConsequent(unittest.TestCase):
 
 
 class RuleAssert:
-    def __init__(self, test: unittest.TestCase):
+    def __init__(self, test: unittest.TestCase) -> None:
         self.test = test
 
     def can_parse_rule(self, text: str, as_text: Optional[str] = None) -> "RuleAssert":
@@ -749,7 +749,7 @@ class TestRule(unittest.TestCase):
         rule = fl.Rule()
         rule.parse = MagicMock()  # type: ignore
         rule.text = "if a then b"
-        rule.parse.assert_called_once_with("if a then b")  # type: ignore
+        rule.parse.assert_called_once_with("if a then b")
 
     def test_can_parse_rule(self) -> None:
         RuleAssert(self).can_parse_rule("if a then b")
@@ -942,7 +942,7 @@ class TestRuleBlock(unittest.TestCase):
         rb = fl.RuleBlock(activation=activation)
 
         rb.activate()
-        activation.activate.assert_called_once_with(rb)  # type: ignore
+        activation.activate.assert_called_once_with(rb)
 
         rb.activation = None
         with self.assertRaisesRegex(
@@ -1013,8 +1013,8 @@ class TestRuleBlock(unittest.TestCase):
         rb = fl.RuleBlock(rules=[rule])
 
         rb.reload_rules(engine)
-        rule.unload.assert_called()  # type: ignore
-        rule.load.assert_called_once_with(engine)  # type: ignore
+        rule.unload.assert_called()
+        rule.load.assert_called_once_with(engine)
 
 
 if __name__ == "__main__":
