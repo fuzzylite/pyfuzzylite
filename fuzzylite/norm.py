@@ -186,7 +186,7 @@ class HamacherProduct(TNorm):
     @see TNormFactory
     @see Norm
     @since 4.0
-    .
+
     """
 
     def compute(self, a: float, b: float) -> float:
@@ -376,7 +376,7 @@ class Maximum(SNorm):
         @param a is a membership function value
         @param b is a membership function value
         @return $\max(a,b)$
-        .
+
         """
         return max(a, b)
 
@@ -453,13 +453,13 @@ class NormLambda(TNorm, SNorm):
     @see SNormFactory
     @see TNormFactory
     @since 7.0
-    .
+
     """
 
     def __init__(self, function: Callable[[float, float], float]) -> None:
         """Create the norm.
         @param function is a binary function
-        .
+
         """
         self.function = function
 
@@ -469,7 +469,7 @@ class NormLambda(TNorm, SNorm):
         @param a is a membership function value
         @param b is a membership function value
         @return the evaluation of the function
-        .
+
         """
         return self.function(a, b)
 
@@ -486,13 +486,13 @@ class NormFunction(TNorm, SNorm):
     @see SNormFactory
     @see TNormFactory
     @since 6.0
-    .
+
     """
 
     def __init__(self, function: "Function") -> None:
         """Create the norm.
         @param function is a binary function
-        .
+
         """
         self.function = function
 
@@ -502,6 +502,6 @@ class NormFunction(TNorm, SNorm):
         @param a is a membership function value
         @param b is a membership function value
         @return the evaluation of the function
-        .
+
         """
         return self.function.evaluate({"a": a, "b": b})

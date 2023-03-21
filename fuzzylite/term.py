@@ -104,7 +104,7 @@ class Term:
         """Create the term.
         @param name is the name of the term
         @param height is the height of the term
-        .
+
         """
         self.name = name
         self.height = height
@@ -719,7 +719,7 @@ class Discrete(Term):
             """Create the pair.
             @param x is the x value
             @param y is the y value
-            .
+
             """
             self.x = x
             self.y = y
@@ -793,7 +793,7 @@ class Discrete(Term):
         def values(self, xy: Tuple[float, float]) -> None:
             """Sets this pair to the tuple.
             @param xy is the tuple
-            .
+
             """
             self.x, self.y = xy
 
@@ -927,7 +927,7 @@ class Discrete(Term):
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
         @returns a flat list of values
-        .
+
         """
         result: List[float] = []
         for xy in pairs:
@@ -1533,7 +1533,7 @@ class SigmoidDifference(Term):
     def parameters(self) -> str:
         """Returns the parameters of the term
         @return `"left rising falling right [height]"`
-        .
+
         """
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
@@ -2385,7 +2385,7 @@ class Function(Term):
         """Formats the infix formula.
         @param formula is the infix formula
         @returns the formula formatted
-        .
+
         """
         from . import lib
         from .factory import FunctionFactory

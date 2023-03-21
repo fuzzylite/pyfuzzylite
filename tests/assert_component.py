@@ -36,18 +36,16 @@ class BaseAssert(Generic[T]):
         self.test.maxDiff = None  # show all differences
 
     def exports_fll(self, fll: str) -> Any:
-        """Asserts that the given fll is equal to the obtained fll
-        @param fll is the expected fll
-        .
+        """Asserts that the given fll is equal to the obtained fll.
+        @param fll is the expected fll.
         """
         self.test.assertEqual(fll, fl.FllExporter().to_string(self.actual))
         self.test.assertEqual(fll, str(self.actual))
         return self
 
     def has_name(self, name: str) -> Any:
-        """Asserts that the obtained object's name is equal to the expected name
-        @param name is the expected name
-        .
+        """Asserts that the obtained object's name is equal to the expected name.
+        @param name is the expected name.
         """
         self.test.assertTrue(
             hasattr(self.actual, "name"),
@@ -57,9 +55,8 @@ class BaseAssert(Generic[T]):
         return self
 
     def has_description(self, description: str) -> Any:
-        """Asserts that the obtained object's description is equal to the expected description
-        @param description is the expected description
-        .
+        """Asserts that the obtained object's description is equal to the expected description.
+        @param description is the expected description.
         """
         self.test.assertTrue(
             hasattr(self.actual, "description"),

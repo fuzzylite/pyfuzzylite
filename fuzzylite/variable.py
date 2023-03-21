@@ -61,6 +61,7 @@ class Variable:
         @param lockValueInRange indicates whether to lock the value to the
           range of the variable
         @param terms is the list of terms.
+        # TODO: Explore converting list of terms to a dictionary of terms.
         """
         self.name = name
         self.description = description
@@ -85,7 +86,7 @@ class Variable:
         """Gets the term by the name.
         @param name is the name of the term
         @return the term of the given name
-        .
+
         """
         for term in self.terms:
             if term.name == name:
@@ -96,7 +97,7 @@ class Variable:
     def drange(self) -> float:
         """Gets the magnitude of the range of the variable
         @return `maximum - minimum`
-        .
+
         """
         return self.maximum - self.minimum
 
@@ -104,7 +105,7 @@ class Variable:
     def range(self) -> Tuple[float, float]:
         """Gets the range of the variable
         @return tuple of (minimum, maximum)
-        .
+
         """
         return self.minimum, self.maximum
 
@@ -112,7 +113,7 @@ class Variable:
     def range(self, min_max: Tuple[float, float]) -> None:
         """Sets the range of the variable
         @param min_max is the range of the variable (minimum, maximum)
-        .
+
         """
         self.minimum, self.maximum = min_max
 
@@ -348,7 +349,7 @@ class OutputVariable(Variable):
     def name(self, value: str) -> None:
         """Sets the name of the output variable
         @param value is the name of the output variable
-        .
+
         """
         self.fuzzy.name = value
 
@@ -361,7 +362,7 @@ class OutputVariable(Variable):
     def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
         @param value is the minimum value of the output variable
-        .
+
         """
         self.fuzzy.minimum = value
 
@@ -381,7 +382,7 @@ class OutputVariable(Variable):
     def aggregation(self) -> Optional[SNorm]:
         """Gets the aggregation operator
         @return the aggregation operator
-        .
+
         """
         return self.fuzzy.aggregation
 
@@ -389,7 +390,7 @@ class OutputVariable(Variable):
     def aggregation(self, value: SNorm) -> None:
         """Sets the aggregation operator
         @param aggregation is the aggregation
-        .
+
         """
         self.fuzzy.aggregation = value
 
@@ -448,10 +449,7 @@ class OutputVariable(Variable):
         self._value = nan
 
     def fuzzy_value(self) -> str:
-        r"""Gets a string representation of the fuzzy output value $\tilde{y}$
-        @return a string representation of the fuzzy output value
-        $\tilde{y}$.
-        """
+        r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
         result: List[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)

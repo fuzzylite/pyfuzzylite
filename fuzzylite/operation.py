@@ -53,7 +53,7 @@ class Operation:
         @param macheps is the minimum difference upon which two
         floating-point values are considered equivalent
         @return whether $a$ is equal to $b$ at the given tolerance
-        .
+
         """
         if abs_tolerance is None:
             from . import lib
@@ -162,7 +162,7 @@ class Operation:
         """Convert the name into a valid FuzzyLite identifier
         @param name is the name to convert
         @returns the name as a valid identifier
-        .
+
         """
         result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
         return result if result else "unnamed"
@@ -217,7 +217,7 @@ class Operation:
         """Gets the arity of the given method.
         @param method is the method to get the arity from
         @returns the arity of the method
-        .
+
         """
         signature = inspect.signature(method)
         required_parameters = [

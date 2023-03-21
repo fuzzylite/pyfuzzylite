@@ -385,7 +385,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
         Args:
         parameters: type of defuzzifier
-        .
+
         """
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
