@@ -127,10 +127,9 @@ ignore = [
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**args`
     "B007",   # [*] Loop control variable `x` not used within loop body
-    "D100",
+    "D100", # Missing docstring in public module
     "D104",   # Missing docstring in public package
     "D205",   # 1 blank line required between summary line and description"
-    "D211",
     "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     "D417",   # Missing argument descriptions in the docstring
     "E501",   # Line too long (handled by black)
@@ -146,7 +145,7 @@ ignore = [
     "RET505",  # Unnecessary `else` after `return` statement
     "SIM102",  # Use a single `if` statement instead of nested `if` statements
     "SIM300",  # Yoda conditions are discouraged
-    "W605",    # [*] Invalid escape sequence: latex
+    # "W605",    # [*] Invalid escape sequence: latex
 
 ]
 

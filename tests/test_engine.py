@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import unittest
 from typing import List, Optional
@@ -22,7 +22,10 @@ from tests.assert_component import BaseAssert
 
 
 class EngineAssert(BaseAssert[fl.Engine]):
+    """Engine assert."""
+
     def has_type(self, expected: fl.Engine.Type) -> "EngineAssert":
+        """Asserts the engine has the expectd type."""
         type = self.actual.infer_type()
         self.test.assertEqual(
             type, expected, f"expected engine of type {expected}, but found {type}"
@@ -30,6 +33,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def is_ready(self, expected: bool, status: str = "") -> "EngineAssert":
+        """Asserts whether the engine is ready and its status."""
         ready, message = self.actual.is_ready()
         self.test.assertEqual(
             ready,
@@ -43,6 +47,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def has_n_inputs(self, n: int) -> "EngineAssert":
+        """Asserts the engine has the expected number of input variables."""
         n_inputs = len(self.actual.input_variables)
         self.test.assertEqual(
             n_inputs, n, f"expected {n} input variables, but found {n_inputs}"
@@ -50,12 +55,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def has_inputs(self, names: List[str]) -> "EngineAssert":
+        """Asserts the engine has the expected input variables by name."""
         self.test.assertSequenceEqual(
             [iv.name for iv in self.actual.input_variables], names
         )
         return self
 
     def has_n_outputs(self, n: int) -> "EngineAssert":
+        """Asserts the engine has the expected number of output variables."""
         n_outputs = len(self.actual.output_variables)
         self.test.assertEqual(
             n_outputs, n, f"expected {n} output variables, but found {n_outputs}"
@@ -63,12 +70,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def has_outputs(self, names: List[str]) -> "EngineAssert":
+        """Asserts the engine has the expected output variables by name."""
         self.test.assertSequenceEqual(
             [ov.name for ov in self.actual.output_variables], names
         )
         return self
 
     def has_n_blocks(self, n: int) -> "EngineAssert":
+        """Asserts the engine has the expected number of rule blocks."""
         n_blocks = len(self.actual.rule_blocks)
         self.test.assertEqual(
             n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}"
@@ -76,12 +85,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         return self
 
     def has_blocks(self, names: List[str]) -> "EngineAssert":
+        """Asserts the engine has the expected number of rule blocks by name."""
         self.test.assertSequenceEqual(
             [rb.name for rb in self.actual.rule_blocks], names
         )
         return self
 
     def evaluate_fld(self, fld: str, decimals: Optional[int] = None) -> "EngineAssert":
+        """Asserts the engine produces the expected fld."""
         if decimals is None:
             decimals = fl.lib.decimals
         for line, evaluation in enumerate(fld.split("\n")):
@@ -116,7 +127,10 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
 
 class TestEngine(unittest.TestCase):
+    """Tests the engine."""
+
     def test_empty_engine(self) -> None:
+        """Tests the empty engine."""
         flc = fl.Engine("name", "description")
         EngineAssert(self, flc).has_name("name").has_description(
             "description"
@@ -127,6 +141,7 @@ class TestEngine(unittest.TestCase):
         )
 
     def test_engine(self) -> None:
+        """Tests a basic engine."""
         engine = fl.Engine()
         engine.name = "tipper"
         engine.description = "(service and food) -> (tip)"
@@ -273,10 +288,13 @@ class TestEngine(unittest.TestCase):
             decimals=16,
         )
 
+    @unittest.skip("Not implemented yet")
     def test_engine_from_fll(self) -> None:
+        """Not implemented yet."""
         pass
 
     def test_inputs(self) -> None:
+        """Tests the input variables of an engine."""
         flc = fl.Engine(
             "name", "description", [fl.InputVariable("A"), fl.InputVariable("B")]
         )
@@ -299,6 +317,7 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(iv.name, names[i])
 
     def test_outputs(self) -> None:
+        """Tests the output variables of an engine."""
         flc = fl.Engine(
             "name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")]
         )

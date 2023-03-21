@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import unittest
@@ -21,7 +21,10 @@ import fuzzylite
 
 
 class TestLibrary(unittest.TestCase):
+    """Test the library class."""
+
     def test_library_exports_dir(self) -> None:
+        """Test the library exports expected components."""
         expected = """
 __annotations__ __builtins__ __cached__ __doc__ __file__ __loader__
 __name__ __package__ __path__ __spec__ __version__
@@ -65,6 +68,7 @@ variable InputVariable OutputVariable Variable
         self.assertSetEqual(set(expected.split()), set(dir(fuzzylite)))
 
     def test_library_vars(self) -> None:
+        """Test the library variables."""
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
         self.assertEqual(fuzzylite.__version__, "7.1.0")
         self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)

@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import io
 import os
@@ -29,17 +29,23 @@ from fuzzylite.examples.mamdani import SimpleDimmer
 
 
 class TestExporter(unittest.TestCase):
+    """Test exporters."""
+
     def setUp(self) -> None:
+        """Display the entire diff in tests."""
         self.maxDiff = None
 
     def test_class_name(self) -> None:
+        """Tests the base name."""
         self.assertEqual(fl.Exporter().class_name, "Exporter")
 
     def test_to_string(self) -> None:
+        """Test the base method."""
         with self.assertRaises(NotImplementedError):
             fl.Exporter().to_string(None)
 
     def test_to_file(self) -> None:
+        """Test the exporter saves to file."""
         exporter = fl.Exporter()
         exporter.to_string = MagicMock(return_value="MagicMock Test")  # type: ignore
         path = tempfile.mkstemp(text=True)[1]
@@ -53,7 +59,10 @@ class TestExporter(unittest.TestCase):
 
 
 class TestFllExporter(unittest.TestCase):
+    """Test the FuzzyLite Language exporter."""
+
     def test_single_line_indent(self) -> None:
+        """Test the separator and indentation."""
         engine = fl.Engine(
             "engine",
             "single line export to FLL",
@@ -89,6 +98,7 @@ class TestFllExporter(unittest.TestCase):
         )
 
     def test_engine(self) -> None:
+        """Test an engine is exported."""
         engine = fl.Engine(
             name="engine",
             description="an engine",
@@ -154,6 +164,7 @@ RuleBlock: rb
         )
 
     def test_variable(self) -> None:
+        """Test base variables are exported."""
         variable = fl.Variable(
             name="variable",
             description="a variable",
@@ -176,6 +187,7 @@ Variable: variable
         )
 
     def test_input_variable(self) -> None:
+        """Test input variables are exported."""
         variable = fl.InputVariable(
             name="input_variable",
             description="an input variable",
@@ -199,6 +211,7 @@ InputVariable: input_variable
         )
 
     def test_output_variable(self) -> None:
+        """Test output variables are exported."""
         variable = fl.OutputVariable(
             name="output_variable",
             description="an output variable",
@@ -226,6 +239,7 @@ OutputVariable: output_variable
         )
 
     def test_rule_block(self) -> None:
+        """Test rule blocks are exported."""
         rb = fl.RuleBlock(
             name="rb", description="a rule block", rules=[fl.Rule.create("if a then z")]
         )
@@ -246,6 +260,7 @@ RuleBlock: rb
         )
 
     def test_term(self) -> None:
+        """Test terms are exported."""
         term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
         self.assertEqual(fl.FllExporter().to_string(term), fl.FllExporter().term(term))
         self.assertEqual(
@@ -253,17 +268,20 @@ RuleBlock: rb
         )
 
     def test_rule(self) -> None:
+        """Test rules are exported."""
         rule = fl.Rule.create("if a then z")
         self.assertEqual(fl.FllExporter().to_string(rule), fl.FllExporter().rule(rule))
         self.assertEqual(fl.FllExporter().rule(rule), "rule: if a then z")
 
     def test_norm(self) -> None:
+        """Test norms are exported."""
         self.assertEqual(fl.FllExporter().norm(None), "none")
         norm = fl.AlgebraicProduct()
         self.assertEqual(fl.FllExporter().to_string(norm), fl.FllExporter().norm(norm))
         self.assertEqual(fl.FllExporter().norm(norm), "AlgebraicProduct")
 
     def test_activation(self) -> None:
+        """Test activations are exported."""
         self.assertEqual(fl.FllExporter().activation(None), "none")
         activation = fl.General()
         self.assertEqual(
@@ -273,6 +291,7 @@ RuleBlock: rb
         self.assertEqual(fl.FllExporter().activation(activation), "General")
 
     def test_defuzzifier(self) -> None:
+        """Test defuzzifiers are exported."""
         self.assertEqual(fl.FllExporter().defuzzifier(None), "none")
         defuzzifier = fl.Centroid()
         self.assertEqual(
@@ -282,6 +301,7 @@ RuleBlock: rb
         self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 100")
 
     def test_object(self) -> None:
+        """Test a non-fuzzylite object cannot exported."""
         with self.assertRaisesRegex(
             ValueError, r"expected a fuzzylite object, but found 'object'"
         ):
@@ -289,10 +309,14 @@ RuleBlock: rb
 
 
 class TestPythonExporter(unittest.TestCase):
+    """Test Python exporter."""
+
     def setUp(self) -> None:
+        """Display the entire diff in tests."""
         self.maxDiff = None
 
     def test_empty_engine(self) -> None:
+        """Test an empty engine is exported."""
         engine = fl.Engine(name="engine", description="an engine")
         self.assertEqual(
             fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine)
@@ -313,6 +337,7 @@ engine.rule_blocks = []
         )
 
     def test_engine(self) -> None:
+        """Test a basic engine is exported."""
         engine = fl.Engine(
             name="engine",
             description="an engine",
@@ -395,6 +420,7 @@ engine.rule_blocks = [
         )
 
     def test_input_variable(self) -> None:
+        """Test input variables are exported."""
         iv = fl.InputVariable(
             name="input_variable",
             description="an input variable",
@@ -437,6 +463,7 @@ fl.InputVariable(
         )
 
     def test_output_variable(self) -> None:
+        """Test output variables are exported."""
         ov = fl.OutputVariable(
             name="output_variable",
             description="an output variable",
@@ -485,6 +512,7 @@ fl.OutputVariable(
         )
 
     def test_rule_block(self) -> None:
+        """Test rule blocks are exported."""
         rb = fl.RuleBlock(
             name="rb", description="a rule block", rules=[fl.Rule.create("if a then z")]
         )
@@ -525,6 +553,7 @@ fl.RuleBlock(
         )
 
     def test_term(self) -> None:
+        """Test terms are exported."""
         term: fl.Term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
         self.assertEqual(
             fl.PythonExporter().to_string(term), fl.PythonExporter().term(term)
@@ -561,6 +590,7 @@ fl.RuleBlock(
         )
 
     def test_rule(self) -> None:
+        """Test rules are exported."""
         rule = fl.Rule.create("if a then z")
         self.assertEqual(
             fl.PythonExporter().to_string(rule), fl.PythonExporter().rule(rule)
@@ -570,6 +600,7 @@ fl.RuleBlock(
         )
 
     def test_norm(self) -> None:
+        """Test norms are exported."""
         self.assertEqual(fl.PythonExporter().norm(None), "None")
         norm = fl.AlgebraicProduct()
         self.assertEqual(
@@ -578,6 +609,7 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().norm(norm), "fl.AlgebraicProduct()")
 
     def test_activation(self) -> None:
+        """Test activation methods are exported."""
         self.assertEqual(fl.PythonExporter().activation(None), "None")
         norm = fl.General()
         self.assertEqual(
@@ -586,6 +618,7 @@ fl.RuleBlock(
         self.assertEqual(fl.PythonExporter().activation(norm), "fl.General()")
 
     def test_defuzzifier(self) -> None:
+        """Test defuzzifiers are exported."""
         self.assertEqual(fl.PythonExporter().defuzzifier(None), "None")
 
         defuzzifier: fl.Defuzzifier = fl.Centroid()
@@ -608,6 +641,7 @@ fl.RuleBlock(
         )
 
     def test_object(self) -> None:
+        """Test non-fuzzylite objects cannot be exported."""
         with self.assertRaisesRegex(
             ValueError, "expected a fuzzylite object, but found 'object'"
         ):
@@ -615,7 +649,10 @@ fl.RuleBlock(
 
 
 class TestFldExporter(unittest.TestCase):
+    """Test FuzzyLite Dataset exporter."""
+
     def test_default_constructor(self) -> None:
+        """Test the default constructor."""
         exporter = fl.FldExporter()
         self.assertEqual(" ", exporter.separator)
         self.assertTrue(exporter.headers)
@@ -623,6 +660,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertTrue(exporter.output_values)
 
     def test_header(self) -> None:
+        """Test output header."""
         engine = fl.Engine(
             input_variables=[fl.InputVariable("A"), fl.InputVariable("B")],
             output_variables=[
@@ -635,6 +673,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertEqual("A\tB\tX\tY\tZ", fl.FldExporter(separator="\t").header(engine))
 
     def test_write(self) -> None:
+        """Test writing lines."""
         # Empty write
         writer = io.StringIO()
         fl.FldExporter().write(fl.Engine(), writer, [], set())
@@ -688,6 +727,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertEqual("0.250 inf 0.750\n", writer.getvalue())
 
     def test_write_from_reader_empty_engine_empty(self) -> None:
+        """Test exporting an empty engine."""
         engine = fl.Engine()
 
         writer = io.StringIO()
@@ -699,6 +739,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertEqual("", writer.getvalue())
 
     def test_write_from_reader_empty_engine_not_empty(self) -> None:
+        """Test exporter can read an empty FLD and write it again."""
         engine = fl.Engine(
             input_variables=[fl.InputVariable("Input")],
             output_variables=[fl.OutputVariable("Output")],
@@ -713,6 +754,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertEqual("", writer.getvalue())
 
     def test_write_from_reader_empty_or_commented(self) -> None:
+        """Test exporter ignores comments."""
         reader = """\
 
 # commented line 0.000
@@ -722,6 +764,7 @@ class TestFldExporter(unittest.TestCase):
         self.assertEqual("\n", writer.getvalue())
 
     def test_write_from_reader(self) -> None:
+        """Test exporter can read an FLD and export it again."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         reader = """\
 Ambient Power
@@ -756,6 +799,7 @@ Ambient Power
         )
 
     def test_to_file_from_reader(self) -> None:
+        """Test exporter can read file and export it using default decimals."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         reader = """\
         Ambient Power
@@ -789,6 +833,7 @@ Ambient Power
         )
 
     def test_to_string_from_reader(self) -> None:
+        """Test exporter can read from a reader and export to a string."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         reader = """\
             Ambient Power
@@ -814,6 +859,7 @@ Ambient Power
         )
 
     def test_write_from_scope_each_variable_1(self) -> None:
+        """Test exporter can write from a specific scope of specific variables."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
@@ -836,6 +882,7 @@ Ambient Power
         )
 
     def test_write_from_scope_all_variables_on_empty_engine(self) -> None:
+        """Test the exporter cannot export an empty engine."""
         engine = fl.Engine()
         writer = io.StringIO()
         with self.assertRaisesRegex(
@@ -850,6 +897,7 @@ Ambient Power
             )
 
     def test_write_from_scope_all_variables_1(self) -> None:
+        """Test the exporter can export the values of all variables in the AllVariables scope."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
@@ -884,6 +932,7 @@ Ambient Power
         )
 
     def test_write_from_scope_each_variable_2(self) -> None:
+        """Test the exporter can export the values of all variables in each variable scope."""
         from fuzzylite.examples.hybrid import tipper
 
         engine = fl.FllImporter().from_string(str(tipper.engine))
@@ -920,6 +969,7 @@ service food mTip tsTip
         )
 
     def test_write_from_scope_all_variables_2(self) -> None:
+        """Test the exporter can export the values of all variables in the AllVariables scope."""
         from fuzzylite.examples.hybrid import tipper
 
         engine = fl.FllImporter().from_string(str(tipper.engine))
@@ -956,6 +1006,7 @@ service food mTip tsTip
         )
 
     def test_write_from_scope_each_variable_one_inactive(self) -> None:
+        """Test the exporter can export the values of only active variables in EachVariable scope."""
         from fuzzylite.examples.hybrid import tipper
 
         engine = fl.FllImporter().from_string(str(tipper.engine))
@@ -980,6 +1031,7 @@ service food mTip tsTip
         )
 
     def test_write_from_scope_all_variables_one_inactive(self) -> None:
+        """Test the exporter can export the values of only active variables in AllVariables scope."""
         from fuzzylite.examples.hybrid import tipper
 
         engine = fl.FllImporter().from_string(str(tipper.engine))
@@ -1004,6 +1056,7 @@ service food mTip tsTip
         )
 
     def test_to_file_from_scope(self) -> None:
+        """Test the exporter can export the values to a file from EachVariable scope."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
 
         file_name = (
@@ -1036,6 +1089,7 @@ Ambient Power
         )
 
     def test_to_string_from_scope(self) -> None:
+        """Test the exporter can export the values to a file from AllVariables scope."""
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
 
         obtained = fl.FldExporter().to_string_from_scope(
@@ -1057,6 +1111,7 @@ Ambient Power
         )
 
     def test_to_string(self) -> None:
+        """Test the exporter can export to string."""
         with self.assertRaisesRegex(
             ValueError, "expected an Engine, but got InputVariable"
         ):
@@ -1081,8 +1136,11 @@ Ambient Power
 
 
 class TestExporters(unittest.TestCase):
+    """Test exporters for every example."""
+
     @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
+        """Test every FLL example can be exported."""
         import concurrent.futures
         import logging
         import pathlib
@@ -1109,6 +1167,7 @@ class TestExporters(unittest.TestCase):
 
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
+        """Test exporting an arbitrary FLL file."""
         import numpy as np
 
         np.seterr(divide="ignore", invalid="ignore")
@@ -1119,6 +1178,7 @@ class TestExporters(unittest.TestCase):
 
     @staticmethod
     def export(file_path: str) -> None:
+        """Given an FLL file or Python example, export to FLL, Python and FLD."""
         import importlib
         import pathlib
         import time
