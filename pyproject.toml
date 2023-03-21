@@ -61,7 +61,7 @@ coverage = "^7.2.2"   # Code coverage
 mypy = "^1.1.1"       # Static analysis
 pyhamcrest = "^2.0.4" # Test Driven Development
 pytest = "^7.2.2"     # Test Driven Development
-ruff = "^0.0.256"     # Code formatting
+ruff = "^0.0.257"     # Code formatting
 nbqa = "^1.5"         # Notebook formatting
 
 [tool.black]

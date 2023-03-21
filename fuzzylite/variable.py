@@ -85,7 +85,7 @@ class Variable:
     def term(self, name: str) -> "Term":
         """Gets the term by the name.
         @param name is the name of the term
-        @return the term of the given name
+        @return the term of the given name.
 
         """
         for term in self.terms:
@@ -96,7 +96,7 @@ class Variable:
     @property
     def drange(self) -> float:
         """Gets the magnitude of the range of the variable
-        @return `maximum - minimum`
+        @return `maximum - minimum`.
 
         """
         return self.maximum - self.minimum
@@ -104,7 +104,7 @@ class Variable:
     @property
     def range(self) -> Tuple[float, float]:
         """Gets the range of the variable
-        @return tuple of (minimum, maximum)
+        @return tuple of (minimum, maximum).
 
         """
         return self.minimum, self.maximum
@@ -112,7 +112,7 @@ class Variable:
     @range.setter
     def range(self, min_max: Tuple[float, float]) -> None:
         """Sets the range of the variable
-        @param min_max is the range of the variable (minimum, maximum)
+        @param min_max is the range of the variable (minimum, maximum).
 
         """
         self.minimum, self.maximum = min_max
@@ -348,7 +348,7 @@ class OutputVariable(Variable):
     @name.setter
     def name(self, value: str) -> None:
         """Sets the name of the output variable
-        @param value is the name of the output variable
+        @param value is the name of the output variable.
 
         """
         self.fuzzy.name = value
@@ -361,7 +361,7 @@ class OutputVariable(Variable):
     @minimum.setter
     def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
-        @param value is the minimum value of the output variable
+        @param value is the minimum value of the output variable.
 
         """
         self.fuzzy.minimum = value
@@ -381,7 +381,7 @@ class OutputVariable(Variable):
     @property
     def aggregation(self) -> Optional[SNorm]:
         """Gets the aggregation operator
-        @return the aggregation operator
+        @return the aggregation operator.
 
         """
         return self.fuzzy.aggregation
@@ -389,7 +389,7 @@ class OutputVariable(Variable):
     @aggregation.setter
     def aggregation(self, value: SNorm) -> None:
         """Sets the aggregation operator
-        @param aggregation is the aggregation
+        @param aggregation is the aggregation.
 
         """
         self.fuzzy.aggregation = value

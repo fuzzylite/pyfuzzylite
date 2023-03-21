@@ -402,7 +402,7 @@ class Antecedent:
         infix notation
         @param node is a node in the expression tree of the antecedent
         @return a string represention of the given expression tree utilizing
-        infix notation
+        infix notation.
 
         """
         # TODO: enclose propositions in parentheses
@@ -468,7 +468,7 @@ class Consequent:
 
     def __init__(self, text: str = "") -> None:
         """Create the consequent from the text.
-        @param text is the text of the consequent
+        @param text is the text of the consequent.
 
         """
         self.text: str = text
@@ -809,7 +809,7 @@ class Rule:
     def create(text: str, engine: Optional["Engine"] = None) -> "Rule":
         """Create the rule from the text for the engine
         @param text is the text of the rule
-        @param engine is the engine
+        @param engine is the engine.
 
         """
         rule = Rule()

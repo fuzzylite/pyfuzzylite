@@ -103,7 +103,7 @@ class Term:
     def __init__(self, name: str = "", height: float = 1.0) -> None:
         """Create the term.
         @param name is the name of the term
-        @param height is the height of the term
+        @param height is the height of the term.
 
         """
         self.name = name
@@ -718,7 +718,7 @@ class Discrete(Term):
         def __init__(self, x: float = nan, y: float = nan) -> None:
             """Create the pair.
             @param x is the x value
-            @param y is the y value
+            @param y is the y value.
 
             """
             self.x = x
@@ -792,7 +792,7 @@ class Discrete(Term):
         @values.setter
         def values(self, xy: Tuple[float, float]) -> None:
             """Sets this pair to the tuple.
-            @param xy is the tuple
+            @param xy is the tuple.
 
             """
             self.x, self.y = xy
@@ -926,7 +926,7 @@ class Discrete(Term):
     def values_from(pairs: List["Discrete.Pair"]) -> List[float]:
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
-        @returns a flat list of values
+        @returns a flat list of values.
 
         """
         result: List[float] = []
@@ -1532,7 +1532,7 @@ class SigmoidDifference(Term):
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-        @return `"left rising falling right [height]"`
+        @return `"left rising falling right [height]"`.
 
         """
         return super()._parameters(self.left, self.rising, self.falling, self.right)
@@ -2384,7 +2384,7 @@ class Function(Term):
     def format_infix(cls, formula: str) -> str:
         """Formats the infix formula.
         @param formula is the infix formula
-        @returns the formula formatted
+        @returns the formula formatted.
 
         """
         from . import lib
