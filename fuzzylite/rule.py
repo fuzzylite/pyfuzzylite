@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 __all__ = [
@@ -49,7 +49,7 @@ class Expression:
     @see Antecedent
     @see Consequent
     @see Rule
-    @since 4.0
+    @since 4.0.
     """
 
     pass
@@ -62,7 +62,7 @@ class Proposition(Expression):
     @see Antecedent
     @see Consequent
     @see Rule
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -71,6 +71,11 @@ class Proposition(Expression):
         hedges: Optional[Iterable["Hedge"]] = None,
         term: Optional["Term"] = None,
     ) -> None:
+        """Create the proposition.
+        @param variable is the variable in the proposition
+        @param hedges is the list of hedges that apply to the term of the variable
+        @param term is the term in the proposition.
+        """
         self.variable = variable
         self.hedges: List["Hedge"] = []
         if hedges:
@@ -79,7 +84,7 @@ class Proposition(Expression):
 
     def __str__(self) -> str:
         """Returns a string representation of the proposition
-        @return a string representation of the proposition
+        @return a string representation of the proposition.
         """
         result = []
 
@@ -106,7 +111,7 @@ class Operator(Expression):
     @see Antecedent
     @see Consequent
     @see Rule
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -115,11 +120,10 @@ class Operator(Expression):
         right: Optional[Expression] = None,
         left: Optional[Expression] = None,
     ) -> None:
-        """
-        Create operator with the given parameters.
+        """Create operator with the given parameters.
         @param name is the name of the operator
         @param left is the left expression in the binary tree
-        @param right is the right expression in the binary tree
+        @param right is the right expression in the binary tree.
         """
         self.name = name
         self.right = right
@@ -127,7 +131,7 @@ class Operator(Expression):
 
     def __str__(self) -> str:
         """Returns the name of the operator
-        @return the name of the operator
+        @return the name of the operator.
         """
         return self.name
 
@@ -142,28 +146,28 @@ class Antecedent:
      @author Juan Rada-Vilela, Ph.D.
      @see Consequent
      @see Rule
-     @since 4.0
+     @since 4.0.
     """
 
     def __init__(self, text: str = "") -> None:
         """Create antecedent from the text.
-        @param text is the text of the antecedent
+        @param text is the text of the antecedent.
         """
         self.text = text
         self.expression: Optional[Expression] = None
 
     def __str__(self) -> str:
-        """Return the text of the antecedent"""
+        """Return the text of the antecedent."""
         return self.text
 
     def is_loaded(self) -> bool:
         """Indicates whether the antecedent is loaded
-        @return whether the antecedent is loaded
+        @return whether the antecedent is loaded.
         """
         return bool(self.expression)
 
     def unload(self) -> None:
-        """Unloads the antecedent"""
+        """Unloads the antecedent."""
         self.expression = None
 
     def activation_degree(
@@ -177,7 +181,7 @@ class Antecedent:
         @param conjunction is the conjunction operator from the RuleBlock
         @param disjunction is the disjunction operator from the RuleBlock
         @param node is a node in the expression tree of the antecedent
-        @return the activation degree of the antecedent
+        @return the activation degree of the antecedent.
         """
         if not node:
             if self.expression:
@@ -260,7 +264,7 @@ class Antecedent:
         identify and retrieve references to the input variables and output
         variables as required
         @param antecedent is the antecedent of the rule in text
-        @param engine is the engine from which the rules are part of
+        @param engine is the engine from which the rules are part of.
         """
         from collections import deque
 
@@ -373,7 +377,7 @@ class Antecedent:
         prefix notation
         @param node is a node in the expression tree of the antecedent
         @return a string represention of the given expression tree utilizing
-        prefix notation
+        prefix notation.
         """
         if not node:
             if self.expression:
@@ -398,7 +402,9 @@ class Antecedent:
         infix notation
         @param node is a node in the expression tree of the antecedent
         @return a string represention of the given expression tree utilizing
-        infix notation"""
+        infix notation.
+
+        """
         # TODO: enclose propositions in parentheses
         if not node:
             if self.expression:
@@ -424,7 +430,7 @@ class Antecedent:
         postfix notation
         @param node is a node in the expression tree of the antecedent
         @return a string represention of the given expression tree utilizing
-        postfix notation
+        postfix notation.
         """
         if not node:
             if self.expression:
@@ -457,27 +463,29 @@ class Consequent:
     @author Juan Rada-Vilela, Ph.D.
     @see Antecedent
     @see Rule
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(self, text: str = "") -> None:
         """Create the consequent from the text.
-        @param text is the text of the consequent"""
+        @param text is the text of the consequent.
+
+        """
         self.text: str = text
         self.conclusions: List[Proposition] = []
 
     def __str__(self) -> str:
-        """Return the text of the consequent"""
+        """Return the text of the consequent."""
         return self.text
 
     def is_loaded(self) -> bool:
         """Indicates whether the consequent is loaded
-        @return whether the consequent is loaded
+        @return whether the consequent is loaded.
         """
         return bool(self.conclusions)
 
     def unload(self) -> None:
-        """Unloads the consequent"""
+        """Unloads the consequent."""
         self.conclusions.clear()
 
     def modify(self, activation_degree: float, implication: Optional[TNorm]) -> None:
@@ -487,7 +495,7 @@ class Consequent:
         @param activationDegree is the activation degree computed in the
         Antecedent of the Rule
         @param implication is the implication operator configured in the
-        RuleBlock
+        RuleBlock.
         """
         from .term import Activated
 
@@ -527,7 +535,7 @@ class Consequent:
         identify and retrieve references to the input variables and output
         variables as required
         @param consequent is the consequent of the rule in text
-        @param engine is the engine from which the rules are part of
+        @param engine is the engine from which the rules are part of.
         """
         from . import lib
 
@@ -620,7 +628,7 @@ class Consequent:
 
 
 class Rule:
-    """The Rule class is a conditional statement that contributes to the control
+    r"""The Rule class is a conditional statement that contributes to the control
      of an Engine. Each rule consists of an Antecedent and a Consequent, each
      of which comprises propositions in the form `variable is term`. The
      propositions in the Antecedent can be connected by the conjunctive `and`
@@ -630,7 +638,7 @@ class Rule:
      The Term in any proposition can be preceded by a Hedge that modifies its
      membership function to model cases such as Very, Somewhat, Seldom and
      Not. Additionally, the contribution of a rule to the control of the
-     engine can be determined by its weight @f$w \in [0.0, 1.0]@f$, which is
+     engine can be determined by its weight $w \in [0.0, 1.0]$, which is
      equal to 1.0 if omitted. The structure of a rule is the following: `if
      (antecedent) then (consequent) [with weight]`. The structures of
      the antecedent and the consequent are:
@@ -644,7 +652,7 @@ class Rule:
      @see Consequent
      @see Hedge
      @see RuleBlock
-     @since 4.0
+     @since 4.0.
     """
 
     IF = "if"
@@ -655,6 +663,7 @@ class Rule:
     WITH = "with"
 
     def __init__(self) -> None:
+        """Create the rule."""
         self.enabled: bool = True
         self.weight: float = 1.0
         self.activation_degree: float = 0.0
@@ -663,12 +672,13 @@ class Rule:
         self.consequent: Consequent = Consequent()
 
     def __str__(self) -> str:
+        """Gets a string representation of the rule in the FuzzyLite Language."""
         return FllExporter().rule(self)
 
     @property
     def text(self) -> str:
         """Gets the text of the rule
-        @return the text of the rule
+        @return the text of the rule.
         """
         result = [Rule.IF, self.antecedent.text, Rule.THEN, self.consequent.text]
         if not Op.eq(self.weight, 1.0):
@@ -678,7 +688,7 @@ class Rule:
     @text.setter
     def text(self, text: str) -> None:
         """Sets the text of the rule
-        @param text is the text of the rule
+        @param text is the text of the rule.
         """
         self.parse(text)
 
@@ -686,7 +696,7 @@ class Rule:
         """Parses and creates a new rule based on the text passed
         @param rule is the rule in text
         @param engine is the engine from which the rule is part of
-        @return a new rule parsed from the given text
+        @return a new rule parsed from the given text.
         """
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
@@ -741,7 +751,7 @@ class Rule:
         self.weight = weight
 
     def deactivate(self) -> None:
-        """Deactivates the rule"""
+        """Deactivates the rule."""
         self.activation_degree = 0.0
         self.triggered = False
 
@@ -752,7 +762,7 @@ class Rule:
         conjunction and disjunction operators
         @param conjunction is the conjunction operator
         @param disjunction is the disjunction operator
-        @return the activation degree of the rule
+        @return the activation degree of the rule.
         """
         if not self.is_loaded():
             raise RuntimeError(f"rule is not loaded: '{self.text}'")
@@ -764,7 +774,7 @@ class Rule:
     def trigger(self, implication: Optional[TNorm]) -> None:
         """Triggers the rule's implication (if the rule is enabled) using the
         given implication operator and the underlying activation degree
-        @param implication is the implication operator
+        @param implication is the implication operator.
         """
         self.triggered = False
         if not self.is_loaded():
@@ -775,12 +785,12 @@ class Rule:
 
     def is_loaded(self) -> bool:
         """Indicates whether the rule is loaded
-        @return whether the rule is loaded
+        @return whether the rule is loaded.
         """
         return self.antecedent.is_loaded() and self.consequent.is_loaded()
 
     def unload(self) -> None:
-        """Unloads the rule"""
+        """Unloads the rule."""
         self.deactivate()
         self.antecedent.unload()
         self.consequent.unload()
@@ -789,7 +799,7 @@ class Rule:
         """Loads the rule with the text from Rule::getText(), and uses the
         engine to identify and retrieve references to the input variables and
         output variables as required
-        @param engine is the engine from which the rule is part of
+        @param engine is the engine from which the rule is part of.
         """
         self.deactivate()
         self.antecedent.load(engine)
@@ -799,7 +809,9 @@ class Rule:
     def create(text: str, engine: Optional["Engine"] = None) -> "Rule":
         """Create the rule from the text for the engine
         @param text is the text of the rule
-        @param engine is the engine"""
+        @param engine is the engine.
+
+        """
         rule = Rule()
         rule.parse(text)
         if engine:
@@ -815,7 +827,7 @@ class RuleBlock:
     @see Rule
     @see Antecedent
     @see Consequent
-    @since 4.0
+    @since 4.0.
     """
 
     def __init__(
@@ -837,7 +849,7 @@ class RuleBlock:
         @param disjunction is the disjunction operator
         @param implication is the implication operator
         @param activation is the activation method
-        @param rules is the list of rules
+        @param rules is the list of rules.
         """
         self.name = name
         self.description = description
@@ -854,12 +866,12 @@ class RuleBlock:
         """Returns a string representation of the rule block in the FuzzyLite
         Language
         @return a string representation of the rule block in the  FuzzyLite
-        Language
+        Language.
         """
         return FllExporter().rule_block(self)
 
     def activate(self) -> None:
-        """Activates the rule block"""
+        """Activates the rule block."""
         if not self.activation:
             raise ValueError(
                 f"expected an activation method, "
@@ -868,13 +880,13 @@ class RuleBlock:
         return self.activation.activate(self)
 
     def unload_rules(self) -> None:
-        """Unloads all the rules in the rule block"""
+        """Unloads all the rules in the rule block."""
         for rule in self.rules:
             rule.unload()
 
     def load_rules(self, engine: "Engine") -> None:
         """Loads all the rules into the rule block
-        @param engine is the engine where this rule block is registered
+        @param engine is the engine where this rule block is registered.
         """
         exceptions: List[str] = []
         for rule in self.rules:
@@ -890,7 +902,7 @@ class RuleBlock:
 
     def reload_rules(self, engine: "Engine") -> None:
         """Unloads all the rules in the rule block and then loads each rule again
-        @param engine is the engine where this rule block is registered
+        @param engine is the engine where this rule block is registered.
         """
         self.unload_rules()
         self.load_rules(engine)

@@ -1,20 +1,19 @@
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
+
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+
+This file is part of pyfuzzylite.
+
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
+
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
-
- This file is part of pyfuzzylite.
-
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
-
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
-
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
-"""
-
 import re
 import unittest
 from typing import Dict
@@ -24,11 +23,15 @@ from tests.assert_component import BaseAssert
 
 
 class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
+    """Defuzzifier assert."""
+
     def configured_as(self, parameters: str) -> "DefuzzifierAssert":
+        """Configures the actual defuzzifier with the parameters."""
         self.actual.configure(parameters)
         return self
 
     def has_parameters(self, parameters: str) -> "DefuzzifierAssert":
+        """Assert that the defuzzifier has the given parameters."""
         self.test.assertEqual(self.actual.parameters(), parameters)
         return self
 
@@ -38,6 +41,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         minimum: float = -fl.inf,
         maximum: float = fl.inf,
     ) -> "DefuzzifierAssert":
+        """Assert that the defuzzification of the given terms result in the expected values."""
         for term, result in terms.items():
             if fl.isnan(result):
                 self.test.assertEqual(
@@ -56,7 +60,10 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
 
 
 class TestDefuzzifier(unittest.TestCase):
+    """Tests the defuzzifiers."""
+
     def test_defuzzifier(self) -> None:
+        """Test the base class methods."""
         with self.assertRaises(NotImplementedError):
             fl.Defuzzifier().configure("")
         with self.assertRaises(NotImplementedError):
@@ -65,6 +72,7 @@ class TestDefuzzifier(unittest.TestCase):
             fl.Defuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
 
     def test_integral_defuzzifier(self) -> None:
+        """Test integral defuzzifier default values and methods."""
         DefuzzifierAssert(self, fl.IntegralDefuzzifier()).exports_fll(
             "IntegralDefuzzifier 100"
         ).has_parameters("100").configured_as("300").exports_fll(
@@ -75,6 +83,7 @@ class TestDefuzzifier(unittest.TestCase):
 
     @unittest.skip("Need to manually compute bisectors of triangles")
     def test_bisector(self) -> None:
+        """Test the bisector defuzzifier."""
         DefuzzifierAssert(self, fl.Bisector()).exports_fll(
             "Bisector 100"
         ).has_parameters("100").configured_as("200").exports_fll("Bisector 200")
@@ -104,6 +113,7 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
     def test_centroid(self) -> None:
+        """Test the centroid defuzzifier."""
         DefuzzifierAssert(self, fl.Centroid()).exports_fll(
             "Centroid 100"
         ).has_parameters("100").configured_as("200").exports_fll("Centroid 200")
@@ -133,6 +143,7 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
     def test_weighted_defuzzifier(self) -> None:
+        """Test the weighted defuzzifier and its methods."""
         self.assertEqual(
             fl.WeightedDefuzzifier().type, fl.WeightedDefuzzifier.Type.Automatic
         )
@@ -160,6 +171,7 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
     def test_weighted_average(self) -> None:
+        """Test the weighted average defuzzifier."""
         DefuzzifierAssert(self, fl.WeightedAverage()).exports_fll(
             "WeightedAverage Automatic"
         )
@@ -253,6 +265,7 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
     def test_weighted_sum(self) -> None:
+        """Test the weighted sum defuzzifier."""
         DefuzzifierAssert(self, fl.WeightedSum()).exports_fll("WeightedSum Automatic")
         DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
             "TakagiSugeno"

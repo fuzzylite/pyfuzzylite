@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import unittest
@@ -36,13 +36,17 @@ from tests.assert_component import BaseAssert
 class FactoryAssert(
     BaseAssert[Union[fl.ConstructionFactory[Any], fl.CloningFactory[Any]]]
 ):
+    """Factory assert."""
+
     def has_class_name(self, name: str) -> "FactoryAssert":
+        """Asserts the factory has the expected class name."""
         self.test.assertEqual(self.actual.class_name, name)
         return self
 
     def contains(
         self, name: Union[str, Iterable[str]], contains: bool = True
     ) -> "FactoryAssert":
+        """Asserts whether the factory contains specific class names."""
         if isinstance(name, str):
             name = [name]
         for string in name:
@@ -61,6 +65,7 @@ class FactoryAssert(
         return self
 
     def constructs_exactly(self, name_type: Dict[str, type]) -> "FactoryAssert":
+        """Asserts the factory constructs expected types from the names."""
         if not isinstance(self.actual, fl.ConstructionFactory):
             raise ValueError(
                 f"expected an instance of {fl.ConstructionFactory}, "
@@ -72,6 +77,7 @@ class FactoryAssert(
         return self
 
     def copies_exactly(self, name_instance: Dict[str, object]) -> "FactoryAssert":
+        """Assert the factory clones the objects from the class names."""
         if not isinstance(self.actual, fl.CloningFactory):
             raise ValueError(
                 f"expected an instance of {fl.CloningFactory}, "
@@ -87,11 +93,14 @@ class FactoryAssert(
 
 
 class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
+    """Function Factory assert."""
+
     def contains_exactly(
         self,
         elements: Set[str],
         element_type: Optional[fl.Function.Element.Type] = None,
     ) -> "FunctionFactoryAssert":
+        """Assert the factory contains only the expected elements."""
         if element_type == fl.Function.Element.Type.Operator:
             self.test.assertSetEqual(set(self.actual.operators().keys()), elements)
         elif element_type == fl.Function.Element.Type.Function:
@@ -105,6 +114,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
     def operation_is(
         self, operation_value: Dict[Tuple[str, Sequence[float]], float]
     ) -> "FunctionFactoryAssert":
+        """Assert the operation on the sequence of values results in the expected value."""
         for operation, expected_value in operation_value.items():
             name = operation[0]
             args = operation[1]
@@ -119,7 +129,10 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
 
 
 class TestFactory(unittest.TestCase):
+    """Test factories."""
+
     def test_construction_factory(self) -> None:
+        """Test the construction factory on an arbitrary class."""
         actual: fl.ConstructionFactory[Any] = fl.ConstructionFactory()
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("ConstructionFactory").constructs_exactly({})
@@ -136,6 +149,7 @@ class TestFactory(unittest.TestCase):
         self.assertEqual(str(actual.construct("example")), "instance of Example")
 
     def test_activation_factory(self) -> None:
+        """Test the activation factory."""
         FactoryAssert(self, fl.ActivationFactory()).has_class_name(
             "ActivationFactory"
         ).contains(["First", "Last", "Threshold"]).contains(
@@ -153,6 +167,7 @@ class TestFactory(unittest.TestCase):
         )
 
     def test_defuzzifier_factory(self) -> None:
+        """Test the defuzzifier factory."""
         FactoryAssert(self, fl.DefuzzifierFactory()).has_class_name(
             "DefuzzifierFactory"
         ).contains(["Bisector", "MeanOfMaximum", "WeightedSum"]).contains(
@@ -170,6 +185,7 @@ class TestFactory(unittest.TestCase):
         )
 
     def test_hedge_factory(self) -> None:
+        """Test the hedge factory."""
         FactoryAssert(self, fl.HedgeFactory()).has_class_name("HedgeFactory").contains(
             ["any", "seldom", "very"]
         ).contains(["very much", "often"], False).constructs_exactly(
@@ -184,6 +200,7 @@ class TestFactory(unittest.TestCase):
         )
 
     def test_snorm_factory(self) -> None:
+        """Test the S-Norm factory."""
         FactoryAssert(self, fl.SNormFactory()).has_class_name("SNormFactory").contains(
             ["AlgebraicSum", "EinsteinSum", "UnboundedSum"]
         ).contains(
@@ -203,6 +220,7 @@ class TestFactory(unittest.TestCase):
         )
 
     def test_tnorm_factory(self) -> None:
+        """Test the T-Norm factory."""
         FactoryAssert(self, fl.TNormFactory()).has_class_name("TNormFactory").contains(
             ["AlgebraicProduct", "EinsteinProduct", "NilpotentMinimum"]
         ).contains(
@@ -220,6 +238,7 @@ class TestFactory(unittest.TestCase):
         )
 
     def test_term_factory(self) -> None:
+        """Test the term factory."""
         FactoryAssert(self, fl.TermFactory()).has_class_name("TermFactory").contains(
             ["Bell", "Gaussian", "ZShape"]
         ).contains(["Star", "Cube", "Sphere"], False).constructs_exactly(
@@ -248,7 +267,8 @@ class TestFactory(unittest.TestCase):
             }
         )
 
-    def test_copy_factory(self) -> None:
+    def test_cloning_factory(self) -> None:
+        """Test the cloning factory."""
         actual: fl.CloningFactory[Any] = fl.CloningFactory()
         assert_that = FactoryAssert(self, actual)
         assert_that.has_class_name("CloningFactory").copies_exactly({})
@@ -268,7 +288,10 @@ class TestFactory(unittest.TestCase):
 
 
 class TestFunctionFactory(unittest.TestCase):
+    """Test the function factory."""
+
     def test_factory_precedence(self) -> None:
+        """Test the precedence values are internally inversed."""
         precedence_expected = {
             0: 100,
             1: 90,
@@ -287,6 +310,7 @@ class TestFunctionFactory(unittest.TestCase):
             self.assertEqual(e, factory._precedence(p))
 
     def test_factory_matches_keys_and_names(self) -> None:
+        """Test the registration names of functions match the function names."""
         for key, element in fl.FunctionFactory().objects.items():
             self.assertEqual(key, element.name)
             # if it is a function, the name should be contained in
@@ -295,6 +319,8 @@ class TestFunctionFactory(unittest.TestCase):
                 self.assertIn(key, element.method.__name__)
 
     def test_arity(self) -> None:
+        """Tests correct arity of functions."""
+        # TODO: improve test, remove randomness,
         acceptable: Dict[Type[Exception], Set[str]] = {
             ZeroDivisionError: {"%", "/", "fmod", "^", "**"},
             ValueError: {
@@ -352,6 +378,7 @@ class TestFunctionFactory(unittest.TestCase):
         self.assertListEqual([], errors)
 
     def test_factory_contains_exactly(self) -> None:
+        """Test the factory contains all the operators and functions."""
         FunctionFactoryAssert(self, fl.FunctionFactory()).contains_exactly(
             {"!", "~", "^", "**", "*", "/", "%", "+", "-", ".+", ".-", "and", "or"},
             fl.Function.Element.Type.Operator,
@@ -396,6 +423,7 @@ class TestFunctionFactory(unittest.TestCase):
         )
 
     def test_function_operators(self) -> None:
+        """Tests the operators yield correct resutls."""
         FunctionFactoryAssert(self, fl.FunctionFactory()).operation_is(
             {
                 ("!", (0,)): 1,
@@ -426,7 +454,9 @@ class TestFunctionFactory(unittest.TestCase):
 
     @unittest.skip("Until fl.Function is ready")
     def test_function_precedence(self) -> None:
-        pass
+        """Not implemented."""
+        # TODO: implement test.
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":

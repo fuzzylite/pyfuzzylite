@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 __all__ = [
@@ -104,8 +104,7 @@ T = TypeVar("T")
 
 
 class ConstructionFactory(Generic[T]):
-    """
-    The ConstructionFactory class is the base class for a factory whose
+    """The ConstructionFactory class is the base class for a factory whose
     objects are created from a registered ConstructionFactory::Constructor.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -114,25 +113,25 @@ class ConstructionFactory(Generic[T]):
     """
 
     def __init__(self) -> None:
+        """Create the construction factory."""
         self.constructors: Dict[str, Callable[[], T]] = {}
 
     def __iter__(self) -> Iterator[str]:
+        """Gets the iterator of constructors."""
         return self.constructors.__iter__()
 
     @property
     def class_name(self) -> str:
-        """
-        Returns the class name of the factory
-        @return the class name of the factory
+        """Returns the class name of the factory
+        @return the class name of the factory.
         """
         return self.__class__.__name__
 
     def construct(self, key: str) -> T:
-        """
-        Creates an object by executing the constructor associated to the given key
+        """Creates an object by executing the constructor associated to the given key
         @param key is the unique name by which constructors are registered
         @return an object by executing the constructor associated to the given key
-        @throws ValueError if the key is not in the registered constructors
+        @throws ValueError if the key is not in the registered constructors.
         """
         if key in self.constructors:
             return self.constructors[key]()
@@ -140,8 +139,7 @@ class ConstructionFactory(Generic[T]):
 
 
 class CloningFactory(Generic[T]):
-    """
-    The CloningFactory class is the base class for a factory whose objects
+    """The CloningFactory class is the base class for a factory whose objects
     are created from a registered object by creating a deep copy.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -150,25 +148,25 @@ class CloningFactory(Generic[T]):
     """
 
     def __init__(self) -> None:
+        """Create cloning factory."""
         self.objects: Dict[str, T] = {}
 
     def __iter__(self) -> Iterator[str]:
+        """Get iterator iterator of objects."""
         return self.objects.__iter__()
 
     @property
     def class_name(self) -> str:
-        """
-        Returns the class name of the factory
-        @return the class name of the factory
+        """Returns the class name of the factory
+        @return the class name of the factory.
         """
         return self.__class__.__name__
 
     def copy(self, key: str) -> T:
-        """
-        Creates a deep copy of the registered object
+        """Creates a deep copy of the registered object
         @param key is the unique name by which the object is registered
         @return a deep copy of the registered object
-        @throws ValueError if the key is not in the registered objected
+        @throws ValueError if the key is not in the registered objected.
         """
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
@@ -176,8 +174,7 @@ class CloningFactory(Generic[T]):
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
-    """
-    e ActivationFactory class is a ConstructionFactory of Activation
+    """e ActivationFactory class is a ConstructionFactory of Activation
     methods for RuleBlock%s.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -189,6 +186,7 @@ class ActivationFactory(ConstructionFactory[Activation]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
@@ -206,8 +204,7 @@ class ActivationFactory(ConstructionFactory[Activation]):
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
-    """
-    The DefuzzifierFactory class is a ConstructionFactory of Defuzzifier%s.
+    """The DefuzzifierFactory class is a ConstructionFactory of Defuzzifier%s.
 
     @author Juan Rada-Vilela, Ph.D.
     @see Defuzzifier
@@ -217,6 +214,7 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
@@ -238,8 +236,7 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):
-    """
-    The HedgeFactory class is a ConstructionFactory of Hedge%s.
+    """The HedgeFactory class is a ConstructionFactory of Hedge%s.
 
     @author Juan Rada-Vilela, Ph.D.
     @see Hedge
@@ -249,6 +246,7 @@ class HedgeFactory(ConstructionFactory[Hedge]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
@@ -258,8 +256,7 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
-    """
-    The SNormFactory class is a ConstructionFactory of SNorm%s.
+    """The SNormFactory class is a ConstructionFactory of SNorm%s.
 
     @author Juan Rada-Vilela, Ph.D.
     @see SNorm
@@ -269,6 +266,7 @@ class SNormFactory(ConstructionFactory[SNorm]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         super().__init__()
         self.constructors = {
             snorm().class_name: snorm
@@ -287,8 +285,7 @@ class SNormFactory(ConstructionFactory[SNorm]):
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
-    """
-    The TNormFactory class is a ConstructionFactory of TNorm%s.
+    """The TNormFactory class is a ConstructionFactory of TNorm%s.
 
     @author Juan Rada-Vilela, Ph.D.
     @see TNorm
@@ -298,6 +295,7 @@ class TNormFactory(ConstructionFactory[TNorm]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         super().__init__()
         self.constructors = {
             tnorm().class_name: tnorm
@@ -314,17 +312,17 @@ class TNormFactory(ConstructionFactory[TNorm]):
 
 
 class TermFactory(ConstructionFactory[Term]):
-    """
-    The TermFactory class is a ConstructionFactory of Term%s.
+    """The TermFactory class is a ConstructionFactory of Term%s.
 
-      @author Juan Rada-Vilela, Ph.D.
-      @see Term
-      @see ConstructionFactory
-      @see FactoryManager
-      @since 4.0
+    @author Juan Rada-Vilela, Ph.D.
+    @see Term
+    @see ConstructionFactory
+    @see FactoryManager
+    @since 4.0
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         super().__init__()
         self.constructors = {
             term().class_name: term
@@ -355,8 +353,7 @@ class TermFactory(ConstructionFactory[Term]):
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
-    """
-    The FunctionFactory class is a CloningFactory of operators and functions
+    """The FunctionFactory class is a CloningFactory of operators and functions
     utilized by the Function term.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -368,6 +365,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
     """
 
     def __init__(self) -> None:
+        """Create the factory."""
         super().__init__()
         self._register_operators()
         self._register_functions()
@@ -570,9 +568,8 @@ class FunctionFactory(CloningFactory[Function.Element]):
             self.objects[f.name] = f
 
     def operators(self) -> Dict[str, Function.Element]:
-        """
-        Returns a dictionary of the operators available
-        @return a dictionary of the operators available
+        """Returns a dictionary of the operators available
+        @return a dictionary of the operators available.
         """
         result = {
             key: prototype
@@ -582,10 +579,8 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return result
 
     def functions(self) -> Dict[str, Function.Element]:
-        """
-        Returns a dictionary of the functions available
-        @return a dictionary of the functions available
-        :return:
+        """Returns a dictionary of the functions available
+        @return a dictionary of the functions available.
         """
         result = {
             key: prototype
@@ -596,8 +591,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
 
 
 class FactoryManager:
-    """
-    The FactoryManager class is a central class grouping different factories
+    """The FactoryManager class is a central class grouping different factories
     of objects, together with a singleton instance to access each of the
     factories throughout the library.
 
@@ -622,15 +616,14 @@ class FactoryManager:
         hedge: Optional[HedgeFactory] = None,
         function: Optional[FunctionFactory] = None,
     ) -> None:
-        """
-        Creates a factory manager with the given factories (or default factories if none supplied)
+        """Creates a factory manager with the given factories (or default factories if none supplied)
         @param tnorm is the factory of TNorm%s
         @param snorm is the factory of SNorm%s
         @param activation is the factory of Activation methods
         @param defuzzifier is the factory of Defuzzifier%s
         @param term is the factory of Term%s
         @param hedge is the factory of Hedge%s
-        @param function is the factory of Function Element%s
+        @param function is the factory of Function Element%s.
         """
         self.tnorm = tnorm if tnorm else TNormFactory()
         self.snorm = snorm if snorm else SNormFactory()

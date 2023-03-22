@@ -56,13 +56,13 @@ numpy = { version = "1.19.5", optional = true }
 numpy = ["numpy"] # numpy for better division by zero
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0" # Code formatting
-coverage = "^7.2.2" # Code coverage
-mypy = "^1.1.1" # Static analysis
+black = "^23.1.0"     # Code formatting
+coverage = "^7.2.2"   # Code coverage
+mypy = "^1.1.1"       # Static analysis
 pyhamcrest = "^2.0.4" # Test Driven Development
-pytest = "^7.2.2" # Test Driven Development
-ruff = "^0.0.256" # Code formatting
-nbqa = "^1.5" # Notebook formatting
+pytest = "^7.2.2"     # Test Driven Development
+ruff = "^0.0.256"     # Code formatting
+nbqa = "^1.5"         # Notebook formatting
 
 [tool.black]
 target-version = ["py37"]
@@ -76,7 +76,7 @@ select = [
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    # "D",  # pydocstyle
+    "D",   # pydocstyle
     "E",   # pycodestyle errors
     "F",   # pyflakes
     "I",   # isort
@@ -101,7 +101,7 @@ fixable = [
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    # "D",  # pydocstyle
+    "D",   # pydocstyle
     "E",   # pycodestyle errors
     "F",   # pyflakes
     "I",   # isort
@@ -127,12 +127,12 @@ ignore = [
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**args`
     "B007",   # [*] Loop control variable `x` not used within loop body
-    "D100",
+    "D100",   # Missing docstring in public module
     "D104",   # Missing docstring in public package
-    "D211",
-    "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
-    "D417",   # Missing argument descriptions in the docstring
-    "E501",   # Line too long (handled by black)
+    "D205",   # 1 blank line required between summary line and description"
+    # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
+    # "D417",   # Missing argument descriptions in the docstring
+    "E501", # Line too long (handled by black)
     # "F401", #  imported but unused
     "F405",    # Imports from star
     "F403",    # Detect names from star imports
@@ -145,7 +145,7 @@ ignore = [
     "RET505",  # Unnecessary `else` after `return` statement
     "SIM102",  # Use a single `if` statement instead of nested `if` statements
     "SIM300",  # Yoda conditions are discouraged
-    "W605",    # [*] Invalid escape sequence: latex
+    # "W605",    # [*] Invalid escape sequence: latex
 
 ]
 

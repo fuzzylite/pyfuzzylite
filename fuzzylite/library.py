@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited.
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import logging
@@ -24,10 +24,9 @@ __all__ = ["Library"]
 
 
 class Library:
-    """
-    The Library class contains global settings and information about the library.
-     @author Juan Rada-Vilela, Ph.D.
-     @since 4.0
+    """The Library class contains global settings and information about the library.
+    @author Juan Rada-Vilela, Ph.D.
+    @since 4.0.
     """
 
     def __init__(
@@ -37,13 +36,12 @@ class Library:
         floating_point_type: Type[float] = float,
         factory_manager: Optional["FactoryManager"] = None,
     ) -> None:
-        """
-        Creates an instance of the library.
+        """Creates an instance of the library.
         @param decimals is the number of decimals utilized when formatting scalar values
         @param abs_tolerance is the minimum difference at which two scalar values are considered equivalent
         @param floating_point_type is the type of floating point (default is float, but numpy.float_ can also be used)
         @param factory_manager is the central manager of fuzzylite object factories
-        @param logger is the logger of fuzzylite
+        @param logger is the logger of fuzzylite.
         """
         self.decimals = decimals
         self.abs_tolerance: float = abs_tolerance
@@ -52,17 +50,15 @@ class Library:
         self.logger = logging.getLogger("fuzzylite")
 
     def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
-        """
-        Convert the value into a floating point defined by the library
-        @param value is the value to convert
+        """Convert the value into a floating point defined by the library
+        @param value is the value to convert.
         """
         return self.floating_point_type(value)
 
     def configure_logging(self, level: int, reset: bool = True) -> None:
-        """
-        Configure the logging service.
+        """Configure the logging service.
         @param level is the level of logging (see levels in Logging module)
-        @param reset is whether to remove all previous logger handlers before configuring
+        @param reset is whether to remove all previous logger handlers before configuring.
         """
         if reset:
             for handler in logging.root.handlers[:]:
@@ -78,72 +74,52 @@ class Library:
 
     @property
     def debugging(self) -> bool:
-        """
-        Return whether the logger level is debugging
-        """
+        """Return whether the logger level is debugging."""
         return self.logger.level == logging.DEBUG
 
     @property
     def name(self) -> str:
-        """
-        Return the name of the `fuzzylite` library
-        """
+        """Return the name of the `fuzzylite` library."""
         return "pyfuzzylite"
 
     @property
     def version(self) -> str:
-        """
-        Return the version of the `fuzzylite` library
-        """
+        """Return the version of the `fuzzylite` library."""
         return "7.1.0"
 
     @property
     def license(self) -> str:
-        """
-        Return the license of the `fuzzylite` library
-        """
+        """Return the license of the `fuzzylite` library."""
         return "GNU Affero General Public License v3"
 
     @property
     def description(self) -> str:
-        """
-        Return the description of the `fuzzylite` library
-        """
+        """Return the description of the `fuzzylite` library."""
         return "a fuzzy logic control library in Python"
 
     @property
     def author(self) -> str:
-        """
-        Return the author of the `fuzzylite` library
-        """
+        """Return the author of the `fuzzylite` library."""
         return "Juan Rada-Vilela, Ph.D."
 
     @property
     def author_email(self) -> str:
-        """
-        Return the email of the author of the `fuzzylite` library
-        """
+        """Return the email of the author of the `fuzzylite` library."""
         return "jcrada@fuzzylite.com"
 
     @property
     def company(self) -> str:
-        """
-        Return the name of the company that owns the `fuzzylite` library
-        """
+        """Return the name of the company that owns the `fuzzylite` library."""
         return "FuzzyLite Limited"
 
     @property
     def website(self) -> str:
-        """
-        Return the website of the `fuzzylite` library
-        """
+        """Return the website of the `fuzzylite` library."""
         return "https://fuzzylite.com/"
 
     @property
     def summary(self) -> str:
-        """
-        Return a Markdown summary of the `fuzzylite` library
-        """
+        """Return a Markdown summary of the `fuzzylite` library."""
         result = """\
 # pyfuzzylite: A Fuzzy Logic Control Library in Python
 

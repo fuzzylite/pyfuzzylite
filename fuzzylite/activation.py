@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 __all__ = [
@@ -35,8 +35,7 @@ from .rule import Rule, RuleBlock
 
 
 class Activation:
-    """
-    The Activation class is the abstract class for RuleBlock activation
+    """The Activation class is the abstract class for RuleBlock activation
     methods. An activation method implements the criteria to activate the
     rules within a given rule block. An activation method needs to process
     every rule and determine whether the rule is to be activated or
@@ -54,39 +53,34 @@ class Activation:
 
     @property
     def class_name(self) -> str:
-        """
-        Returns the name of the activation method, which is also utilized to
+        """Returns the name of the activation method, which is also utilized to
         register the activation method in the ActivationFactory.
         @return the name of the activation method
-        @see ActivationFactory
+        @see ActivationFactory.
         """
         return self.__class__.__name__
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the rule block
-        @param rule_block is the rule block to activate
+        """Activates the rule block
+        @param rule_block is the rule block to activate.
         """
         raise NotImplementedError()
 
     def parameters(self) -> str:
-        """
-        Returns the parameters of the activation method, which can be used to
+        """Returns the parameters of the activation method, which can be used to
         configure other instances of the activation method.
-        @return the parameters of the activation method
+        @return the parameters of the activation method.
         """
         return ""
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the given parameters.
-        @param parameters contains a list of space-separated parameter values
+        """Configures the activation method with the given parameters.
+        @param parameters contains a list of space-separated parameter values.
         """
 
     def __str__(self) -> str:
-        """
-        Returns the FLL code for the activation method
-        @return FLL code for the activation method
+        """Returns the FLL code for the activation method
+        @return FLL code for the activation method.
         """
         result = self.class_name
         parameters = self.parameters()
@@ -96,8 +90,7 @@ class Activation:
 
 
 class General(Activation):
-    """
-    The General class is a RuleBlock Activation method that activates every
+    """The General class is a RuleBlock Activation method that activates every
     rule following the order in which the rules were added to the rule block.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -108,10 +101,9 @@ class General(Activation):
     """
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates every rule in the given rule block following the order in
+        """Activates every rule in the given rule block following the order in
         which the rules were added.
-        @param rule_block is the rule block to activate
+        @param rule_block is the rule block to activate.
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -125,9 +117,8 @@ class General(Activation):
 
 
 class First(Activation):
-    """
-    The First class is a RuleBlock Activation method that activates the first
-    @f$n@f$ rules whose activation degrees are greater than or equal to the given
+    """The First class is a RuleBlock Activation method that activates the first
+    $n$ rules whose activation degrees are greater than or equal to the given
     threshold. The rules are iterated in the order they were added to the rule block.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -139,27 +130,24 @@ class First(Activation):
     """
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
-        """
-        Constructs a First activation method
+        """Constructs a First activation method
         @param rules is the number of rules for the activation degree
-        @param threshold is the threshold for the activation degree
+        @param threshold is the threshold for the activation degree.
         """
         self.rules = rules
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
-        Returns the number of rules and the threshold of the activation method
+        """Returns the number of rules and the threshold of the activation method
         @return "rules threshold"
-        TODO: convert to f-string
+        TODO: convert to f-string.
         """
         return " ".join([Op.str(self.rules), Op.str(self.threshold)])
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the given number of rules and
+        """Configures the activation method with the given number of rules and
         threshold
-        @param parameters as "rules threshold"
+        @param parameters as "rules threshold".
         """
         if parameters:
             rules, threshold = parameters.split()
@@ -167,11 +155,10 @@ class First(Activation):
             self.threshold = Op.scalar(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the first @f$n@f$ rules whose activation degrees are greater than or
+        """Activates the first $n$ rules whose activation degrees are greater than or
         equal to the given threshold. The rules are iterated in the order the
         rules were added to the rule block.
-        @param rule_block is the rule block to activate
+        @param rule_block is the rule block to activate.
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -194,9 +181,8 @@ class First(Activation):
 
 
 class Last(Activation):
-    """
-    The Last class is a RuleBlock Activation method that activates the last
-    @f$n@f$ rules whose activation degrees are greater than or equal to the given
+    """The Last class is a RuleBlock Activation method that activates the last
+    $n$ rules whose activation degrees are greater than or equal to the given
     threshold. The rules are iterated in the reverse order in which they were
     added to the rule block.
 
@@ -209,26 +195,23 @@ class Last(Activation):
     """
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
-        """
-        Constructs the Last activtion method
+        """Constructs the Last activtion method
         @param rules is the number of rules for the activation degree
-        @param threshold is the threshold for the activation degree
+        @param threshold is the threshold for the activation degree.
         """
         self.rules = rules
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
-        Returns the number of rules and the threshold of the activation method
-        @return "rules threshold"
+        """Returns the number of rules and the threshold of the activation method
+        @return "rules threshold".
         """
         return " ".join([Op.str(self.rules), Op.str(self.threshold)])
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the given number of rules and
+        """Configures the activation method with the given number of rules and
         threshold
-        @param parameters as "rules threshold"
+        @param parameters as "rules threshold".
         """
         if parameters:
             rules, threshold = parameters.split()
@@ -236,11 +219,10 @@ class Last(Activation):
             self.threshold = Op.scalar(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the last @f$n@f$ rules whose activation degrees are greater
+        """Activates the last $n$ rules whose activation degrees are greater
         than the given threshold. The rules are iterated in the reverse order
         that the rules were added to the rule block.
-        @param rule_block is the rule block to activate
+        @param rule_block is the rule block to activate.
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -263,8 +245,7 @@ class Last(Activation):
 
 
 class Highest(Activation):
-    """
-    The Highest class is a RuleBlock Activation method that activates a given
+    """The Highest class is a RuleBlock Activation method that activates a given
     number of rules with the highest activation degrees in descending order.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -276,30 +257,26 @@ class Highest(Activation):
     """
 
     def __init__(self, rules: int = 1) -> None:
-        """
-        Creates the Highest activation method
-        @param rules is the number of rules to activate
+        """Creates the Highest activation method
+        @param rules is the number of rules to activate.
         """
         self.rules = rules
 
     def parameters(self) -> str:
-        """
-        Returns the number of rules to activate.
-        @return number of rules to activate
+        """Returns the number of rules to activate.
+        @return number of rules to activate.
         """
         return str(self.rules)
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the number of rules to activate.
-        @param parameters contains the number of rules to activate
+        """Configures the activation method with the number of rules to activate.
+        @param parameters contains the number of rules to activate.
         """
         if parameters:
             self.rules = int(parameters)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the given number of rules with the highest activation
+        """Activates the given number of rules with the highest activation
         degrees
         @param rule_block is the rule block to activate.
         """
@@ -324,9 +301,8 @@ class Highest(Activation):
 
 
 class Lowest(Activation):
-    """
-    The Lowest class is a RuleBlock Activation method that activates a given
-    number of rules with the lowest activation degrees in ascending order
+    """The Lowest class is a RuleBlock Activation method that activates a given
+    number of rules with the lowest activation degrees in ascending order.
 
     @author Juan Rada-Vilela, Ph.D.
     @see Highest
@@ -337,34 +313,28 @@ class Lowest(Activation):
     """
 
     def __init__(self, rules: int = 1) -> None:
-        """
-        Creates the Lowest activation method.
-        @param rules is the number of rules to activate
+        """Creates the Lowest activation method.
+        @param rules is the number of rules to activate.
         """
         self.rules = rules
 
     def parameters(self) -> str:
-        """
-        Returns the number of rules to activate
-        @return number of rules to activate
+        """Returns the number of rules to activate
+        @return number of rules to activate.
         """
         return str(self.rules)
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the number of rules to activate
-        @param parameters contains the number of rules to activate
-        :param parameters:
-        :return:
+        """Configures the activation method with the number of rules to activate.
+        @param parameters contains the number of rules to activate.
         """
         if parameters:
             self.rules = int(parameters)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the rules with the lowest activation degrees in the given
+        """Activates the rules with the lowest activation degrees in the given
         rule block
-        @param rule_block is the rule block to activate
+        @param rule_block is the rule block to activate.
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction
@@ -387,8 +357,7 @@ class Lowest(Activation):
 
 
 class Proportional(Activation):
-    """
-    The Proportional class is a RuleBlock Activation method that activates
+    """The Proportional class is a RuleBlock Activation method that activates
     the rules utilizing activation degrees proportional to the activation
     degrees of the other rules, thus the sum of the activation degrees is
     equal to one.
@@ -401,8 +370,7 @@ class Proportional(Activation):
     """
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the rules utilizing activation degrees proportional to
+        """Activates the rules utilizing activation degrees proportional to
         the activation degrees of the other rules in the rule block.
         @param rule_block is the rule block to activate.
         """
@@ -427,8 +395,7 @@ class Proportional(Activation):
 
 
 class Threshold(Activation):
-    """
-    The Threshold class is a RuleBlock Activation method that activates the
+    """The Threshold class is a RuleBlock Activation method that activates the
     rules whose activation degrees satisfy the equation given by the
     comparison operator and the threshold, and deactivates the rules which do
     not satisfy the equation.
@@ -442,22 +409,21 @@ class Threshold(Activation):
 
     @enum.unique
     class Comparator(enum.Enum):
-        """
-        Comparator is an enumerator that provides six comparison operators
-        between the activation degree @f$a@f$ and the threshold @f$\theta@f$.
+        r"""Comparator is an enumerator that provides six comparison operators
+        between the activation degree $a$ and the threshold $\theta$.
         """
 
-        # @f$a < \theta@f$
+        # $a < \theta$
         LessThan = "<"
-        # @f$a \leq \theta@f$
+        # $a \leq \theta$
         LessThanOrEqualTo = "<="
-        # @f$a = \theta@f$
+        # $a = \theta$
         EqualTo = "=="
-        # @f$a \neq \theta@f$
+        # $a \neq \theta$
         NotEqualTo = "!="
-        # @f$a \geq \theta@f$
+        # $a \geq \theta$
         GreaterThanOrEqualTo = ">="
-        # @f$a > \theta@f$
+        # $a > \theta$
         GreaterThan = ">"
 
         __operator__: Dict[str, Callable[[float, float], bool]] = {
@@ -471,6 +437,7 @@ class Threshold(Activation):
 
         @property
         def operator(self) -> Callable[[float, float], bool]:
+            """Gets the function reference for the operator."""
             return Threshold.Comparator.__operator__[self.value]
 
     def __init__(
@@ -478,10 +445,9 @@ class Threshold(Activation):
         comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
         threshold: float = 0.0,
     ) -> None:
-        """
-        Creates a Threshold activation method
+        """Creates a Threshold activation method
         @param comparator is a valid comparison operator
-        @param threshold is the threshold for activation degrees
+        @param threshold is the threshold for activation degrees.
         """
         if isinstance(comparator, str):
             comparator = Threshold.Comparator(comparator)
@@ -489,18 +455,16 @@ class Threshold(Activation):
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
-        Returns the comparator followed by the threshold.
+        """Returns the comparator followed by the threshold.
         @return comparator and threshold
-        TODO: convert to f-string
+        TODO: convert to f-string.
         """
         return " ".join([self.comparator.value, Op.str(self.threshold)])
 
     def configure(self, parameters: str) -> None:
-        """
-        Configures the activation method with the comparator and the
+        """Configures the activation method with the comparator and the
         threshold.
-        @param parameters is the comparator and threshold
+        @param parameters is the comparator and threshold.
         """
         if parameters:
             comparator, threshold = parameters.split()
@@ -508,11 +472,10 @@ class Threshold(Activation):
             self.threshold = Op.scalar(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """
-        Activates the rules whose activation degrees satisfy the comparison
+        """Activates the rules whose activation degrees satisfy the comparison
         equation with the given threshold, and deactivate the rules which do
         not.
-        @param rule_block is the rule block to activate
+        @param rule_block is the rule block to activate.
         """
         conjunction = rule_block.conjunction
         disjunction = rule_block.disjunction

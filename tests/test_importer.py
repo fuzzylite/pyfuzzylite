@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import glob
@@ -59,14 +59,19 @@ RuleBlock: steer_away
 
 
 class TestImporter(unittest.TestCase):
+    """Test the importer class."""
+
     def test_class_name(self) -> None:
+        """Test the base class name."""
         self.assertEqual(fl.Importer().class_name, "Importer")
 
     def test_to_string(self) -> None:
+        """Test the base class importer from string is not implemented."""
         with self.assertRaises(NotImplementedError):
             fl.Importer().from_string("")
 
     def test_from_file(self) -> None:
+        """Test the importer can read files."""
         importer = fl.Importer()
         importer.from_string = MagicMock(  # type: ignore
             side_effect=lambda string: fl.Engine(description=string)
@@ -84,11 +89,15 @@ class TestImporter(unittest.TestCase):
 
 
 class TestFllImporter(unittest.TestCase):
+    """Test the FuzzyLite Language importer."""
+
     def test_from_string(self) -> None:
+        """Test the importer can import from a string."""
         engine = fl.FllImporter().from_string(BELL_FLL)
         self.assertEqual(BELL_FLL, str(engine))
 
     def test_engine(self) -> None:
+        """Test a simple engine can be imported."""
         engine = """\
 Engine: Bell
 
@@ -99,6 +108,7 @@ Engine: Bell
         )
 
     def test_input_variable(self) -> None:
+        """Test input variables can be imported."""
         iv = """\
 InputVariable: obstacle
   description: location of obstacle relative to vehicle
@@ -113,6 +123,7 @@ InputVariable: obstacle
         )
 
     def test_output_variable(self) -> None:
+        """Test output variables can be imported."""
         ov = """\
 OutputVariable: steer
   description: direction to steer the vehicle to
@@ -131,6 +142,7 @@ OutputVariable: steer
         )
 
     def test_rule_block(self) -> None:
+        """Test rule blocks can be imported."""
         rb = """\
 RuleBlock: steer_away
   description: steer away from obstacles
@@ -145,6 +157,7 @@ RuleBlock: steer_away
         self.assertEqual(rb.replace("\n\n", "\n"), str(fl.FllImporter().rule_block(rb)))
 
     def test_term(self) -> None:
+        """Test terms can be imported."""
         term = "term: left Triangle 0.000 0.333 0.666"
         self.assertEqual(term, str(fl.FllImporter().term(term)))
         engine = fl.Engine()
@@ -164,6 +177,7 @@ RuleBlock: steer_away
             fl.FllImporter().term("term: name")
 
     def test_rule(self) -> None:
+        """Test rules can be imported."""
         rule = "rule: if obstacle is left then steer is right"
         self.assertEqual(rule, str(fl.FllImporter().rule(rule)))
         self.assertFalse(cast(fl.Rule, fl.FllImporter().rule(rule)).is_loaded())
@@ -173,6 +187,7 @@ RuleBlock: steer_away
         self.assertTrue(cast(fl.Rule, fl.FllImporter().rule(rule, engine)).is_loaded())
 
     def test_tnorm(self) -> None:
+        """Test T-Norms can be imported."""
         tnorm = "AlgebraicProduct"
         self.assertEqual(tnorm, str(fl.FllImporter().tnorm(tnorm)))
 
@@ -186,6 +201,7 @@ RuleBlock: steer_away
             fl.FllImporter().tnorm("AlgebraicSum")
 
     def test_snorm(self) -> None:
+        """Test S-Norms can be imported."""
         snorm = "AlgebraicSum"
         self.assertEqual(snorm, str(fl.FllImporter().snorm(snorm)))
 
@@ -199,6 +215,7 @@ RuleBlock: steer_away
             fl.FllImporter().snorm("AlgebraicProduct")
 
     def test_activation(self) -> None:
+        """Test activation methods can be imported."""
         activation = "General"
         self.assertEqual(activation, str(fl.FllImporter().activation(activation)))
         activation = "Highest 2"
@@ -213,6 +230,7 @@ RuleBlock: steer_away
             fl.FllImporter().activation("Invalid")
 
     def test_defuzzifier(self) -> None:
+        """Test defuzzifiers can be imported."""
         defuzzifier = "Centroid"
         self.assertEqual(
             defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier))
@@ -229,6 +247,7 @@ RuleBlock: steer_away
             fl.FllImporter().defuzzifier("Invalid")
 
     def test_range(self) -> None:
+        """Test range values are parsed correctly."""
         self.assertEqual((1.0, 1.0), fl.FllImporter().range("1.0000 1.0000"))
         self.assertEqual((-fl.inf, fl.inf), fl.FllImporter().range("-inf\tinf"))
         self.assertEqual(str((fl.nan, fl.nan)), str(fl.FllImporter().range("-nan nan")))
@@ -239,6 +258,7 @@ RuleBlock: steer_away
             fl.FllImporter().range("1 2 3")
 
     def test_boolean(self) -> None:
+        """Test boolean values can be parsed."""
         self.assertEqual(True, fl.FllImporter().boolean("true"))
         self.assertEqual(True, fl.FllImporter().boolean("  true  "))
         self.assertEqual(False, fl.FllImporter().boolean("false"))
@@ -256,6 +276,7 @@ RuleBlock: steer_away
             fl.FllImporter().boolean("False")
 
     def test_extract_key_value(self) -> None:
+        """Test correct extraction of keys and values."""
         self.assertEqual(
             ("Key", "value"), fl.FllImporter().extract_key_value("Key: value")
         )
@@ -291,6 +312,7 @@ RuleBlock: steer_away
             )
 
     def test_extract_value(self) -> None:
+        """Test correct extraction of values from a key-value."""
         self.assertEqual("value", fl.FllImporter().extract_value("Key: value"))
         self.assertEqual("value", fl.FllImporter().extract_value("Key : value"))
         self.assertEqual(
@@ -320,6 +342,7 @@ RuleBlock: steer_away
             fl.FllImporter().extract_value("description: value1 value2", "DESCRIPTION")
 
     def test_invalid_components(self) -> None:
+        """Test errors on invalid FuzzyLite Language components."""
         with self.assertRaisesRegex(
             SyntaxError, re.escape("'invalid' is not a valid component of 'Engine'")
         ):
@@ -357,8 +380,11 @@ RuleBlock: steer_away
 
 
 class TestFllImporterBatch(unittest.TestCase):
+    """Test batch imports."""
+
     @unittest.skip("Re-enable after test coverage improved independently")
     def test_import_examples(self) -> None:
+        """Test all the examples can be imported correctly and exported to their initial form."""
         self.maxDiff = None  # show all differences
         importer = fl.FllImporter()
         exporter = fl.FllExporter()
