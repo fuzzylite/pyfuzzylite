@@ -510,8 +510,6 @@ class Consequent:
                 )
             if proposition.variable.enabled:
                 for hedge in reversed(proposition.hedges):
-                    # TODO: Revisit because hedging like this stage would decrease the importance
-                    # TODO: What about any?
                     activation_degree = hedge.hedge(activation_degree)
 
                 if not proposition.term:

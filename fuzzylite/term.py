@@ -927,7 +927,6 @@ class Discrete(Term):
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
         @returns a flat list of values.
-
         """
         result: List[float] = []
         for xy in pairs:
@@ -1628,8 +1627,8 @@ class Spike(Term):
     def __init__(
         self,
         name: str = "",
-        inflection: float = nan,
-        slope: float = nan,
+        center: float = nan,
+        width: float = nan,
         height: float = 1.0,
     ) -> None:
         """Create the term.
@@ -1639,8 +1638,8 @@ class Spike(Term):
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.center = inflection
-        self.width = slope
+        self.center = center
+        self.width = width
 
     def membership(self, x: float) -> float:
         r"""Computes the membership function evaluated at $x$
@@ -1755,10 +1754,10 @@ class Trapezoid(Term):
     def __init__(
         self,
         name: str = "",
-        vertex_a: float = nan,
-        vertex_b: float = nan,
-        vertex_c: float = nan,
-        vertex_d: float = nan,
+        bottom_left: float = nan,
+        top_left: float = nan,
+        top_right: float = nan,
+        bottom_right: float = nan,
         height: float = 1.0,
     ) -> None:
         """Create the term.
@@ -1770,15 +1769,15 @@ class Trapezoid(Term):
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.vertex_a = vertex_a
-        self.vertex_b = vertex_b
-        self.vertex_c = vertex_c
-        self.vertex_d = vertex_d
-        if isnan(vertex_c) and isnan(vertex_d):
-            self.vertex_d = vertex_b
-            range_ = self.vertex_d - self.vertex_a
-            self.vertex_b = self.vertex_a + range_ * 1.0 / 5.0
-            self.vertex_c = self.vertex_a + range_ * 4.0 / 5.0
+        self.bottom_left = bottom_left
+        self.top_left = top_left
+        self.top_right = top_right
+        self.bottom_right = bottom_right
+        if isnan(top_right) and isnan(bottom_right):
+            self.bottom_right = top_left
+            range_ = self.bottom_right - self.bottom_left
+            self.top_left = self.bottom_left + range_ * 1.0 / 5.0
+            self.top_right = self.bottom_left + range_ * 4.0 / 5.0
 
     def membership(self, x: float) -> float:
         r"""Computes the membership function evaluated at $x$
@@ -1799,38 +1798,46 @@ class Trapezoid(Term):
         if isnan(x):
             return nan
 
-        if x < self.vertex_a or x > self.vertex_d:
+        if x < self.bottom_left or x > self.bottom_right:
             return self.height * 0.0
 
-        if x < self.vertex_b:
-            if self.vertex_a == -inf:
+        if x < self.top_left:
+            if self.bottom_left == -inf:
                 return self.height * 1.0
-            return self.height * (x - self.vertex_a) / (self.vertex_b - self.vertex_a)
+            return (
+                self.height
+                * (x - self.bottom_left)
+                / (self.top_left - self.bottom_left)
+            )
 
-        if self.vertex_b <= x <= self.vertex_c:
+        if self.top_left <= x <= self.top_right:
             return self.height * 1.0
 
-        if x > self.vertex_c:
-            if self.vertex_d == inf:
+        if x > self.top_right:
+            if self.bottom_right == inf:
                 return self.height * 1.0
-            return self.height * (self.vertex_d - x) / (self.vertex_d - self.vertex_c)
+            return (
+                self.height
+                * (self.bottom_right - x)
+                / (self.bottom_right - self.top_right)
+            )
 
         return self.height * 0.0
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-        @return `"vertexA vertexB vertexC vertexD [height]"`.
+        @return `"bottom_left top_left top_right bottom_right [height]"`.
         """
         return super()._parameters(
-            self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d
+            self.bottom_left, self.top_left, self.top_right, self.bottom_right
         )
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-        @param parameters as `"vertexA vertexB vertexC vertexD [height]"`.
+        @param parameters as `"bottom_left top_left top_right bottom_right [height]"`.
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
-        self.vertex_a, self.vertex_b, self.vertex_c, self.vertex_d = values[0:4]
+        self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
 
@@ -1844,13 +1851,12 @@ class Triangle(Term):
     @since 4.0.
     """
 
-    # TODO: rename parameters properly.
     def __init__(
         self,
         name: str = "",
-        vertex_a: float = nan,
-        vertex_b: float = nan,
-        vertex_c: float = nan,
+        left: float = nan,
+        top: float = nan,
+        right: float = nan,
         height: float = 1.0,
     ) -> None:
         """Create the term.
@@ -1861,12 +1867,12 @@ class Triangle(Term):
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.vertex_a = vertex_a
-        self.vertex_b = vertex_b
-        self.vertex_c = vertex_c
-        if isnan(vertex_c):
-            self.vertex_b = 0.5 * (vertex_a + vertex_b)
-            self.vertex_c = vertex_b
+        self.left = left
+        self.top = top
+        self.right = right
+        if isnan(right):
+            self.top = 0.5 * (left + top)
+            self.right = top
 
     def membership(self, x: float) -> float:
         r"""Computes the membership function evaluated at $x$
@@ -1885,36 +1891,36 @@ class Triangle(Term):
         if isnan(x):
             return nan
 
-        if x < self.vertex_a or x > self.vertex_c:
+        if x < self.left or x > self.right:
             return self.height * 0.0
 
-        if x < self.vertex_b:
-            if self.vertex_a == -inf:
+        if x < self.top:
+            if self.left == -inf:
                 return self.height * 1.0
-            return self.height * (x - self.vertex_a) / (self.vertex_b - self.vertex_a)
+            return self.height * (x - self.left) / (self.top - self.left)
 
-        if x == self.vertex_b:
+        if x == self.top:
             return self.height * 1.0
 
-        if x > self.vertex_b:
-            if self.vertex_c == inf:
+        if x > self.top:
+            if self.right == inf:
                 return self.height * 1.0
-            return self.height * (self.vertex_c - x) / (self.vertex_c - self.vertex_b)
+            return self.height * (self.right - x) / (self.right - self.top)
 
         return self.height * 0.0
 
     def parameters(self) -> str:
         """Returns the parameters of the term
-        @return `"vertexA vertexB vertexC [height]"`.
+        @return `"left top right [height]"`.
         """
-        return super()._parameters(self.vertex_a, self.vertex_b, self.vertex_c)
+        return super()._parameters(self.left, self.top, self.right)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters
-        @param parameters as `"vertexA vertexB vertexC [height]"`.
+        @param parameters as `"left top right [height]"`.
         """
         values = tuple(Op.scalar(x) for x in parameters.split())
-        self.vertex_a, self.vertex_b, self.vertex_c = values[0:3]
+        self.left, self.top, self.right = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
 

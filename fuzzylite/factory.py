@@ -187,7 +187,6 @@ class ActivationFactory(ConstructionFactory[Activation]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
             activation().class_name: activation
@@ -215,7 +214,6 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
             defuzzifier().class_name: defuzzifier
@@ -247,7 +245,6 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        # TODO: maybe this super call is not necessary?
         super().__init__()
         self.constructors = {
             hedge().name: hedge
