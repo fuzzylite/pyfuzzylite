@@ -132,25 +132,13 @@ def test(session: nox.Session) -> None:
     )
 
 
-@nox.session(python=False)
-def prepublish(_: nox.Session) -> None:
-    """Prepares to publish the distributable."""
-    pass
-    # import toml
-
-    # import fuzzylite as fl
-
-    # file = Path("pyproject.toml")
-    # pyproject = toml.load(str(file))
-
-    # pyproject["tool"]["poetry"]["name"] = fl.lib.name
-    # pyproject["tool"]["poetry"]["version"] = fl.lib.version
-    # pyproject["tool"]["poetry"]["description"] = fl.lib.description
-    # pyproject["tool"]["poetry"]["authors"] = [
-    #     f"{fl.lib.author} <{fl.lib.author_email}>"
-    # ]
-    # pyproject["tool"]["poetry"]["maintainers"] = [
-    #     f"{fl.lib.author} <{fl.lib.author_email}>"
-    # ]
-
-    # file.write_text(toml.dumps(pyproject))
+@nox.session
+def test_publish(session: nox.Session) -> None:
+    """Builds the distributable and uploads it to testpypi."""
+    session.run("pip", "freeze")
+    session.run("rm", "-rf", "dist/")
+    session.run("poetry", "build", external=True)
+    session.install("twine")
+    session.run("twine", "upload", "--repository", "testpypi", "dist/*")
+    # python3 -m twine upload --repository testpypi dist/*
+    # python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps example-package-YOUR-USERNAME-HERE

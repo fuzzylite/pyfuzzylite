@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.1.0"
+version = "7.1.1"
 description = "a fuzzy logic control library in Python"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
 authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
@@ -40,20 +40,23 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
+[tool.poetry.plugins."poetry.application.plugin"]
+poetry_bumpversion = "poetry_bumpversion.plugin:BumpVersionPlugin"
+
+[tool.poetry_bumpversion.file."fuzzylite/library.py"]
+
 [[tool.poetry.packages]]
 include = "fuzzylite"
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/fuzzylite/pyfuzzylite"
-Documentation = "https://www.fuzzylite.com/documentation"
+Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.7"
-numpy = { version = "1.19.5", optional = true }
+numpy = { version = "1.19.5", optional = true } # numpy for better division by zero
 
-[tool.poetry.extras]
-numpy = ["numpy"] # numpy for better division by zero
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"     # Code formatting
@@ -146,7 +149,6 @@ ignore = [
     "SIM102",  # Use a single `if` statement instead of nested `if` statements
     "SIM300",  # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
-
 ]
 
 unfixable = []
