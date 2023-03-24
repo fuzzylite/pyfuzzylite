@@ -6,6 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "pyfuzzylite"
 version = "7.1.0"
 description = "a fuzzy logic control library in Python"
+readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
 authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
 maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
@@ -28,41 +29,44 @@ include = [
 ]
 
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
 ]
+
+[tool.poetry_bumpversion.file."fuzzylite/library.py"]
+[tool.poetry_bumpversion.file."tests/test_library.py"]
+
 
 [[tool.poetry.packages]]
 include = "fuzzylite"
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/fuzzylite/pyfuzzylite"
-Documentation = "https://www.fuzzylite.com/documentation"
+Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
-numpy = { version = "1.19.5", optional = true }
-
-[tool.poetry.extras]
-numpy = ["numpy"] # numpy for better division by zero
+python = "^3.7"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"     # Code formatting
-coverage = "^7.2.2"   # Code coverage
-mypy = "^1.1.1"       # Static analysis
-pyhamcrest = "^2.0.4" # Test Driven Development
-pytest = "^7.2.2"     # Test Driven Development
-ruff = "^0.0.256"     # Code formatting
-nbqa = "^1.5"         # Notebook formatting
+black = "^23.1.0"             # Code formatting
+coverage = "^7.2.2"           # Code coverage
+mypy = "^1.1.1"               # Static analysis
+numpy = "^1.19"               # Better division by zero
+poetry-bumpversion = "^0.3.0" # Version management
+pyhamcrest = "^2.0.4"         # Test Driven Development
+pytest = "^7.2.2"             # Test Driven Development
+ruff = "^0.0.256"             # Code formatting
+twine = "^4.0.2"              # Publish package
 
 [tool.black]
 target-version = ["py37"]
@@ -146,7 +150,6 @@ ignore = [
     "SIM102",  # Use a single `if` statement instead of nested `if` statements
     "SIM300",  # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
-
 ]
 
 unfixable = []
@@ -169,21 +172,16 @@ convention = "google"
 
 [tool.mypy]
 python_version = "3.7"
-incremental = true
+strict = true
 exclude = []
 
 verbosity = 0
 show_traceback = true
+show_error_context = true
 dump_type_stats = false
 dump_inference_stats = false
-show_error_context = true
-
-strict = true
 
 [[tool.mypy.overrides]]
-module = []
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
+# ignore warnings of fl.nan not being explicitly exported.
 module = "fuzzylite"
 implicit_reexport = true

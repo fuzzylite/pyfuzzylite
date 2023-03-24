@@ -1596,14 +1596,9 @@ class TestTerm(unittest.TestCase):
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
         """Test the division by zero is not raised when using numpy floats."""
-        try:
-            import numpy as np  # type: ignore
-        except ModuleNotFoundError:
-            raise unittest.SkipTest(
-                "skipping test because the numpy library is not installed"
-            ) from None
+        import numpy as np
 
-        fl.lib.floating_point_type = np.float_
+        fl.lib.floating_point_type = np.float_  # type: ignore
         np.seterr("ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(

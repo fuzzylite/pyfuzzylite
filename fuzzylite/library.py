@@ -85,7 +85,8 @@ class Library:
     @property
     def version(self) -> str:
         """Return the version of the `fuzzylite` library."""
-        return "7.1.0"
+        __version__ = "7.1.0"
+        return __version__
 
     @property
     def license(self) -> str:
