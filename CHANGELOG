@@ -11,6 +11,7 @@
 
 # Version 7.1.0
 
+- Dual license: GNU GPL and MIT
 - Requires Python >=3.7
 - Improved tooling (poetry, nox, Github Actions)
 - Documentation everywhere
