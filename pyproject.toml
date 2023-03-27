@@ -20,7 +20,6 @@ include = [
     "pyproject.toml",
     "AUTHOR",
     "CHANGELOG",
-    "COPYING",
     "fuzzylite.png",
     "LICENSE",
     "LICENSE.FuzzyLite",
