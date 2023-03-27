@@ -27,6 +27,8 @@ By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads).
 
+[`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads/) is the best graphical user interface available to  easily design and directly operate fuzzy logic controllers in real time. Available for Windows, Mac, and Linux, its goal is to significantly **speed up** the design of your fuzzy logic controllers, while providing a very **useful**, **functional** and **beautiful** user interface.
+Please, download it and check it out for free at [www.fuzzylite.com/downloads/](https://www.fuzzylite.com/downloads/).
 
 
 
@@ -35,6 +37,8 @@ You are **strongly** encouraged to support the development of the FuzzyLite Libr
 
 
 `fuzzylite` is a free and open-source fuzzy logic control library programmed in C++ for multiple platforms (e.g., Windows, Linux, Mac, iOS). [`jfuzzylite`](https://github.com/fuzzylite/jfuzzylite/) is the equivalent library for Java and Android platforms. [`pyfuzzylite`](https://github.com/fuzzylite/pyfuzzylite/) is the equivalent library for Python. Together, they are **The FuzzyLite Libraries for Fuzzy Logic Control**.
+
+
 
  The **goal** of the FuzzyLite Libraries is to **easily** design and **efficiently** operate fuzzy logic controllers following an **object-oriented** programming model **without** relying on external libraries.
 
