@@ -1,0 +1,3 @@
+The FuzzyLite License of pyfuzzylite allows the adoption of either of the following licenses:
+    - GNU General Public License (GPL) 3.0
+    - MIT License

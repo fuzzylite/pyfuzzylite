@@ -1,28 +1,31 @@
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
+
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+
+This file is part of pyfuzzylite.
+
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
+
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
-
- This file is part of pyfuzzylite.
-
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
-
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
-
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
-"""
-
 import math
 import unittest
 
 import fuzzylite as fl
 
 
+# TODO: Complete tests.
 class TestOperation(unittest.TestCase):
+    """Test operation."""
+
     def test_valid_identifier(self) -> None:
+        """Test what a valid identifier is."""
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
         self.assertEqual(
             fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed"
@@ -31,6 +34,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.as_identifier("      "), "unnamed")
 
     def test_str(self) -> None:
+        """Test string operation uses global decimals."""
         fl.lib.decimals = 3
         self.assertEqual(fl.Op.str(0.3), "0.300")
         self.assertEqual(fl.Op.str(-0.3), "-0.300")
@@ -50,6 +54,7 @@ class TestOperation(unittest.TestCase):
         fl.lib.decimals = 3
 
     def test_scale(self) -> None:
+        """Test linear interpolation."""
         self.assertEqual(fl.Op.scale(0, 0, 1, -10, 10), -10.0)
         self.assertEqual(fl.Op.scale(0.5, 0, 1, -10, 10), 0.0)
         self.assertEqual(fl.Op.scale(1, 0, 1, -10, 10), 10)
@@ -67,6 +72,8 @@ class TestOperation(unittest.TestCase):
 
     @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:
+        """Test describe."""
+        # TODO: Revisit describe method
         self.assertEqual(
             "OutputVariable[{"
             "'default_value': 'nan', 'defuzzifier': 'None', "

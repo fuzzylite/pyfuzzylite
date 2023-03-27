@@ -1,3 +1,19 @@
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
+
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+
+This file is part of pyfuzzylite.
+
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
+
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
+"""
 import importlib
 import logging
 import pathlib
@@ -6,11 +22,14 @@ import unittest
 logger = logging.getLogger()
 
 
-class TestTerms(unittest.TestCase):
+class TestExamples(unittest.TestCase):
+    """Test the examples."""
+
     def test_examples(self) -> None:
+        """Test all the examples are included and can be imported."""
         import fuzzylite.examples
 
-        examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))  # type: ignore
+        examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))
         self.assertTrue(examples.exists() and examples.is_dir())
 
         expected = set(
@@ -92,5 +111,5 @@ fuzzylite.examples.tsukamoto.tsukamoto
         for module in obtained:
             logger.info(f"Importing: {module}")
             # if an example is incorrect, an exception will be thrown below
-            engine = importlib.import_module(module).engine  # type: ignore
+            engine = importlib.import_module(module).engine
             logger.info(str(engine))

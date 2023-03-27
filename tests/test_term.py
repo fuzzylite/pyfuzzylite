@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import copy
@@ -28,32 +28,40 @@ from tests.assert_component import BaseAssert
 
 
 class TermAssert(BaseAssert[fl.Term]):
+    """Term assert."""
+
     def has_name(self, name: str, height: float = 1.0) -> "TermAssert":
+        """Assert the term has the expected name and height."""
         self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
         return self
 
     def takes_parameters(self, parameters: int) -> "TermAssert":
+        """Assert the term takes the number of parameters for configuration."""
         with self.test.assertRaisesRegex(
             ValueError,
-            re.escape("not enough values to unpack " f"(expected {parameters}, got 0)"),
+            re.escape(f"not enough values to unpack (expected {parameters}, got 0)"),
         ):
             self.actual.__class__().configure("")
         return self
 
     def is_monotonic(self, monotonic: bool = True) -> "TermAssert":
+        """Assert the term is monotonic."""
         self.test.assertEqual(monotonic, self.actual.is_monotonic())
         return self
 
     def is_not_monotonic(self) -> "TermAssert":
+        """Assert the term is not monotonic."""
         self.test.assertEqual(False, self.actual.is_monotonic())
         return self
 
     def configured_as(self, parameters: str) -> "TermAssert":
+        """Configure the term with the parameters."""
         self.actual.configure(parameters)
         return self
 
     def has_membership(self, x: float, mf: float) -> "TermAssert":
+        """Assert the term's membership function produces $f(x) = mf$."""
         message = "\n".join(
             [f"{str(self.actual)}", f"expected: \u03BC(x={x:.3f})={mf}, but"]
         )
@@ -74,13 +82,15 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_memberships(
         self, x_mf: Dict[float, float], height: float = 1.0
     ) -> "TermAssert":
-        for x in x_mf.keys():
+        """Assert the term term's membership function produces $f(x{_keys}) = mf_{values}$."""
+        for x in x_mf:
             self.has_membership(x, height * x_mf[x])
         return self
 
     def membership_fails(
         self, x: float, exception: Type[Exception], regex: str
     ) -> "TermAssert":
+        """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
             self.actual.membership(x)
         return self
@@ -88,6 +98,7 @@ class TermAssert(BaseAssert[fl.Term]):
     def memberships_fail(
         self, x_mf: Dict[float, float], exception: Type[Exception], regex: str
     ) -> "TermAssert":
+        """Assert the membership function raises the exception when evaluating $f(x_{keys})$."""
         for x, _ in x_mf.items():
             self.membership_fails(x, exception, regex)
         return self
@@ -95,6 +106,7 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_tsukamoto(
         self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0
     ) -> "TermAssert":
+        """Assert the term computes Tsukamoto correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
         if math.isnan(mf):
             self.test.assertEqual(
@@ -113,7 +125,8 @@ class TermAssert(BaseAssert[fl.Term]):
     def has_tsukamotos(
         self, x_mf: Dict[float, float], minimum: float = -1.0, maximum: float = 1.0
     ) -> "TermAssert":
-        for x in x_mf.keys():
+        """Assert the term computes all Tsukamoto values correctly."""
+        for x in x_mf:
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
         return self
 
@@ -123,12 +136,16 @@ class TermAssert(BaseAssert[fl.Term]):
         args: Sequence[str] = (),
         **keywords: Dict[str, object],
     ) -> "TermAssert":
+        """Applies function on the term with the arguments and keywords as parameters."""
         func(self.actual, *args, **keywords)
         return self
 
 
 class TestTerm(unittest.TestCase):
+    """Test terms."""
+
     def test_term(self) -> None:
+        """Test the base term."""
         self.assertEqual(fl.Term().name, "")
         self.assertEqual(fl.Term("X").name, "X")
         self.assertEqual(fl.Term("X").height, 1.0)
@@ -166,6 +183,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_activated(self) -> None:
+        """Test the activated term."""
         TermAssert(
             self,
             fl.Activated(
@@ -237,6 +255,7 @@ class TestTerm(unittest.TestCase):
             activated.membership(0.0)
 
     def test_aggregated(self) -> None:
+        """Test the aggregated term."""
         aggregated = fl.Aggregated("fuzzy_output", -1.0, 1.0, fl.Maximum())
         low = fl.Triangle("LOW", -1.000, -0.500, 0.000)
         medium = fl.Triangle("MEDIUM", -0.500, 0.000, 0.500)
@@ -288,6 +307,7 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(aggregated.range(), 2.0)
 
     def test_bell(self) -> None:
+        """Test the bell term."""
         TermAssert(self, fl.Bell("bell")).exports_fll(
             "term: bell Bell nan nan nan"
         ).takes_parameters(3).is_not_monotonic().configured_as(
@@ -332,6 +352,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_binary(self) -> None:
+        """Test the binary term."""
         TermAssert(self, fl.Binary("binary")).exports_fll(
             "term: binary Binary nan nan"
         ).takes_parameters(2).is_not_monotonic().configured_as("0 inf").exports_fll(
@@ -373,6 +394,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_concave(self) -> None:
+        """Test the concave term."""
         TermAssert(self, fl.Concave("concave")).exports_fll(
             "term: concave Concave nan nan"
         ).takes_parameters(2).is_monotonic().configured_as("0.00 0.50").exports_fll(
@@ -414,6 +436,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_constant(self) -> None:
+        """Test the constant term."""
         TermAssert(self, fl.Constant("constant")).exports_fll(
             "term: constant Constant nan"
         ).takes_parameters(1).is_not_monotonic().configured_as("0.5").exports_fll(
@@ -455,6 +478,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_cosine(self) -> None:
+        """Test the cosine term."""
         TermAssert(self, fl.Cosine("cosine")).exports_fll(
             "term: cosine Cosine nan nan"
         ).takes_parameters(2).is_not_monotonic().configured_as("0.0 1").exports_fll(
@@ -497,6 +521,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_discrete(self) -> None:
+        """Test the discrete term."""
         TermAssert(self, fl.Discrete("discrete")).exports_fll(
             "term: discrete Discrete"
         ).is_not_monotonic().configured_as("0 1 8 9 4 5 2 3 6 7").exports_fll(
@@ -582,7 +607,7 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError,
             re.escape(
-                "not enough values to unpack " "(expected an even number, but got 3)"
+                "not enough values to unpack (expected an even number, but got 3)"
             ),
         ):
             fl.Discrete.pairs_from([1, 2, 3])
@@ -599,6 +624,7 @@ class TestTerm(unittest.TestCase):
             term.membership(0.0)
 
     def test_discrete_pairs(self) -> None:
+        """Test the discrete pairs."""
         pairs = [
             fl.Discrete.Pair(*pair) for pair in [(1, 0), (3, 0), (5, 0), (2, 0), (4, 0)]
         ]
@@ -664,6 +690,7 @@ class TestTerm(unittest.TestCase):
                     compare(base_pair, value)  # type: ignore
 
     def test_gaussian(self) -> None:
+        """Test the gaussian term."""
         TermAssert(self, fl.Gaussian("gaussian")).exports_fll(
             "term: gaussian Gaussian nan nan"
         ).takes_parameters(2).is_not_monotonic().configured_as("0.0 0.25").exports_fll(
@@ -706,6 +733,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_gaussian_product(self) -> None:
+        """Test the gaussian product term."""
         TermAssert(self, fl.GaussianProduct("gaussian_product")).exports_fll(
             "term: gaussian_product GaussianProduct nan nan nan nan"
         ).takes_parameters(4).is_not_monotonic().configured_as(
@@ -750,6 +778,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_linear(self) -> None:
+        """Test the linear term."""
         engine = fl.Engine(
             input_variables=[
                 fl.InputVariable("A"),
@@ -831,6 +860,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_pi_shape(self) -> None:
+        """Test the pi-shape term."""
         TermAssert(self, fl.PiShape("pi_shape")).exports_fll(
             "term: pi_shape PiShape nan nan nan nan"
         ).takes_parameters(4).is_not_monotonic().configured_as(
@@ -877,6 +907,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_ramp(self) -> None:
+        """Test the ramp term."""
         TermAssert(self, fl.Ramp("ramp")).exports_fll(
             "term: ramp Ramp nan nan"
         ).takes_parameters(2).is_monotonic().configured_as("1 1").exports_fll(
@@ -968,6 +999,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_rectangle(self) -> None:
+        """Test the rectangle term."""
         TermAssert(self, fl.Rectangle("rectangle")).exports_fll(
             "term: rectangle Rectangle nan nan"
         ).takes_parameters(2).is_not_monotonic().configured_as("-0.4 0.4").exports_fll(
@@ -1010,6 +1042,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_s_shape(self) -> None:
+        """Test the s-shape term."""
         TermAssert(self, fl.SShape("s_shape")).exports_fll(
             "term: s_shape SShape nan nan"
         ).takes_parameters(2).is_monotonic().configured_as("-0.4 0.4").exports_fll(
@@ -1052,6 +1085,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_sigmoid(self) -> None:
+        """Test the sigmoid term."""
         TermAssert(self, fl.Sigmoid("sigmoid")).exports_fll(
             "term: sigmoid Sigmoid nan nan"
         ).takes_parameters(2).is_monotonic().configured_as("0 10").exports_fll(
@@ -1094,6 +1128,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_sigmoid_difference(self) -> None:
+        """Test the sigmoid difference term."""
         TermAssert(self, fl.SigmoidDifference("sigmoid_difference")).exports_fll(
             "term: sigmoid_difference SigmoidDifference nan nan nan nan"
         ).takes_parameters(4).is_not_monotonic().configured_as(
@@ -1138,6 +1173,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_sigmoid_product(self) -> None:
+        """Test the sigmoid product term."""
         TermAssert(self, fl.SigmoidProduct("sigmoid_product")).exports_fll(
             "term: sigmoid_product SigmoidProduct nan nan nan nan"
         ).takes_parameters(4).is_not_monotonic().configured_as(
@@ -1182,6 +1218,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_spike(self) -> None:
+        """Test the spike term."""
         TermAssert(self, fl.Spike("spike")).exports_fll(
             "term: spike Spike nan nan"
         ).takes_parameters(2).is_not_monotonic().configured_as("0 1.0").exports_fll(
@@ -1224,6 +1261,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_trapezoid(self) -> None:
+        """Test the trapezoid term."""
         TermAssert(self, fl.Trapezoid("trapezoid", 0.0, 1.0)).exports_fll(
             "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000"
         )
@@ -1349,6 +1387,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_triangle(self) -> None:
+        """Test the triangle term."""
         TermAssert(self, fl.Triangle("triangle", 0.0, 1.0)).exports_fll(
             "term: triangle Triangle 0.000 0.500 1.000"
         )
@@ -1493,6 +1532,7 @@ class TestTerm(unittest.TestCase):
         )
 
     def test_z_shape(self) -> None:
+        """Test the z-shape term."""
         TermAssert(self, fl.ZShape("z_shape")).exports_fll(
             "term: z_shape ZShape nan nan"
         ).takes_parameters(2).is_monotonic().configured_as("-0.4 0.4").exports_fll(
@@ -1534,8 +1574,8 @@ class TestTerm(unittest.TestCase):
             height=0.5,
         )
 
-    # @unittest.skip("division by zero not handled well by Python")
     def test_division_by_zero_fails_with_float(self) -> None:
+        """Test the division by zero when using Python floats."""
         self.assertEqual(fl.lib.floating_point_type, float)
 
         TermAssert(self, fl.Function.create("dbz", "0.0/x")).membership_fails(
@@ -1555,9 +1595,10 @@ class TestTerm(unittest.TestCase):
         ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
-        import numpy as np  # type: ignore
+        """Test the division by zero is not raised when using numpy floats."""
+        import numpy as np
 
-        fl.lib.floating_point_type = np.float_
+        fl.lib.floating_point_type = np.float_  # type: ignore
         np.seterr("ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
@@ -1584,29 +1625,37 @@ class TestTerm(unittest.TestCase):
 
     @unittest.skip("Testing of Tsukamoto")
     def test_tsukamoto(self) -> None:
-        pass
+        """Not implemeted."""
+        raise NotImplementedError()
 
 
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
+    """Function node assert."""
+
     def prefix_is(self, prefix: str) -> "FunctionNodeAssert":
+        """Assert the prefix notation of the node is the expected prefix notation."""
         self.test.assertEqual(prefix, self.actual.prefix())
         return self
 
     def infix_is(self, infix: str) -> "FunctionNodeAssert":
+        """Assert the infix notation of the node is the expected infix notation."""
         self.test.assertEqual(infix, self.actual.infix())
         return self
 
     def postfix_is(self, postfix: str) -> "FunctionNodeAssert":
+        """Assert the postfix notation of the node is the expected postfix notation."""
         self.test.assertEqual(postfix, self.actual.postfix())
         return self
 
     def value_is(self, expected: str) -> "FunctionNodeAssert":
+        """Assert the value of the node is the expected value."""
         self.test.assertEqual(expected, self.actual.value())
         return self
 
     def evaluates_to(
         self, value: float, variables: Optional[Dict[str, float]] = None
     ) -> "FunctionNodeAssert":
+        """Assert the node evaluates to the expected value (optionally) given variables."""
         self.test.assertAlmostEqual(
             value,
             self.actual.evaluate(variables),
@@ -1618,13 +1667,17 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
     def fails_to_evaluate(
         self, exception: Type[Exception], message: str
     ) -> "FunctionNodeAssert":
+        """Assert the node raises the expection on evaluation."""
         with self.test.assertRaisesRegex(exception, message):
             self.actual.evaluate()
         return self
 
 
 class TestFunction(unittest.TestCase):
+    """Test the function term."""
+
     def test_function(self) -> None:
+        """Test the function term."""
         with self.assertRaisesRegex(
             RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")
         ):
@@ -1720,19 +1773,20 @@ class TestFunction(unittest.TestCase):
             function_a.membership(0.0)
 
     def test_element(self) -> None:
+        """Test the function element."""
         element = fl.Function.Element(
             "function",
-            "math function()",  # type: ignore
+            "math function()",
             fl.Function.Element.Type.Function,
-            None,
-            0,
-            0,
-            -1,
+            method=any,
+            arity=0,
+            precedence=0,
+            associativity=-1,
         )
         self.assertEqual(
             str(element),
             "Element: name='function', description='math function()', "
-            "element_type='Type.Function', method='None', arity=0, "
+            "element_type='Type.Function', method='<built-in function any>', arity=0, "
             "precedence=0, associativity=-1",
         )
 
@@ -1756,6 +1810,7 @@ class TestFunction(unittest.TestCase):
         self.assertEqual(str(element), str(copy.deepcopy(element)))
 
     def test_node_evaluation(self) -> None:
+        """Test the function node evaluation."""
         type_function = fl.Function.Element.Type.Function
         FunctionNodeAssert(
             self,
@@ -1869,6 +1924,7 @@ class TestFunction(unittest.TestCase):
         ).fails_to_evaluate(ValueError, re.escape("mocking testing exception"))
 
     def test_node_deep_copy(self) -> None:
+        """Test the deep copy on a function."""
         node_mult = fl.Function.Node(
             element=fl.Function.Element(
                 "*",
@@ -1905,6 +1961,7 @@ class TestFunction(unittest.TestCase):
         ).evaluates_to(-0.5365729180004349)
 
     def test_node_str(self) -> None:
+        """Test Operator nodes to string return the expected value."""
         some_type = fl.Function.Element.Type.Operator
         FunctionNodeAssert(
             self,
@@ -1933,6 +1990,7 @@ class TestFunction(unittest.TestCase):
         FunctionNodeAssert(self, fl.Function.Node(constant=1)).value_is("1")
 
     def test_function_format_infix(self) -> None:
+        """Test formatting infix equations."""
         self.assertEqual(
             "a + b * 1 ( True or True ) / ( False and False )",
             fl.Function.format_infix(
@@ -1941,10 +1999,11 @@ class TestFunction(unittest.TestCase):
         )
         self.assertEqual(
             "sqrt ( a + b * 1 + sin ( pi / 2 ) - ~ 3 )",
-            fl.Function.format_infix(f"sqrt(a+b*1+sin(pi/2)-~3)"),
+            fl.Function.format_infix("sqrt(a+b*1+sin(pi/2)-~3)"),
         )
 
     def test_function_postfix(self) -> None:
+        """Test infix to postfix equations."""
         infix_postfix = {
             "a+b": "a b +",
             "a+b*2": "a b 2 * +",
@@ -1964,6 +2023,7 @@ class TestFunction(unittest.TestCase):
             self.assertEqual(postfix, fl.Function.infix_to_postfix(infix))
 
     def test_function_parse(self) -> None:
+        """Test parsing postfix equations."""
         infix_postfix = {
             "a+b": "a b +",
             "a+b*2": "a b 2.000 * +",

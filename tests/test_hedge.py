@@ -1,18 +1,18 @@
-"""
- pyfuzzylite (TM), a fuzzy logic control library in Python.
- Copyright (C) 2010-2017 FuzzyLite Limited. All rights reserved.
- Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
 
- This file is part of pyfuzzylite.
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
 
- pyfuzzylite is free software: you can redistribute it and/or modify it under
- the terms of the FuzzyLite License included with the software.
+This file is part of pyfuzzylite.
 
- You should have received a copy of the FuzzyLite License along with
- pyfuzzylite. If not, see <http://www.fuzzylite.com/license/>.
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
 
- pyfuzzylite is a trademark of FuzzyLite Limited
- fuzzylite is a registered trademark of FuzzyLite Limited.
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import unittest
@@ -24,7 +24,10 @@ from tests.assert_component import BaseAssert
 
 
 class HedgeAssert(BaseAssert[fl.Hedge]):
+    """Assert hedge."""
+
     def evaluates(self, az: Dict[float, float]) -> "HedgeAssert":
+        """Assert the hedge produces the expected values from the keys."""
         for a, z in az.items():
             if isnan(z):
                 self.test.assertEqual(isnan(self.actual.hedge(a)), True, f"when x={a}")
@@ -34,7 +37,10 @@ class HedgeAssert(BaseAssert[fl.Hedge]):
 
 
 class TestHedge(unittest.TestCase):
+    """Test hedges."""
+
     def test_any(self) -> None:
+        """Test the Any hedge."""
         HedgeAssert(self, fl.Any()).has_name("any").evaluates(
             {
                 -1.0: 1.0,
@@ -51,6 +57,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_extremely(self) -> None:
+        """Test the Extremely hedge."""
         HedgeAssert(self, fl.Extremely()).has_name("extremely").evaluates(
             {
                 -1.0: 2.0,
@@ -67,6 +74,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_not(self) -> None:
+        """Test the Not hedge."""
         HedgeAssert(self, fl.Not()).has_name("not").evaluates(
             {
                 -1.0: 2.0,
@@ -83,6 +91,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_seldom(self) -> None:
+        """Test the Seldom hedge."""
         with self.assertRaisesRegex(ValueError, r"math domain error"):
             HedgeAssert(self, fl.Seldom()).evaluates({-1.0: nan})
             HedgeAssert(self, fl.Seldom()).evaluates({-0.5: nan})
@@ -101,6 +110,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_somewhat(self) -> None:
+        """Test the Somewhat hedge."""
         with self.assertRaisesRegex(ValueError, r"math domain error"):
             HedgeAssert(self, fl.Somewhat()).evaluates({-1.0: nan})
             HedgeAssert(self, fl.Somewhat()).evaluates({-0.5: nan})
@@ -119,6 +129,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_very(self) -> None:
+        """Test the Very hedge."""
         HedgeAssert(self, fl.Very()).has_name("very").evaluates(
             {
                 -1.0: 1.0,
@@ -135,6 +146,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_function(self) -> None:
+        """Test the Function hedge."""
         HedgeAssert(
             self, fl.HedgeFunction(fl.Function.create("my_hedge", "x**2"))
         ).has_name("my_hedge").evaluates(
@@ -153,6 +165,7 @@ class TestHedge(unittest.TestCase):
         )
 
     def test_lambda(self) -> None:
+        """Test the Lambda hedge."""
         HedgeAssert(
             self,
             fl.HedgeLambda(
@@ -176,5 +189,6 @@ class TestHedge(unittest.TestCase):
             }
         )
 
-        if __name__ == "__main__":
-            unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()

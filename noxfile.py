@@ -1,139 +1,123 @@
-from pathlib import Path
-from typing import List
-
 import nox
 
 
 @nox.session(python=False)
 def check(session: nox.Session) -> None:
-    """checks the `pyproject.toml` is valid"""
+    """Check the `pyproject.toml` is valid."""
     session.run("poetry", "check", external=True)
 
 
 @nox.session(python=False)
-def freeze(session: nox.Session) -> None:
-    """prints all the versions of libraries"""
-    session.run("poetry", "export", "--without-hashes", external=True)
+def format(session: nox.Session) -> None:
+    """Run code formatting."""
+    session.run("black", "--version", external=True)
+    session.run("ruff", "--version", external=True)
 
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
 
-@nox.session(python=False)
-def install(session: nox.Session) -> None:
-    """installs the project using poetry"""
-    # lock all dependencies to the latest available compatible versions (faster than update)
-    session.run("poetry", "lock", "-v", external=True)
-    # install our project
-    session.run("poetry", "install", "-v", external=True)
+    session.run("black", *files, external=True)
+    session.run("ruff", "--fix", *files, external=True)
 
 
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
-    """runs static code analysis and checks format is correct"""
-    session.run("pylint", "--version", external=True)
-    session.run(
-        "pylint",
-        "fuzzylite/",
-        # "tests/",
-        external=True,
-        success_codes=[0],
-    )
+    """Run static code analysis and checks format is correct."""
+    session.run("black", "--version", external=True)
+    session.run("ruff", "--version", external=True)
     session.run("mypy", "--version", external=True)
+
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
+
+    session.run("black", "--check", *files, external=True)
+    session.run("ruff", "check", *files, external=True)
     session.run(
         "mypy",
-        "fuzzylite/",
-        # "tests/",
-        "--strict",
+        *files,
         external=True,
-        success_codes=[0],
-    )
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
-    session.run("black", "--check", *files, external=True, success_codes=[0])
-    session.run(
-        "nbqa",
-        "black",
-        "--check",
-        "-tpy36",
-        *black_notebook_folders(),
-        external=True,
-        success_codes=[0],
     )
 
 
 @nox.session(python=False)
+def install(session: nox.Session) -> None:
+    """Install the project using poetry."""
+    session.run(
+        "poetry",
+        "install",
+        "-v",
+        "--no-interaction",
+        external=True,
+    )
+
+
+@nox.session(python=False)
+def install_upgrade(session: nox.Session) -> None:
+    """Install the project using poetry and upgraded dependencies."""
+    session.run("poetry", "lock", "-v", external=True)
+    session.run(
+        "poetry",
+        "install",
+        "-v",
+        "--no-interaction",
+        external=True,
+    )
+
+
+@nox.session(python=False)
+def freeze(session: nox.Session) -> None:
+    """Print all the versions of dependencies."""
+    session.run("pip", "freeze", external=True)
+
+
+@nox.session(python=False)
 def test(session: nox.Session) -> None:
-    """runs the tests in the project"""
+    """Run the tests in the project."""
     session.run(
         "coverage",
         "run",
         "-m",
         "pytest",
-        "tests/",
         external=True,
     )
     session.run(
         "coverage",
         "report",
-        "-m",
         external=True,
     )
 
 
-@nox.session(python=False)
-def format(session: nox.Session) -> None:
-    """runs code formatting"""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+@nox.session
+def test_publish(session: nox.Session) -> None:
+    """Build the distributable and upload it to testpypi."""
+    session.run("rm", "-rf", "dist/", external=True)
+    session.run("poetry", "build", external=True)
+    session.run("twine", "check", "--strict", "dist/*", external=True)
     session.run(
-        "autoflake",
-        "-r",
-        "--in-place",
-        "--remove-all-unused-imports",
-        "--remove-unused-variables",
-        "fuzzylite/",
-        "tests/",
-        "noxfile.py",
+        "twine",
+        "upload",
+        "--repository",
+        "testpypi",
+        "dist/*",
+        "--config-file",
+        ".pypirc",
+        "--verbose",
         external=True,
     )
-    session.run("isort", *files, external=True)
-    session.run("black", *files, external=True)
+
+
+@nox.session
+def publish(session: nox.Session) -> None:
+    """Build the distributable and upload it to pypi."""
+    session.run("rm", "-rf", "dist/", external=True)
+    session.run("poetry", "build", external=True)
+    session.run("twine", "check", "--strict", "dist/*", external=True)
     session.run(
-        "nbqa",
-        "black",
-        "-tpy36",
-        *black_notebook_folders(),
-        "--nbqa-mutate",
+        "twine",
+        "upload",
+        "--repository",
+        "pypi",
+        "dist/*",
+        "--config-file",
+        ".pypirc",
+        "--verbose",
         external=True,
     )
-
-
-def black_notebook_folders() -> List[str]:
-    """
-    retrieves the list of notebook folders to lint (or format)
-    """
-    # include
-    notebooks = [
-        str(folder)
-        for folder in Path("tests/notebooks").glob("*.ipynb")
-        if folder.is_dir()
-    ]
-    return notebooks or ["tests"]
-
-
-@nox.session(python=False)
-def prepublish(_: nox.Session) -> None:
-    import toml
-
-    import fuzzylite as fl
-
-    file = Path("pyproject.toml")
-    pyproject = toml.load(str(file))
-
-    pyproject["tool"]["poetry"]["name"] = fl.lib.name
-    pyproject["tool"]["poetry"]["version"] = fl.lib.version
-    pyproject["tool"]["poetry"]["description"] = fl.lib.description
-    pyproject["tool"]["poetry"]["authors"] = [
-        f"{fl.lib.author} <{fl.lib.author_email}>"
-    ]
-    pyproject["tool"]["poetry"]["maintainers"] = [
-        f"{fl.lib.author} <{fl.lib.author_email}>"
-    ]
-
-    file.write_text(toml.dumps(pyproject))

@@ -1,45 +1,187 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.0.0"
+version = "7.1.0"
 description = "a fuzzy logic control library in Python"
-keywords = [ "fuzzy logic control", "soft computing", "artificial intelligence",]
-authors = [ "Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>",]
-maintainers = [ "Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>",]
+readme = "README.md"
+keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
+authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
+maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
 repository = "https://github.com/fuzzylite/pyfuzzylite.git"
-include = [ "fuzzylite/", "AUTHOR", "CHANGELOG", "COPYING", "fuzzylite.png", "LICENSE", "LICENSE.FuzzyLite", "README.md", "THANKS",]
-classifiers = [ "Development Status :: 4 - Beta", "Intended Audience :: Developers", "Intended Audience :: Science/Research", "License :: OSI Approved :: GNU Affero General Public License v3", "License :: Other/Proprietary License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.6", "Topic :: Scientific/Engineering :: Artificial Intelligence", "Topic :: Scientific/Engineering :: Mathematics", "Topic :: Software Development :: Libraries",]
+include = [
+    "fuzzylite/",
+    "tests/",
+    "noxfile.py",
+    "poetry.lock",
+    "poetry.toml",
+    "pyproject.toml",
+    "AUTHOR",
+    "CHANGELOG",
+    "fuzzylite.png",
+    "LICENSE",
+    "LICENSE.FuzzyLite",
+    "README.md",
+    "THANKS",
+]
+exclude = ["fuzzylite/examples/**/*.fld"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
+[tool.poetry_bumpversion.file."fuzzylite/library.py"]
+[tool.poetry_bumpversion.file."tests/test_library.py"]
+
+
 [[tool.poetry.packages]]
 include = "fuzzylite"
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/fuzzylite/pyfuzzylite"
-Documentation = "https://www.fuzzylite.com/documentation"
+Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = "^3.7"
 
-[tool.poetry.dev-dependencies]
-# remove unused variables and more
-autoflake = "^1.4"
-# Source code formatting
-black = "^22.1.0"
-# coverage metrics
-coveralls = "^3.3.1"
-# sort import depedencies
-isort = "^5.10.1"
-# Source code type annotations checker
-mypy = "^0.931"
-# Format jupyter notebooks
-nbqa = "^1.2.3"
-# numpy library to work around division by zero
-numpy = "^1.19.5"
-# Python tests
-pytest = "^7.0.1"
-# Read .toml files
-toml = "^0.10.2"
-pylint = "^2.12.2"
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"             # Code formatting
+coverage = "^7.2.2"           # Code coverage
+mypy = "^1.1.1"               # Static analysis
+numpy = "^1.19"               # Better division by zero
+poetry-bumpversion = "^0.3.0" # Version management
+pyhamcrest = "^2.0.4"         # Test Driven Development
+pytest = "^7.2.2"             # Test Driven Development
+ruff = "^0.0.256"             # Code formatting
+twine = "^4.0.2"              # Publish package
+
+[tool.black]
+target-version = ["py37"]
+
+[tool.ruff]
+# https://beta.ruff.rs/docs/rules/
+select = [
+    "A",   # flake8-builtins 
+    "ANN", # flake8-annotations
+    # "ARG", # flake8-unused-arguments
+    "B", # flake8-bugbear
+    # "C",  # flake8-comprehensions
+    # "COM", # flake8-commas
+    "D",   # pydocstyle
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8 naming
+    "NPY", # NumPy-specific rules
+    # "PD", # pandas-vet
+    "PLW", # warning
+    # "PTH", # flake8-use-pathlib
+    "UP",  # pyupgrade
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    # "TRY", # tryceratops
+    "W", # pycodestyle warnings
+]
+
+fixable = [
+    "A",   # flake8-builtins 
+    "ANN", # flake8-annotations
+    # "ARG", # flake8-unused-arguments
+    "B", # flake8-bugbear
+    # "C",  # flake8-comprehensions
+    # "COM", # flake8-commas
+    "D",   # pydocstyle
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "ICN", # flake8-import-conventions
+    "ISC", # flake8-implicit-str-concat
+    "N",   # pep8 naming
+    "NPY", # NumPy-specific rules
+    # "PD", # pandas-vet
+    "PLW", # warning
+    # "PTH", # flake8-use-pathlib
+    "UP",  # pyupgrade
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    # "TRY", # tryceratops
+    "W", # pycodestyle warnings
+]
+
+ignore = [
+    "A001",   # Variable `__name__` is shadowing a python builtin
+    "A002",   # Argument `type` is shadowing a python builtin
+    "A003",   # Class attribute `format` is shadowing a python builtin
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**args`
+    "B007",   # [*] Loop control variable `x` not used within loop body
+    "D100",   # Missing docstring in public module
+    "D104",   # Missing docstring in public package
+    "D205",   # 1 blank line required between summary line and description"
+    # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
+    # "D417",   # Missing argument descriptions in the docstring
+    "E501", # Line too long (handled by black)
+    # "F401", #  imported but unused
+    "F405",    # Imports from star
+    "F403",    # Detect names from star imports
+    "N817",    # CamelCase imported as acronym 
+    "N999",    # Invalid module name
+    "N812",    # Lowercase  imported as non-lowercase 
+    "PD901",   # df is a bad variable name
+    "PLW2901", # `for` loop variable `line` overwritten by assignment target
+    "RET504",  # Unnecessary variable assignment before `return` statement
+    "RET505",  # Unnecessary `else` after `return` statement
+    "SIM102",  # Use a single `if` statement instead of nested `if` statements
+    "SIM300",  # Yoda conditions are discouraged
+    # "W605",    # [*] Invalid escape sequence: latex
+]
+
+unfixable = []
+
+exclude = []
+
+# Same as Black.
+line-length = 88
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+target-version = "py37"
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.7"
+strict = true
+exclude = []
+
+verbosity = 0
+show_traceback = true
+show_error_context = true
+dump_type_stats = false
+dump_inference_stats = false
+
+[[tool.mypy.overrides]]
+# ignore warnings of fl.nan not being explicitly exported.
+module = "fuzzylite"
+implicit_reexport = true
