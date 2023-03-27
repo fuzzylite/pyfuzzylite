@@ -10,22 +10,24 @@ A Fuzzy Logic Control Library in Python
 By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit/)
 
-| Branch | Status  | 
-|--------|---------|
-|[main](https://github.com/fuzzylite/pyfuzzylite/tree/main) | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)
-|[development](https://github.com/fuzzylite/pyfuzzylite/tree/development) | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)
+Status:
+
+| Branch                                                                   | Status                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [main](https://github.com/fuzzylite/pyfuzzylite/tree/main)               | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)        |
+| [development](https://github.com/fuzzylite/pyfuzzylite/tree/development) | [![Python package](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml) |
 ***
 
 
 ### <a name="license">License</a>
-`pyfuzzylite` is licensed under the [**Affero General Public License (AGPL) 3.0**](https://www.gnu.org/licenses/agpl.html). Commercial licenses are also available, please contact [sales@fuzzylite.com](mailto:sales@fuzzylite.com). You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads).
+`pyfuzzylite` is dual-licensed under the [**GNU GPL 3.0**](https://opensource.org/license/gpl-3-0/) and the [**MIT License**](https://opensource.org/license/mit/).
 
-[`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads/) is the new and (very likely) the best graphical user interface available to  easily design and directly operate fuzzy logic controllers in real time. Available for Windows, Mac, and Linux, its goal is to significantly **speed up** the design of your fuzzy logic controllers, while providing a very **useful**, **functional** and **beautiful** user interface.
-Please, download it and check it out for free at [www.fuzzylite.com/downloads/](https://www.fuzzylite.com/downloads/).
+You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite 6`](https://www.fuzzylite.com/downloads).
 
-***
+
+
 
 
 ### <a name="introduction">Introduction</a>
@@ -50,17 +52,17 @@ Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL htt
 ```
 
 #### Documentation
-The documentation for the `fuzzylite` library is available at: [www.fuzzylite.com/documentation/](https://www.fuzzylite.com/documentation/).
+The documentation for the `fuzzylite` library is available at: [fuzzylite.com/documentation/](https://fuzzylite.com/documentation/).
 
 #### Contributing
 All contributions are welcome, provided they follow the following guidelines:
- - Pull requests are made to the [master](https://github.com/fuzzylite/pyfuzzylite/tree/master) branch
+ - Pull requests are made to the [development](https://github.com/fuzzylite/pyfuzzylite/tree/development) branch
  - Source code is consistent with standards in the library
  - Contribution is appropriately documented and tested, raising issues where appropriate
- - License of the contribution is waived to match the license of the FuzzyLite Libraries
+ - License of the contribution is waived to match the licenses of the FuzzyLite Libraries
 
 
-***
+
 
 ### <a name="features">Features</a>
 
@@ -91,7 +93,6 @@ All contributions are welcome, provided they follow the following guidelines:
 
 
 
-***
 
 ### <a name="example">Example</a>
 #### FuzzyLite Language
@@ -126,19 +127,12 @@ RuleBlock: mamdani
 
 ***
 
-### <a name="whatsnext">What's Next?</a>
 
-+ Optimization of Fuzzy Logic Controllers
-+ Type-2 Fuzzy Logic Controllers
-+ Adaptive Neuro-Fuzzy Inference System (ANFIS)
-+ Fuzzy C-means data clustering
 
-***
-
-fuzzylite&reg; is a registered trademark of FuzzyLite Limited.<br>
-jfuzzylite&trade; is a trademark of FuzzyLite Limited.<br>
-pyfuzzylite&trade; is a trademark of FuzzyLite Limited.<br>
-QtFuzzyLite&trade; is a trademark of FuzzyLite Limited.<br>
+fuzzylite&reg; is a registered trademark of FuzzyLite Limited.
+jfuzzylite&trade; is a trademark of FuzzyLite Limited.
+pyfuzzylite&trade; is a trademark of FuzzyLite Limited.
+QtFuzzyLite&trade; is a trademark of FuzzyLite Limited.
 
 
 Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved.
