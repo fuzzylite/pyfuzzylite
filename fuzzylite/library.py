@@ -85,7 +85,7 @@ class Library:
     @property
     def version(self) -> str:
         """Return the version of the `fuzzylite` library."""
-        __version__ = "7.1.0"
+        __version__ = "7.1.1"
         return __version__
 
     @property
