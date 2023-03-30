@@ -69,7 +69,7 @@ variable InputVariable OutputVariable Variable
 
     def test_library_vars(self) -> None:
         """Test the library variables."""
-        __version__ = "7.1.0"
+        __version__ = "7.1.1"
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
         self.assertEqual(fuzzylite.__version__, __version__)
         self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)

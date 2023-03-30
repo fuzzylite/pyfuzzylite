@@ -13,11 +13,11 @@ By: [Juan Rada-Vilela](https://www.fuzzylite.com/jcrada), Ph.D.
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit/)
 
 
-[main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)                
+[main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
 [![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)   
 
-[development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development) 
-[![development](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml) 
+[development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
+[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml) 
 
 ***
 
