@@ -55,21 +55,21 @@ Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"             # Code formatting
-coverage = "^7.2.2"           # Code coverage
-mypy = "^1.1.1"               # Static analysis
-numpy = "^1.19"               # Better division by zero
+black = "^23.3.0"             # Code formatting
+coverage = "^7.2.3"           # Code coverage
+mypy = "^1.2.0"               # Static analysis
+numpy = "^1.20" # Numeric manipulation and vectorisation
 poetry-bumpversion = "^0.3.0" # Version management
 pyhamcrest = "^2.0.4"         # Test Driven Development
-pytest = "^7.2.2"             # Test Driven Development
+pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py38"]
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
@@ -162,7 +162,7 @@ line-length = 88
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.mccabe]
 max-complexity = 10
@@ -171,7 +171,7 @@ max-complexity = 10
 convention = "google"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.8"
 strict = true
 exclude = []
 
@@ -185,3 +185,9 @@ dump_inference_stats = false
 # ignore warnings of fl.nan not being explicitly exported.
 module = "fuzzylite"
 implicit_reexport = true
+
+
+[[tool.mypy.overrides]]
+# ignore warnings of fl.nan not being explicitly exported.
+module = "numpy"
+ignore_missing_imports = true

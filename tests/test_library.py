@@ -55,6 +55,8 @@ library Library
 norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
 EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum
 
+np
+
 operation Op Operation
 
 rule Antecedent Consequent Expression Operator Proposition Rule RuleBlock

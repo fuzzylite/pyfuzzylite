@@ -1151,7 +1151,7 @@ class TestExporters(unittest.TestCase):
         import numpy as np
 
         np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
+        fl.lib.floating_point_type = np.float64
 
         path = "/tmp/source/"
         examples = pathlib.Path(path)
@@ -1171,7 +1171,7 @@ class TestExporters(unittest.TestCase):
         import numpy as np
 
         np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
+        fl.lib.floating_point_type = np.float64
 
         examples = "/tmp/source/takagi_sugeno/"
         TestExporters.export(examples + "/approximation.fll")
@@ -1186,7 +1186,7 @@ class TestExporters(unittest.TestCase):
         import numpy as np
 
         np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
+        fl.lib.floating_point_type = np.float64
 
         path = pathlib.Path(file_path)
         if path.suffix == ".fll":

@@ -1598,8 +1598,8 @@ class TestTerm(unittest.TestCase):
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
 
-        fl.lib.floating_point_type = np.float_  # type: ignore
-        np.seterr("ignore")  # ignore "errors", (e.g., division by zero)
+        fl.lib.floating_point_type = np.float_
+        np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
                 {0.0: fl.nan, fl.inf: 0.0, -fl.inf: 0.0, fl.nan: fl.nan}
