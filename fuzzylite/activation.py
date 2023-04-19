@@ -28,7 +28,7 @@ __all__ = [
 
 import enum
 import heapq
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Union
 
 from .operation import Op
 from .rule import Rule, RuleBlock
@@ -284,7 +284,7 @@ class Highest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Tuple[float, int]] = []
+        activate: list[tuple[float, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
@@ -340,7 +340,7 @@ class Lowest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Tuple[float, int]] = []
+        activate: list[tuple[float, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
@@ -378,7 +378,7 @@ class Proportional(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Rule] = []
+        activate: list[Rule] = []
         sum_degrees = 0.0
         for rule in rule_block.rules:
             rule.deactivate()
@@ -426,7 +426,7 @@ class Threshold(Activation):
         # $a > \theta$
         GreaterThan = ">"
 
-        __operator__: Dict[str, Callable[[float, float], bool]] = {
+        __operator__: dict[str, Callable[[float, float], bool]] = {
             LessThan: Op.lt,
             LessThanOrEqualTo: Op.le,
             EqualTo: Op.eq,

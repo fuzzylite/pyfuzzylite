@@ -30,7 +30,8 @@ __all__ = [
 
 import copy
 import math
-from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
+from collections.abc import Iterator
+from typing import Callable, Generic, Optional, TypeVar
 
 from .activation import (
     Activation,
@@ -114,7 +115,7 @@ class ConstructionFactory(Generic[T]):
 
     def __init__(self) -> None:
         """Create the construction factory."""
-        self.constructors: Dict[str, Callable[[], T]] = {}
+        self.constructors: dict[str, Callable[[], T]] = {}
 
     def __iter__(self) -> Iterator[str]:
         """Gets the iterator of constructors."""
@@ -149,7 +150,7 @@ class CloningFactory(Generic[T]):
 
     def __init__(self) -> None:
         """Create cloning factory."""
-        self.objects: Dict[str, T] = {}
+        self.objects: dict[str, T] = {}
 
     def __iter__(self) -> Iterator[str]:
         """Get iterator iterator of objects."""
@@ -564,7 +565,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
             f.precedence = self._precedence(0)
             self.objects[f.name] = f
 
-    def operators(self) -> Dict[str, Function.Element]:
+    def operators(self) -> dict[str, Function.Element]:
         """Returns a dictionary of the operators available
         @return a dictionary of the operators available.
         """
@@ -575,7 +576,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
         }
         return result
 
-    def functions(self) -> Dict[str, Function.Element]:
+    def functions(self) -> dict[str, Function.Element]:
         """Returns a dictionary of the functions available
         @return a dictionary of the functions available.
         """

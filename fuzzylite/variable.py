@@ -20,8 +20,9 @@ __all__ = ["Variable", "InputVariable", "OutputVariable"]
 import contextlib
 import math
 import typing
+from collections.abc import Iterable
 from math import inf, isnan, nan
-from typing import Iterable, List, Optional, Tuple
+from typing import Optional
 
 from .exporter import FllExporter
 from .norm import SNorm
@@ -69,7 +70,7 @@ class Variable:
         self.minimum = minimum
         self.maximum = maximum
         self.lock_range = lock_range
-        self.terms: List["Term"] = []
+        self.terms: list["Term"] = []
         if terms:
             self.terms.extend(terms)
         self._value = nan
@@ -102,7 +103,7 @@ class Variable:
         return self.maximum - self.minimum
 
     @property
-    def range(self) -> Tuple[float, float]:
+    def range(self) -> tuple[float, float]:
         """Gets the range of the variable
         @return tuple of (minimum, maximum).
 
@@ -110,7 +111,7 @@ class Variable:
         return self.minimum, self.maximum
 
     @range.setter
-    def range(self, min_max: Tuple[float, float]) -> None:
+    def range(self, min_max: tuple[float, float]) -> None:
         """Sets the range of the variable
         @param min_max is the range of the variable (minimum, maximum).
 
@@ -142,7 +143,7 @@ class Variable:
         @param x is the value to fuzzify
         @return the fuzzy value expressed as $\sum_i{\mu_i(x)/i}$.
         """
-        result: List[str] = []
+        result: list[str] = []
         for term in self.terms:
             fx = nan
             with contextlib.suppress(ValueError):
@@ -155,7 +156,7 @@ class Variable:
 
         return "".join(result)
 
-    def highest_membership(self, x: float) -> Tuple[float, Optional["Term"]]:
+    def highest_membership(self, x: float) -> tuple[float, Optional["Term"]]:
         r"""Gets the term which has the highest membership function value for
         $x$.
         @param x is the value of interest
@@ -163,7 +164,7 @@ class Variable:
         function value will be stored
         @return the term $i$ which maximimizes $\mu_i(x)$.
         """
-        result: Tuple[float, Optional["Term"]] = (0.0, None)
+        result: tuple[float, Optional["Term"]] = (0.0, None)
         for term in self.terms:
             y = nan
             with contextlib.suppress(ValueError):
@@ -450,7 +451,7 @@ class OutputVariable(Variable):
 
     def fuzzy_value(self) -> str:
         r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
-        result: List[str] = []
+        result: list[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
 

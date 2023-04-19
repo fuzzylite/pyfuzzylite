@@ -21,7 +21,6 @@ import string
 import tempfile
 import unittest
 from pathlib import Path
-from typing import List
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
@@ -1194,7 +1193,7 @@ class TestExporters(unittest.TestCase):
                 import_fll = file.read()
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
-            package: List[str] = []
+            package: list[str] = []
             for parent in path.parents:
                 package.append(parent.name)
                 if parent.name == "fuzzylite":

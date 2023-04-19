@@ -17,7 +17,6 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 
 import unittest
 from math import inf, isnan, nan
-from typing import Dict
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -26,7 +25,7 @@ from tests.assert_component import BaseAssert
 class HedgeAssert(BaseAssert[fl.Hedge]):
     """Assert hedge."""
 
-    def evaluates(self, az: Dict[float, float]) -> "HedgeAssert":
+    def evaluates(self, az: dict[float, float]) -> "HedgeAssert":
         """Assert the hedge produces the expected values from the keys."""
         for a, z in az.items():
             if isnan(z):

@@ -18,7 +18,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 __all__ = ["Importer", "FllImporter"]
 
 from pathlib import Path
-from typing import List, Optional, Tuple, Type, TypeVar, Union
+from typing import Optional, TypeVar, Union
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -85,7 +85,7 @@ class FllImporter(Importer):
         """
         self.separator = separator
 
-    def _process(self, component: str, block: List[str], engine: Engine) -> None:
+    def _process(self, component: str, block: list[str], engine: Engine) -> None:
         if component == "Engine":
             for line in block:
                 line = Op.strip_comments(line)
@@ -123,7 +123,7 @@ class FllImporter(Importer):
         """
         engine = Engine()
         component = ""
-        block: List[str] = []
+        block: list[str] = []
 
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -316,7 +316,7 @@ class FllImporter(Importer):
         return self.component(Defuzzifier, name, parameters)
 
     def component(
-        self, cls: Type["FllImporter.T"], fll: str, parameters: Optional[str] = None
+        self, cls: type["FllImporter.T"], fll: str, parameters: Optional[str] = None
     ) -> Optional["FllImporter.T"]:
         """Create component from the factory.
         @param cls is the component class to create
@@ -345,7 +345,7 @@ class FllImporter(Importer):
             result.configure(parameters)
         return result
 
-    def range(self, fll: str) -> Tuple[float, float]:
+    def range(self, fll: str) -> tuple[float, float]:
         """Gets the range from a value in the FuzzyLite Language."""
         values = fll.split()
         if len(values) != 2:
@@ -362,7 +362,7 @@ class FllImporter(Importer):
 
     def extract_key_value(
         self, fll: str, component: Optional[str] = None
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """Extract 'key: value' pair from the line of text in the FuzzyLite Language
         @param fll is the line of text in the FuzzyLite Language
         @param component is the name of the specific key to extract

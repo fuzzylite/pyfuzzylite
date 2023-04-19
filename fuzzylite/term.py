@@ -47,19 +47,12 @@ import enum
 import logging
 import re
 import typing
+from collections.abc import Iterable, Iterator, Sequence
 from math import cos, exp, fabs, inf, isnan, nan, pi
 from typing import (
     Callable,
-    Deque,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
     Optional,
-    Sequence,
-    Set,
     SupportsFloat,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -135,7 +128,7 @@ class Term:
         :param args: is the parameters to configure the term
         :return: the parameters concatenated and an optional height at the end.
         """
-        result: List[str] = []
+        result: list[str] = []
         if args:
             result.extend(map(Op.str, args))
         if self.height and self.height != 1.0:
@@ -300,7 +293,7 @@ class Aggregated(Term):
         self.minimum = minimum
         self.maximum = maximum
         self.aggregation = aggregation
-        self.terms: List[Activated] = []
+        self.terms: list[Activated] = []
         if terms:
             self.terms.extend(terms)
 
@@ -740,7 +733,7 @@ class Discrete(Term):
                 return not self.values == other.values
             return self.values != other
 
-        def __lt__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __lt__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is less than another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values < other.values
@@ -751,7 +744,7 @@ class Discrete(Term):
                 f"but found {type(other)}"
             )
 
-        def __le__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __le__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is less than or equal to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values <= other.values
@@ -762,7 +755,7 @@ class Discrete(Term):
                 f"but found {type(other)}"
             )
 
-        def __gt__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __gt__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is greater to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values > other.values
@@ -773,7 +766,7 @@ class Discrete(Term):
                 f"but found {type(other)}"
             )
 
-        def __ge__(self, other: Union[Tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __ge__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is greater or equal to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values >= other.values
@@ -785,12 +778,12 @@ class Discrete(Term):
             )
 
         @property
-        def values(self) -> Tuple[float, float]:
+        def values(self) -> tuple[float, float]:
             """Gets this pair as tuple."""
             return self.x, self.y
 
         @values.setter
-        def values(self, xy: Tuple[float, float]) -> None:
+        def values(self, xy: tuple[float, float]) -> None:
             """Sets this pair to the tuple.
             @param xy is the tuple.
 
@@ -809,7 +802,7 @@ class Discrete(Term):
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.xy: List[Discrete.Pair] = []
+        self.xy: list[Discrete.Pair] = []
         if xy:
             self.xy = Discrete.pairs_from(xy)
 
@@ -899,8 +892,8 @@ class Discrete(Term):
 
     @staticmethod
     def pairs_from(
-        values: Union[Sequence[Floatable], Dict[Floatable, Floatable]]
-    ) -> List["Discrete.Pair"]:
+        values: Union[Sequence[Floatable], dict[Floatable, Floatable]]
+    ) -> list["Discrete.Pair"]:
         """Creates a list of discrete pairs from the given values.
         @param values is a flat list of (x, y)-pairs or a dictionary of values {x: y}.
         """
@@ -923,18 +916,18 @@ class Discrete(Term):
 
     # TODO: More pythonic?
     @staticmethod
-    def values_from(pairs: List["Discrete.Pair"]) -> List[float]:
+    def values_from(pairs: list["Discrete.Pair"]) -> list[float]:
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
         @returns a flat list of values.
         """
-        result: List[float] = []
+        result: list[float] = []
         for xy in pairs:
             result.extend([xy.x, xy.y])
         return result
 
     @staticmethod
-    def dict_from(pairs: List["Discrete.Pair"]) -> Dict[float, float]:
+    def dict_from(pairs: list["Discrete.Pair"]) -> dict[float, float]:
         """Create a dictionary from the list of discrete pairs.
         @param pairs is a list of discrete pairs
         @returns a dictionary of pairs {x: y}.
@@ -1122,7 +1115,7 @@ class Linear(Term):
         @param height is the height of the term.
         """
         super().__init__(name)
-        self.coefficients: List[float] = []
+        self.coefficients: list[float] = []
         if coefficients:
             self.coefficients.extend(coefficients)
         self.engine = engine
@@ -2144,7 +2137,7 @@ class Function(Term):
                 result = Op.str(self.constant)
             return result
 
-        def evaluate(self, local_variables: Optional[Dict[str, float]] = None) -> float:
+        def evaluate(self, local_variables: Optional[dict[str, float]] = None) -> float:
             """Evaluates the node and substitutes the variables therein for the
             values passed in the map. The expression tree is evaluated
             recursively.
@@ -2271,7 +2264,7 @@ class Function(Term):
         name: str = "",
         formula: str = "",
         engine: Optional["Engine"] = None,
-        variables: Optional[Dict[str, float]] = None,
+        variables: Optional[dict[str, float]] = None,
         load: bool = False,
     ) -> None:
         """Create the function.
@@ -2285,7 +2278,7 @@ class Function(Term):
         self.root: Optional[Function.Node] = None
         self.formula = formula
         self.engine = engine
-        self.variables: Dict[str, float] = {}
+        self.variables: dict[str, float] = {}
         if variables:
             self.variables.update(variables)
         if load:
@@ -2339,7 +2332,7 @@ class Function(Term):
                 f"remove it from the map of variables: {self.variables}"
             )
 
-        engine_variables: Dict[str, float] = {}
+        engine_variables: dict[str, float] = {}
         if self.engine:
             for variable in self.engine.variables:
                 engine_variables[variable.name] = variable.value
@@ -2360,7 +2353,7 @@ class Function(Term):
         engine_variables.update(self.variables)
         return self.evaluate(engine_variables)
 
-    def evaluate(self, variables: Optional[Dict[str, float]] = None) -> float:
+    def evaluate(self, variables: Optional[dict[str, float]] = None) -> float:
         """Computes the function value of this term using the given map of
         variable substitutions.
         @param variables is a map of substitution variables
@@ -2398,7 +2391,7 @@ class Function(Term):
         from .rule import Rule
 
         factory: FunctionFactory = lib.factory_manager.function
-        operators: Set[str] = set(factory.operators().keys()).union({"(", ")", ","})
+        operators: set[str] = set(factory.operators().keys()).union({"(", ")", ","})
         operators -= {Rule.AND, Rule.OR}
 
         # sorted to have multi-char operators separated first (eg., ** and *)
@@ -2424,8 +2417,8 @@ class Function(Term):
 
         from collections import deque
 
-        queue: Deque[str] = deque()
-        stack: List[str] = []
+        queue: deque[str] = deque()
+        stack: list[str] = []
 
         for token in formula.split():
             if lib.debugging:
@@ -2507,7 +2500,7 @@ class Function(Term):
         from . import lib
 
         postfix = cls.infix_to_postfix(formula)
-        stack: List[Function.Node] = []
+        stack: list[Function.Node] = []
         factory = lib.factory_manager.function
 
         for token in postfix.split():

@@ -16,7 +16,6 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import re
 import unittest
-from typing import Dict
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -37,7 +36,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
 
     def defuzzifies(
         self,
-        terms: Dict[fl.Term, float],
+        terms: dict[fl.Term, float],
         minimum: float = -fl.inf,
         maximum: float = fl.inf,
     ) -> "DefuzzifierAssert":

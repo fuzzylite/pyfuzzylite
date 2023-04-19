@@ -15,7 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import unittest
-from typing import List, Optional
+from typing import Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -54,7 +54,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_inputs(self, names: List[str]) -> "EngineAssert":
+    def has_inputs(self, names: list[str]) -> "EngineAssert":
         """Asserts the engine has the expected input variables by name."""
         self.test.assertSequenceEqual(
             [iv.name for iv in self.actual.input_variables], names
@@ -69,7 +69,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_outputs(self, names: List[str]) -> "EngineAssert":
+    def has_outputs(self, names: list[str]) -> "EngineAssert":
         """Asserts the engine has the expected output variables by name."""
         self.test.assertSequenceEqual(
             [ov.name for ov in self.actual.output_variables], names
@@ -84,7 +84,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_blocks(self, names: List[str]) -> "EngineAssert":
+    def has_blocks(self, names: list[str]) -> "EngineAssert":
         """Asserts the engine has the expected number of rule blocks by name."""
         self.test.assertSequenceEqual(
             [rb.name for rb in self.actual.rule_blocks], names
@@ -109,7 +109,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
                     f"but got {len(expected)}: [line: {line}] {evaluation}"
                 )
 
-            obtained: List[str] = []
+            obtained: list[str] = []
             for i, input_variable in enumerate(self.actual.input_variables):
                 input_variable.value = fl.scalar(expected[i])
                 obtained.append(expected[i])

@@ -19,7 +19,7 @@ __all__ = ["Operation", "Op"]
 
 import inspect
 import math
-from typing import Callable, List, Optional, SupportsFloat, Union
+from typing import Callable, Optional, SupportsFloat, Union
 
 
 class Operation:
@@ -277,7 +277,7 @@ class Operation:
 
         @returns the text with comments stripped out.
         """
-        lines: List[str] = []
+        lines: list[str] = []
         for line in fll.split("\n"):
             ignore = line.find(delimiter)
             if ignore != -1:
@@ -298,9 +298,9 @@ class Operation:
 
     @staticmethod
     def increment(
-        x: List[int],
-        minimum: List[int],
-        maximum: List[int],
+        x: list[int],
+        minimum: list[int],
+        maximum: list[int],
         position: Optional[int] = None,
     ) -> bool:
         """Increments the list by the unit.

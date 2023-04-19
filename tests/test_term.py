@@ -21,7 +21,8 @@ import operator
 import platform
 import re
 import unittest
-from typing import Callable, Dict, NoReturn, Optional, Sequence, Type
+from collections.abc import Sequence
+from typing import Callable, NoReturn, Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -80,7 +81,7 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def has_memberships(
-        self, x_mf: Dict[float, float], height: float = 1.0
+        self, x_mf: dict[float, float], height: float = 1.0
     ) -> "TermAssert":
         """Assert the term term's membership function produces $f(x{_keys}) = mf_{values}$."""
         for x in x_mf:
@@ -88,7 +89,7 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def membership_fails(
-        self, x: float, exception: Type[Exception], regex: str
+        self, x: float, exception: type[Exception], regex: str
     ) -> "TermAssert":
         """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
@@ -96,7 +97,7 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def memberships_fail(
-        self, x_mf: Dict[float, float], exception: Type[Exception], regex: str
+        self, x_mf: dict[float, float], exception: type[Exception], regex: str
     ) -> "TermAssert":
         """Assert the membership function raises the exception when evaluating $f(x_{keys})$."""
         for x, _ in x_mf.items():
@@ -123,7 +124,7 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def has_tsukamotos(
-        self, x_mf: Dict[float, float], minimum: float = -1.0, maximum: float = 1.0
+        self, x_mf: dict[float, float], minimum: float = -1.0, maximum: float = 1.0
     ) -> "TermAssert":
         """Assert the term computes all Tsukamoto values correctly."""
         for x in x_mf:
@@ -134,7 +135,7 @@ class TermAssert(BaseAssert[fl.Term]):
         self,
         func: Callable[..., None],
         args: Sequence[str] = (),
-        **keywords: Dict[str, object],
+        **keywords: dict[str, object],
     ) -> "TermAssert":
         """Applies function on the term with the arguments and keywords as parameters."""
         func(self.actual, *args, **keywords)
@@ -1598,7 +1599,7 @@ class TestTerm(unittest.TestCase):
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
 
-        fl.lib.floating_point_type = np.float_
+        fl.lib.floating_point_type = np.float64
         np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
@@ -1653,7 +1654,7 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         return self
 
     def evaluates_to(
-        self, value: float, variables: Optional[Dict[str, float]] = None
+        self, value: float, variables: Optional[dict[str, float]] = None
     ) -> "FunctionNodeAssert":
         """Assert the node evaluates to the expected value (optionally) given variables."""
         self.test.assertAlmostEqual(
@@ -1665,7 +1666,7 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         return self
 
     def fails_to_evaluate(
-        self, exception: Type[Exception], message: str
+        self, exception: type[Exception], message: str
     ) -> "FunctionNodeAssert":
         """Assert the node raises the expection on evaluation."""
         with self.test.assertRaisesRegex(exception, message):

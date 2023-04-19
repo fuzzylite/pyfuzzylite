@@ -22,7 +22,7 @@ import io
 import math
 import typing
 from pathlib import Path
-from typing import IO, Any, List, Optional, Set, Union
+from typing import IO, Any, Optional, Union
 
 from .operation import Op
 
@@ -323,21 +323,21 @@ class PythonExporter(Exporter):
             ")",
         ]
 
-        input_variables: List[str] = []
+        input_variables: list[str] = []
         for iv in engine.input_variables:
             input_variables += [
                 f"{(level + 1) * self.indent}{self.input_variable(iv, level + 2)}"
             ]
         result += [self.key_values("engine.input_variables", input_variables)]
 
-        output_variables: List[str] = []
+        output_variables: list[str] = []
         for ov in engine.output_variables:
             output_variables += [
                 f"{(level + 1) * self.indent}{self.output_variable(ov, level + 2)}"
             ]
         result += [self.key_values("engine.output_variables", output_variables)]
 
-        rule_blocks: List[str] = []
+        rule_blocks: list[str] = []
         for rb in engine.rule_blocks:
             rule_blocks += [
                 f"{(level + 1) * self.indent}{self.rule_block(rb, level + 2)}"
@@ -409,7 +409,7 @@ class PythonExporter(Exporter):
             return str(x)
         return str(x)
 
-    def key_values(self, name: str, values: List[Any], level: int = 0) -> str:
+    def key_values(self, name: str, values: list[Any], level: int = 0) -> str:
         """Formats a key-value pair at the given level
         @param name is the name of the Python variable
         @param values is the list of values to assign to the variable as a list
@@ -678,7 +678,7 @@ class FldExporter(Exporter):
         @param engine is the engine to be exported
         @return the header of the dataset for the given engine.
         """
-        result: List[str] = []
+        result: list[str] = []
         if self.input_values:
             result += [iv.name for iv in engine.input_variables]
         if self.output_values:
@@ -702,7 +702,7 @@ class FldExporter(Exporter):
         engine: "Engine",
         values: int = 1024,
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
-        active_variables: Optional[Set["InputVariable"]] = None,
+        active_variables: Optional[set["InputVariable"]] = None,
     ) -> str:
         """Returns a FuzzyLite Dataset from the engine.
         @param engine is the engine to export
@@ -723,7 +723,7 @@ class FldExporter(Exporter):
         engine: "Engine",
         values: int = 1024,
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
-        active_variables: Optional[Set["InputVariable"]] = None,
+        active_variables: Optional[set["InputVariable"]] = None,
     ) -> None:
         """Saves the engine as a FuzzyLite Dataset into the specified file
         @param path is the full path of the file
@@ -741,7 +741,7 @@ class FldExporter(Exporter):
         writer: IO[str],
         values: int,
         scope: ScopeOfValues,
-        active_variables: Optional[Set["InputVariable"]] = None,
+        active_variables: Optional[set["InputVariable"]] = None,
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export
@@ -839,8 +839,8 @@ class FldExporter(Exporter):
         self,
         engine: "Engine",
         writer: IO[str],
-        input_values: List[float],
-        active_variables: Set["InputVariable"],
+        input_values: list[float],
+        active_variables: set["InputVariable"],
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export
@@ -856,7 +856,7 @@ class FldExporter(Exporter):
                 f"for the input variables ({len(engine.input_variables)})"
             )
 
-        values: List[str] = []
+        values: list[str] = []
         for i, iv in enumerate(engine.input_variables):
             if iv in active_variables:
                 iv.value = input_values[i]

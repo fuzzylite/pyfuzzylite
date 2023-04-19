@@ -15,7 +15,6 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import unittest
-from typing import Dict, Tuple
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -35,7 +34,7 @@ class NormAssert(BaseAssert[fl.Norm]):
         return self
 
     def evaluates(
-        self, abz: Dict[Tuple[float, float], float], commutative: bool = True
+        self, abz: dict[tuple[float, float], float], commutative: bool = True
     ) -> "NormAssert":
         """Assert the norm produces the expected values."""
         for ab, z in abz.items():

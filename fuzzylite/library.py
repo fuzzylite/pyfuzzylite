@@ -16,9 +16,10 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import logging
-from typing import Optional, SupportsFloat, Type, Union
+from typing import Optional, SupportsFloat, Union
 
 from .factory import FactoryManager
+from .types import Scalar
 
 __all__ = ["Library"]
 
@@ -33,7 +34,7 @@ class Library:
         self,
         decimals: int,
         abs_tolerance: float,
-        floating_point_type: Type[float] = float,
+        floating_point_type: type[Scalar] = float,
         factory_manager: Optional["FactoryManager"] = None,
     ) -> None:
         """Creates an instance of the library.
@@ -53,7 +54,7 @@ class Library:
         """Convert the value into a floating point defined by the library
         @param value is the value to convert.
         """
-        return self.floating_point_type(value)
+        return self.floating_point_type(value)  # type: ignore
 
     def configure_logging(self, level: int, reset: bool = True) -> None:
         """Configure the logging service.

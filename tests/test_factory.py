@@ -16,16 +16,10 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import unittest
+from collections.abc import Iterable, Sequence
 from typing import (
     Any,
-    Dict,
-    Iterable,
-    List,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
     Union,
 )
 
@@ -64,7 +58,7 @@ class FactoryAssert(
                 )
         return self
 
-    def constructs_exactly(self, name_type: Dict[str, type]) -> "FactoryAssert":
+    def constructs_exactly(self, name_type: dict[str, type]) -> "FactoryAssert":
         """Asserts the factory constructs expected types from the names."""
         if not isinstance(self.actual, fl.ConstructionFactory):
             raise ValueError(
@@ -76,7 +70,7 @@ class FactoryAssert(
             self.test.assertEqual(type(self.actual.construct(name)), clazz)
         return self
 
-    def copies_exactly(self, name_instance: Dict[str, object]) -> "FactoryAssert":
+    def copies_exactly(self, name_instance: dict[str, object]) -> "FactoryAssert":
         """Assert the factory clones the objects from the class names."""
         if not isinstance(self.actual, fl.CloningFactory):
             raise ValueError(
@@ -97,7 +91,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
 
     def contains_exactly(
         self,
-        elements: Set[str],
+        elements: set[str],
         element_type: Optional[fl.Function.Element.Type] = None,
     ) -> "FunctionFactoryAssert":
         """Assert the factory contains only the expected elements."""
@@ -112,7 +106,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
         return self
 
     def operation_is(
-        self, operation_value: Dict[Tuple[str, Sequence[float]], float]
+        self, operation_value: dict[tuple[str, Sequence[float]], float]
     ) -> "FunctionFactoryAssert":
         """Assert the operation on the sequence of values results in the expected value."""
         for operation, expected_value in operation_value.items():
@@ -321,7 +315,7 @@ class TestFunctionFactory(unittest.TestCase):
     def test_arity(self) -> None:
         """Tests correct arity of functions."""
         # TODO: improve test, remove randomness,
-        acceptable: Dict[Type[Exception], Set[str]] = {
+        acceptable: dict[type[Exception], set[str]] = {
             ZeroDivisionError: {"%", "/", "fmod", "^", "**"},
             ValueError: {
                 "acos",
@@ -340,7 +334,7 @@ class TestFunctionFactory(unittest.TestCase):
         errors = []
 
         def evaluate(
-            function_element: fl.Function.Element, parameters: List[float]
+            function_element: fl.Function.Element, parameters: list[float]
         ) -> None:
             try:
                 function_element.method(*parameters)

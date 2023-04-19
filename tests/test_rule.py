@@ -15,7 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 import unittest
-from typing import Dict, List, Optional, Type, Union
+from typing import Optional, Union
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
@@ -117,7 +117,7 @@ class AssertAntecedent:
         return self
 
     def cannot_load_antecedent(
-        self, text: str, exception: Type[Exception], regex: str
+        self, text: str, exception: type[Exception], regex: str
     ) -> "AssertAntecedent":
         """Assert the antecedent cannot be loaded."""
         antecedent = fl.Antecedent(text)
@@ -128,10 +128,10 @@ class AssertAntecedent:
     def has_activation_degrees(
         self,
         inputs: Union[
-            Dict[fl.InputVariable, List[float]],
-            Dict[fl.OutputVariable, List[List[fl.Activated]]],
+            dict[fl.InputVariable, list[float]],
+            dict[fl.OutputVariable, list[list[fl.Activated]]],
         ],
-        rules: Dict[str, List[float]],
+        rules: dict[str, list[float]],
         conjunction: Optional[fl.TNorm] = None,
         disjunction: Optional[fl.SNorm] = None,
         decimal_places: int = 3,
@@ -533,7 +533,7 @@ class AssertConsequent:
         return self
 
     def cannot_load_consequent(
-        self, text: str, exception: Type[Exception], regex: str
+        self, text: str, exception: type[Exception], regex: str
     ) -> "AssertConsequent":
         """Assert the text cannot be loaded as a consequent."""
         consequent = fl.Consequent(text)
@@ -545,7 +545,7 @@ class AssertConsequent:
         self,
         text: str,
         activation_degree: float,
-        expected: Dict[fl.OutputVariable, List[fl.Activated]],
+        expected: dict[fl.OutputVariable, list[fl.Activated]],
         implication: Optional[fl.TNorm] = None,
         decimal_places: int = 3,
     ) -> "AssertConsequent":
@@ -766,7 +766,7 @@ class RuleAssert:
         return self
 
     def cannot_parse_rule(
-        self, text: str, exception: Type[Exception] = SyntaxError, regex: str = ""
+        self, text: str, exception: type[Exception] = SyntaxError, regex: str = ""
     ) -> "RuleAssert":
         """Assert the text cannot be parsed as a rule."""
         with self.test.assertRaisesRegex(exception, regex):
@@ -778,7 +778,7 @@ class RuleAssert:
         self,
         text: str,
         engine: fl.Engine,
-        exception: Type[Exception] = SyntaxError,
+        exception: type[Exception] = SyntaxError,
         regex: str = "",
     ) -> "RuleAssert":
         """Assert the rule cannot be created in the engine."""

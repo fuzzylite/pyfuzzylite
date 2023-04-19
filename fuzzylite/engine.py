@@ -18,8 +18,9 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 __all__ = ["Engine"]
 
 import enum
+from collections.abc import Iterable
 from math import nan
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -88,9 +89,9 @@ class Engine:
         """
         self.name = name
         self.description = description
-        self.input_variables: List[InputVariable] = []
-        self.output_variables: List[OutputVariable] = []
-        self.rule_blocks: List[RuleBlock] = []
+        self.input_variables: list[InputVariable] = []
+        self.output_variables: list[OutputVariable] = []
+        self.rule_blocks: list[RuleBlock] = []
         if input_variables:
             self.input_variables.extend(input_variables)
         if output_variables:
@@ -152,7 +153,7 @@ class Engine:
             variable.defuzzifier = defuzzifier
 
     @property
-    def variables(self) -> List[Variable]:
+    def variables(self) -> list[Variable]:
         """Returns a list that contains the input variables followed by the
         output variables in the order of insertion.
 
@@ -271,7 +272,7 @@ class Engine:
         if lib.debugging:
             pass
 
-    def is_ready(self) -> Tuple[bool, str]:
+    def is_ready(self) -> tuple[bool, str]:
         """Indicates whether the engine has been configured correctly and is
         ready for operation. In more advanced engines, the result of this
         method should be taken as a suggestion and not as a prerequisite to
@@ -283,7 +284,7 @@ class Engine:
         # TODO: Implement
         raise NotImplementedError()
 
-    def infer_type(self) -> Tuple["Engine.Type", str]:
+    def infer_type(self) -> tuple["Engine.Type", str]:
         """Infers the type of the engine based on its current configuration.
 
         @return a Tuple[Engine.Type, str] indicating the inferred type of the

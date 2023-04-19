@@ -16,7 +16,6 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import unittest
-from typing import Dict, Tuple
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
@@ -26,7 +25,7 @@ from tests.assert_component import BaseAssert
 class ActivationAssert(BaseAssert[fl.Activation]):
     """Activation Assert."""
 
-    def fuzzy_values(self, fuzzification: Dict[float, str]) -> "ActivationAssert":
+    def fuzzy_values(self, fuzzification: dict[float, str]) -> "ActivationAssert":
         """Not implemented."""
         raise NotImplementedError()
         # for x in fuzzification:
@@ -35,7 +34,7 @@ class ActivationAssert(BaseAssert[fl.Activation]):
         # return self
 
     def highest_memberships(
-        self, x_mf: Dict[float, Tuple[float, fl.Term]]
+        self, x_mf: dict[float, tuple[float, fl.Term]]
     ) -> "ActivationAssert":
         """Not implemented."""
         raise NotImplementedError()

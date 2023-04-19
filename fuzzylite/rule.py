@@ -26,8 +26,9 @@ __all__ = [
 ]
 
 import typing
+from collections.abc import Iterable
 from math import nan
-from typing import Deque, Iterable, List, Optional
+from typing import Optional
 
 from .exporter import FllExporter
 from .hedge import Any
@@ -77,7 +78,7 @@ class Proposition(Expression):
         @param term is the term in the proposition.
         """
         self.variable = variable
-        self.hedges: List["Hedge"] = []
+        self.hedges: list["Hedge"] = []
         if hedges:
             self.hedges.extend(hedges)
         self.term = term
@@ -288,7 +289,7 @@ class Antecedent:
         s_variable, s_is, s_hedge, s_term, s_and_or = (2**i for i in range(5))
         state = s_variable
 
-        stack: Deque[Expression] = deque()
+        stack: deque[Expression] = deque()
 
         proposition: Optional[Proposition] = None
         variables = {v.name: v for v in engine.variables}
@@ -388,7 +389,7 @@ class Antecedent:
             return str(node)
 
         if isinstance(node, Operator):
-            result: List[str] = [node.name]
+            result: list[str] = [node.name]
             if node.left:
                 result.append(self.prefix(node.left))
             if node.right:
@@ -415,7 +416,7 @@ class Antecedent:
             return str(node)
 
         if isinstance(node, Operator):
-            result: List[str] = []
+            result: list[str] = []
             if node.left:
                 result.append(self.infix(node.left))
             result.append(node.name)
@@ -441,7 +442,7 @@ class Antecedent:
             return str(node)
 
         if isinstance(node, Operator):
-            result: List[str] = []
+            result: list[str] = []
             if node.left:
                 result.append(self.postfix(node.left))
             if node.right:
@@ -472,7 +473,7 @@ class Consequent:
 
         """
         self.text: str = text
-        self.conclusions: List[Proposition] = []
+        self.conclusions: list[Proposition] = []
 
     def __str__(self) -> str:
         """Return the text of the consequent."""
@@ -557,7 +558,7 @@ class Consequent:
         state = s_variable
 
         proposition: Optional[Proposition] = None
-        conclusions: List[Proposition] = []
+        conclusions: list[Proposition] = []
         output_variables = {v.name: v for v in engine.output_variables}
         token: Optional[str] = None
         for token in self.text.split():
@@ -699,8 +700,8 @@ class Rule:
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]
 
-        antecedent: List[str] = []
-        consequent: List[str] = []
+        antecedent: list[str] = []
+        consequent: list[str] = []
         weight: float = Op.scalar(1.0)
 
         s_begin, s_if, s_then, s_with, s_end = range(5)
@@ -856,7 +857,7 @@ class RuleBlock:
         self.disjunction = disjunction
         self.implication = implication
         self.activation = activation
-        self.rules: List[Rule] = []
+        self.rules: list[Rule] = []
         if rules:
             self.rules.extend(rules)
 
@@ -886,7 +887,7 @@ class RuleBlock:
         """Loads all the rules into the rule block
         @param engine is the engine where this rule block is registered.
         """
-        exceptions: List[str] = []
+        exceptions: list[str] = []
         for rule in self.rules:
             rule.unload()
             try:

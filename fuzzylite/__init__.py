@@ -40,7 +40,7 @@ np.seterr(divide="ignore", invalid="ignore")
 lib: Library = Library(
     decimals=3,
     abs_tolerance=1e-5,
-    floating_point_type=np.float_,
+    floating_point_type=np.float64,
     factory_manager=FactoryManager(),
 )
 
