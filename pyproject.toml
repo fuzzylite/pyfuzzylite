@@ -55,7 +55,7 @@ Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"             # Code formatting
@@ -67,9 +67,10 @@ pyhamcrest = "^2.0.4"         # Test Driven Development
 pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
+ipykernel = "^6.22.0"
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
@@ -162,7 +163,7 @@ line-length = 88
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.mccabe]
 max-complexity = 10
@@ -171,9 +172,11 @@ max-complexity = 10
 convention = "google"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 strict = true
 exclude = []
+
+plugins = "numpy.typing.mypy_plugin"
 
 verbosity = 0
 show_traceback = true
