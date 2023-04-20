@@ -41,6 +41,8 @@ __all__ = [
 import typing
 from typing import Callable
 
+from .types import scalar
+
 if typing.TYPE_CHECKING:
     from .term import Function
 
@@ -68,7 +70,7 @@ class Norm:
         """
         return self.__class__.__name__
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         """Computes the norm for $a$ and $b$
         @param a is a membership function value
         @param b is a membership function value
@@ -89,7 +91,7 @@ class TNorm(Norm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -105,7 +107,7 @@ class AlgebraicProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the algebraic product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -125,7 +127,7 @@ class BoundedDifference(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the bounded difference between two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -145,7 +147,7 @@ class DrasticProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the drastic product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -168,7 +170,7 @@ class EinsteinProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the Einstein product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -189,7 +191,7 @@ class HamacherProduct(TNorm):
 
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the Hamacher product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -208,7 +210,7 @@ class Minimum(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the minimum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -228,7 +230,7 @@ class NilpotentMinimum(TNorm):
     @since 5.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the nilpotent minimum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -253,7 +255,7 @@ class SNorm(Norm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -269,7 +271,7 @@ class AlgebraicSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the algebraic sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -289,7 +291,7 @@ class BoundedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the bounded sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -309,7 +311,7 @@ class DrasticSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the drastic sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -332,7 +334,7 @@ class EinsteinSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the Einstein sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -352,7 +354,7 @@ class HamacherSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the Hamacher sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -371,7 +373,7 @@ class Maximum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the maximum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -392,7 +394,7 @@ class NilpotentMaximum(SNorm):
     @since 5.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the nilpotent maximum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -414,7 +416,7 @@ class NormalizedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the normalized sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -433,7 +435,7 @@ class UnboundedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         r"""Computes the bounded sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -456,14 +458,14 @@ class NormLambda(TNorm, SNorm):
 
     """
 
-    def __init__(self, function: Callable[[float, float], float]) -> None:
+    def __init__(self, function: Callable[[scalar, scalar], scalar]) -> None:
         """Create the norm.
         @param function is a binary function.
 
         """
         self.function = function
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         """Computes the Norm utilizing the given lambda, which automatically assigns the values
         of $a$ and $b$.
         @param a is a membership function value
@@ -496,7 +498,7 @@ class NormFunction(TNorm, SNorm):
         """
         self.function = function
 
-    def compute(self, a: float, b: float) -> float:
+    def compute(self, a: scalar, b: scalar) -> scalar:
         """Computes the Norm utilizing the given function, which automatically assigns the values
         of $a$ and $b$.
         @param a is a membership function value
