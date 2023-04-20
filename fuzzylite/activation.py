@@ -32,6 +32,7 @@ from typing import Callable, Union
 
 from .operation import Op
 from .rule import Rule, RuleBlock
+from .types import scalar
 
 
 class Activation:
@@ -129,7 +130,7 @@ class First(Activation):
     @since 6.0
     """
 
-    def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
+    def __init__(self, rules: int = 1, threshold: scalar = 0.0) -> None:
         """Constructs a First activation method
         @param rules is the number of rules for the activation degree
         @param threshold is the threshold for the activation degree.
@@ -194,7 +195,7 @@ class Last(Activation):
     @since 6.0
     """
 
-    def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
+    def __init__(self, rules: int = 1, threshold: scalar = 0.0) -> None:
         """Constructs the Last activtion method
         @param rules is the number of rules for the activation degree
         @param threshold is the threshold for the activation degree.
@@ -284,7 +285,7 @@ class Highest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: list[tuple[float, int]] = []
+        activate: list[tuple[scalar, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
@@ -340,7 +341,7 @@ class Lowest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: list[tuple[float, int]] = []
+        activate: list[tuple[scalar, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
@@ -426,7 +427,7 @@ class Threshold(Activation):
         # $a > \theta$
         GreaterThan = ">"
 
-        __operator__: dict[str, Callable[[float, float], bool]] = {
+        __operator__: dict[str, Callable[[scalar, scalar], bool]] = {
             LessThan: Op.lt,
             LessThanOrEqualTo: Op.le,
             EqualTo: Op.eq,
@@ -436,14 +437,14 @@ class Threshold(Activation):
         }
 
         @property
-        def operator(self) -> Callable[[float, float], bool]:
+        def operator(self) -> Callable[[scalar, scalar], bool]:
             """Gets the function reference for the operator."""
             return Threshold.Comparator.__operator__[self.value]
 
     def __init__(
         self,
         comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
-        threshold: float = 0.0,
+        threshold: scalar = 0.0,
     ) -> None:
         """Creates a Threshold activation method
         @param comparator is a valid comparison operator
