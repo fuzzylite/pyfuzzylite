@@ -34,6 +34,7 @@ from .exporter import FllExporter
 from .hedge import Any
 from .norm import SNorm, TNorm
 from .operation import Op
+from .types import scalar
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:
@@ -176,7 +177,7 @@ class Antecedent:
         conjunction: Optional[TNorm] = None,
         disjunction: Optional[SNorm] = None,
         node: Optional[Expression] = None,
-    ) -> float:
+    ) -> scalar:
         """Computes the activation degree of the antecedent on the expression
         tree from the given node
         @param conjunction is the conjunction operator from the RuleBlock
@@ -489,7 +490,7 @@ class Consequent:
         """Unloads the consequent."""
         self.conclusions.clear()
 
-    def modify(self, activation_degree: float, implication: Optional[TNorm]) -> None:
+    def modify(self, activation_degree: scalar, implication: Optional[TNorm]) -> None:
         """Modifies the proposition set according to the activation degree
         (computed in the Antecedent of the Rule) and the implication operator
         (given in the RuleBlock)
@@ -552,7 +553,7 @@ class Consequent:
         #  (3) After a hedge comes a hedge or a term
         #  (4) After a term comes operators 'and' or 'with'
         #  (5) After operator 'and' comes a variable
-        #  (6) After operator 'with' comes a float
+        #  (6) After operator 'with' comes a scalar
 
         s_variable, s_is, s_hedge, s_term, s_and, s_with = (2**i for i in range(6))
         state = s_variable
@@ -664,8 +665,8 @@ class Rule:
     def __init__(self) -> None:
         """Create the rule."""
         self.enabled: bool = True
-        self.weight: float = 1.0
-        self.activation_degree: float = 0.0
+        self.weight: scalar = 1.0
+        self.activation_degree: scalar = 0.0
         self.triggered: bool = False
         self.antecedent: Antecedent = Antecedent()
         self.consequent: Consequent = Consequent()
@@ -702,7 +703,7 @@ class Rule:
 
         antecedent: list[str] = []
         consequent: list[str] = []
-        weight: float = Op.scalar(1.0)
+        weight: scalar = Op.scalar(1.0)
 
         s_begin, s_if, s_then, s_with, s_end = range(5)
         state = s_begin
@@ -756,7 +757,7 @@ class Rule:
 
     def activate_with(
         self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]
-    ) -> float:
+    ) -> scalar:
         """Activates the rule by computing its activation degree using the given
         conjunction and disjunction operators
         @param conjunction is the conjunction operator
