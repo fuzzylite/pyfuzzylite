@@ -60,6 +60,7 @@ from typing import (
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .operation import Op
+from .types import scalar
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
@@ -93,7 +94,7 @@ class Term:
         height is the height of the term
     """
 
-    def __init__(self, name: str = "", height: float = 1.0) -> None:
+    def __init__(self, name: str = "", height: scalar = 1.0) -> None:
         """Create the term.
         @param name is the name of the term
         @param height is the height of the term.
@@ -142,8 +143,9 @@ class Term:
         the height will be set to $1.0$
         :param parameters is the takes_parameters to configure the term.
         """
+        pass
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the has_membership function value at $x$
         :param x
         :return the has_membership function value $\mu(x)$.
@@ -155,13 +157,14 @@ class Term:
         when cloning engines or creating terms within Importer objects
         :param engine: is the engine to which this term belongs to.
         """
+        pass
 
     def tsukamoto(
         self,
-        activation_degree: float,
-        minimum: float,
-        maximum: float,
-    ) -> float:
+        activation_degree: scalar,
+        minimum: scalar,
+        maximum: scalar,
+    ) -> scalar:
         r"""For monotonic terms, computes the tsukamoto value of the term for the
         given activation degree $\alpha$, that is,
         $ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
@@ -183,7 +186,7 @@ class Term:
         return False
 
     def discretize(
-        self, start: float, end: float, resolution: int = 100, bounded_mf: bool = True
+        self, start: scalar, end: scalar, resolution: int = 100, bounded_mf: bool = True
     ) -> "Discrete":
         """Discretise the term.
         @param start is the start of the range
@@ -215,7 +218,7 @@ class Activated(Term):
     """
 
     def __init__(
-        self, term: Term, degree: float = 1.0, implication: Optional[TNorm] = None
+        self, term: Term, degree: scalar = 1.0, implication: Optional[TNorm] = None
     ) -> None:
         """Create the term.
         @param term is the activated term
@@ -240,7 +243,7 @@ class Activated(Term):
             result = f"({Op.str(self.degree)}*{name})"
         return result
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the implication of the activation degree and the membership
         function value of $x$
         @param x is a value
@@ -277,8 +280,8 @@ class Aggregated(Term):
     def __init__(
         self,
         name: str = "",
-        minimum: float = nan,
-        maximum: float = nan,
+        minimum: scalar = nan,
+        maximum: scalar = nan,
         aggregation: Optional[SNorm] = None,
         terms: Optional[Iterable[Activated]] = None,
     ) -> None:
@@ -312,14 +315,14 @@ class Aggregated(Term):
 
         return " ".join(result)
 
-    def range(self) -> float:
+    def range(self) -> scalar:
         """Returns the magnitude of the range of the fuzzy set,
         @return the magnitude of the range of the fuzzy set,
         i.e., `maximum - minimum`.
         """
         return self.maximum - self.minimum
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Aggregates the membership function values of $x$ utilizing the
         aggregation operator
         @param x is a value
@@ -336,7 +339,7 @@ class Aggregated(Term):
         logging.debug(f"{Op.str(result)}: {str(self)}")
         return result
 
-    def activation_degree(self, term: Term) -> float:
+    def activation_degree(self, term: Term) -> scalar:
         """Computes the aggregated activation degree for the given term.
         If the same term is present multiple times, the aggregation operator
         is utilized to sum the activation degrees of the term. If the
@@ -387,10 +390,10 @@ class Bell(Term):
     def __init__(
         self,
         name: str = "",
-        center: float = nan,
-        width: float = nan,
-        slope: float = nan,
-        height: float = 1.0,
+        center: scalar = nan,
+        width: scalar = nan,
+        slope: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -404,7 +407,7 @@ class Bell(Term):
         self.width = width
         self.slope = slope
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $h / (1 + \left(|x-c|/w\right)^{2s}$
@@ -447,9 +450,9 @@ class Binary(Term):
     def __init__(
         self,
         name: str = "",
-        start: float = nan,
-        direction: float = nan,
-        height: float = 1.0,
+        start: scalar = nan,
+        direction: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term
         @param name is the name of the term
@@ -460,7 +463,7 @@ class Binary(Term):
         self.start = start
         self.direction = direction
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -511,9 +514,9 @@ class Concave(Term):
     def __init__(
         self,
         name: str = "",
-        inflection: float = nan,
-        end: float = nan,
-        height: float = 1.0,
+        inflection: scalar = nan,
+        end: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -525,7 +528,7 @@ class Concave(Term):
         self.inflection = inflection
         self.end = end
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -565,8 +568,8 @@ class Concave(Term):
         return True
 
     def tsukamoto(
-        self, activation_degree: float, minimum: float, maximum: float
-    ) -> float:
+        self, activation_degree: scalar, minimum: scalar, maximum: scalar
+    ) -> scalar:
         """Returns the tsukamoto value of the term."""
         i = self.inflection
         e = self.end
@@ -596,7 +599,7 @@ class Constant(Term):
     @since 4.0.
     """
 
-    def __init__(self, name: str = "", value: float = nan) -> None:
+    def __init__(self, name: str = "", value: scalar = nan) -> None:
         """Create the term.
         @param name is the name of the term
         @param value is the value of the term.
@@ -604,7 +607,7 @@ class Constant(Term):
         super().__init__(name)
         self.value = value
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         """Computes the membership function evaluated at $x$
         @param x is irrelevant
         @return $c$, where $c$ is the constant value.
@@ -641,9 +644,9 @@ class Cosine(Term):
     def __init__(
         self,
         name: str = "",
-        center: float = nan,
-        width: float = nan,
-        height: float = 1.0,
+        center: scalar = nan,
+        width: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -655,7 +658,7 @@ class Cosine(Term):
         self.center = center
         self.width = width
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -708,7 +711,7 @@ class Discrete(Term):
     class Pair:
         """The Pair class represents a pair of coordinates to represent a discrete term."""
 
-        def __init__(self, x: float = nan, y: float = nan) -> None:
+        def __init__(self, x: scalar = nan, y: scalar = nan) -> None:
             """Create the pair.
             @param x is the x value
             @param y is the y value.
@@ -733,57 +736,57 @@ class Discrete(Term):
                 return not self.values == other.values
             return self.values != other
 
-        def __lt__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __lt__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is less than another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values < other.values
             if isinstance(other, tuple):
                 return self.values < other
             raise ValueError(
-                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
                 f"but found {type(other)}"
             )
 
-        def __le__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __le__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is less than or equal to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values <= other.values
             if isinstance(other, tuple):
                 return self.values <= other
             raise ValueError(
-                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
                 f"but found {type(other)}"
             )
 
-        def __gt__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __gt__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is greater to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values > other.values
             if isinstance(other, tuple):
                 return self.values >= other
             raise ValueError(
-                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
                 f"but found {type(other)}"
             )
 
-        def __ge__(self, other: Union[tuple[float, float], "Discrete.Pair"]) -> bool:
+        def __ge__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
             """Gets whether this pair is greater or equal to another pair."""
             if isinstance(other, Discrete.Pair):
                 return self.values >= other.values
             if isinstance(other, tuple):
                 return self.values >= other
             raise ValueError(
-                "expected Union[Tuple[float, float], 'Discrete.Pair'], "
+                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
                 f"but found {type(other)}"
             )
 
         @property
-        def values(self) -> tuple[float, float]:
+        def values(self) -> tuple[scalar, scalar]:
             """Gets this pair as tuple."""
             return self.x, self.y
 
         @values.setter
-        def values(self, xy: tuple[float, float]) -> None:
+        def values(self, xy: tuple[scalar, scalar]) -> None:
             """Sets this pair to the tuple.
             @param xy is the tuple.
 
@@ -794,7 +797,7 @@ class Discrete(Term):
         self,
         name: str = "",
         xy: Optional[Sequence[Floatable]] = None,
-        height: float = 1.0,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -810,7 +813,7 @@ class Discrete(Term):
         """Gets an iterator over the discrete pairs."""
         return iter(self.xy)
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$ by using binary
         search to find the lower and upper bounds of $x$ and then linearly
         interpolating the membership function between the bounds.
@@ -847,8 +850,8 @@ class Discrete(Term):
         )
 
     def tsukamoto(
-        self, activation_degree: float, minimum: float, maximum: float
-    ) -> float:
+        self, activation_degree: scalar, minimum: scalar, maximum: scalar
+    ) -> scalar:
         """Not implemented."""
         # todo: approximate tsukamoto
         raise NotImplementedError()
@@ -872,13 +875,13 @@ class Discrete(Term):
 
         self.xy = Discrete.pairs_from(values)
 
-    def x(self) -> Iterable[float]:
+    def x(self) -> Iterable[scalar]:
         """An iterable containing the $x$ values
         @return an iterable containing the $x$ values.
         """
         return (pair.x for pair in self.xy)
 
-    def y(self) -> Iterable[float]:
+    def y(self) -> Iterable[scalar]:
         """An iterable containing the $y$ values
         @return an iterable containing the $y$ values.
         """
@@ -916,18 +919,18 @@ class Discrete(Term):
 
     # TODO: More pythonic?
     @staticmethod
-    def values_from(pairs: list["Discrete.Pair"]) -> list[float]:
+    def values_from(pairs: list["Discrete.Pair"]) -> list[scalar]:
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
         @returns a flat list of values.
         """
-        result: list[float] = []
+        result: list[scalar] = []
         for xy in pairs:
             result.extend([xy.x, xy.y])
         return result
 
     @staticmethod
-    def dict_from(pairs: list["Discrete.Pair"]) -> dict[float, float]:
+    def dict_from(pairs: list["Discrete.Pair"]) -> dict[scalar, scalar]:
         """Create a dictionary from the list of discrete pairs.
         @param pairs is a list of discrete pairs
         @returns a dictionary of pairs {x: y}.
@@ -948,9 +951,9 @@ class Gaussian(Term):
     def __init__(
         self,
         name: str = "",
-        mean: float = nan,
-        standard_deviation: float = nan,
-        height: float = 1.0,
+        mean: scalar = nan,
+        standard_deviation: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -962,7 +965,7 @@ class Gaussian(Term):
         self.mean = mean
         self.standard_deviation = standard_deviation
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h \times \exp(-(x-\mu)^2/(2\sigma^2))$
@@ -1005,11 +1008,11 @@ class GaussianProduct(Term):
     def __init__(
         self,
         name: str = "",
-        mean_a: float = nan,
-        standard_deviation_a: float = nan,
-        mean_b: float = nan,
-        standard_deviation_b: float = nan,
-        height: float = 1.0,
+        mean_a: scalar = nan,
+        standard_deviation_a: scalar = nan,
+        mean_b: scalar = nan,
+        standard_deviation_b: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1025,7 +1028,7 @@ class GaussianProduct(Term):
         self.mean_b = mean_b
         self.standard_deviation_b = standard_deviation_b
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h \left((1 - i) + i \times \exp(-(x - \mu_a)^2 /
@@ -1106,7 +1109,7 @@ class Linear(Term):
     def __init__(
         self,
         name: str = "",
-        coefficients: Optional[Iterable[float]] = None,
+        coefficients: Optional[Iterable[scalar]] = None,
         engine: Optional["Engine"] = None,
     ) -> None:
         r"""Create the term.
@@ -1115,12 +1118,12 @@ class Linear(Term):
         @param height is the height of the term.
         """
         super().__init__(name)
-        self.coefficients: list[float] = []
+        self.coefficients: list[scalar] = []
         if coefficients:
             self.coefficients.extend(coefficients)
         self.engine = engine
 
-    def membership(self, _: float) -> float:
+    def membership(self, _: scalar) -> scalar:
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
         where $v_i$ is the value of the input variable $i$ registered
         in the Linear::getEngine()
@@ -1171,11 +1174,11 @@ class PiShape(Term):
     def __init__(
         self,
         name: str = "",
-        bottom_left: float = nan,
-        top_left: float = nan,
-        top_right: float = nan,
-        bottom_right: float = nan,
-        height: float = 1.0,
+        bottom_left: scalar = nan,
+        top_left: scalar = nan,
+        top_right: scalar = nan,
+        bottom_right: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1191,7 +1194,7 @@ class PiShape(Term):
         self.top_right = top_right
         self.bottom_right = bottom_right
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1273,7 +1276,11 @@ class Ramp(Term):
     """
 
     def __init__(
-        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+        self,
+        name: str = "",
+        start: scalar = nan,
+        end: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1285,7 +1292,7 @@ class Ramp(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return
@@ -1331,8 +1338,8 @@ class Ramp(Term):
         return True
 
     def tsukamoto(
-        self, activation_degree: float, minimum: float, maximum: float
-    ) -> float:
+        self, activation_degree: scalar, minimum: scalar, maximum: scalar
+    ) -> scalar:
         """Returns the Tsukamoto value of the term."""
         if isnan(activation_degree):
             return nan
@@ -1364,7 +1371,11 @@ class Rectangle(Term):
     """
 
     def __init__(
-        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+        self,
+        name: str = "",
+        start: scalar = nan,
+        end: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1376,7 +1387,7 @@ class Rectangle(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1424,9 +1435,9 @@ class Sigmoid(Term):
     def __init__(
         self,
         name: str = "",
-        inflection: float = nan,
-        slope: float = nan,
-        height: float = 1.0,
+        inflection: scalar = nan,
+        slope: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1438,7 +1449,7 @@ class Sigmoid(Term):
         self.inflection = inflection
         self.slope = slope
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h / (1 + \exp(-s(x-i)))$
@@ -1482,11 +1493,11 @@ class SigmoidDifference(Term):
     def __init__(
         self,
         name: str = "",
-        left: float = nan,
-        rising: float = nan,
-        falling: float = nan,
-        right: float = nan,
-        height: float = 1.0,
+        left: scalar = nan,
+        rising: scalar = nan,
+        falling: scalar = nan,
+        right: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1502,7 +1513,7 @@ class SigmoidDifference(Term):
         self.falling = falling
         self.right = right
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h (a-b)$
@@ -1551,11 +1562,11 @@ class SigmoidProduct(Term):
     def __init__(
         self,
         name: str = "",
-        left: float = nan,
-        rising: float = nan,
-        falling: float = nan,
-        right: float = nan,
-        height: float = 1.0,
+        left: scalar = nan,
+        rising: scalar = nan,
+        falling: scalar = nan,
+        right: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1571,7 +1582,7 @@ class SigmoidProduct(Term):
         self.falling = falling
         self.right = right
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h (a \times b)$
@@ -1620,9 +1631,9 @@ class Spike(Term):
     def __init__(
         self,
         name: str = "",
-        center: float = nan,
-        width: float = nan,
-        height: float = 1.0,
+        center: scalar = nan,
+        width: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1634,7 +1645,7 @@ class Spike(Term):
         self.center = center
         self.width = width
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $h \times \exp(-|10 / w (x - c)|)$
@@ -1673,7 +1684,11 @@ class SShape(Term):
     """
 
     def __init__(
-        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+        self,
+        name: str = "",
+        start: scalar = nan,
+        end: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1685,7 +1700,7 @@ class SShape(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1747,11 +1762,11 @@ class Trapezoid(Term):
     def __init__(
         self,
         name: str = "",
-        bottom_left: float = nan,
-        top_left: float = nan,
-        top_right: float = nan,
-        bottom_right: float = nan,
-        height: float = 1.0,
+        bottom_left: scalar = nan,
+        top_left: scalar = nan,
+        top_right: scalar = nan,
+        bottom_right: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1772,7 +1787,7 @@ class Trapezoid(Term):
             self.top_left = self.bottom_left + range_ * 1.0 / 5.0
             self.top_right = self.bottom_left + range_ * 4.0 / 5.0
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1847,10 +1862,10 @@ class Triangle(Term):
     def __init__(
         self,
         name: str = "",
-        left: float = nan,
-        top: float = nan,
-        right: float = nan,
-        height: float = 1.0,
+        left: scalar = nan,
+        top: scalar = nan,
+        right: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1867,7 +1882,7 @@ class Triangle(Term):
             self.top = 0.5 * (left + top)
             self.right = top
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1929,7 +1944,11 @@ class ZShape(Term):
     """
 
     def __init__(
-        self, name: str = "", start: float = nan, end: float = nan, height: float = 1.0
+        self,
+        name: str = "",
+        start: scalar = nan,
+        end: scalar = nan,
+        height: scalar = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1941,7 +1960,7 @@ class ZShape(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $  \begin{cases}
@@ -2038,7 +2057,7 @@ class Function(Term):
             name: str,
             description: str,
             type: "Function.Element.Type",
-            method: Callable[..., float],
+            method: Callable[..., scalar],
             arity: int = 0,
             precedence: int = 0,
             associativity: int = -1,
@@ -2102,7 +2121,7 @@ class Function(Term):
             self,
             element: Optional["Function.Element"] = None,
             variable: str = "",
-            constant: float = nan,
+            constant: scalar = nan,
             right: Optional["Function.Node"] = None,
             left: Optional["Function.Node"] = None,
         ) -> None:
@@ -2137,7 +2156,9 @@ class Function(Term):
                 result = Op.str(self.constant)
             return result
 
-        def evaluate(self, local_variables: Optional[dict[str, float]] = None) -> float:
+        def evaluate(
+            self, local_variables: Optional[dict[str, scalar]] = None
+        ) -> scalar:
             """Evaluates the node and substitutes the variables therein for the
             values passed in the map. The expression tree is evaluated
             recursively.
@@ -2264,7 +2285,7 @@ class Function(Term):
         name: str = "",
         formula: str = "",
         engine: Optional["Engine"] = None,
-        variables: Optional[dict[str, float]] = None,
+        variables: Optional[dict[str, scalar]] = None,
         load: bool = False,
     ) -> None:
         """Create the function.
@@ -2278,7 +2299,7 @@ class Function(Term):
         self.root: Optional[Function.Node] = None
         self.formula = formula
         self.engine = engine
-        self.variables: dict[str, float] = {}
+        self.variables: dict[str, scalar] = {}
         if variables:
             self.variables.update(variables)
         if load:
@@ -2318,7 +2339,7 @@ class Function(Term):
         result.load()
         return result
 
-    def membership(self, x: float) -> float:
+    def membership(self, x: scalar) -> scalar:
         """Computes the membership function value of $x$ at the root node.
         If the engine has been set, the current values of the input variables
         and output variables are added to the map of Function::variables. In
@@ -2332,7 +2353,7 @@ class Function(Term):
                 f"remove it from the map of variables: {self.variables}"
             )
 
-        engine_variables: dict[str, float] = {}
+        engine_variables: dict[str, scalar] = {}
         if self.engine:
             for variable in self.engine.variables:
                 engine_variables[variable.name] = variable.value
@@ -2353,7 +2374,7 @@ class Function(Term):
         engine_variables.update(self.variables)
         return self.evaluate(engine_variables)
 
-    def evaluate(self, variables: Optional[dict[str, float]] = None) -> float:
+    def evaluate(self, variables: Optional[dict[str, scalar]] = None) -> scalar:
         """Computes the function value of this term using the given map of
         variable substitutions.
         @param variables is a map of substitution variables

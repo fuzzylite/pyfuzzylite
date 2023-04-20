@@ -33,18 +33,16 @@ from fuzzylite.rule import *
 from fuzzylite.term import *
 from fuzzylite.variable import *
 
-import numpy as np
-
-np.seterr(divide="ignore", invalid="ignore")
 
 lib: Library = Library(
     decimals=3,
     abs_tolerance=1e-5,
-    floating_point_type=np.float64,
     factory_manager=FactoryManager(),
 )
+
+scalar = lib.floating_point
+array = lib.floating_points
 
 __name__ = lib.name
 __version__ = lib.version
 __doc__ = lib.summary
-scalar = lib.floating_point
