@@ -21,6 +21,8 @@ import inspect
 import math
 from typing import Callable, Optional, SupportsFloat, Union
 
+from .types import scalar as Scalar
+
 
 class Operation:
     """The Operation class contains methods for numeric operations, string
@@ -31,7 +33,7 @@ class Operation:
     """
 
     @staticmethod
-    def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def eq(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is equal to $b$ at the given tolerance
         @param a
         @param b
@@ -46,7 +48,7 @@ class Operation:
         return a == b or abs(a - b) < abs_tolerance or (a != a and b != b)
 
     @staticmethod
-    def neq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def neq(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is not equal to $b$ at the given tolerance
         @param a
         @param b
@@ -62,7 +64,7 @@ class Operation:
         return not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b))
 
     @staticmethod
-    def gt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def gt(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is greater than $b$ at the given tolerance
         @param a
         @param b
@@ -79,7 +81,7 @@ class Operation:
         )
 
     @staticmethod
-    def ge(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def ge(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is greater than or equal to $b$ at the
         given tolerance
         @param a
@@ -96,7 +98,7 @@ class Operation:
         return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a > b
 
     @staticmethod
-    def le(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def le(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is less than or equal to $b$ at the given
         tolerance
         @param a
@@ -113,7 +115,7 @@ class Operation:
         return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a < b
 
     @staticmethod
-    def lt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
+    def lt(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
         """Returns whether $a$ is less than $b$ at the given tolerance
         @param a
         @param b
@@ -130,7 +132,7 @@ class Operation:
         )
 
     @staticmethod
-    def logical_and(a: float, b: float) -> bool:
+    def logical_and(a: Scalar, b: Scalar) -> bool:
         r"""Computes the logical AND
         @param a
         @param b
@@ -144,7 +146,7 @@ class Operation:
         return Operation.eq(a, 1.0) and Operation.eq(b, 1.0)
 
     @staticmethod
-    def logical_or(a: float, b: float) -> bool:
+    def logical_or(a: Scalar, b: Scalar) -> bool:
         r"""Computes the logical OR
         @param a
         @param b
@@ -169,12 +171,12 @@ class Operation:
 
     @staticmethod
     def scale(
-        x: float,
-        from_minimum: float,
-        from_maximum: float,
-        to_minimum: float,
-        to_maximum: float,
-    ) -> float:
+        x: Scalar,
+        from_minimum: Scalar,
+        from_maximum: Scalar,
+        to_minimum: Scalar,
+        to_maximum: Scalar,
+    ) -> Scalar:
         r"""Linearly interpolates the parameter $x$ in range
         `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
         truncated to the range `[toMin,toMax]` if bounded is `true`.
@@ -193,7 +195,7 @@ class Operation:
         ) + to_minimum
 
     @staticmethod
-    def bound(x: float, minimum: float, maximum: float) -> float:
+    def bound(x: Scalar, minimum: Scalar, maximum: Scalar) -> Scalar:
         r"""Returns $x$ bounded in $[\min,\max]$
         @param x is the value to be bounded
         @param min is the minimum value of the range
@@ -228,7 +230,7 @@ class Operation:
         return len(required_parameters)
 
     @staticmethod
-    def pi() -> float:
+    def pi() -> Scalar:
         """Gets the value of Pi."""
         return math.pi
 
@@ -288,7 +290,7 @@ class Operation:
         return "\n".join(lines)
 
     @staticmethod
-    def scalar(x: Union[SupportsFloat, str, bytes]) -> float:
+    def scalar(x: Union[SupportsFloat, str, bytes]) -> Scalar:
         """Convert the value into a floating point defined by the library
         @param x is the value to convert.
         """
@@ -328,7 +330,7 @@ class Operation:
 
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Union[float, object], decimals: Optional[int] = None) -> str:
+    def str(x: Union[Scalar, object], decimals: Optional[int] = None) -> str:
         """Returns a string representation of the given value
         @param x is the value
         @param decimals is the number of decimals to display
@@ -338,7 +340,7 @@ class Operation:
             from . import lib
 
             decimals = lib.decimals
-        if isinstance(x, float):
+        if isinstance(x, Scalar):
             return f"{x:.{decimals}f}"
         return str(x)
 
