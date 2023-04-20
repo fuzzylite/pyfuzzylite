@@ -34,7 +34,7 @@ class Library:
     def __init__(
         self,
         decimals: int,
-        abs_tolerance: float,
+        abs_tolerance: scalar,
         floating_point_type: type[scalar | np_scalar] = float,
         factory_manager: FactoryManager | None = None,
     ) -> None:
@@ -46,12 +46,12 @@ class Library:
         @param logger is the logger of fuzzylite.
         """
         self.decimals = decimals
-        self.abs_tolerance: float = abs_tolerance
+        self.abs_tolerance = abs_tolerance
         self.floating_point_type = floating_point_type
         self.factory_manager = factory_manager if factory_manager else FactoryManager()
         self.logger = logging.getLogger("fuzzylite")
 
-    def floating_point(self, value: SupportsFloat | str | bytes) -> float:
+    def floating_point(self, value: SupportsFloat | str | bytes) -> scalar:
         """Convert the value into a floating point defined by the library
         @param value is the value to convert.
         """
