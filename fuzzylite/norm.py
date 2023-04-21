@@ -14,6 +14,9 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+from __future__ import annotations
+
 __all__ = [
     "Norm",
     "TNorm",
@@ -37,11 +40,13 @@ __all__ = [
     "NormLambda",
     "NormFunction",
 ]
-
 import typing
 from typing import Callable
 
-from .types import scalar
+import numpy as np
+
+from .operation import scalar
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
@@ -70,7 +75,7 @@ class Norm:
         """
         return self.__class__.__name__
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the norm for $a$ and $b$
         @param a is a membership function value
         @param b is a membership function value
@@ -91,7 +96,7 @@ class TNorm(Norm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -107,12 +112,14 @@ class AlgebraicProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the algebraic product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $a\times b$.
         """
+        a = scalar(a)
+        b = scalar(b)
         return a * b
 
 
@@ -127,13 +134,15 @@ class BoundedDifference(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the bounded difference between two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $\max(0, a+b - 1)$.
         """
-        return max(0.0, a + b - 1.0)
+        a = scalar(a)
+        b = scalar(b)
+        return np.maximum(0, scalar(a) + scalar(b) - 1)
 
 
 class DrasticProduct(TNorm):
@@ -147,7 +156,7 @@ class DrasticProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the drastic product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -156,7 +165,9 @@ class DrasticProduct(TNorm):
         0 & \mbox{otherwise}
         \end{cases}$.
         """
-        return min(a, b) if max(a, b) == 1.0 else 0.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(np.maximum(a, b) == 1.0, np.minimum(a, b), 0.0)
 
 
 class EinsteinProduct(TNorm):
@@ -170,12 +181,14 @@ class EinsteinProduct(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the Einstein product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $(a\times b)/(2-(a+b-a\times b))$.
         """
+        a = scalar(a)
+        b = scalar(b)
         return (a * b) / (2.0 - (a + b - a * b))
 
 
@@ -191,13 +204,15 @@ class HamacherProduct(TNorm):
 
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the Hamacher product of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $(a \times b) / (a+b- a \times b)$.
         """
-        return (a * b) / (a + b - a * b) if a + b != 0.0 else 0.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b != 0.0, (a * b) / (a + b - a * b), 0.0)
 
 
 class Minimum(TNorm):
@@ -210,13 +225,15 @@ class Minimum(TNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the minimum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $\min(a,b)$.
         """
-        return min(a, b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.minimum(a, b)
 
 
 class NilpotentMinimum(TNorm):
@@ -230,7 +247,7 @@ class NilpotentMinimum(TNorm):
     @since 5.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the nilpotent minimum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -239,7 +256,9 @@ class NilpotentMinimum(TNorm):
         0 & \mbox{otherwise}
         \end{cases}$.
         """
-        return min(a, b) if a + b > 1.0 else 0.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b > 1.0, np.minimum(a, b), 0.0)
 
 
 class SNorm(Norm):
@@ -255,7 +274,7 @@ class SNorm(Norm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -271,12 +290,14 @@ class AlgebraicSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the algebraic sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $a+b-(a \times b)$.
         """
+        a = scalar(a)
+        b = scalar(b)
         return a + b - (a * b)
 
 
@@ -291,13 +312,15 @@ class BoundedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the bounded sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $\min(1, a+b)$.
         """
-        return min(1.0, a + b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.minimum(1.0, a + b)
 
 
 class DrasticSum(SNorm):
@@ -311,7 +334,7 @@ class DrasticSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the drastic sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -320,7 +343,9 @@ class DrasticSum(SNorm):
         1 & \mbox{otherwise}
         \end{cases}$.
         """
-        return max(a, b) if min(a, b) == 0.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(np.minimum(a, b) == 0.0, np.maximum(a, b), 1.0)
 
 
 class EinsteinSum(SNorm):
@@ -334,12 +359,14 @@ class EinsteinSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the Einstein sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $a+b/(1+a \times b)$.
         """
+        a = scalar(a)
+        b = scalar(b)
         return (a + b) / (1.0 + a * b)
 
 
@@ -354,13 +381,15 @@ class HamacherSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the Hamacher sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $a+b-(2\times a \times b)/(1-a\times b)$.
         """
-        return (a + b - 2.0 * a * b) / (1.0 - a * b) if a * b != 1.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a * b != 1.0, (a + b - 2.0 * a * b) / (1.0 - a * b), 1.0)
 
 
 class Maximum(SNorm):
@@ -373,14 +402,15 @@ class Maximum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the maximum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $\max(a,b)$.
-
         """
-        return max(a, b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.maximum(a, b)
 
 
 class NilpotentMaximum(SNorm):
@@ -394,7 +424,7 @@ class NilpotentMaximum(SNorm):
     @since 5.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the nilpotent maximum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
@@ -403,7 +433,9 @@ class NilpotentMaximum(SNorm):
         1 & \mbox{otherwise}
         \end{cases}$.
         """
-        return max(a, b) if a + b < 1.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b < 1.0, np.maximum(a, b), 1.0)
 
 
 class NormalizedSum(SNorm):
@@ -416,13 +448,15 @@ class NormalizedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the normalized sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $(a+b)/\max(1, a + b)$.
         """
-        return (a + b) / max(1.0, a + b)
+        a = scalar(a)
+        b = scalar(b)
+        return (a + b) / np.maximum(1.0, a + b)
 
 
 class UnboundedSum(SNorm):
@@ -435,12 +469,14 @@ class UnboundedSum(SNorm):
     @since 4.0.
     """
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the bounded sum of two membership function values
         @param a is a membership function value
         @param b is a membership function value
         @return $\min(1, a+b)$.
         """
+        a = scalar(a)
+        b = scalar(b)
         return a + b
 
 
@@ -458,14 +494,14 @@ class NormLambda(TNorm, SNorm):
 
     """
 
-    def __init__(self, function: Callable[[scalar, scalar], scalar]) -> None:
+    def __init__(self, function: Callable[[Scalar, Scalar], Scalar]) -> None:
         """Create the norm.
         @param function is a binary function.
 
         """
         self.function = function
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the Norm utilizing the given lambda, which automatically assigns the values
         of $a$ and $b$.
         @param a is a membership function value
@@ -491,14 +527,14 @@ class NormFunction(TNorm, SNorm):
 
     """
 
-    def __init__(self, function: "Function") -> None:
+    def __init__(self, function: Function) -> None:
         """Create the norm.
         @param function is a binary function.
 
         """
         self.function = function
 
-    def compute(self, a: scalar, b: scalar) -> scalar:
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the Norm utilizing the given function, which automatically assigns the values
         of $a$ and $b$.
         @param a is a membership function value
