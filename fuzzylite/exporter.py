@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import IO, Any, Optional, Union
 
 from .operation import Op
-from .types import scalar
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -402,9 +401,11 @@ class PythonExporter(Exporter):
         """
         if isinstance(x, str):
             return f'"{x}"'
-        if isinstance(x, scalar):
+        if isinstance(x, float):
             if math.isinf(x):
-                return ("fl." if x > 0 else "-fl.") + str(math.fabs(x))
+                return ("" if x > 0 else "-") + "fl.inf"
+            if math.isnan(x):
+                return "fl.nan"
             return Op.str(x)
         if isinstance(x, bool):
             return str(x)
@@ -550,6 +551,7 @@ class PythonExporter(Exporter):
 
         result = ["fl."]
         if isinstance(term, Discrete):
+            # TODO: fl.Discrete.create()
             result += [
                 f"{term.class_name}({self.format(term.name)}, ",
                 "[",
@@ -840,7 +842,7 @@ class FldExporter(Exporter):
         self,
         engine: "Engine",
         writer: IO[str],
-        input_values: list[scalar],
+        input_values: list[float],
         active_variables: set["InputVariable"],
     ) -> None:
         """Writes the engine into the given writer

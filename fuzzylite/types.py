@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-__all__ = ["scalar"]
+__all__ = ["Scalar", "Array"]
 
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
+from numpy.typing import NDArray as Array
 
-scalar = float
-np_scalar = np.floating[Any]
-array = list[scalar]
+Scalar = Union[float, np.floating[Any], Array[np.floating[Any]]]

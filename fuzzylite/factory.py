@@ -29,9 +29,10 @@ __all__ = [
 ]
 
 import copy
-import math
 from collections.abc import Iterator
 from typing import Callable, Generic, Optional, TypeVar
+
+import numpy as np
 
 from .activation import (
     Activation,
@@ -505,60 +506,66 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "le", "Less than or equal to (<=)", function_type, Op.le, arity=2
             ),
             Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
-            Function.Element("min", "Minimum", function_type, min, arity=2),
-            Function.Element("max", "Maximum", function_type, max, arity=2),
+            Function.Element("min", "Minimum", function_type, np.min, arity=2),
+            Function.Element("max", "Maximum", function_type, np.max, arity=2),
             Function.Element(
-                "acos", "Inverse cosine", function_type, math.acos, arity=1
+                "acos", "Inverse cosine", function_type, np.arccos, arity=1
             ),
-            Function.Element("asin", "Inverse sine", function_type, math.asin, arity=1),
+            Function.Element("asin", "Inverse sine", function_type, np.arcsin, arity=1),
             Function.Element(
-                "atan", "Inverse tangent", function_type, math.atan, arity=1
+                "atan", "Inverse tangent", function_type, np.arctan, arity=1
             ),
-            Function.Element("ceil", "Ceiling", function_type, math.ceil, arity=1),
-            Function.Element("cos", "Cosine", function_type, math.cos, arity=1),
+            Function.Element("ceil", "Ceiling", function_type, np.ceil, arity=1),
+            Function.Element("cos", "Cosine", function_type, np.cos, arity=1),
             Function.Element(
-                "cosh", "Hyperbolic cosine", function_type, math.cosh, arity=1
+                "cosh", "Hyperbolic cosine", function_type, np.cosh, arity=1
             ),
-            Function.Element("exp", "Exponential", function_type, math.exp, arity=1),
-            Function.Element("abs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("fabs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("floor", "Floor", function_type, math.floor, arity=1),
+            Function.Element("exp", "Exponential", function_type, np.exp, arity=1),
+            Function.Element("abs", "Absolute", function_type, np.fabs, arity=1),
+            Function.Element("fabs", "Absolute", function_type, np.fabs, arity=1),
+            Function.Element("floor", "Floor", function_type, np.floor, arity=1),
             Function.Element(
-                "log", "Natural logarithm", function_type, math.log, arity=1
-            ),
-            Function.Element(
-                "log10", "Common logarithm", function_type, math.log10, arity=1
-            ),
-            Function.Element("round", "Round", function_type, round, arity=1),
-            Function.Element("sin", "Sine", function_type, math.sin, arity=1),
-            Function.Element(
-                "sinh", "Hyperbolic sine", function_type, math.sinh, arity=1
-            ),
-            Function.Element("sqrt", "Square root", function_type, math.sqrt, arity=1),
-            Function.Element("tan", "Tangent", function_type, math.tan, arity=1),
-            Function.Element(
-                "tanh", "Hyperbolic tangent", function_type, math.tanh, arity=1
+                "log", "Natural logarithm", function_type, np.log, arity=1
             ),
             Function.Element(
-                "log1p", "Natural logarithm plus one", function_type, math.log1p, 1
+                "log10", "Common logarithm", function_type, np.log10, arity=1
+            ),
+            Function.Element("round", "Round", function_type, np.round, arity=1),
+            Function.Element("sin", "Sine", function_type, np.sin, arity=1),
+            Function.Element(
+                "sinh", "Hyperbolic sine", function_type, np.sinh, arity=1
+            ),
+            Function.Element("sqrt", "Square root", function_type, np.sqrt, arity=1),
+            Function.Element("tan", "Tangent", function_type, np.tan, arity=1),
+            Function.Element(
+                "tanh", "Hyperbolic tangent", function_type, np.tanh, arity=1
             ),
             Function.Element(
-                "acosh", "Inverse hyperbolic cosine", function_type, math.acosh, 1
+                "log1p", "Natural logarithm plus one", function_type, np.log1p, arity=1
             ),
             Function.Element(
-                "asinh", "Inverse hyperbolic sine", function_type, math.asinh, 1
+                "acosh", "Inverse hyperbolic cosine", function_type, np.arccosh, arity=1
             ),
             Function.Element(
-                "atanh", "Inverse hyperbolic tangent", function_type, math.atanh, 1
-            ),
-            Function.Element("pow", "Power", function_type, math.pow, arity=2),
-            Function.Element(
-                "atan2", "Inverse tangent (y,x)", function_type, math.atan2, arity=2
+                "asinh", "Inverse hyperbolic sine", function_type, np.arcsinh, arity=1
             ),
             Function.Element(
-                "fmod", "Floating-point remainder", function_type, math.fmod, arity=2
+                "atanh",
+                "Inverse hyperbolic tangent",
+                function_type,
+                np.arctanh,
+                arity=1,
             ),
-            Function.Element("pi", "Pi constant", function_type, Op.pi, arity=0),
+            Function.Element("pow", "Power", function_type, np.power, arity=2),
+            Function.Element(
+                "atan2", "Inverse tangent (y,x)", function_type, np.arctan2, arity=2
+            ),
+            Function.Element(
+                "fmod", "Floating-point remainder", function_type, np.fmod, arity=2
+            ),
+            Function.Element(
+                "pi", "Pi constant", function_type, lambda: np.pi, arity=0
+            ),
         ]
 
         for f in functions:

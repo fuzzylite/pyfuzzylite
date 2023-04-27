@@ -55,8 +55,6 @@ library Library
 norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
 EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum
 
-np
-
 operation Op Operation
 
 rule Antecedent Consequent Expression Operator Proposition Rule RuleBlock
@@ -65,13 +63,15 @@ term Activated Aggregated Bell Binary Concave Constant Cosine Discrete Function 
 GaussianProduct Linear PiShape Ramp Rectangle SShape Sigmoid SigmoidDifference SigmoidProduct
 Spike Term Trapezoid Triangle ZShape
 
+types
+
 variable InputVariable OutputVariable Variable
 """
         self.assertSetEqual(set(expected.split()), set(dir(fuzzylite)))
 
     def test_library_vars(self) -> None:
         """Test the library variables."""
-        __version__ = "7.1.1"
+        __version__ = "8.0.0"
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
         self.assertEqual(fuzzylite.__version__, __version__)
         self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)

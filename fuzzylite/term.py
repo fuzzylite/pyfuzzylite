@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Activated",
@@ -42,30 +43,25 @@ __all__ = [
     "ZShape",
 ]
 
-import bisect
 import enum
-import logging
 import re
 import typing
-from collections.abc import Iterable, Iterator, Sequence
-from math import cos, exp, fabs, inf, isnan, nan, pi
-from typing import (
-    Callable,
-    Optional,
-    SupportsFloat,
-    TypeVar,
-    Union,
-)
+from collections.abc import Iterable, Sequence
+from math import inf, isnan, nan
+from typing import Any, Callable, SupportsFloat, TypeVar
+
+import numpy as np
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
-from .operation import Op
-from .types import scalar
+from .operation import Op, scalar
+from .types import Array, Scalar
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
 
 
+# TODO: optimise numpy expressions, maybe using indexes instead of np.where
 class Term:
     """The Term class is the abstract class for linguistic terms. The linguistic
     terms in this library can be divided in four groups as: `basic`,
@@ -94,7 +90,7 @@ class Term:
         height is the height of the term
     """
 
-    def __init__(self, name: str = "", height: scalar = 1.0) -> None:
+    def __init__(self, name: str = "", height: float = 1.0) -> None:
         """Create the term.
         @param name is the name of the term
         @param height is the height of the term.
@@ -145,14 +141,14 @@ class Term:
         """
         pass
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the has_membership function value at $x$
         :param x
         :return the has_membership function value $\mu(x)$.
         """
         raise NotImplementedError()
 
-    def update_reference(self, engine: Optional["Engine"]) -> None:
+    def update_reference(self, engine: Engine | None) -> None:
         """Updates the references (if any) to point to the current engine (useful
         when cloning engines or creating terms within Importer objects
         :param engine: is the engine to which this term belongs to.
@@ -161,10 +157,10 @@ class Term:
 
     def tsukamoto(
         self,
-        activation_degree: scalar,
-        minimum: scalar,
-        maximum: scalar,
-    ) -> scalar:
+        activation_degree: Scalar,
+        minimum: float,
+        maximum: float,
+    ) -> Scalar:
         r"""For monotonic terms, computes the tsukamoto value of the term for the
         given activation degree $\alpha$, that is,
         $ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
@@ -186,23 +182,20 @@ class Term:
         return False
 
     def discretize(
-        self, start: scalar, end: scalar, resolution: int = 100, bounded_mf: bool = True
-    ) -> "Discrete":
+        self, start: float, end: float, resolution: int = 100, bounded_mf: bool = True
+    ) -> Discrete:
         """Discretise the term.
         @param start is the start of the range
         @param end is the end of the range
         @param resolution is the number of points to discretise
         @param bounded_mf whether to bound the membership values to [0.0, 1.0].
         """
-        result = Discrete(self.name)
-        dx = (end - start) / resolution
-        for i in range(0, resolution + 1):
-            x = start + i * dx
-            y = self.membership(x)
-            if bounded_mf:
-                y = Op.bound(y, 0.0, 1.0)
-            result.xy.append(Discrete.Pair(x, y))
-        return result
+        x = np.linspace(start, end, resolution)
+        y = self.membership(x)
+        if bounded_mf:
+            y = np.clip(y, 0.0, 1.0)
+        xy = Discrete.to_xy(x, y)
+        return Discrete(self.name, xy)
 
 
 class Activated(Term):
@@ -218,7 +211,7 @@ class Activated(Term):
     """
 
     def __init__(
-        self, term: Term, degree: scalar = 1.0, implication: Optional[TNorm] = None
+        self, term: Term, degree: Scalar = 1.0, implication: TNorm | None = None
     ) -> None:
         """Create the term.
         @param term is the activated term
@@ -243,22 +236,17 @@ class Activated(Term):
             result = f"({Op.str(self.degree)}*{name})"
         return result
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the implication of the activation degree and the membership
         function value of $x$
         @param x is a value
         @return $d \otimes \mu(x)$, where $d$ is the activation degree.
         """
-        if isnan(x):
-            return nan
-
         if not self.term:
             raise ValueError("expected a term to activate, but none found")
         if not self.implication:
             raise ValueError("expected an implication operator, but none found")
-        result = self.implication.compute(self.term.membership(x), self.degree)
-        logging.debug(f"{Op.str(result)}: {str(self)}")
-        return result
+        return self.implication.compute(self.term.membership(x), self.degree)
 
 
 class Aggregated(Term):
@@ -280,10 +268,10 @@ class Aggregated(Term):
     def __init__(
         self,
         name: str = "",
-        minimum: scalar = nan,
-        maximum: scalar = nan,
-        aggregation: Optional[SNorm] = None,
-        terms: Optional[Iterable[Activated]] = None,
+        minimum: float = nan,
+        maximum: float = nan,
+        aggregation: SNorm | None = None,
+        terms: Iterable[Activated] | None = None,
     ) -> None:
         """Create the term.
         @param name is the name of the aggregated term
@@ -296,6 +284,7 @@ class Aggregated(Term):
         self.minimum = minimum
         self.maximum = maximum
         self.aggregation = aggregation
+        # TODO: convert list of terms to dictionary
         self.terms: list[Activated] = []
         if terms:
             self.terms.extend(terms)
@@ -315,31 +304,28 @@ class Aggregated(Term):
 
         return " ".join(result)
 
-    def range(self) -> scalar:
+    def range(self) -> float:
         """Returns the magnitude of the range of the fuzzy set,
         @return the magnitude of the range of the fuzzy set,
         i.e., `maximum - minimum`.
         """
         return self.maximum - self.minimum
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Aggregates the membership function values of $x$ utilizing the
         aggregation operator
         @param x is a value
         @return $\sum_i{\mu_i(x)}, i \in \mbox{terms}$.
         """
-        if isnan(x):
-            return nan
         if self.terms and not self.aggregation:
             raise ValueError("expected an aggregation operator, but none found")
 
-        result = 0.0
+        result = scalar(0.0)
         for term in self.terms:
             result = self.aggregation.compute(result, term.membership(x))  # type: ignore
-        logging.debug(f"{Op.str(result)}: {str(self)}")
         return result
 
-    def activation_degree(self, term: Term) -> scalar:
+    def activation_degree(self, term: Term) -> Scalar:
         """Computes the aggregated activation degree for the given term.
         If the same term is present multiple times, the aggregation operator
         is utilized to sum the activation degrees of the term. If the
@@ -348,8 +334,7 @@ class Aggregated(Term):
         activation degree
         @return the aggregated activation degree for the given term.
         """
-        result = 0.0
-
+        result = scalar(0.0)
         for activation in self.terms:
             if activation.term == term:
                 if self.aggregation:
@@ -359,7 +344,7 @@ class Aggregated(Term):
 
         return result
 
-    def highest_activated_term(self) -> Optional[Activated]:
+    def highest_activated_term(self) -> Activated | None:
         """Iterates over the Activated terms to find the term with the maximum
         activation degree
         @return the term with the maximum activation degree.
@@ -368,7 +353,7 @@ class Aggregated(Term):
         maximum_activation = -inf
         for activated in self.terms:
             if activated.degree > maximum_activation:
-                maximum_activation = activated.degree
+                maximum_activation = activated.degree  # type: ignore
                 result = activated
         return result
 
@@ -390,10 +375,10 @@ class Bell(Term):
     def __init__(
         self,
         name: str = "",
-        center: scalar = nan,
-        width: scalar = nan,
-        slope: scalar = nan,
-        height: scalar = 1.0,
+        center: float = nan,
+        width: float = nan,
+        slope: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -407,7 +392,7 @@ class Bell(Term):
         self.width = width
         self.slope = slope
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $h / (1 + \left(|x-c|/w\right)^{2s}$
@@ -416,10 +401,14 @@ class Bell(Term):
               $w$ is the width of the Bell,
               $s$ is the slope of the Bell.
         """
-        if isnan(x):
-            return nan
-        return self.height * (  # type: ignore
-            1.0 / (1.0 + (fabs((x - self.center) / self.width) ** (2.0 * self.slope)))
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * (
+                1.0
+                / (1.0 + (np.abs((x - self.center) / self.width) ** (2.0 * self.slope)))
+            )
         )
 
     def parameters(self) -> str:
@@ -450,9 +439,9 @@ class Binary(Term):
     def __init__(
         self,
         name: str = "",
-        start: scalar = nan,
-        direction: scalar = nan,
-        height: scalar = 1.0,
+        start: float = nan,
+        direction: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term
         @param name is the name of the term
@@ -463,7 +452,7 @@ class Binary(Term):
         self.start = start
         self.direction = direction
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -475,16 +464,14 @@ class Binary(Term):
               $s$ is the start of the Binary edge,
               $d$ is the direction of the Binary edge.
         """
-        if isnan(x):
-            return nan
-
-        if self.direction > self.start and x >= self.start:
-            return self.height * 1.0
-
-        if self.direction < self.start and x <= self.start:
-            return self.height * 1.0
-
-        return self.height * 0.0
+        x = scalar(x)
+        right = (self.direction > self.start) & (x >= self.start)
+        left = (self.direction < self.start) & (x <= self.start)
+        return (  # type: ignore
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(right | left, 1.0, 0.0)
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -514,9 +501,9 @@ class Concave(Term):
     def __init__(
         self,
         name: str = "",
-        inflection: scalar = nan,
-        end: scalar = nan,
-        height: scalar = 1.0,
+        inflection: float = nan,
+        end: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -528,7 +515,7 @@ class Concave(Term):
         self.inflection = inflection
         self.end = end
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -542,34 +529,31 @@ class Concave(Term):
               $i$ is the inflection of the Concave,
               $e$ is the end of the Concave.
         """
-        if isnan(x):
-            return nan
-
-        if self.inflection <= self.end:  # Concave increasing
-            if x < self.end:
-                return (
-                    self.height
-                    * (self.end - self.inflection)
-                    / (2.0 * self.end - self.inflection - x)
-                )
-
-        else:  # Concave decreasing
-            if x > self.end:
-                return (
-                    self.height
-                    * (self.inflection - self.end)
-                    / (self.inflection - 2.0 * self.end + x)
-                )
-
-        return self.height * 1.0
+        x = scalar(x)
+        increasing = (self.inflection <= self.end) & (x < self.end)
+        decreasing = (self.inflection >= self.end) & (x > self.end)
+        return (  # type: ignore
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                increasing,
+                (self.end - self.inflection) / (2.0 * self.end - self.inflection - x),
+                np.where(
+                    decreasing,
+                    (self.inflection - self.end)
+                    / (self.inflection - 2.0 * self.end + x),
+                    1.0,
+                ),
+            )
+        )
 
     def is_monotonic(self) -> bool:
         """Returns True because this term is monotonic."""
         return True
 
     def tsukamoto(
-        self, activation_degree: scalar, minimum: scalar, maximum: scalar
-    ) -> scalar:
+        self, activation_degree: Scalar, minimum: float, maximum: float
+    ) -> Scalar:
         """Returns the tsukamoto value of the term."""
         i = self.inflection
         e = self.end
@@ -599,7 +583,7 @@ class Constant(Term):
     @since 4.0.
     """
 
-    def __init__(self, name: str = "", value: scalar = nan) -> None:
+    def __init__(self, name: str = "", value: Scalar = nan) -> None:
         """Create the term.
         @param name is the name of the term
         @param value is the value of the term.
@@ -607,12 +591,12 @@ class Constant(Term):
         super().__init__(name)
         self.value = value
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         """Computes the membership function evaluated at $x$
         @param x is irrelevant
         @return $c$, where $c$ is the constant value.
         """
-        return self.value
+        return np.full_like(x, fill_value=self.value)
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -644,9 +628,9 @@ class Cosine(Term):
     def __init__(
         self,
         name: str = "",
-        center: scalar = nan,
-        width: scalar = nan,
-        height: scalar = 1.0,
+        center: float = nan,
+        width: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -658,7 +642,7 @@ class Cosine(Term):
         self.center = center
         self.width = width
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -669,14 +653,17 @@ class Cosine(Term):
               $c$ is the center of the Cosine,
               $w$ is the width of the Cosine.
         """
-        if isnan(x):
-            return nan
-
-        if x < self.center - 0.5 * self.width or x > self.center + 0.5 * self.width:
-            return self.height * 0.0
-
-        return (
-            self.height * 0.5 * (1.0 + cos(2.0 / self.width * pi * (x - self.center)))
+        x = scalar(x)
+        increasing = x >= self.center - 0.5 * self.width
+        decreasing = x <= self.center + 0.5 * self.width
+        return (  # type: ignore
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                np.isfinite(x) & (increasing | decreasing),
+                0.5 * (1.0 + np.cos(2.0 / self.width * np.pi * (x - self.center))),
+                0.0,
+            )
         )
 
     def parameters(self) -> str:
@@ -706,114 +693,23 @@ class Discrete(Term):
     @since 4.0.
     """
 
-    Floatable = TypeVar("Floatable", SupportsFloat, str, bytes)
-
-    class Pair:
-        """The Pair class represents a pair of coordinates to represent a discrete term."""
-
-        def __init__(self, x: scalar = nan, y: scalar = nan) -> None:
-            """Create the pair.
-            @param x is the x value
-            @param y is the y value.
-
-            """
-            self.x = x
-            self.y = y
-
-        def __str__(self) -> str:
-            """Returns the pair as text."""
-            return f"({self.x}, {self.y})"
-
-        def __eq__(self, other: object) -> bool:
-            """Gets whether this pair is equal to another pair."""
-            if isinstance(other, Discrete.Pair):
-                return self.values == other.values
-            return self.values == other
-
-        def __ne__(self, other: object) -> bool:
-            """Gets whether this pair is not equal to another pair."""
-            if isinstance(other, Discrete.Pair):
-                return not self.values == other.values
-            return self.values != other
-
-        def __lt__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
-            """Gets whether this pair is less than another pair."""
-            if isinstance(other, Discrete.Pair):
-                return self.values < other.values
-            if isinstance(other, tuple):
-                return self.values < other
-            raise ValueError(
-                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
-                f"but found {type(other)}"
-            )
-
-        def __le__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
-            """Gets whether this pair is less than or equal to another pair."""
-            if isinstance(other, Discrete.Pair):
-                return self.values <= other.values
-            if isinstance(other, tuple):
-                return self.values <= other
-            raise ValueError(
-                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
-                f"but found {type(other)}"
-            )
-
-        def __gt__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
-            """Gets whether this pair is greater to another pair."""
-            if isinstance(other, Discrete.Pair):
-                return self.values > other.values
-            if isinstance(other, tuple):
-                return self.values >= other
-            raise ValueError(
-                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
-                f"but found {type(other)}"
-            )
-
-        def __ge__(self, other: Union[tuple[scalar, scalar], "Discrete.Pair"]) -> bool:
-            """Gets whether this pair is greater or equal to another pair."""
-            if isinstance(other, Discrete.Pair):
-                return self.values >= other.values
-            if isinstance(other, tuple):
-                return self.values >= other
-            raise ValueError(
-                "expected Union[Tuple[scalar, scalar], 'Discrete.Pair'], "
-                f"but found {type(other)}"
-            )
-
-        @property
-        def values(self) -> tuple[scalar, scalar]:
-            """Gets this pair as tuple."""
-            return self.x, self.y
-
-        @values.setter
-        def values(self, xy: tuple[scalar, scalar]) -> None:
-            """Sets this pair to the tuple.
-            @param xy is the tuple.
-
-            """
-            self.x, self.y = xy
+    Floatable = TypeVar("Floatable", SupportsFloat, str, bytes, np.generic)
 
     def __init__(
         self,
         name: str = "",
-        xy: Optional[Sequence[Floatable]] = None,
-        height: scalar = 1.0,
+        xy: Array[np.floating[Any]] | None = None,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
-        @param xy is the list of pairs
+        @param xy is the list of pairs #TODO update
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.xy: list[Discrete.Pair] = []
-        if xy:
-            self.xy = Discrete.pairs_from(xy)
+        self.xy = xy if xy is not None else np.asarray([])
 
-    def __iter__(self) -> Iterator["Discrete.Pair"]:
-        """Gets an iterator over the discrete pairs."""
-        return iter(self.xy)
-
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$ by using binary
         search to find the lower and upper bounds of $x$ and then linearly
         interpolating the membership function between the bounds.
@@ -825,33 +721,15 @@ class Discrete(Term):
               $y_{\min}$ and $y_{\max}$is are the membership functions
                    of $\mu(x_{\min})$ and $\mu(x_{\max})$ (respectively).
         """
-        if isnan(x):
-            return nan
-
-        if not self.xy:
-            raise ValueError("expected a list of (x,y)-pairs, but found none")
-
-        if x <= self.xy[0].x:
-            return self.height * self.xy[0].y
-
-        if x >= self.xy[-1].x:
-            return self.height * self.xy[-1].y
-
-        index = bisect.bisect(self.xy, (x, -inf))  # type: ignore
-
-        upper_bound = self.xy[index]
-        if Op.eq(x, upper_bound.x):
-            return self.height * upper_bound.y
-
-        lower_bound = self.xy[index - 1]
-
-        return self.height * Op.scale(
-            x, lower_bound.x, upper_bound.x, lower_bound.y, upper_bound.y
-        )
+        if not np.any(self.xy):
+            raise ValueError(
+                "expected xy to contain discrete coordinates, but it is empty"
+            )
+        return self.height * np.interp(scalar(x), self.xy[:, 0], self.xy[:, 1])
 
     def tsukamoto(
-        self, activation_degree: scalar, minimum: scalar, maximum: scalar
-    ) -> scalar:
+        self, activation_degree: Scalar, minimum: float, maximum: float
+    ) -> Scalar:
         """Not implemented."""
         # todo: approximate tsukamoto
         raise NotImplementedError()
@@ -860,82 +738,90 @@ class Discrete(Term):
         """Returns the parameters of the term as `x1 y1 xn yn [height]`
         @return `x1 y1 xn yn [height]`.
         """
-        return super()._parameters(*Discrete.values_from(self.xy))
+        return super()._parameters(self.xy)
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters given as `x1 y1 xn yn [height]`
         @param parameters as `x1 y1 xn yn [height]`.
         """
-        values = [Op.scalar(x) for x in parameters.split()]
-        if len(values) % 2 == 0:
+        as_list = parameters.split()
+        if len(as_list) % 2 == 0:
             self.height = 1.0
         else:
-            self.height = values[-1]
-            del values[-1]
+            self.height = float(as_list[-1])
+            del as_list[-1]
+        self.xy = Discrete.to_xy(as_list[0::2], as_list[1::2])
 
-        self.xy = Discrete.pairs_from(values)
-
-    def x(self) -> Iterable[scalar]:
+    def x(self) -> Array[np.floating[Any]]:
         """An iterable containing the $x$ values
         @return an iterable containing the $x$ values.
         """
-        return (pair.x for pair in self.xy)
+        return self.xy[:, 0]
 
-    def y(self) -> Iterable[scalar]:
+    def y(self) -> Array[np.floating[Any]]:
         """An iterable containing the $y$ values
         @return an iterable containing the $y$ values.
         """
-        return (pair.y for pair in self.xy)
+        return self.xy[:, 1]
 
     def sort(self) -> None:
         """Ascendantly sorts the pairs of values in this Discrete term by the
         $x$-coordinate.
         """
-        self.xy.sort()
+        self.xy[:] = self.xy[np.argsort(self.x())]
 
     @staticmethod
-    def pairs_from(
-        values: Union[Sequence[Floatable], dict[Floatable, Floatable]]
-    ) -> list["Discrete.Pair"]:
-        """Creates a list of discrete pairs from the given values.
-        @param values is a flat list of (x, y)-pairs or a dictionary of values {x: y}.
+    def create(
+        name: str,
+        xy: str
+        | Sequence[Floatable]
+        | tuple[Sequence[Floatable], tuple[Sequence[Floatable]]]
+        | dict[Floatable, Floatable],
+        height: float = 1.0,
+    ) -> Discrete:
+        """Creates a discrete term from a flexible set of parameters
+        @param name is the name of the term
+        @param xy is a flexible set of parameters
+        @param height is the height of the term
+        @returns a Discrete term
+        .
         """
-        if isinstance(values, dict):
-            return [
-                Discrete.Pair(Op.scalar(x), Op.scalar(y)) for x, y in values.items()
-            ]
+        # TODO
+        raise NotImplementedError()
 
-        if len(values) % 2 != 0:
-            raise ValueError(
-                "not enough values to unpack (expected an even number, "
-                f"but got {len(values)}) in {values}"
-            )
-
-        result = [
-            Discrete.Pair(Op.scalar(values[i]), Op.scalar(values[i + 1]))
-            for i in range(0, len(values) - 1, 2)
-        ]
-        return result
-
-    # TODO: More pythonic?
     @staticmethod
-    def values_from(pairs: list["Discrete.Pair"]) -> list[scalar]:
+    def to_xy(
+        x: Scalar | Sequence[Floatable],
+        y: Scalar | Sequence[Floatable],
+    ) -> Array[np.floating[Any]]:
+        """Creates a list of values from the given values.
+        @param values is a string or a flat list of (x, y)-pairs or a dictionary of values {x: y}.
+        """
+        x = scalar(x)
+        y = scalar(y)
+        if x.shape != y.shape:
+            raise ValueError(
+                f"expected same shape from x and y, but found x={x.shape} and y={y.shape}"
+            )
+        return scalar([x, y]).T
+
+    # TODO: Maybe remove this method
+    @staticmethod
+    def values_from(pairs: Array[np.floating[Any]]) -> list[float]:
         """Flatten the list of discrete pairs.
         @param pairs is the list of discrete pairs
         @returns a flat list of values.
         """
-        result: list[scalar] = []
-        for xy in pairs:
-            result.extend([xy.x, xy.y])
-        return result
+        return list(pairs.flatten())
 
+    # TODO: maybe find way to do: dict(self)
     @staticmethod
-    def dict_from(pairs: list["Discrete.Pair"]) -> dict[scalar, scalar]:
+    def dict_from(pairs: Array[np.floating[Any]]) -> dict[float, float]:
         """Create a dictionary from the list of discrete pairs.
         @param pairs is a list of discrete pairs
         @returns a dictionary of pairs {x: y}.
         """
-        return {pair.x: pair.y for pair in pairs}
+        return {x: y for x, y in zip(pairs[:, 0], pairs[:, 1])}
 
 
 class Gaussian(Term):
@@ -951,9 +837,9 @@ class Gaussian(Term):
     def __init__(
         self,
         name: str = "",
-        mean: scalar = nan,
-        standard_deviation: scalar = nan,
-        height: scalar = 1.0,
+        mean: float = nan,
+        standard_deviation: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -965,7 +851,7 @@ class Gaussian(Term):
         self.mean = mean
         self.standard_deviation = standard_deviation
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h \times \exp(-(x-\mu)^2/(2\sigma^2))$
@@ -973,11 +859,14 @@ class Gaussian(Term):
               $\mu$ is the mean of the Gaussian,
               $\sigma$ is the standard deviation of the Gaussian.
         """
-        if isnan(x):
-            return nan
-        return self.height * exp(
-            (-(x - self.mean) * (x - self.mean))
-            / (2.0 * self.standard_deviation * self.standard_deviation)
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.exp(
+                (-(x - self.mean) * (x - self.mean))
+                / (2.0 * self.standard_deviation * self.standard_deviation)
+            )
         )
 
     def parameters(self) -> str:
@@ -1008,11 +897,11 @@ class GaussianProduct(Term):
     def __init__(
         self,
         name: str = "",
-        mean_a: scalar = nan,
-        standard_deviation_a: scalar = nan,
-        mean_b: scalar = nan,
-        standard_deviation_b: scalar = nan,
-        height: scalar = 1.0,
+        mean_a: float = nan,
+        standard_deviation_a: float = nan,
+        mean_b: float = nan,
+        standard_deviation_b: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1028,7 +917,7 @@ class GaussianProduct(Term):
         self.mean_b = mean_b
         self.standard_deviation_b = standard_deviation_b
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h \left((1 - i) + i \times \exp(-(x - \mu_a)^2 /
@@ -1047,24 +936,24 @@ class GaussianProduct(Term):
               $j=\begin{cases}1 & \mbox{if $x \geq \mu_b$} \cr 0
               &\mbox{otherwise}\end{cases}$.
         """
-        if isnan(x):
-            return nan
-
-        a = b = 1.0
-
-        if x < self.mean_a:
-            a = exp(
+        x = scalar(x)
+        a = np.where(
+            x < self.mean_a,
+            np.exp(
                 (-(x - self.mean_a) * (x - self.mean_a))
                 / (2.0 * self.standard_deviation_a * self.standard_deviation_a)
-            )
-
-        if x > self.mean_b:
-            b = exp(
+            ),
+            1.0,
+        )
+        b = np.where(
+            x > self.mean_b,
+            np.exp(
                 (-(x - self.mean_b) * (x - self.mean_b))
                 / (2.0 * self.standard_deviation_b * self.standard_deviation_b)
-            )
-
-        return self.height * a * b
+            ),
+            1.0,
+        )
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b
 
     def parameters(self) -> str:
         """Provides the parameters of the term
@@ -1109,8 +998,8 @@ class Linear(Term):
     def __init__(
         self,
         name: str = "",
-        coefficients: Optional[Iterable[scalar]] = None,
-        engine: Optional["Engine"] = None,
+        coefficients: Iterable[float] | None = None,
+        engine: Engine | None = None,
     ) -> None:
         r"""Create the term.
         @param name is the name of the term
@@ -1118,18 +1007,19 @@ class Linear(Term):
         @param height is the height of the term.
         """
         super().__init__(name)
-        self.coefficients: list[scalar] = []
+        self.coefficients: list[float] = []
         if coefficients:
             self.coefficients.extend(coefficients)
         self.engine = engine
 
-    def membership(self, _: scalar) -> scalar:
+    def membership(self, _: Scalar) -> Scalar:
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
         where $v_i$ is the value of the input variable $i$ registered
         in the Linear::getEngine()
         @param x is not utilized
         @return $\sum_i c_ix_i +k$.
         """
+        # TODO: Update once variable.value is scalar
         if not self.engine:
             raise ValueError("expected the reference to an engine, but found none")
 
@@ -1156,7 +1046,7 @@ class Linear(Term):
         """
         return self._parameters(*self.coefficients)
 
-    def update_reference(self, engine: Optional["Engine"]) -> None:
+    def update_reference(self, engine: Engine | None) -> None:
         """Updates the reference to the engine."""
         self.engine = engine
 
@@ -1174,11 +1064,11 @@ class PiShape(Term):
     def __init__(
         self,
         name: str = "",
-        bottom_left: scalar = nan,
-        top_left: scalar = nan,
-        top_right: scalar = nan,
-        bottom_right: scalar = nan,
-        height: scalar = 1.0,
+        bottom_left: float = nan,
+        top_left: float = nan,
+        top_right: float = nan,
+        bottom_right: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1194,7 +1084,7 @@ class PiShape(Term):
         self.top_right = top_right
         self.bottom_right = bottom_right
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1212,40 +1102,41 @@ class PiShape(Term):
               $t_r$ is the top right of the PiShape
               $b_r$ is the bottom right of the PiShape,.
         """
-        if isnan(x):
-            return nan
-
-        if x <= self.bottom_left:
-            s_shape = 0.0
-        elif x <= 0.5 * (self.bottom_left + self.top_left):
-            s_shape = (
-                2.0 * ((x - self.bottom_left) / (self.top_left - self.bottom_left)) ** 2
-            )
-        elif x < self.top_left:
-            s_shape = (
-                1.0
-                - 2.0 * ((x - self.top_left) / (self.top_left - self.bottom_left)) ** 2
-            )
-        else:
-            s_shape = 1.0
-
-        if x <= self.top_right:
-            z_shape = 1.0
-        elif x <= 0.5 * (self.top_right + self.bottom_right):
-            z_shape = (
+        x = scalar(x)
+        s_shape = np.where(
+            x <= self.bottom_left,
+            0.0,
+            np.where(
+                x <= 0.5 * (self.bottom_left + self.top_left),
+                2.0
+                * ((x - self.bottom_left) / (self.top_left - self.bottom_left)) ** 2,
+                np.where(
+                    x < self.top_left,
+                    1.0
+                    - 2.0
+                    * ((x - self.top_left) / (self.top_left - self.bottom_left)) ** 2,
+                    1.0,
+                ),
+            ),
+        )
+        z_shape = np.where(
+            x <= self.top_right,
+            1.0,
+            np.where(
+                x <= 0.5 * (self.top_right + self.bottom_right),
                 1.0
                 - 2.0
-                * ((x - self.top_right) / (self.bottom_right - self.top_right)) ** 2
-            )
-        elif x < self.bottom_right:
-            z_shape = (
-                2.0
-                * ((x - self.bottom_right) / (self.bottom_right - self.top_right)) ** 2
-            )
-        else:
-            z_shape = 0.0
-
-        return self.height * s_shape * z_shape
+                * ((x - self.top_right) / (self.bottom_right - self.top_right)) ** 2,
+                np.where(
+                    x < self.bottom_right,
+                    2.0
+                    * ((x - self.bottom_right) / (self.bottom_right - self.top_right))
+                    ** 2,
+                    0.0,
+                ),
+            ),
+        )
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1278,9 +1169,9 @@ class Ramp(Term):
     def __init__(
         self,
         name: str = "",
-        start: scalar = nan,
-        end: scalar = nan,
-        height: scalar = 1.0,
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1292,7 +1183,7 @@ class Ramp(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return
@@ -1313,37 +1204,41 @@ class Ramp(Term):
               $s$ is the start of the Ramp,
               $e$ is the end of the Ramp.
         """
-        if isnan(x):
-            return nan
-
-        if self.start == self.end:
-            return self.height * 0.0
-
-        if self.start < self.end:
-            if x <= self.start:
-                return self.height * 0.0
-            if x >= self.end:
-                return self.height * 1.0
-            return self.height * (x - self.start) / (self.end - self.start)
-
-        else:
-            if x >= self.start:
-                return self.height * 0.0
-            if x <= self.end:
-                return self.height * 1.0
-            return self.height * (self.start - x) / (self.start - self.end)
+        x = scalar(x)
+        increasing = self.start < self.end
+        decreasing = self.start > self.end
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                increasing & (self.end > x) & (x > self.start),
+                (x - self.start) / (self.end - self.start),
+                np.where(
+                    decreasing & (self.end < x) & (x < self.start),
+                    (self.start - x) / (self.start - self.end),
+                    (increasing & (x >= self.end)) | (decreasing & (x <= self.end)),
+                ),
+            )
+        )
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
         return True
 
     def tsukamoto(
-        self, activation_degree: scalar, minimum: scalar, maximum: scalar
-    ) -> scalar:
+        self, activation_degree: Scalar, minimum: float, maximum: float
+    ) -> Scalar:
         """Returns the Tsukamoto value of the term."""
-        if isnan(activation_degree):
-            return nan
-        return Op.scale(activation_degree, 0.0, self.height * 1.0, self.start, self.end)
+        right = inf if self.start < self.end else -inf
+        left = -inf if self.end > self.start else inf
+
+        return np.interp(
+            activation_degree,
+            [0, self.height],
+            [self.start, self.end],
+            right=right,
+            left=left,
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1373,9 +1268,9 @@ class Rectangle(Term):
     def __init__(
         self,
         name: str = "",
-        start: scalar = nan,
-        end: scalar = nan,
-        height: scalar = 1.0,
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1387,7 +1282,7 @@ class Rectangle(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1398,13 +1293,12 @@ class Rectangle(Term):
               $s$ is the start of the Rectangle,
               $e$ is the end of the Rectangle.
         """
-        if isnan(x):
-            return nan
-
-        if self.start <= x <= self.end:
-            return self.height * 1.0
-
-        return self.height * 0.0
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * ((self.start <= x) & (x <= self.end))
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1435,9 +1329,9 @@ class Sigmoid(Term):
     def __init__(
         self,
         name: str = "",
-        inflection: scalar = nan,
-        slope: scalar = nan,
-        height: scalar = 1.0,
+        inflection: float = nan,
+        slope: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1449,7 +1343,7 @@ class Sigmoid(Term):
         self.inflection = inflection
         self.slope = slope
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h / (1 + \exp(-s(x-i)))$
@@ -1457,9 +1351,13 @@ class Sigmoid(Term):
               $s$ is the slope of the Sigmoid,
               $i$ is the inflection of the Sigmoid.
         """
-        if isnan(x):
-            return nan
-        return self.height * 1.0 / (1.0 + exp(-self.slope * (x - self.inflection)))
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * 1.0
+            / (1.0 + np.exp(-self.slope * (x - self.inflection)))
+        )
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -1493,11 +1391,11 @@ class SigmoidDifference(Term):
     def __init__(
         self,
         name: str = "",
-        left: scalar = nan,
-        rising: scalar = nan,
-        falling: scalar = nan,
-        right: scalar = nan,
-        height: scalar = 1.0,
+        left: float = nan,
+        rising: float = nan,
+        falling: float = nan,
+        right: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1513,7 +1411,7 @@ class SigmoidDifference(Term):
         self.falling = falling
         self.right = right
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h (a-b)$
@@ -1525,13 +1423,10 @@ class SigmoidDifference(Term):
               $i_r$ is the right inflection of the SigmoidDifference,
               $s_r$ is the right slope of the SigmoidDifference.
         """
-        if isnan(x):
-            return nan
-
-        a = 1.0 / (1.0 + exp(-self.rising * (x - self.left)))
-        b = 1.0 / (1.0 + exp(-self.falling * (x - self.right)))
-
-        return self.height * fabs(a - b)
+        x = scalar(x)
+        a = 1.0 / (1.0 + np.exp(-self.rising * (x - self.left)))
+        b = 1.0 / (1.0 + np.exp(-self.falling * (x - self.right)))
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * np.abs(a - b)
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1562,11 +1457,11 @@ class SigmoidProduct(Term):
     def __init__(
         self,
         name: str = "",
-        left: scalar = nan,
-        rising: scalar = nan,
-        falling: scalar = nan,
-        right: scalar = nan,
-        height: scalar = 1.0,
+        left: float = nan,
+        rising: float = nan,
+        falling: float = nan,
+        right: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1582,7 +1477,7 @@ class SigmoidProduct(Term):
         self.falling = falling
         self.right = right
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $ h (a \times b)$
@@ -1594,13 +1489,10 @@ class SigmoidProduct(Term):
               $i_r$ is the right inflection of the SigmoidProduct,
               $s_r$ is the right slope of the SigmoidProduct.
         """
-        if isnan(x):
-            return nan
-
-        a = 1.0 + exp(-self.rising * (x - self.left))
-        b = 1.0 + exp(-self.falling * (x - self.right))
-
-        return self.height * 1.0 / (a * b)
+        x = scalar(x)
+        a = 1.0 + np.exp(-self.rising * (x - self.left))
+        b = 1.0 + np.exp(-self.falling * (x - self.right))
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) / (a * b)
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1631,9 +1523,9 @@ class Spike(Term):
     def __init__(
         self,
         name: str = "",
-        center: scalar = nan,
-        width: scalar = nan,
-        height: scalar = 1.0,
+        center: float = nan,
+        width: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1645,7 +1537,7 @@ class Spike(Term):
         self.center = center
         self.width = width
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $h \times \exp(-|10 / w (x - c)|)$
@@ -1653,9 +1545,11 @@ class Spike(Term):
               $w$ is the width of the Spike,
               $c$ is the center of the Spike.
         """
-        if isnan(x):
-            return nan
-        return self.height * exp(-fabs(10.0 / self.width * (x - self.center)))
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.exp(-np.abs(10.0 / self.width * (x - self.center)))
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1686,9 +1580,9 @@ class SShape(Term):
     def __init__(
         self,
         name: str = "",
-        start: scalar = nan,
-        end: scalar = nan,
-        height: scalar = 1.0,
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1700,7 +1594,7 @@ class SShape(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1713,21 +1607,21 @@ class SShape(Term):
               $s$ is the start of the SShape,
               $e$ is the end of the SShape.
         """
-        if isnan(x):
-            return nan
-
-        if x <= self.start:
-            return self.height * 0.0
-
-        if x <= 0.5 * (self.start + self.end):
-            return self.height * 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
-
-        if x < self.end:
-            return self.height * (
-                1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2
-            )
-
-        return self.height * 1.0
+        x = scalar(x)
+        s_shape = np.where(
+            x <= self.start,
+            0.0,
+            np.where(
+                x <= 0.5 * (self.start + self.end),
+                2.0 * ((x - self.start) / (self.end - self.start)) ** 2,
+                np.where(
+                    x < self.end,
+                    1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2,
+                    1.0,
+                ),
+            ),
+        )
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -1762,11 +1656,11 @@ class Trapezoid(Term):
     def __init__(
         self,
         name: str = "",
-        bottom_left: scalar = nan,
-        top_left: scalar = nan,
-        top_right: scalar = nan,
-        bottom_right: scalar = nan,
-        height: scalar = 1.0,
+        bottom_left: float = nan,
+        top_left: float = nan,
+        top_right: float = nan,
+        bottom_right: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1787,7 +1681,7 @@ class Trapezoid(Term):
             self.top_left = self.bottom_left + range_ * 1.0 / 5.0
             self.top_right = self.bottom_left + range_ * 4.0 / 5.0
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1803,34 +1697,31 @@ class Trapezoid(Term):
               $c$ is the third vertex of the Trapezoid,
               $d$ is the fourth vertex of the Trapezoid.
         """
-        if isnan(x):
-            return nan
-
-        if x < self.bottom_left or x > self.bottom_right:
-            return self.height * 0.0
-
-        if x < self.top_left:
-            if self.bottom_left == -inf:
-                return self.height * 1.0
-            return (
-                self.height
-                * (x - self.bottom_left)
-                / (self.top_left - self.bottom_left)
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                ((x < self.bottom_left) | (x > self.bottom_right)),
+                0.0,
+                np.where(
+                    ((self.top_left <= x) & (x <= self.top_right))
+                    | ((self.bottom_left == -inf) & (x < self.top_left))
+                    | ((self.bottom_right == inf) & (x > self.top_right)),
+                    1.0,
+                    np.where(
+                        x < self.top_left,
+                        (x - self.bottom_left) / (self.top_left - self.bottom_left),
+                        np.where(
+                            x > self.top_right,
+                            (self.bottom_right - x)
+                            / (self.bottom_right - self.top_right),
+                            nan,
+                        ),
+                    ),
+                ),
             )
-
-        if self.top_left <= x <= self.top_right:
-            return self.height * 1.0
-
-        if x > self.top_right:
-            if self.bottom_right == inf:
-                return self.height * 1.0
-            return (
-                self.height
-                * (self.bottom_right - x)
-                / (self.bottom_right - self.top_right)
-            )
-
-        return self.height * 0.0
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1862,10 +1753,10 @@ class Triangle(Term):
     def __init__(
         self,
         name: str = "",
-        left: scalar = nan,
-        top: scalar = nan,
-        right: scalar = nan,
-        height: scalar = 1.0,
+        left: float = nan,
+        top: float = nan,
+        right: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1882,7 +1773,7 @@ class Triangle(Term):
             self.top = 0.5 * (left + top)
             self.right = top
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $\begin{cases}
@@ -1896,26 +1787,30 @@ class Triangle(Term):
               $b$ is the second vertex of the Triangle,
               $c$ is the third vertex of the Triangle.
         """
-        if isnan(x):
-            return nan
-
-        if x < self.left or x > self.right:
-            return self.height * 0.0
-
-        if x < self.top:
-            if self.left == -inf:
-                return self.height * 1.0
-            return self.height * (x - self.left) / (self.top - self.left)
-
-        if x == self.top:
-            return self.height * 1.0
-
-        if x > self.top:
-            if self.right == inf:
-                return self.height * 1.0
-            return self.height * (self.right - x) / (self.right - self.top)
-
-        return self.height * 0.0
+        x = scalar(x)
+        return (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                (x < self.left) | (x > self.right),
+                0.0,
+                np.where(
+                    (x == self.top)
+                    | ((self.left == -inf) & (x < self.top))
+                    | ((self.right == inf) & (x > self.top)),
+                    1.0,
+                    np.where(
+                        x < self.top,
+                        (x - self.left) / (self.top - self.left),
+                        np.where(
+                            x > self.top,
+                            (self.right - x) / (self.right - self.top),
+                            nan,
+                        ),
+                    ),
+                ),
+            )
+        )
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1946,9 +1841,9 @@ class ZShape(Term):
     def __init__(
         self,
         name: str = "",
-        start: scalar = nan,
-        end: scalar = nan,
-        height: scalar = 1.0,
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
@@ -1960,7 +1855,7 @@ class ZShape(Term):
         self.start = start
         self.end = end
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$
         @param x
         @return $  \begin{cases}
@@ -1973,21 +1868,21 @@ class ZShape(Term):
               $s$ is the start of the ZShape,
               $e$ is the end of the ZShape.
         """
-        if isnan(x):
-            return nan
-
-        if x <= self.start:
-            return self.height * 1.0
-
-        if x <= 0.5 * (self.start + self.end):
-            return self.height * (
-                1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2
-            )
-
-        if x < self.end:
-            return self.height * 2.0 * ((x - self.end) / (self.end - self.start)) ** 2
-
-        return self.height * 0.0
+        x = scalar(x)
+        z_shape = np.where(
+            x <= self.start,
+            1.0,
+            np.where(
+                x <= 0.5 * (self.start + self.end),
+                1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2,
+                np.where(
+                    x < self.end,
+                    2.0 * ((x - self.end) / (self.end - self.start)) ** 2,
+                    0.0,
+                ),
+            ),
+        )
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -2056,8 +1951,8 @@ class Function(Term):
             self,
             name: str,
             description: str,
-            type: "Function.Element.Type",
-            method: Callable[..., scalar],
+            type: Function.Element.Type,
+            method: Callable[..., Scalar],
             arity: int = 0,
             precedence: int = 0,
             associativity: int = -1,
@@ -2119,11 +2014,11 @@ class Function(Term):
 
         def __init__(
             self,
-            element: Optional["Function.Element"] = None,
+            element: Function.Element | None = None,
             variable: str = "",
-            constant: scalar = nan,
-            right: Optional["Function.Node"] = None,
-            left: Optional["Function.Node"] = None,
+            constant: float = nan,
+            right: Function.Node | None = None,
+            left: Function.Node | None = None,
         ) -> None:
             """Create the node.
             @param element the node takes an operation or a function
@@ -2156,9 +2051,7 @@ class Function(Term):
                 result = Op.str(self.constant)
             return result
 
-        def evaluate(
-            self, local_variables: Optional[dict[str, scalar]] = None
-        ) -> scalar:
+        def evaluate(self, local_variables: dict[str, Scalar] | None = None) -> Scalar:
             """Evaluates the node and substitutes the variables therein for the
             values passed in the map. The expression tree is evaluated
             recursively.
@@ -2167,7 +2060,7 @@ class Function(Term):
             @return a fl::scalar indicating the result of the evaluation of
             the node.
             """
-            result = nan
+            result = scalar(nan)
             if self.element:
                 if self.element.method is None:
                     raise ValueError("expected a method reference, but found none")
@@ -2200,7 +2093,7 @@ class Function(Term):
 
             return result
 
-        def prefix(self, node: Optional["Function.Node"] = None) -> str:
+        def prefix(self, node: Function.Node | None = None) -> str:
             """Returns a prefix representation of the expression tree under the
             given node
             @param node is the node to start the prefix representation from.
@@ -2223,7 +2116,7 @@ class Function(Term):
                 result.append(self.prefix(node.right))
             return " ".join(result)
 
-        def infix(self, node: Optional["Function.Node"] = None) -> str:
+        def infix(self, node: Function.Node | None = None) -> str:
             """Returns an infix representation of the expression tree under the
             given node
             @param node is the node to start the infix representation from.
@@ -2256,7 +2149,7 @@ class Function(Term):
 
             return result
 
-        def postfix(self, node: Optional["Function.Node"] = None) -> str:
+        def postfix(self, node: Function.Node | None = None) -> str:
             """Returns a postfix representation of the expression tree under the
             given node
             @param node is the node to start the postfix representation from.
@@ -2284,8 +2177,8 @@ class Function(Term):
         self,
         name: str = "",
         formula: str = "",
-        engine: Optional["Engine"] = None,
-        variables: Optional[dict[str, scalar]] = None,
+        engine: Engine | None = None,
+        variables: dict[str, Scalar] | None = None,
         load: bool = False,
     ) -> None:
         """Create the function.
@@ -2296,10 +2189,10 @@ class Function(Term):
         @param load whether to load the function on creation.
         """
         super().__init__(name)
-        self.root: Optional[Function.Node] = None
+        self.root: Function.Node | None = None
         self.formula = formula
         self.engine = engine
-        self.variables: dict[str, scalar] = {}
+        self.variables: dict[str, Scalar] = {}
         if variables:
             self.variables.update(variables)
         if load:
@@ -2318,16 +2211,14 @@ class Function(Term):
         self.formula = parameters
         self.load()
 
-    def update_reference(self, engine: Optional["Engine"]) -> None:
+    def update_reference(self, engine: Engine | None) -> None:
         """Updates the reference to the engine and loads it."""
         self.engine = engine
         if self.is_loaded():
             self.load()
 
     @staticmethod
-    def create(
-        name: str, formula: str, engine: Optional["Engine"] = None
-    ) -> "Function":
+    def create(name: str, formula: str, engine: Engine | None = None) -> Function:
         """Creates a Function term with the given parameters
         @param name is the name of the term
         @param formula is the formula defining the membership function
@@ -2339,7 +2230,7 @@ class Function(Term):
         result.load()
         return result
 
-    def membership(self, x: scalar) -> scalar:
+    def membership(self, x: Scalar) -> Scalar:
         """Computes the membership function value of $x$ at the root node.
         If the engine has been set, the current values of the input variables
         and output variables are added to the map of Function::variables. In
@@ -2353,7 +2244,7 @@ class Function(Term):
                 f"remove it from the map of variables: {self.variables}"
             )
 
-        engine_variables: dict[str, scalar] = {}
+        engine_variables: dict[str, Scalar] = {}
         if self.engine:
             for variable in self.engine.variables:
                 engine_variables[variable.name] = variable.value
@@ -2374,7 +2265,7 @@ class Function(Term):
         engine_variables.update(self.variables)
         return self.evaluate(engine_variables)
 
-    def evaluate(self, variables: Optional[dict[str, scalar]] = None) -> scalar:
+    def evaluate(self, variables: dict[str, Scalar] | None = None) -> Scalar:
         """Computes the function value of this term using the given map of
         variable substitutions.
         @param variables is a map of substitution variables
@@ -2448,7 +2339,7 @@ class Function(Term):
                 lib.logger.debug(f"queue: {queue}")
                 lib.logger.debug(f"stack: {stack}")
 
-            element: Optional[Function.Element] = (
+            element: Function.Element | None = (
                 factory.objects[token] if token in factory.objects else None
             )
             is_operand = not element and token not in {"(", ")", ","}
@@ -2511,7 +2402,7 @@ class Function(Term):
         return postfix
 
     @classmethod
-    def parse(cls, formula: str) -> "Function.Node":
+    def parse(cls, formula: str) -> Function.Node:
         """Creates a node representing a binary expression tree from the given formula
         @param formula is the right-hand side of a mathematical equation
         expressed in infix notation
@@ -2525,7 +2416,7 @@ class Function(Term):
         factory = lib.factory_manager.function
 
         for token in postfix.split():
-            element: Optional[Function.Element] = (
+            element: Function.Element | None = (
                 factory.objects[token] if token in factory.objects else None
             )
             is_operand = not element and token not in {"(", ")", ","}

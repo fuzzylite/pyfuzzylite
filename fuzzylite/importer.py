@@ -28,7 +28,6 @@ from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .term import Term
-from .types import scalar
 from .variable import InputVariable, OutputVariable
 
 
@@ -346,7 +345,7 @@ class FllImporter(Importer):
             result.configure(parameters)
         return result
 
-    def range(self, fll: str) -> tuple[scalar, scalar]:
+    def range(self, fll: str) -> tuple[float, float]:
         """Gets the range from a value in the FuzzyLite Language."""
         values = fll.split()
         if len(values) != 2:

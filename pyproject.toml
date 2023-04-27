@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.1.1"
+version = "8.0.0"
 description = "a fuzzy logic control library in Python"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
@@ -61,13 +61,14 @@ python = "^3.9"
 black = "^23.3.0"             # Code formatting
 coverage = "^7.2.3"           # Code coverage
 mypy = "^1.2.0"               # Static analysis
-numpy = "^1.20" # Numeric manipulation and vectorisation
+numpy = "^1.20"               # Numeric manipulation and vectorisation
 poetry-bumpversion = "^0.3.0" # Version management
 pyhamcrest = "^2.0.4"         # Test Driven Development
 pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
 ipykernel = "^6.22.0"
+pyright = "^1.1.305"
 
 [tool.black]
 target-version = ["py39"]
@@ -171,10 +172,24 @@ max-complexity = 10
 [tool.ruff.pydocstyle]
 convention = "google"
 
+
+[tool.pyright]
+include = ["fuzzylite", "noxfile.py", "tests"]
+venv = ".venv"
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.9"
+pythonPlatform = "MacOS"
+
+
 [tool.mypy]
 python_version = "3.9"
 strict = true
 exclude = []
+incremental = true
+
 
 plugins = "numpy.typing.mypy_plugin"
 

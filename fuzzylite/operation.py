@@ -14,16 +14,21 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
-__all__ = ["Operation", "Op"]
+__all__ = ["Operation", "Op", "scalar"]
 
 import inspect
 import math
-from typing import Callable, Optional, SupportsFloat, Union
+from collections.abc import Iterable, Sequence
+from typing import Callable, SupportsFloat
 
-from .types import scalar as Scalar
+import numpy as np
+
+from .types import Array, Scalar
 
 
+# TODO: Change approximations to np.close and pass abs_tolerance as keyword argument instead, thus removing it from library
 class Operation:
     """The Operation class contains methods for numeric operations, string
     manipulation, and other functions, all of which are also accessible via
@@ -33,7 +38,11 @@ class Operation:
     """
 
     @staticmethod
-    def eq(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def eq(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is equal to $b$ at the given tolerance
         @param a
         @param b
@@ -45,10 +54,16 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b)
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))
 
     @staticmethod
-    def neq(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def neq(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is not equal to $b$ at the given tolerance
         @param a
         @param b
@@ -61,10 +76,16 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b))
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)))
 
     @staticmethod
-    def gt(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def gt(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is greater than $b$ at the given tolerance
         @param a
         @param b
@@ -76,12 +97,19 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return (
-            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a > b
+
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))) & (
+            a > b
         )
 
     @staticmethod
-    def ge(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def ge(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is greater than or equal to $b$ at the
         given tolerance
         @param a
@@ -95,10 +123,19 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a > b
+
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return (
+            (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)) | (a > b)
+        )
 
     @staticmethod
-    def le(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def le(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is less than or equal to $b$ at the given
         tolerance
         @param a
@@ -112,10 +149,18 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a < b
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return (
+            (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)) | (a < b)
+        )
 
     @staticmethod
-    def lt(a: Scalar, b: Scalar, abs_tolerance: Optional[Scalar] = None) -> bool:
+    def lt(
+        a: Scalar,
+        b: Scalar,
+        abs_tolerance: float | None = None,
+    ) -> bool | Array[np.bool_]:
         """Returns whether $a$ is less than $b$ at the given tolerance
         @param a
         @param b
@@ -127,12 +172,14 @@ class Operation:
             from . import lib
 
             abs_tolerance = lib.abs_tolerance
-        return (
-            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a < b
+        a = Operation.as_scalar(a)
+        b = Operation.as_scalar(b)
+        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))) & (
+            a < b
         )
 
     @staticmethod
-    def logical_and(a: Scalar, b: Scalar) -> bool:
+    def logical_and(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
         r"""Computes the logical AND
         @param a
         @param b
@@ -143,10 +190,10 @@ class Operation:
         \end{cases}
         $.
         """
-        return Operation.eq(a, 1.0) and Operation.eq(b, 1.0)
+        return Operation.eq(a, 1.0) & Operation.eq(b, 1.0)
 
     @staticmethod
-    def logical_or(a: Scalar, b: Scalar) -> bool:
+    def logical_or(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
         r"""Computes the logical OR
         @param a
         @param b
@@ -157,7 +204,7 @@ class Operation:
         \end{cases}
         $.
         """
-        return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
+        return Operation.eq(a, 1.0) | Operation.eq(b, 1.0)
 
     @staticmethod
     def as_identifier(name: str) -> str:
@@ -172,10 +219,10 @@ class Operation:
     @staticmethod
     def scale(
         x: Scalar,
-        from_minimum: Scalar,
-        from_maximum: Scalar,
-        to_minimum: Scalar,
-        to_maximum: Scalar,
+        from_minimum: float,
+        from_maximum: float,
+        to_minimum: float,
+        to_maximum: float,
     ) -> Scalar:
         r"""Linearly interpolates the parameter $x$ in range
         `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
@@ -190,12 +237,13 @@ class Operation:
         @return the source value linearly interpolated to the target range:
         $ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} $.
         """
+        x = Operation.as_scalar(x)
         return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
             x - from_minimum
         ) + to_minimum
 
     @staticmethod
-    def bound(x: Scalar, minimum: Scalar, maximum: Scalar) -> Scalar:
+    def bound(x: Scalar, minimum: float, maximum: float) -> Scalar:
         r"""Returns $x$ bounded in $[\min,\max]$
         @param x is the value to be bounded
         @param min is the minimum value of the range
@@ -208,11 +256,7 @@ class Operation:
         \end{cases}
         $.
         """
-        if x > maximum:
-            return maximum
-        if x < minimum:
-            return minimum
-        return x
+        return np.clip(Operation.as_scalar(x), minimum, maximum)
 
     @staticmethod
     def arity_of(method: Callable) -> int:  # type: ignore
@@ -230,7 +274,7 @@ class Operation:
         return len(required_parameters)
 
     @staticmethod
-    def pi() -> Scalar:
+    def pi() -> float:
         """Gets the value of Pi."""
         return math.pi
 
@@ -290,7 +334,7 @@ class Operation:
         return "\n".join(lines)
 
     @staticmethod
-    def scalar(x: Union[SupportsFloat, str, bytes]) -> Scalar:
+    def scalar(x: SupportsFloat | str | bytes) -> float:
         """Convert the value into a floating point defined by the library
         @param x is the value to convert.
         """
@@ -299,11 +343,22 @@ class Operation:
         return lib.floating_point(x)
 
     @staticmethod
+    def as_scalar(
+        values: float | Sequence[SupportsFloat] | Scalar | np.generic,
+    ) -> Scalar:
+        """Convert the value into a floating point defined by the library
+        @param value is the value to convert.
+        """
+        from . import lib
+
+        return np.asarray(values, dtype=lib.floating_point_type)
+
+    @staticmethod
     def increment(
         x: list[int],
         minimum: list[int],
         maximum: list[int],
-        position: Optional[int] = None,
+        position: int | None = None,
     ) -> bool:
         """Increments the list by the unit.
         @param x is the list to increment
@@ -330,7 +385,7 @@ class Operation:
 
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Union[Scalar, object], decimals: Optional[int] = None) -> str:
+    def str(x: float | object, decimals: int | None = None) -> str:
         """Returns a string representation of the given value
         @param x is the value
         @param decimals is the number of decimals to display
@@ -340,9 +395,12 @@ class Operation:
             from . import lib
 
             decimals = lib.decimals
-        if isinstance(x, Scalar):
+        if isinstance(x, (float, np.floating)):
             return f"{x:.{decimals}f}"
+        if isinstance(x, (np.ndarray, Iterable)):
+            return " ".join(map(Operation.str, np.atleast_1d(np.asarray(x))))
         return str(x)
 
 
 Op = Operation
+scalar = Op.as_scalar

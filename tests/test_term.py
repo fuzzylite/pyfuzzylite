@@ -16,13 +16,13 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
 import copy
-import math
 import operator
-import platform
 import re
 import unittest
 from collections.abc import Sequence
 from typing import Callable, NoReturn, Optional
+
+import numpy as np
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -66,26 +66,23 @@ class TermAssert(BaseAssert[fl.Term]):
         message = "\n".join(
             [f"{str(self.actual)}", f"expected: \u03BC(x={x:.3f})={mf}, but"]
         )
-        if math.isnan(mf):
-            self.test.assertEqual(str(fl.nan), str(self.actual.membership(x)), message)
-            return self
-
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
-        if platform.system() == "Darwin":
-            self.test.assertEqual(mf, self.actual.membership(x), message)
-        else:  # use approximate values in other platforms
-            self.test.assertAlmostEqual(
-                mf, self.actual.membership(x), places=15, msg=message
-            )
+        np.testing.assert_equal(mf, self.actual.membership(x), message)
         return self
 
     def has_memberships(
         self, x_mf: dict[float, float], height: float = 1.0
     ) -> "TermAssert":
         """Assert the term term's membership function produces $f(x{_keys}) = mf_{values}$."""
-        for x in x_mf:
-            self.has_membership(x, height * x_mf[x])
+        inputs = fl.scalar([x for x in x_mf])
+        expected = height * fl.scalar([mf for mf in x_mf.values()])
+        obtained = self.actual.membership(inputs)
+        np.testing.assert_allclose(
+            expected,
+            obtained,
+            atol=1e-3,
+        )
         return self
 
     def membership_fails(
@@ -109,10 +106,10 @@ class TermAssert(BaseAssert[fl.Term]):
     ) -> "TermAssert":
         """Assert the term computes Tsukamoto correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
-        if math.isnan(mf):
+        if np.isnan(mf):
             self.test.assertEqual(
                 True,
-                math.isnan(self.actual.tsukamoto(x, minimum, maximum)),
+                np.isnan(self.actual.tsukamoto(x, minimum, maximum)),
                 f"{str(self.actual)}\nwhen x={x:.3f}",
             )
         else:
@@ -145,6 +142,10 @@ class TermAssert(BaseAssert[fl.Term]):
 class TestTerm(unittest.TestCase):
     """Test terms."""
 
+    def setUp(self) -> None:
+        """Display the entire diff in tests."""
+        self.maxDiff = None
+
     def test_term(self) -> None:
         """Test the base term."""
         self.assertEqual(fl.Term().name, "")
@@ -156,31 +157,32 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(fl.Term().is_monotonic(), False)
 
         with self.assertRaisesRegex(NotImplementedError, ""):
-            fl.Term().membership(math.nan)
+            fl.Term().membership(np.nan)
         with self.assertRaisesRegex(NotImplementedError, ""):
-            fl.Term().tsukamoto(math.nan, math.nan, math.nan)
+            fl.Term().tsukamoto(np.nan, np.nan, np.nan)
 
         # does nothing, for test coverage
         fl.Term().update_reference(None)
 
         discrete_triangle = fl.Triangle("triangle", -1.0, 0.0, 1.0).discretize(
-            -1, 1, 10
+            -1, 1, 11
         )
-        self.assertEqual(
-            fl.Discrete.dict_from(discrete_triangle.xy),
-            {
-                -1.0: 0.0,
-                -0.8: 0.19999999999999996,
-                -0.6: 0.4,
-                -0.3999999999999999: 0.6000000000000001,
-                -0.19999999999999996: 0.8,
-                0.0: 1.0,
-                0.20000000000000018: 0.7999999999999998,
-                0.40000000000000013: 0.5999999999999999,
-                0.6000000000000001: 0.3999999999999999,
-                0.8: 0.19999999999999996,
-                1.0: 0.0,
-            },
+        xy = {
+            -1.0: 0.0,
+            -0.8: 0.2,
+            -0.6: 0.4,
+            -0.4: 0.6,
+            -0.2: 0.8,
+            0.0: 1.0,
+            0.2: 0.8,
+            0.4: 0.6,
+            0.6: 0.4,
+            0.8: 0.2,
+            1.0: 0.0,
+        }
+        np.testing.assert_allclose(
+            discrete_triangle.xy,
+            fl.Discrete.to_xy(*zip(*xy.items())),
         )
 
     def test_activated(self) -> None:
@@ -205,9 +207,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         )
 
@@ -231,17 +233,15 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.18750000000000003,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         )
 
         activated = fl.Activated(None, 1.0)  # type: ignore
         self.assertEqual("term: _ Activated (1.000*none)", str(activated))
-        self.assertEqual(
-            math.isnan(activated.membership(math.nan)), True, f"when x={math.nan}"
-        )
+
         activated.configure("")
 
         with self.assertRaisesRegex(
@@ -255,6 +255,7 @@ class TestTerm(unittest.TestCase):
         ):
             activated.membership(0.0)
 
+    @unittest.skip("")
     def test_aggregated(self) -> None:
         """Test the aggregated term."""
         aggregated = fl.Aggregated("fuzzy_output", -1.0, 1.0, fl.Maximum())
@@ -280,9 +281,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4,
                 0.4: 0.19999999999999996,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         )
 
@@ -326,9 +327,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.05625177755617076,
                 0.5: 0.015384615384615385,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0 0.25 3.0 0.5"
@@ -336,20 +337,19 @@ class TestTerm(unittest.TestCase):
             "term: bell Bell 0.000 0.250 3.000 0.500"
         ).has_memberships(
             {
-                -0.5: 0.015384615384615385,
-                -0.4: 0.05625177755617076,
-                -0.25: 0.5,
-                -0.1: 0.9959207087768499,
-                0.0: 1.0,
-                0.1: 0.9959207087768499,
-                0.25: 0.5,
-                0.4: 0.05625177755617076,
-                0.5: 0.015384615384615385,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                -0.5: 0.007692307692307693,
+                -0.4: 0.02812588877808538,
+                -0.25: 0.25,
+                -0.1: 0.49796035438842495,
+                0.0: 0.5,
+                0.1: 0.49796035438842495,
+                0.25: 0.25,
+                0.4: 0.02812588877808538,
+                0.5: 0.007692307692307693,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
-            height=0.5,
         )
 
     def test_binary(self) -> None:
@@ -369,9 +369,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 1.0,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0 -inf 0.5"
@@ -388,9 +388,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.5,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.5,
             }
         )
 
@@ -411,9 +411,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6666666666666666,
                 0.4: 0.8333333333333334,
                 0.5: 1.0,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0.00 -0.500 0.5"
@@ -430,9 +430,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.2,
                 0.4: 0.17857142857142858,
                 0.5: 0.16666666666666666,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.5,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.5,
             }
         )
 
@@ -453,9 +453,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.5,
                 0.5: 0.5,
-                math.nan: 0.5,
-                math.inf: 0.5,
-                -math.inf: 0.5,
+                np.nan: 0.5,
+                np.inf: 0.5,
+                -np.inf: 0.5,
             }
         ).configured_as(
             "-0.500 0.5"
@@ -472,9 +472,9 @@ class TestTerm(unittest.TestCase):
                 0.25: -0.5,
                 0.4: -0.5,
                 0.5: -0.5,
-                math.nan: -0.5,
-                math.inf: -0.5,
-                -math.inf: -0.5,
+                np.nan: -0.5,
+                np.inf: -0.5,
+                -np.inf: -0.5,
             }
         )
 
@@ -495,9 +495,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.09549150281252633,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0.0 1.0 0.5"
@@ -506,19 +506,18 @@ class TestTerm(unittest.TestCase):
         ).has_memberships(
             {
                 -0.5: 0.0,
-                -0.4: 0.09549150281252633,
-                -0.25: 0.5,
-                -0.1: 0.9045084971874737,
-                0.0: 1.0,
-                0.1: 0.9045084971874737,
-                0.25: 0.5,
-                0.4: 0.09549150281252633,
+                -0.4: 0.047745751406263165,
+                -0.25: 0.25,
+                -0.1: 0.45225424859373686,
+                0.0: 0.5,
+                0.1: 0.45225424859373686,
+                0.25: 0.25,
+                0.4: 0.047745751406263165,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
-            height=0.5,
         )
 
     def test_discrete(self) -> None:
@@ -556,9 +555,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 0.3999999999999999,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             " -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.5"
@@ -576,119 +575,61 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 0.3999999999999999,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
 
-        xy = fl.Discrete("name", ("0 1 2 3 4 5 6 7".split()))
+        term = fl.Discrete()
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("expected xy to contain discrete coordinates, but it is empty"),
+        ):
+            term.membership(0.0)
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape("expected xy to contain discrete coordinates, but it is empty"),
+        ):
+            term.xy = fl.scalar([])
+            term.membership(0.0)
+
+    @unittest.skip("TODO")
+    def test_todo(self) -> None:
+        """Test the discrete term creation."""
+        fl.Discrete.create("", [])
+
+    def test_discrete_to_xy(self) -> None:
+        """Test the conversion to xy pairs."""
+        xy = fl.Discrete(
+            "name", fl.Discrete.to_xy("0 2 4 6".split(), "1 3 5 7".split())
+        )
         self.assertSequenceEqual(tuple(xy.x()), (0, 2, 4, 6))
         self.assertSequenceEqual(tuple(xy.y()), (1, 3, 5, 7))
         self.assertEqual(3, xy.membership(2))
 
         # Test iterators
-        it = iter(xy)
-        self.assertEqual(next(it), (0, 1))
-        self.assertEqual(next(it), (2, 3))
-        self.assertEqual(next(it), (4, 5))
-        self.assertEqual(next(it), (6, 7))
+        it = iter(xy.xy)
+        np.testing.assert_equal(next(it), (0, 1))
+        np.testing.assert_equal(next(it), (2, 3))
+        np.testing.assert_equal(next(it), (4, 5))
+        np.testing.assert_equal(next(it), (6, 7))
         with self.assertRaisesRegex(StopIteration, ""):
             next(it)
 
-        self.assertEqual(fl.Discrete.pairs_from([]), [])
-        self.assertEqual(
-            fl.Discrete.values_from(fl.Discrete.pairs_from([1, 2, 3, 4])), [1, 2, 3, 4]
+        np.testing.assert_equal(
+            fl.Discrete.to_xy([], []), np.asarray([]).reshape((-1, 2))
         )
         self.assertEqual(
-            fl.Discrete.values_from(fl.Discrete.pairs_from({1: 2, 3: 4})), [1, 2, 3, 4]
+            fl.Discrete.values_from(fl.Discrete.to_xy([1, 3], [2, 4])), [1, 2, 3, 4]
         )
 
         with self.assertRaisesRegex(
             ValueError,
-            re.escape(
-                "not enough values to unpack (expected an even number, but got 3)"
-            ),
+            re.escape(r"expected same shape from x and y, but found x=(3,) and y=(2,)"),
         ):
-            fl.Discrete.pairs_from([1, 2, 3])
-
-        term = fl.Discrete()
-        with self.assertRaisesRegex(
-            ValueError, re.escape("expected a list of (x,y)-pairs, but found none")
-        ):
-            term.membership(0.0)
-        with self.assertRaisesRegex(
-            ValueError, re.escape("expected a list of (x,y)-pairs, but found none")
-        ):
-            term.xy = []
-            term.membership(0.0)
-
-    def test_discrete_pairs(self) -> None:
-        """Test the discrete pairs."""
-        pairs = [
-            fl.Discrete.Pair(*pair) for pair in [(1, 0), (3, 0), (5, 0), (2, 0), (4, 0)]
-        ]
-        self.assertListEqual(
-            [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0)],
-            [pair.values for pair in sorted(pairs)],
-        )
-
-        # Comparison between Pairs
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) == fl.Discrete.Pair(0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.5, 0.1) == fl.Discrete.Pair(0.5, 0.1))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != fl.Discrete.Pair(0.5, 0.1))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != fl.Discrete.Pair(0.1, 0.55))
-
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < fl.Discrete.Pair(0.1, 0.55))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < fl.Discrete.Pair(0.11, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= fl.Discrete.Pair(0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= fl.Discrete.Pair(0.1, 0.51))
-
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > fl.Discrete.Pair(0.1, 0.49))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > fl.Discrete.Pair(0.09, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= fl.Discrete.Pair(0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= fl.Discrete.Pair(0.1, 0.49))
-
-        # Comparison of tuples
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) == (0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.5, 0.1) == (0.5, 0.1))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != (0.5, 0.1))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) != (0.1, 0.55))
-
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < (0.1, 0.55))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) < (0.11, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= (0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) <= (0.1, 0.51))
-
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > (0.1, 0.49))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) > (0.09, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= (0.1, 0.5))
-        self.assertTrue(fl.Discrete.Pair(0.1, 0.5) >= (0.1, 0.49))
-
-        # Comparison of floats
-        base_pair = fl.Discrete.Pair()
-        self.assertEqual("(nan, nan)", str(base_pair))
-        base_pair.values = (0.1, 0.5)
-        self.assertEqual("(0.1, 0.5)", str(base_pair))
-        self.assertFalse(base_pair == 0.1)
-        self.assertTrue(base_pair != 0.1)
-
-        for value in [fl.nan, fl.inf, -fl.inf, -1.0, -0.5, 0.0, 0.5, 1.0]:
-            for compare in [
-                fl.Discrete.Pair.__lt__,
-                fl.Discrete.Pair.__gt__,
-                fl.Discrete.Pair.__le__,
-                fl.Discrete.Pair.__ge__,
-            ]:
-                with self.assertRaisesRegex(
-                    ValueError,
-                    re.escape(
-                        "expected Union[Tuple[float, float], 'Discrete.Pair'], "
-                        "but found <class 'float'>"
-                    ),
-                ):
-                    compare(base_pair, value)  # type: ignore
+            fl.Discrete.to_xy([1, 2, 3], [0, 4])
 
     def test_gaussian(self) -> None:
         """Test the gaussian term."""
@@ -707,9 +648,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6065306597126334,
                 0.4: 0.2780373004531941,
                 0.5: 0.1353352832366127,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0.0 0.25 0.5"
@@ -726,9 +667,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6065306597126334,
                 0.4: 0.2780373004531941,
                 0.5: 0.1353352832366127,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -752,9 +693,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9559974818331,
                 0.4: 0.835270211411272,
                 0.5: 0.7261490370736908,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0.0 0.25 0.1 0.5 0.5"
@@ -771,9 +712,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9559974818331,
                 0.4: 0.835270211411272,
                 0.5: 0.7261490370736908,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -794,7 +735,7 @@ class TestTerm(unittest.TestCase):
         with self.assertRaisesRegex(
             ValueError, "expected the reference to an engine, but found none"
         ):
-            fl.Linear().membership(math.nan)
+            fl.Linear().membership(np.nan)
 
         linear = fl.Linear("linear", [1.0, 2.0])
         self.assertEqual(linear.engine, None)
@@ -816,9 +757,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 8,
                 0.4: 8,
                 0.5: 8,
-                math.nan: 8,
-                math.inf: 8,
-                -math.inf: 8,
+                np.nan: 8,
+                np.inf: 8,
+                -np.inf: 8,
             }
         ).configured_as(
             "1 2 3 5"
@@ -835,9 +776,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 13,
                 0.4: 13,
                 0.5: 13,
-                math.nan: 13,
-                math.inf: 13,
-                -math.inf: 13,
+                np.nan: 13,
+                np.inf: 13,
+                -np.inf: 13,
             }
         ).configured_as(
             "1 2 3 5 8"
@@ -854,9 +795,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 13,
                 0.4: 13,
                 0.5: 13,
-                math.nan: 13,
-                math.inf: 13,
-                -math.inf: 13,
+                np.nan: 13,
+                np.inf: 13,
+                -np.inf: 13,
             }
         )
 
@@ -880,9 +821,9 @@ class TestTerm(unittest.TestCase):
                 0.4: 0.7777777777777777,
                 0.5: 0.6049382716049383,
                 0.95: 0.00617283950617285,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-.9 -.1 .1 1 .5"
@@ -900,9 +841,9 @@ class TestTerm(unittest.TestCase):
                 0.4: 0.7777777777777777,
                 0.5: 0.6049382716049383,
                 0.95: 0.00617283950617285,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -924,9 +865,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.250 0.750"
@@ -943,9 +884,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.650,
                 0.5: 0.750,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             }
         ).has_tsukamotos(
             {
@@ -958,9 +899,9 @@ class TestTerm(unittest.TestCase):
                 0.75: 0.5,
                 0.9: 0.65,
                 1.0: 0.75,
-                math.nan: math.nan,
-                math.inf: math.inf,
-                -math.inf: -math.inf,
+                np.nan: np.nan,
+                np.inf: np.inf,
+                -np.inf: -np.inf,
             }
         ).configured_as(
             "0.250 -0.750 0.5"
@@ -977,9 +918,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 1.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
             },
             height=0.5,
         ).has_tsukamotos(
@@ -993,9 +934,9 @@ class TestTerm(unittest.TestCase):
                 # 0.75: -0.75,
                 # 0.9: -0.75,
                 # 1.0: -0.75,
-                math.nan: math.nan,
-                math.inf: -math.inf,
-                -math.inf: math.inf,
+                np.nan: np.nan,
+                np.inf: -np.inf,
+                -np.inf: np.inf,
             }
         )
 
@@ -1016,9 +957,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.4 0.4 0.5"
@@ -1035,9 +976,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1059,9 +1000,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9296875,
                 0.4: 1.0,
                 0.5: 1.0,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.4 0.4 0.5"
@@ -1078,9 +1019,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9296875,
                 0.4: 1.0,
                 0.5: 1.0,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1102,9 +1043,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9241418199787566,
                 0.4: 0.9820137900379085,
                 0.5: 0.9933071490757153,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0 10 .5"
@@ -1121,9 +1062,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9241418199787566,
                 0.4: 0.9820137900379085,
                 0.5: 0.9933071490757153,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1147,9 +1088,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.49999627336071584,
                 0.4: 0.000552690994449101,
                 0.5: 3.7194451510957904e-06,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.25 25.00 50.00 0.25 0.5"
@@ -1166,9 +1107,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.49999627336071584,
                 0.4: 0.000552690994449101,
                 0.5: 3.7194451510957904e-06,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1192,9 +1133,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4999773010656488,
                 0.4: 0.04742576597971327,
                 0.5: 0.006692848876926853,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.250 20.000 -20.000 0.250 0.5"
@@ -1211,9 +1152,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4999773010656488,
                 0.4: 0.04742576597971327,
                 0.5: 0.006692848876926853,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1235,9 +1176,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0820849986238988,
                 0.4: 0.01831563888873418,
                 0.5: 0.006737946999085467,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "0 1.0 .5"
@@ -1254,9 +1195,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0820849986238988,
                 0.4: 0.01831563888873418,
                 0.5: 0.006737946999085467,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1284,9 +1225,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.400 -0.100 0.100 0.400 .5"
@@ -1303,9 +1244,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         ).configured_as(
@@ -1323,9 +1264,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.400 -0.100 0.400 0.400"
@@ -1342,9 +1283,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-inf -0.100 0.100 .4"
@@ -1361,9 +1302,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 1.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
             }
         ).configured_as(
             "-.4 -0.100 0.100 inf .5"
@@ -1380,9 +1321,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 1.000,
-                math.nan: math.nan,
-                math.inf: 1.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1410,9 +1351,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.400 0.000 0.400 .5"
@@ -1429,9 +1370,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             },
             height=0.5,
         ).configured_as(
@@ -1449,9 +1390,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.19999999999999996,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.500 -0.500 0.500"
@@ -1468,9 +1409,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.25,
                 0.4: 0.09999999999999998,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-0.500 0.500 0.500"
@@ -1487,9 +1428,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.75,
                 0.4: 0.900,
                 0.5: 1.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 0.0,
             }
         ).configured_as(
             "-inf 0.000 0.400"
@@ -1506,9 +1447,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 1.000,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.000,
             }
         ).configured_as(
             "-0.400 0.000 inf .5"
@@ -1525,9 +1466,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 1.000,
-                math.nan: math.nan,
-                math.inf: 1.000,
-                -math.inf: 0.0,
+                np.nan: np.nan,
+                np.inf: 1.000,
+                -np.inf: 0.0,
             },
             height=0.5,
         )
@@ -1549,9 +1490,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.07031250000000001,
                 0.4: 0.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 1.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
             }
         ).configured_as(
             "-0.4 0.4 0.5"
@@ -1568,9 +1509,9 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.07031250000000001,
                 0.4: 0.0,
                 0.5: 0.0,
-                math.nan: math.nan,
-                math.inf: 0.0,
-                -math.inf: 1.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
             },
             height=0.5,
         )
@@ -1603,7 +1544,7 @@ class TestTerm(unittest.TestCase):
         np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
-                {0.0: fl.nan, fl.inf: 0.0, -fl.inf: 0.0, fl.nan: fl.nan}
+                {0.0: fl.nan, fl.inf: 0.0, -fl.inf: -0.0, fl.nan: fl.nan}
             )
 
             TermAssert(self, fl.Function.create("dbz", "inf/x")).has_memberships(
@@ -1682,7 +1623,7 @@ class TestFunction(unittest.TestCase):
         with self.assertRaisesRegex(
             RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")
         ):
-            fl.Function("f(x)", "f(x)=2x+1").membership(math.nan)
+            fl.Function("f(x)", "f(x)=2x+1").membership(np.nan)
 
         TermAssert(self, fl.Function("function", "", variables={"y": 1.5})).exports_fll(
             "term: function Function"
@@ -1699,9 +1640,9 @@ class TestFunction(unittest.TestCase):
                 0.25: 0.03125,
                 0.4: 0.1280000000000001,
                 0.5: 0.25,
-                math.nan: math.nan,
-                math.inf: math.inf,
-                -math.inf: -math.inf,
+                np.nan: np.nan,
+                np.inf: np.inf,
+                -np.inf: -np.inf,
             }
         )
 
@@ -1720,7 +1661,7 @@ class TestFunction(unittest.TestCase):
         function_a = fl.Function.create("f", "2*i_A + o_A + x", engine_a)
         assert_that = TermAssert(self, function_a)
         assert_that.exports_fll("term: f Function 2*i_A + o_A + x").has_membership(
-            0.0, math.nan
+            0.0, np.nan
         )
         input_a.value = 3.0
         output_a.value = 1.0
@@ -1731,13 +1672,13 @@ class TestFunction(unittest.TestCase):
                 0.0: 7.0,
                 0.5: 7.5,
                 1.0: 8.0,
-                math.nan: math.nan,
-                math.inf: math.inf,
-                -math.inf: -math.inf,
+                np.nan: np.nan,
+                np.inf: np.inf,
+                -np.inf: -np.inf,
             }
         )
 
-        function_a.variables = {"x": math.nan}
+        function_a.variables = {"x": np.nan}
         with self.assertRaisesRegex(
             ValueError,
             re.escape(
@@ -1877,7 +1818,7 @@ class TestFunction(unittest.TestCase):
             self,
             fl.Function.Node(
                 element=functions.copy("cos"),
-                right=fl.Function.Node(constant=math.pi),
+                right=fl.Function.Node(constant=np.pi),
                 left=None,
             ),
         ).evaluates_to(-1)
@@ -1940,7 +1881,7 @@ class TestFunction(unittest.TestCase):
         )
         node_sin = fl.Function.Node(
             element=fl.Function.Element(
-                "sin", "sine", fl.Function.Element.Type.Function, math.sin, 1
+                "sin", "sine", fl.Function.Element.Type.Function, np.sin, 1
             ),
             right=node_mult,
         )

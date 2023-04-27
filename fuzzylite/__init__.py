@@ -37,11 +37,8 @@ from fuzzylite.variable import *
 lib: Library = Library(
     decimals=3,
     abs_tolerance=1e-5,
-    factory_manager=FactoryManager(),
 )
 
-scalar = lib.floating_point
-array = lib.floating_points
 
 __name__ = lib.name
 __version__ = lib.version

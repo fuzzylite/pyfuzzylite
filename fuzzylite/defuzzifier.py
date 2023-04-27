@@ -35,7 +35,7 @@ from typing import Optional, Union
 
 from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
-from .types import scalar
+from .types import Scalar
 
 
 class Defuzzifier:
@@ -66,7 +66,7 @@ class Defuzzifier:
         """
         raise NotImplementedError()
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzifies the given fuzzy term utilizing the range `[minimum,maximum]`
         @param term is the term to defuzzify, typically an Aggregated term
         @param minimum is the minimum value of the range
@@ -117,7 +117,7 @@ class IntegralDefuzzifier(Defuzzifier):
         if parameters:
             self.resolution = int(parameters)
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzify the term on the given range.
 
         Args:
@@ -141,7 +141,7 @@ class Bisector(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the bisector of a fuzzy set. The defuzzification process
         integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
@@ -188,7 +188,7 @@ class Centroid(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the centroid of a fuzzy set. The defuzzification process
         integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
@@ -225,7 +225,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the largest value of the maximum membership function of a
         fuzzy set. The largest value is computed by integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
@@ -265,7 +265,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the mean value of the maximum membership function
         of a fuzzy set. The mean value is computed while integrating
         over the fuzzy set. The integration algorithm is the midpoint
@@ -313,7 +313,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the smallest value of the maximum membership function in the
         fuzzy set. The smallest value is computed while integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
@@ -391,7 +391,7 @@ class WeightedDefuzzifier(Defuzzifier):
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
 
-    def defuzzify(self, term: Term, minimum: scalar, maximum: scalar) -> scalar:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -424,9 +424,9 @@ class WeightedAverage(WeightedDefuzzifier):
     def defuzzify(
         self,
         term: Term,
-        minimum: scalar = nan,
-        maximum: scalar = nan,
-    ) -> scalar:
+        minimum: float = nan,
+        maximum: float = nan,
+    ) -> Scalar:
         r"""Computes the weighted average of the given fuzzy set represented in
         an Aggregated term as $y = \dfrac{\sum_i w_iz_i}{\sum_i w_i} $,
         where $w_i$ is the activation degree of term $i$, and
@@ -492,9 +492,9 @@ class WeightedSum(WeightedDefuzzifier):
     def defuzzify(
         self,
         term: Term,
-        minimum: scalar = nan,
-        maximum: scalar = nan,
-    ) -> scalar:
+        minimum: float = nan,
+        maximum: float = nan,
+    ) -> Scalar:
         r"""Computes the weighted sum of the given fuzzy set represented as an
         Aggregated Term as $y = \sum_i{w_iz_i} $,
         where $w_i$ is the activation degree of term $i$, and $z_i

@@ -111,7 +111,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
             obtained: list[str] = []
             for i, input_variable in enumerate(self.actual.input_variables):
-                input_variable.value = fl.scalar(expected[i])
+                input_variable.value = fl.Scalar(expected[i])
                 obtained.append(expected[i])
 
             self.actual.process()

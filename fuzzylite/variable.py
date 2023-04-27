@@ -26,9 +26,9 @@ from typing import Optional
 
 from .exporter import FllExporter
 from .norm import SNorm
-from .operation import Op
+from .operation import Op, scalar
 from .term import Aggregated
-from .types import scalar
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .defuzzifier import Defuzzifier
@@ -49,8 +49,8 @@ class Variable:
         name: str = "",
         description: str = "",
         enabled: bool = True,
-        minimum: scalar = -inf,
-        maximum: scalar = inf,
+        minimum: float = -inf,
+        maximum: float = inf,
         lock_range: bool = False,
         terms: Optional[Iterable["Term"]] = None,
     ) -> None:
@@ -96,7 +96,7 @@ class Variable:
         raise ValueError(f"term '{name}' not found in {[t.name for t in self.terms]}")
 
     @property
-    def drange(self) -> scalar:
+    def drange(self) -> float:
         """Gets the magnitude of the range of the variable
         @return `maximum - minimum`.
 
@@ -104,7 +104,7 @@ class Variable:
         return self.maximum - self.minimum
 
     @property
-    def range(self) -> tuple[scalar, scalar]:
+    def range(self) -> tuple[float, float]:
         """Gets the range of the variable
         @return tuple of (minimum, maximum).
 
@@ -112,7 +112,7 @@ class Variable:
         return self.minimum, self.maximum
 
     @range.setter
-    def range(self, min_max: tuple[scalar, scalar]) -> None:
+    def range(self, min_max: tuple[float, float]) -> None:
         """Sets the range of the variable
         @param min_max is the range of the variable (minimum, maximum).
 
@@ -120,7 +120,7 @@ class Variable:
         self.minimum, self.maximum = min_max
 
     @property
-    def value(self) -> scalar:
+    def value(self) -> float:
         """Gets the value of the variable
         @return the input value of an InputVariable, or the output value of
         an OutputVariable.
@@ -128,7 +128,7 @@ class Variable:
         return self._value
 
     @value.setter
-    def value(self, value: scalar) -> None:
+    def value(self, value: float) -> None:
         """Sets the value of the variable
         @param value is the input value of an InputVariable, or the output
         value of an OutputVariable.
@@ -137,7 +137,7 @@ class Variable:
             Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
         )
 
-    def fuzzify(self, x: scalar) -> str:
+    def fuzzify(self, x: Scalar) -> str:
         r"""Evaluates the membership function of value $x$ for each
         term $i$, resulting in a fuzzy value in the form
         $\tilde{x}=\sum_i{\mu_i(x)/i}$
@@ -146,7 +146,7 @@ class Variable:
         """
         result: list[str] = []
         for term in self.terms:
-            fx = nan
+            fx = scalar(nan)
             with contextlib.suppress(ValueError):
                 fx = term.membership(x)
             if not result:
@@ -157,7 +157,7 @@ class Variable:
 
         return "".join(result)
 
-    def highest_membership(self, x: scalar) -> tuple[scalar, Optional["Term"]]:
+    def highest_membership(self, x: Scalar) -> tuple[Scalar, Optional["Term"]]:
         r"""Gets the term which has the highest membership function value for
         $x$.
         @param x is the value of interest
@@ -165,9 +165,9 @@ class Variable:
         function value will be stored
         @return the term $i$ which maximimizes $\mu_i(x)$.
         """
-        result: tuple[scalar, Optional["Term"]] = (0.0, None)
+        result: tuple[Scalar, Optional["Term"]] = (0.0, None)
         for term in self.terms:
-            y = nan
+            y = scalar(nan)
             with contextlib.suppress(ValueError):
                 y = term.membership(x)
             if y > result[0]:
@@ -190,8 +190,8 @@ class InputVariable(Variable):
         name: str = "",
         description: str = "",
         enabled: bool = True,
-        minimum: scalar = -inf,
-        maximum: scalar = inf,
+        minimum: float = -inf,
+        maximum: float = inf,
         lock_range: bool = False,
         terms: Optional[Iterable["Term"]] = None,
     ) -> None:
@@ -290,11 +290,11 @@ class OutputVariable(Variable):
         name: str = "",
         description: str = "",
         enabled: bool = True,
-        minimum: scalar = -inf,
-        maximum: scalar = inf,
+        minimum: float = -inf,
+        maximum: float = inf,
         lock_range: bool = False,
         lock_previous: bool = False,
-        default_value: scalar = nan,
+        default_value: float = nan,
         aggregation: Optional[SNorm] = None,
         defuzzifier: Optional["Defuzzifier"] = None,
         terms: Optional[Iterable["Term"]] = None,
@@ -356,12 +356,12 @@ class OutputVariable(Variable):
         self.fuzzy.name = value
 
     @property
-    def minimum(self) -> scalar:
+    def minimum(self) -> float:
         """Gets the minimum value of the range of the output variable."""
         return self.fuzzy.minimum
 
     @minimum.setter
-    def minimum(self, value: scalar) -> None:
+    def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
         @param value is the minimum value of the output variable.
 
@@ -369,12 +369,12 @@ class OutputVariable(Variable):
         self.fuzzy.minimum = value
 
     @property
-    def maximum(self) -> scalar:
+    def maximum(self) -> float:
         """Gets the maximum value of the range of the output variable."""
         return self.fuzzy.maximum
 
     @maximum.setter
-    def maximum(self, value: scalar) -> None:
+    def maximum(self, value: float) -> None:
         """Sets the maximum value of the range of the output variable
         @param value is the maximum value of the output variable.
         """
@@ -405,7 +405,7 @@ class OutputVariable(Variable):
         if math.isfinite(self.value):
             self.previous_value = self.value
 
-        result = nan
+        result = scalar(nan)
         exception = None
         is_valid = bool(self.fuzzy.terms)
         if is_valid:

@@ -34,7 +34,7 @@ from typing import Callable
 if typing.TYPE_CHECKING:
     from .term import Function
 
-from .types import scalar
+from .types import Scalar
 
 
 class Hedge:
@@ -57,7 +57,7 @@ class Hedge:
         """
         return self.__class__.__name__.lower()
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return the hedge of $x$.
@@ -79,7 +79,7 @@ class Any(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the given value
         @param x is irrelevant
         @return `1.0`.
@@ -97,7 +97,7 @@ class Extremely(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $
@@ -119,7 +119,7 @@ class Not(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $1-x$.
@@ -137,7 +137,7 @@ class Seldom(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $
@@ -160,7 +160,7 @@ class Somewhat(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $\sqrt{x}$.
@@ -178,7 +178,7 @@ class Very(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $x^2$.
@@ -200,7 +200,7 @@ class HedgeLambda(Hedge):
     @since 7.0
     """
 
-    def __init__(self, name: str, function: Callable[[scalar], scalar]) -> None:
+    def __init__(self, name: str, function: Callable[[Scalar], Scalar]) -> None:
         """Create the hedge.
         @param name is the name of the hedge
         @param function is the lambda function.
@@ -213,7 +213,7 @@ class HedgeLambda(Hedge):
         """Gets the name of the hedge."""
         return self._name
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$ utilizing
         the HedgeFunction::function
         @param x is a membership function value
@@ -248,7 +248,7 @@ class HedgeFunction(Hedge):
         """Gets the name of the function."""
         return self.function.name
 
-    def hedge(self, x: scalar) -> scalar:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$ utilizing
         the HedgeFunction::function
         @param x is a membership function value
