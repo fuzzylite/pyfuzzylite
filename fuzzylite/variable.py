@@ -74,7 +74,7 @@ class Variable:
         self.terms: list["Term"] = []
         if terms:
             self.terms.extend(terms)
-        self._value = nan
+        self._value = scalar(nan)
 
     def __str__(self) -> str:
         """Gets a string representation of the variable in the FuzzyLite Language
@@ -120,7 +120,7 @@ class Variable:
         self.minimum, self.maximum = min_max
 
     @property
-    def value(self) -> float:
+    def value(self) -> Scalar:
         """Gets the value of the variable
         @return the input value of an InputVariable, or the output value of
         an OutputVariable.
@@ -128,7 +128,7 @@ class Variable:
         return self._value
 
     @value.setter
-    def value(self, value: float) -> None:
+    def value(self, value: Scalar) -> None:
         """Sets the value of the variable
         @param value is the input value of an InputVariable, or the output
         value of an OutputVariable.
@@ -332,7 +332,7 @@ class OutputVariable(Variable):
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
         self.default_value = default_value
-        self.previous_value = nan
+        self.previous_value = scalar(nan)
 
     def __str__(self) -> str:
         """Gets a string representation of the variable in the FuzzyLite Language
@@ -447,7 +447,7 @@ class OutputVariable(Variable):
         $y^{t}=\mbox{NaN}$, $y^{t-1}=\mbox{NaN}$.
         """
         self.fuzzy.clear()
-        self.previous_value = nan
+        self.previous_value = scalar(nan)
         self._value = nan
 
     def fuzzy_value(self) -> str:

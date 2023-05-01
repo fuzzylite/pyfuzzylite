@@ -75,8 +75,14 @@ class TermAssert(BaseAssert[fl.Term]):
         self, x_mf: dict[float, float], height: float = 1.0
     ) -> "TermAssert":
         """Assert the term term's membership function produces $f(x{_keys}) = mf_{values}$."""
-        inputs = fl.scalar([x for x in x_mf])
+        inputs = fl.scalar([x for x in x_mf])  # don't care
         expected = height * fl.scalar([mf for mf in x_mf.values()])
+        if isinstance(self.actual, fl.Linear):
+            for input_variable in self.actual.engine.input_variables:
+                input_variable.value = np.full_like(
+                    inputs, np.atleast_1d(input_variable.value)[0]
+                )
+
         obtained = self.actual.membership(inputs)
         np.testing.assert_allclose(
             expected,
@@ -86,11 +92,15 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def membership_fails(
-        self, x: float, exception: type[Exception], regex: str
+        self, x: float, exception: type[Exception], message: str, regex: bool = False
     ) -> "TermAssert":
         """Assert the membership function raises the exception when evaluating $f(x)$."""
-        with self.test.assertRaisesRegex(exception, regex, msg=f"when x={x:.3f}"):
+        with self.test.assertRaises(exception) as error:
             self.actual.membership(x)
+        if regex:
+            self.test.assertRegex(str(error.exception), message, msg=f"when x={x:.3f}")
+        else:
+            self.test.assertEqual(str(error.exception), message, msg=f"when x={x:.3f}")
         return self
 
     def memberships_fail(
@@ -733,7 +743,7 @@ class TestTerm(unittest.TestCase):
         engine.input_variables[2].value = 2
 
         with self.assertRaisesRegex(
-            ValueError, "expected the reference to an engine, but found none"
+            ValueError, "expected reference to an engine, but found none"
         ):
             fl.Linear().membership(np.nan)
 
@@ -761,9 +771,8 @@ class TestTerm(unittest.TestCase):
                 np.inf: 8,
                 -np.inf: 8,
             }
-        ).configured_as(
-            "1 2 3 5"
-        ).exports_fll(
+        )
+        TermAssert(self, linear).configured_as("1 2 3 5").exports_fll(
             "term: linear Linear 1.000 2.000 3.000 5.000"
         ).has_memberships(
             {
@@ -780,25 +789,14 @@ class TestTerm(unittest.TestCase):
                 np.inf: 13,
                 -np.inf: 13,
             }
-        ).configured_as(
-            "1 2 3 5 8"
-        ).exports_fll(
+        )
+        TermAssert(self, linear).configured_as("1 2 3 5 8").exports_fll(
             "term: linear Linear 1.000 2.000 3.000 5.000 8.000"
-        ).has_memberships(
-            {
-                -0.5: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
-                -0.4: 13,
-                -0.25: 13,
-                -0.1: 13,
-                0.0: 13,
-                0.1: 13,
-                0.25: 13,
-                0.4: 13,
-                0.5: 13,
-                np.nan: 13,
-                np.inf: 13,
-                -np.inf: 13,
-            }
+        ).membership_fails(
+            np.nan,
+            ValueError,
+            "expected 3 (+1) coefficients (one for each input variable plus an optional constant), "
+            "but found 5 coefficients: [1.0, 2.0, 3.0, 5.0, 8.0]",
         )
 
     def test_pi_shape(self) -> None:
@@ -1521,19 +1519,19 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(fl.lib.floating_point_type, float)
 
         TermAssert(self, fl.Function.create("dbz", "0.0/x")).membership_fails(
-            0.0, ZeroDivisionError, re.escape("float division by zero")
+            0.0, ZeroDivisionError, "float division by zero"
         ).has_memberships({fl.inf: 0.0, -fl.inf: -0.0, fl.nan: fl.nan})
 
         TermAssert(self, fl.Function.create("dbz", "inf/x")).membership_fails(
-            0.0, ZeroDivisionError, re.escape("float division by zero")
+            0.0, ZeroDivisionError, "float division by zero"
         ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
 
         TermAssert(self, fl.Function.create("dbz", ".-inf/x")).membership_fails(
-            0.0, ZeroDivisionError, re.escape("float division by zero")
+            0.0, ZeroDivisionError, "float division by zero"
         ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
         TermAssert(self, fl.Function.create("dbz", "nan/x")).membership_fails(
-            0.0, ZeroDivisionError, re.escape("float division by zero")
+            0.0, ZeroDivisionError, "float division by zero"
         ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
 
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
@@ -1690,29 +1688,26 @@ class TestFunction(unittest.TestCase):
         del function_a.variables["x"]
 
         input_a.name = "x"
-        with self.assertRaisesRegex(
+        TermAssert(self, function_a).membership_fails(
+            0.0,
             ValueError,
-            re.escape(
-                "variable 'x' is reserved for internal use of Function term, "
-                f"please rename the engine variable: {str(input_a)}"
-            ),
-        ):
-            function_a.membership(0.0)
+            "variable 'x' is reserved for internal use of Function term, "
+            f"please rename the engine variable: {str(input_a)}",
+        )
 
         input_b = fl.InputVariable("i_B")
         output_b = fl.OutputVariable("o_B")
         engine_b = fl.Engine("B", "Engine B", [input_b], [output_b])
         self.assertEqual(engine_a, function_a.engine)
         self.assertTrue(function_a.is_loaded())
-        with self.assertRaisesRegex(
+
+        function_a.update_reference(engine_b)
+        TermAssert(self, function_a).membership_fails(
+            0.0,
             ValueError,
-            re.escape(
-                "expected a map of variables containing the value for 'i_A', "
-                "but the map contains: {'i_B': nan, 'o_B': nan, 'x': 0.0}"
-            ),
-        ):
-            function_a.update_reference(engine_b)
-            function_a.membership(0.0)
+            "expected a map of variables containing the value for 'i_A', "
+            "but the map contains: {'i_B': array(nan), 'o_B': array(nan), 'x': 0.0}",
+        )
 
     def test_element(self) -> None:
         """Test the function element."""

@@ -54,7 +54,7 @@ import numpy as np
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
-from .operation import Op, scalar
+from .operation import Op, scalar, scalars
 from .types import Array, Scalar
 
 if typing.TYPE_CHECKING:
@@ -770,6 +770,14 @@ class Discrete(Term):
         """
         self.xy[:] = self.xy[np.argsort(self.x())]
 
+    def to_dict(self) -> dict[float, float]:
+        """Returns a dictionary of values {x: y}."""
+        return dict(zip(self.x(), self.y()))
+
+    def to_list(self) -> list[float]:
+        """Returns a list of values [x1, y1, x2, y2, ...]."""
+        return self.xy.flatten().tolist()  # type: ignore
+
     @staticmethod
     def create(
         name: str,
@@ -797,13 +805,13 @@ class Discrete(Term):
         """Creates a list of values from the given values.
         @param values is a string or a flat list of (x, y)-pairs or a dictionary of values {x: y}.
         """
-        x = scalar(x)
-        y = scalar(y)
+        x = scalars(x)
+        y = scalars(y)
         if x.shape != y.shape:
             raise ValueError(
                 f"expected same shape from x and y, but found x={x.shape} and y={y.shape}"
             )
-        return scalar([x, y]).T
+        return scalars([x, y]).T
 
     # TODO: Maybe remove this method
     @staticmethod
@@ -860,7 +868,7 @@ class Gaussian(Term):
               $\sigma$ is the standard deviation of the Gaussian.
         """
         x = scalar(x)
-        return (
+        return (  # type: ignore
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.exp(
@@ -953,7 +961,7 @@ class GaussianProduct(Term):
             ),
             1.0,
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b  # type: ignore
 
     def parameters(self) -> str:
         """Provides the parameters of the term
@@ -998,7 +1006,7 @@ class Linear(Term):
     def __init__(
         self,
         name: str = "",
-        coefficients: Iterable[float] | None = None,
+        coefficients: Sequence[float] | None = None,
         engine: Engine | None = None,
     ) -> None:
         r"""Create the term.
@@ -1007,9 +1015,7 @@ class Linear(Term):
         @param height is the height of the term.
         """
         super().__init__(name)
-        self.coefficients: list[float] = []
-        if coefficients:
-            self.coefficients.extend(coefficients)
+        self.coefficients = coefficients or []
         self.engine = engine
 
     def membership(self, _: Scalar) -> Scalar:
@@ -1019,19 +1025,29 @@ class Linear(Term):
         @param x is not utilized
         @return $\sum_i c_ix_i +k$.
         """
-        # TODO: Update once variable.value is scalar
         if not self.engine:
-            raise ValueError("expected the reference to an engine, but found none")
+            raise ValueError("expected reference to an engine, but found none")
 
-        result = 0.0
-        number_of_coefficients = len(self.coefficients)
-        input_variables = self.engine.input_variables
-        for i, input_variable in enumerate(input_variables):
-            if i < number_of_coefficients:
-                result += self.coefficients[i] * input_variable.value
-        if number_of_coefficients > len(input_variables):
-            result += self.coefficients[len(input_variables)]
-
+        if len(self.coefficients) not in {
+            len(self.engine.input_variables),
+            len(self.engine.input_variables) + 1,
+        }:
+            raise ValueError(
+                f"expected {len(self.engine.input_variables)} (+1) coefficients (one for each input variable plus an optional constant), "
+                f"but found {len(self.coefficients)} coefficients: {self.coefficients}"
+            )
+        print(self.coefficients)
+        input_values = [iv.value for iv in self.engine.input_variables]
+        print(input_values)
+        inputs = np.array(input_values, ndmin=2).T
+        print(inputs)
+        result = np.zeros(inputs.shape[0])
+        for i, coefficient in enumerate(self.coefficients):
+            print(result)
+            if i < len(self.engine.input_variables):
+                result += coefficient * inputs[:, i]
+            else:
+                result += coefficient
         return result
 
     def configure(self, parameters: str) -> None:
@@ -1136,7 +1152,7 @@ class PiShape(Term):
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1207,7 +1223,7 @@ class Ramp(Term):
         x = scalar(x)
         increasing = self.start < self.end
         decreasing = self.start > self.end
-        return (
+        return (  # type: ignore
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
@@ -1426,7 +1442,7 @@ class SigmoidDifference(Term):
         x = scalar(x)
         a = 1.0 / (1.0 + np.exp(-self.rising * (x - self.left)))
         b = 1.0 / (1.0 + np.exp(-self.falling * (x - self.right)))
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * np.abs(a - b)
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * np.abs(a - b)  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1545,7 +1561,7 @@ class Spike(Term):
               $w$ is the width of the Spike,
               $c$ is the center of the Spike.
         """
-        return (
+        return (  # type: ignore
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.exp(-np.abs(10.0 / self.width * (x - self.center)))
@@ -1621,7 +1637,7 @@ class SShape(Term):
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape  # type: ignore
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -1698,7 +1714,7 @@ class Trapezoid(Term):
               $d$ is the fourth vertex of the Trapezoid.
         """
         x = scalar(x)
-        return (
+        return (  # type: ignore
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
@@ -1788,7 +1804,7 @@ class Triangle(Term):
               $c$ is the third vertex of the Triangle.
         """
         x = scalar(x)
-        return (
+        return (  # type: ignore
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
@@ -1882,7 +1898,7 @@ class ZShape(Term):
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape
+        return self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape  # type: ignore
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""

@@ -21,7 +21,7 @@ __all__ = ["Operation", "Op", "scalar"]
 import inspect
 import math
 from collections.abc import Iterable, Sequence
-from typing import Callable, SupportsFloat
+from typing import Any, Callable, SupportsFloat
 
 import numpy as np
 
@@ -344,8 +344,19 @@ class Operation:
 
     @staticmethod
     def as_scalar(
-        values: float | Sequence[SupportsFloat] | Scalar | np.generic,
+        values: float | Sequence[Any] | Scalar | np.generic,
     ) -> Scalar:
+        """Convert the value into a floating point defined by the library
+        @param value is the value to convert.
+        """
+        from . import lib
+
+        return np.asarray(values, dtype=lib.floating_point_type)
+
+    @staticmethod
+    def as_scalars(
+        values: float | Sequence[Any] | Scalar | np.generic,
+    ) -> Array[np.floating[Any]]:
         """Convert the value into a floating point defined by the library
         @param value is the value to convert.
         """
@@ -404,3 +415,4 @@ class Operation:
 
 Op = Operation
 scalar = Op.as_scalar
+scalars = Op.as_scalars
