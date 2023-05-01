@@ -1036,18 +1036,14 @@ class Linear(Term):
                 f"expected {len(self.engine.input_variables)} (+1) coefficients (one for each input variable plus an optional constant), "
                 f"but found {len(self.coefficients)} coefficients: {self.coefficients}"
             )
-        print(self.coefficients)
-        input_values = [iv.value for iv in self.engine.input_variables]
-        print(input_values)
-        inputs = np.array(input_values, ndmin=2).T
-        print(inputs)
-        result = np.zeros(inputs.shape[0])
-        for i, coefficient in enumerate(self.coefficients):
-            print(result)
-            if i < len(self.engine.input_variables):
-                result += coefficient * inputs[:, i]
-            else:
-                result += coefficient
+        coefficients = scalars([self.coefficients[: len(self.engine.input_variables)]])
+        constant = (
+            self.coefficients[-1]
+            if len(self.coefficients) > len(self.engine.input_variables)
+            else 0.0
+        )
+        inputs = np.array([iv.value for iv in self.engine.input_variables], ndmin=2).T
+        result = (coefficients * inputs).sum(axis=1) + constant
         return result
 
     def configure(self, parameters: str) -> None:
