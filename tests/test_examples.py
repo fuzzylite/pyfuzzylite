@@ -25,6 +25,19 @@ logger = logging.getLogger()
 class TestExamples(unittest.TestCase):
     """Test the examples."""
 
+    def test_imports(self) -> None:
+        from fuzzylite import examples
+        from fuzzylite.examples import hybrid, mamdani, takagi_sugeno
+        from fuzzylite.examples.mamdani import SimpleDimmer
+        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+
+    def test_absolute_imports(self) -> None:
+        import fuzzylite
+        import fuzzylite.examples
+        import fuzzylite.examples.mamdani
+        import fuzzylite.examples.mamdani.SimpleDimmer
+        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+
     def test_examples(self) -> None:
         """Test all the examples are included and can be imported."""
         import fuzzylite.examples

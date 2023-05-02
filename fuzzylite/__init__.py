@@ -18,27 +18,28 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 
 from math import inf, isinf, isnan, nan  # noqa
 
-from fuzzylite import examples  # noqa
-from fuzzylite.activation import *
-from fuzzylite.defuzzifier import *
-from fuzzylite.engine import *
-from fuzzylite.exporter import *
-from fuzzylite.factory import *
-from fuzzylite.hedge import *
-from fuzzylite.importer import *
-from fuzzylite.library import *
-from fuzzylite.norm import *
-from fuzzylite.operation import *
-from fuzzylite.rule import *
-from fuzzylite.term import *
-from fuzzylite.variable import *
 
+from .activation import *
+from .defuzzifier import *
+from .engine import *
+from .exporter import *
+from .factory import *
+from .hedge import *
+from .importer import *
+from .library import *
+from .norm import *
+from .operation import *
+from .rule import *
+from .term import *
+from .variable import *
 
 lib: Library = Library(
     decimals=3,
     abs_tolerance=1e-5,
 )
 
+# Import examples here to avoid circular imports with fl.lib
+from . import examples  # noqa
 
 __name__ = lib.name
 __version__ = lib.version
