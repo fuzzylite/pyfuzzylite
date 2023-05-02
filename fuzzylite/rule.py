@@ -33,7 +33,7 @@ from typing import Optional
 from .exporter import FllExporter
 from .hedge import Any
 from .norm import SNorm, TNorm
-from .operation import Op
+from .operation import Op, array, scalar
 from .types import Scalar
 from .variable import InputVariable, OutputVariable
 
@@ -198,12 +198,12 @@ class Antecedent:
                     f"but found none in antecedent: '{self.text}'"
                 )
             if not node.variable.enabled:
-                return 0.0
+                return scalar(0.0)
 
             if node.hedges:
                 # if last hedge is "Any", apply hedges in reverse order and return degree
                 if isinstance(node.hedges[-1], Any):
-                    result = nan
+                    result = scalar(nan)
                     for hedge in reversed(node.hedges):
                         result = hedge.hedge(result)
                     return result
@@ -214,7 +214,7 @@ class Antecedent:
                     f"but found none for antecedent: '{self.text}'"
                 )
 
-            result = nan
+            result = scalar(nan)
             if isinstance(node.variable, InputVariable):
                 result = node.term.membership(node.variable.value)
             elif isinstance(node.variable, OutputVariable):
@@ -666,8 +666,8 @@ class Rule:
         """Create the rule."""
         self.enabled: bool = True
         self.weight: float = 1.0
-        self.activation_degree: Scalar = 0.0
-        self.triggered: bool = False  # TODO: Maybe Array[bool]?
+        self.activation_degree = scalar(0.0)
+        self.triggered = array(False)
         self.antecedent: Antecedent = Antecedent()
         self.consequent: Consequent = Consequent()
 
@@ -752,8 +752,8 @@ class Rule:
 
     def deactivate(self) -> None:
         """Deactivates the rule."""
-        self.activation_degree = 0.0
-        self.triggered = False
+        self.activation_degree = scalar(0.0)
+        self.triggered = array(False)
 
     def activate_with(
         self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]
@@ -776,12 +776,12 @@ class Rule:
         given implication operator and the underlying activation degree
         @param implication is the implication operator.
         """
-        self.triggered = False
+        self.triggered = array(False)
         if not self.is_loaded():
             raise RuntimeError(f"rule is not loaded: '{self.text}'")
-        if self.enabled and Op.gt(self.activation_degree, 0.0):
+        if self.enabled:
             self.consequent.modify(self.activation_degree, implication)
-            self.triggered = True
+            self.triggered = self.activation_degree > 0.0
 
     def is_loaded(self) -> bool:
         """Indicates whether the rule is loaded

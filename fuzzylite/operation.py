@@ -16,7 +16,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
-__all__ = ["Operation", "Op", "scalar"]
+__all__ = ["Operation", "Op", "scalar", "array"]
 
 import inspect
 import math
@@ -365,6 +365,26 @@ class Operation:
         return np.asarray(values, dtype=lib.floating_point_type)
 
     @staticmethod
+    def as_array(
+        values: Any,
+    ) -> Array[Any]:
+        """Convert the value into a floating point defined by the library
+        @param values is the value to convert.
+        """
+        return np.asarray(values)
+
+    @staticmethod
+    def linspace(
+        start: float, end: float, resolution: int = 100
+    ) -> Array[np.floating[Any]]:
+        """Returns a list of values from start to end with the given resolution using midpoint method."""
+        # dx = ((end - start) / resolution)
+        # result = start + (i + 0.5) * dx
+        return start + (np.array(range(resolution)) + 0.5) * (
+            (end - start) / resolution
+        )
+
+    @staticmethod
     def increment(
         x: list[int],
         minimum: list[int],
@@ -416,3 +436,4 @@ class Operation:
 Op = Operation
 scalar = Op.as_scalar
 scalars = Op.as_scalars
+array = Op.as_array

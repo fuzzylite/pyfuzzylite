@@ -17,6 +17,8 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 import re
 import unittest
 
+import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
@@ -42,19 +44,10 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
     ) -> "DefuzzifierAssert":
         """Assert that the defuzzification of the given terms result in the expected values."""
         for term, result in terms.items():
-            if fl.isnan(result):
-                self.test.assertEqual(
-                    fl.isnan(self.actual.defuzzify(term, minimum, maximum)),
-                    True,
-                    f"for {str(term)}",
-                )
-            else:
-                self.test.assertAlmostEqual(
-                    self.actual.defuzzify(term, minimum, maximum),
-                    result,
-                    places=15,
-                    msg=f"for {str(term)}",
-                )
+            np.testing.assert_almost_equal(
+                self.actual.defuzzify(term, minimum, maximum), result
+            )
+
         return self
 
 
@@ -118,7 +111,20 @@ class TestDefuzzifier(unittest.TestCase):
         ).has_parameters("100").configured_as("200").exports_fll("Centroid 200")
 
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
+            {fl.Triangle(): fl.nan}, -fl.inf, 0.0
+        )
+        DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
+            {fl.Triangle(): fl.nan}, 0.0, fl.inf
+        )
+        DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
+            {fl.Triangle(): fl.nan}, fl.nan, 0.0
+        )
+
+        DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
             {
+                fl.Triangle("", -fl.inf, 0): fl.nan,
+                fl.Triangle("", 0, fl.inf): fl.nan,
+                fl.Triangle("", fl.nan, 0): fl.nan,
                 fl.Triangle("", -1, 0): -0.5,
                 fl.Triangle("", -1, 1): 0.0,
                 fl.Triangle("", 0, 1): 0.5,

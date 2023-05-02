@@ -33,6 +33,8 @@ import math
 from math import nan
 from typing import Optional, Union
 
+import numpy as np
+
 from .operation import Op
 from .term import Aggregated, Constant, Function, Linear, Term
 from .types import Scalar
@@ -199,17 +201,9 @@ class Centroid(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the centroid of the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        area = x_centroid = 0.0
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            x_centroid += y * x
-            area += y
-        return x_centroid / area
+        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        return (x * y).sum(axis=1) / y.sum(axis=1)
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
@@ -383,10 +377,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
     def configure(self, parameters: str) -> None:
         """Configure defuzzifier based on parameters.
-
-        Args:
-        parameters: type of defuzzifier
-
+        @params parameters is type of defuzzifier.
         """
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]

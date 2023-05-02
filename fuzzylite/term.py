@@ -246,7 +246,9 @@ class Activated(Term):
             raise ValueError("expected a term to activate, but none found")
         if not self.implication:
             raise ValueError("expected an implication operator, but none found")
-        return self.implication.compute(self.term.membership(x), self.degree)
+        return self.implication.compute(
+            self.term.membership(x), np.atleast_2d(self.degree).T
+        )
 
 
 class Aggregated(Term):
@@ -330,7 +332,7 @@ class Aggregated(Term):
         If the same term is present multiple times, the aggregation operator
         is utilized to sum the activation degrees of the term. If the
         aggregation operator is fl::null, a regular sum is performed.
-        @param forTerm is the term for which to compute the aggregated
+        @param erm is the term for which to compute the aggregated
         activation degree
         @return the aggregated activation degree for the given term.
         """
@@ -1044,7 +1046,7 @@ class Linear(Term):
         )
         inputs = np.array([iv.value for iv in self.engine.input_variables], ndmin=2).T
         result = (coefficients * inputs).sum(axis=1) + constant
-        return result
+        return result  # type:ignore
 
     def configure(self, parameters: str) -> None:
         r"""Configures the term with the values of $\mathbf{c}^\star$
