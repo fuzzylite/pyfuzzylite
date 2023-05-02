@@ -203,7 +203,7 @@ class Centroid(IntegralDefuzzifier):
         """
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        return (x * y).sum(axis=1) / y.sum(axis=1)
+        return (x * y).sum(axis=1) / y.sum(axis=1) # type: ignore
 
 
 class LargestOfMaximum(IntegralDefuzzifier):

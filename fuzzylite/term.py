@@ -248,7 +248,7 @@ class Activated(Term):
             raise ValueError("expected an implication operator, but none found")
         return self.implication.compute(
             self.term.membership(x), np.atleast_2d(self.degree).T
-        )
+        ).squeeze()
 
 
 class Aggregated(Term):

@@ -210,11 +210,11 @@ class TestTerm(unittest.TestCase):
             {
                 -0.5: 0.000,
                 -0.4: 0.000,
-                -0.25: 0.37500000000000006,
-                -0.1: 0.7500000000000001,
+                -0.25: 0.375,
+                -0.1: 0.750,
                 0.0: 1.000,
-                0.1: 0.7500000000000001,
-                0.25: 0.37500000000000006,
+                0.1: 0.750,
+                0.25: 0.375,
                 0.4: 0.000,
                 0.5: 0.000,
                 np.nan: np.nan,
@@ -265,7 +265,6 @@ class TestTerm(unittest.TestCase):
         ):
             activated.membership(0.0)
 
-    @unittest.skip("")
     def test_aggregated(self) -> None:
         """Test the aggregated term."""
         aggregated = fl.Aggregated("fuzzy_output", -1.0, 1.0, fl.Maximum())

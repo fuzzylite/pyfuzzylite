@@ -781,7 +781,7 @@ class Rule:
             raise RuntimeError(f"rule is not loaded: '{self.text}'")
         if self.enabled:
             self.consequent.modify(self.activation_degree, implication)
-            self.triggered = self.activation_degree > 0.0
+            self.triggered = array(self.activation_degree > 0.0)
 
     def is_loaded(self) -> bool:
         """Indicates whether the rule is loaded
