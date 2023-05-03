@@ -68,7 +68,7 @@ class Importer:
 class FllImporter(Importer):
     """The FllImporter class is an Importer that configures an Engine and its
     components utilizing the FuzzyLite Language (FLL), see
-    [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
+    [https://fuzzylite.com/fll-fld](https://fuzzylite.com/fll-fld) for
     more information.
     @author Juan Rada-Vilela, Ph.D.
     @see FllExporter

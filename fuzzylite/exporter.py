@@ -75,7 +75,7 @@ class Exporter:
 class FllExporter(Exporter):
     """The FllExporter class is an Exporter that translates an Engine and its
     components to the FuzzyLite Language (FLL), see
-    [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
+    [https://fuzzylite.com/fll-fld](https://fuzzylite.com/fll-fld) for
     more information.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -633,7 +633,7 @@ class PythonExporter(Exporter):
 class FldExporter(Exporter):
     """The FldExporter class is an Exporter that evaluates an Engine and exports
     its input values and output values to the FuzzyLite Dataset (FLD) format,
-    see [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld)
+    see [https://fuzzylite.com/fll-fld](https://fuzzylite.com/fll-fld)
     for more information.
 
     @author Juan Rada-Vilela, Ph.D.
