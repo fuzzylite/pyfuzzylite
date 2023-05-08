@@ -159,11 +159,15 @@ class Bisector(IntegralDefuzzifier):
             return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        area_cumsum = np.nancumsum(y, axis=1)
-        area = np.abs(area_cumsum - area_cumsum[:, [-1]] / 2)
+        area = np.nancumsum(y, axis=1)
+        # normalising the cumulative sum is not necessary, but it is convenient because it results in nan
+        # when arrays are full of nans (ie, area = 0). Otherwise, result would be minimum + (maximum-minimum)/2
+        area = np.abs((area / area[:, [-1]]) - 0.5)
         index = area == area.min(axis=1, keepdims=True)
         bisectors = np.where(index, x, np.nan)
-        return np.nanmean(bisectors, axis=1).squeeze()  # type: ignore
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return np.nanmean(bisectors, axis=1).squeeze()  # type: ignore
 
 
 class Centroid(IntegralDefuzzifier):

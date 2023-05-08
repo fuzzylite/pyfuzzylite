@@ -20,6 +20,7 @@ import unittest
 import numpy as np
 
 import fuzzylite as fl
+from fuzzylite.types import Scalar
 from tests.assert_component import BaseAssert
 
 
@@ -38,18 +39,25 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
 
     def defuzzifies(
         self,
+        minimum: float,
+        maximum: float,
         terms: dict[fl.Term, float],
-        minimum: float = -fl.inf,
-        maximum: float = fl.inf,
     ) -> "DefuzzifierAssert":
         """Assert that the defuzzification of the given terms result in the expected values."""
-        # todo: do range parameters first, terms next
         for term, result in terms.items():
             np.testing.assert_almost_equal(
                 self.actual.defuzzify(term, minimum, maximum), result, decimal=3
             )
 
         return self
+
+
+class NanTerm(fl.Term):
+    """A term that always returns NaN as its membership value."""
+
+    def membership(self, x: Scalar) -> Scalar:
+        """Returns NaN as the membership value of the term."""
+        return np.full_like(x, np.nan)
 
 
 class TestDefuzzifier(unittest.TestCase):
@@ -81,21 +89,33 @@ class TestDefuzzifier(unittest.TestCase):
         ).has_parameters("1000").configured_as("200").exports_fll("Bisector 200")
 
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
-            {fl.Triangle("", 0, 1, 1): 0.7065}, 0, 1
+            0,
+            1,
+            {fl.Triangle("", 0, 1, 1): 0.7065},
         )
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
-            {fl.Triangle("", 0, 0, 1): 0.2925}, 0, 1
+            0,
+            1,
+            {fl.Triangle("", 0, 0, 1): 0.2925},
         )
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
-            {fl.Triangle("", 0, 0.5, 1): 0.4995}, 0, 1
+            0,
+            1,
+            {fl.Triangle("", 0, 0.5, 1): 0.4995},
         )
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
-            {fl.Rectangle("", 0, 1): 0.4995}, 0, 1
+            0,
+            1,
+            {fl.Rectangle("", 0, 1): 0.4995},
         )
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
-            {fl.Rectangle("", -1, 1): -0.001}, -1, 1
+            -1,
+            1,
+            {fl.Rectangle("", -1, 1): -0.001},
         )
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            -1,
+            1,
             {
                 fl.Aggregated(
                     "",
@@ -114,8 +134,12 @@ class TestDefuzzifier(unittest.TestCase):
                     ],
                 ): -0.001
             },
-            -1,
-            1,
+        )
+
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            0,
+            2,
+            {NanTerm(): np.nan},  # mean of range of variable
         )
 
     def test_centroid(self) -> None:
@@ -125,16 +149,24 @@ class TestDefuzzifier(unittest.TestCase):
         ).has_parameters("1000").configured_as("200").exports_fll("Centroid 200")
 
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
-            {fl.Triangle(): fl.nan}, -fl.inf, 0.0
+            -fl.inf,
+            0.0,
+            {fl.Triangle(): fl.nan},
         )
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
-            {fl.Triangle(): fl.nan}, 0.0, fl.inf
+            0.0,
+            fl.inf,
+            {fl.Triangle(): fl.nan},
         )
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
-            {fl.Triangle(): fl.nan}, fl.nan, 0.0
+            fl.nan,
+            0.0,
+            {fl.Triangle(): fl.nan},
         )
 
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
+            -1,
+            1,
             {
                 fl.Triangle("", -fl.inf, 0): fl.nan,
                 fl.Triangle("", 0, fl.inf): fl.nan,
@@ -157,8 +189,11 @@ class TestDefuzzifier(unittest.TestCase):
                     ],
                 ): 0.6896552,
             },
+        )
+        DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
             -1,
             1,
+            {NanTerm(): np.nan},
         )
 
     def test_som_defuzzifier(self) -> None:
@@ -189,31 +224,48 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, fl.inf
+            -fl.inf,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, 0.0
+            -fl.inf,
+            0.0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0.0, fl.inf
+            0.0,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, fl.nan
+            fl.nan,
+            fl.nan,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, 0
+            fl.nan,
+            0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0, fl.nan
+            0,
+            fl.nan,
+            {term: fl.nan},
         )
 
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            0,
+            1,
             {
                 term: 0.5,
                 fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.2,
             },
-            0,
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            -1,
             1,
+            {NanTerm(): np.nan},
         )
 
     def test_lom_defuzzifier(self) -> None:
@@ -244,31 +296,48 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, fl.inf
+            -fl.inf,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, 0.0
+            -fl.inf,
+            0.0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0.0, fl.inf
+            0.0,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, fl.nan
+            fl.nan,
+            fl.nan,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, 0
+            fl.nan,
+            0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0, fl.nan
+            0,
+            fl.nan,
+            {term: fl.nan},
         )
 
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            0,
+            1,
             {
                 term: 0.9,
                 fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.4,
             },
-            0,
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            -1,
             1,
+            {NanTerm(): np.nan},
         )
 
     def test_mom_defuzzifier(self) -> None:
@@ -298,31 +367,48 @@ class TestDefuzzifier(unittest.TestCase):
         )
 
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, fl.inf
+            -fl.inf,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, -fl.inf, 0.0
+            -fl.inf,
+            0.0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0.0, fl.inf
+            0.0,
+            fl.inf,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, fl.nan
+            fl.nan,
+            fl.nan,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, fl.nan, 0
+            fl.nan,
+            0,
+            {term: fl.nan},
         )
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
-            {term: fl.nan}, 0, fl.nan
+            0,
+            fl.nan,
+            {term: fl.nan},
         )
 
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            0,
+            1,
             {
                 term: 0.7,
                 fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.3,
             },
-            0,
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            -1,
             1,
+            {NanTerm(): np.nan},
         )
 
     def test_weighted_defuzzifier(self) -> None:
@@ -379,6 +465,8 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.defuzzify(fl.Triangle())
 
         DefuzzifierAssert(self, fl.WeightedAverage()).defuzzifies(
+            -fl.inf,
+            fl.inf,
             {
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
@@ -409,11 +497,13 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("", -3.0), 0.5),
                     ]
                 ): -1.0,
-            }
+            },
         )
         DefuzzifierAssert(self, fl.WeightedAverage()).configured_as(
             "Tsukamoto"
         ).defuzzifies(
+            -fl.inf,
+            fl.inf,
             {
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
@@ -444,7 +534,7 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("", -3.0), 0.5),
                     ]
                 ): -1.0,
-            }
+            },
         )
 
     def test_weighted_sum(self) -> None:
@@ -471,6 +561,8 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.defuzzify(fl.Triangle())
 
         DefuzzifierAssert(self, fl.WeightedSum()).defuzzifies(
+            -fl.inf,
+            fl.inf,
             {
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
@@ -501,11 +593,13 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("", -3.0), 0.5),
                     ]
                 ): -2.5,
-            }
+            },
         )
         DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
             "Tsukamoto"
         ).defuzzifies(
+            -fl.inf,
+            fl.inf,
             {
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
@@ -536,7 +630,7 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("", -3.0), 0.5),
                     ]
                 ): -2.5,
-            }
+            },
         )
 
 
