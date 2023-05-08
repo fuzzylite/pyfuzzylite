@@ -375,7 +375,7 @@ class Operation:
 
     @staticmethod
     def linspace(
-        start: float, end: float, resolution: int = 100
+        start: float, end: float, resolution: int = 1000
     ) -> Array[np.floating[Any]]:
         """Returns a list of values from start to end with the given resolution using midpoint method."""
         # dx = ((end - start) / resolution)

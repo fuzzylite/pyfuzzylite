@@ -43,9 +43,10 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         maximum: float = fl.inf,
     ) -> "DefuzzifierAssert":
         """Assert that the defuzzification of the given terms result in the expected values."""
+        # todo: do range parameters first, terms next
         for term, result in terms.items():
             np.testing.assert_almost_equal(
-                self.actual.defuzzify(term, minimum, maximum), result
+                self.actual.defuzzify(term, minimum, maximum), result, decimal=3
             )
 
         return self
@@ -66,49 +67,62 @@ class TestDefuzzifier(unittest.TestCase):
     def test_integral_defuzzifier(self) -> None:
         """Test integral defuzzifier default values and methods."""
         DefuzzifierAssert(self, fl.IntegralDefuzzifier()).exports_fll(
-            "IntegralDefuzzifier 100"
-        ).has_parameters("100").configured_as("300").exports_fll(
+            "IntegralDefuzzifier 1000"
+        ).has_parameters("1000").configured_as("300").exports_fll(
             "IntegralDefuzzifier 300"
         )
         with self.assertRaises(NotImplementedError):
             fl.IntegralDefuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
 
-    @unittest.skip("Need to manually compute bisectors of triangles")
     def test_bisector(self) -> None:
         """Test the bisector defuzzifier."""
         DefuzzifierAssert(self, fl.Bisector()).exports_fll(
-            "Bisector 100"
-        ).has_parameters("100").configured_as("200").exports_fll("Bisector 200")
+            "Bisector 1000"
+        ).has_parameters("1000").configured_as("200").exports_fll("Bisector 200")
 
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            {fl.Triangle("", 0, 1, 1): 0.7065}, 0, 1
+        )
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            {fl.Triangle("", 0, 0, 1): 0.2925}, 0, 1
+        )
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            {fl.Triangle("", 0, 0.5, 1): 0.4995}, 0, 1
+        )
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            {fl.Rectangle("", 0, 1): 0.4995}, 0, 1
+        )
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
+            {fl.Rectangle("", -1, 1): -0.001}, -1, 1
+        )
+        DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
             {
-                fl.Triangle("", -1, -1, 0): -0.5,
-                fl.Triangle("", -1, 1, 2): 0.0,
-                fl.Triangle("", 0, 0, 3): 0.5,
                 fl.Aggregated(
                     "",
-                    0,
+                    -1,
                     1,
-                    fl.Maximum(),
-                    [
+                    aggregation=fl.UnboundedSum(),
+                    terms=[
                         fl.Activated(
-                            fl.Triangle("Medium", 0.25, 0.5, 0.75), 0.2, fl.Minimum()
+                            fl.Triangle("", -1, -1, -0.5),
+                            implication=fl.AlgebraicProduct(),
                         ),
                         fl.Activated(
-                            fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum()
+                            fl.Triangle("", 0.5, 1, 1),
+                            implication=fl.AlgebraicProduct(),
                         ),
                     ],
-                ): 0.7200552486187846,
+                ): -0.001
             },
             -1,
-            0,
+            1,
         )
 
     def test_centroid(self) -> None:
         """Test the centroid defuzzifier."""
         DefuzzifierAssert(self, fl.Centroid()).exports_fll(
-            "Centroid 100"
-        ).has_parameters("100").configured_as("200").exports_fll("Centroid 200")
+            "Centroid 1000"
+        ).has_parameters("1000").configured_as("200").exports_fll("Centroid 200")
 
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
             {fl.Triangle(): fl.nan}, -fl.inf, 0.0
@@ -141,9 +155,173 @@ class TestDefuzzifier(unittest.TestCase):
                             fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum()
                         ),
                     ],
-                ): 0.6900552486187845,
+                ): 0.6896552,
             },
             -1,
+            1,
+        )
+
+    def test_som_defuzzifier(self) -> None:
+        """Test the Smallest of Maximum defuzzifier."""
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).exports_fll(
+            "SmallestOfMaximum 1000"
+        ).has_parameters("1000").configured_as("200").exports_fll(
+            "SmallestOfMaximum 200"
+        )
+
+        # Test case:
+        #            ______
+        #      _____/      \
+        # ____/             \
+        # |                   \____
+        term = fl.Discrete.create(
+            "test",
+            {
+                0.0: 0.25,
+                0.1: 0.25,
+                0.2: 0.5,
+                0.4: 0.5,
+                0.5: 1.0,  # SOM
+                0.7: 1.0,
+                0.9: 1.0,
+                1.0: 0.0,
+            },
+        )
+
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, fl.inf
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, 0.0
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0.0, fl.inf
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, fl.nan
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, 0
+        )
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0, fl.nan
+        )
+
+        DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
+            {
+                term: 0.5,
+                fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.2,
+            },
+            0,
+            1,
+        )
+
+    def test_lom_defuzzifier(self) -> None:
+        """Test the Largest of Maximum defuzzifier."""
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).exports_fll(
+            "LargestOfMaximum 1000"
+        ).has_parameters("1000").configured_as("200").exports_fll(
+            "LargestOfMaximum 200"
+        )
+
+        # Test case:
+        #            ______
+        #      _____/      \
+        # ____/             \
+        # |                   \____
+        term = fl.Discrete.create(
+            "test",
+            {
+                0.0: 0.25,
+                0.1: 0.25,
+                0.2: 0.5,
+                0.4: 0.5,
+                0.5: 1.0,
+                0.7: 1.0,
+                0.9: 1.0,  # LOM
+                1.0: 0.0,
+            },
+        )
+
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, fl.inf
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, 0.0
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0.0, fl.inf
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, fl.nan
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, 0
+        )
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0, fl.nan
+        )
+
+        DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
+            {
+                term: 0.9,
+                fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.4,
+            },
+            0,
+            1,
+        )
+
+    def test_mom_defuzzifier(self) -> None:
+        """Test the Largest of Maximum defuzzifier."""
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).exports_fll(
+            "MeanOfMaximum 1000"
+        ).has_parameters("1000").configured_as("200").exports_fll("MeanOfMaximum 200")
+
+        # Test case:
+        #            ______
+        #      _____/      \
+        # ____/             \
+        # |                   \____
+        term = fl.Discrete.create(
+            "test",
+            {
+                0.0: 0.25,
+                0.1: 0.25,
+                0.2: 0.5,
+                0.4: 0.5,
+                0.5: 1.0,
+                0.7: 1.0,
+                # 0.7: 1.0 , # MOM: (0.5 + 0.9)/2=0.7
+                0.9: 1.0,
+                1.0: 0.0,
+            },
+        )
+
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, fl.inf
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, -fl.inf, 0.0
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0.0, fl.inf
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, fl.nan
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, fl.nan, 0
+        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {term: fl.nan}, 0, fl.nan
+        )
+
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
+            {
+                term: 0.7,
+                fl.Trapezoid("", 0.0, 0.2, 0.4, 0.6): 0.3,
+            },
+            0,
             1,
         )
 

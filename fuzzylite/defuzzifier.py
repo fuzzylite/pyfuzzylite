@@ -29,13 +29,13 @@ __all__ = [
 ]
 
 import enum
-import math
+import warnings
 from math import nan
 from typing import Optional, Union
 
 import numpy as np
 
-from .operation import Op
+from .operation import Op, scalar
 from .term import Aggregated, Constant, Function, Linear, Term
 from .types import Scalar
 
@@ -87,7 +87,7 @@ class IntegralDefuzzifier(Defuzzifier):
     """
 
     # Default resolution for integral defuzzifiers
-    default_resolution = 100
+    default_resolution = 1000
 
     def __init__(self, resolution: Optional[int] = None) -> None:
         """Creates an integral defuzzifier, where the resolution refers to the
@@ -144,8 +144,9 @@ class Bisector(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
-        """Computes the bisector of a fuzzy set. The defuzzification process
-        integrates over the fuzzy set utilizing the boundaries given as
+        """Computes the bisector of a fuzzy set, that is, the x-coordinate such that
+        the area to its left is approximately equal to the area to its right.
+        The defuzzification process integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
         method (https://en.wikipedia.org/wiki/Rectangle_method).
 
@@ -154,29 +155,15 @@ class Bisector(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the bisector of the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
+        if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        counter = resolution
-        left = right = 0
-        x_left, x_right = (minimum, maximum)
-        left_area = right_area = 0.0
-
-        # TODO: Improve?
-        while counter > 0:
-            counter = counter - 1
-            if left_area <= right_area:
-                x_left = minimum + (left + 0.5) * dx
-                left_area += term.membership(x_left)
-                left += 1
-            else:
-                x_right = maximum - (right + 0.5) * dx
-                right_area += term.membership(x_right)
-                right += 1
-
-        # Inverse weighted average to compensate
-        return (left_area * x_right + right_area * x_left) / (left_area + right_area)
+        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        area_cumsum = np.nancumsum(y, axis=1)
+        area = np.abs(area_cumsum - area_cumsum[:, [-1]] / 2)
+        index = area == area.min(axis=1, keepdims=True)
+        bisectors = np.where(index, x, np.nan)
+        return np.nanmean(bisectors, axis=1).squeeze()  # type: ignore
 
 
 class Centroid(IntegralDefuzzifier):
@@ -201,9 +188,11 @@ class Centroid(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the centroid of the fuzzy set
         """
+        if np.any(~np.isfinite([minimum, maximum])):
+            return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        return (x * y).sum(axis=1) / y.sum(axis=1) # type: ignore
+        return ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()  # type: ignore
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
@@ -231,19 +220,15 @@ class LargestOfMaximum(IntegralDefuzzifier):
         @return the largest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
+        if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_largest = maximum
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.ge(y, y_max):
-                y_max = y
-                x_largest = x
-        return x_largest
+        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = y == y.max(axis=1, keepdims=True)
+        lom = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return np.nanmax(lom, axis=1, keepdims=True).squeeze()  # type: ignore
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
@@ -271,27 +256,15 @@ class MeanOfMaximum(IntegralDefuzzifier):
         @return the mean $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
+        if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_smallest = minimum
-        x_largest = maximum
-        find_x_largest = False
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.gt(y, y_max):
-                y_max = y
-                x_smallest = x
-                x_largest = x
-                find_x_largest = True
-            elif find_x_largest and Op.eq(y, y_max):
-                x_largest = x
-            elif Op.lt(y, y_max):
-                find_x_largest = False
-        return (x_largest + x_smallest) / 2.0
+        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = y == y.max(axis=1, keepdims=True)
+        mom = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return np.nanmean(mom, axis=1, keepdims=True).squeeze()  # type: ignore
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
@@ -319,19 +292,15 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         @return the smallest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
+        if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_smallest = minimum
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.gt(y, y_max):
-                y_max = y
-                x_smallest = x
-        return x_smallest
+        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = y == y.max(axis=1, keepdims=True)
+        som = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return np.nanmin(som, axis=1, keepdims=True).squeeze()  # type: ignore
 
 
 class WeightedDefuzzifier(Defuzzifier):
@@ -447,7 +416,8 @@ class WeightedAverage(WeightedDefuzzifier):
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output.terms[0])
 
-        weighted_sum = weights = 0.0
+        weighted_sum = scalar(0.0)
+        weights = scalar(0.0)
         if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
             # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
             for activated in fuzzy_output.terms:
@@ -515,7 +485,7 @@ class WeightedSum(WeightedDefuzzifier):
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output.terms[0])
 
-        weighted_sum = 0.0
+        weighted_sum = scalar(0.0)
         if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
             # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
             for activated in fuzzy_output.terms:
