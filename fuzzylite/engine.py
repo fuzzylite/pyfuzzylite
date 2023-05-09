@@ -14,13 +14,14 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Engine"]
 
+import copy
 import enum
 from collections.abc import Iterable
 from math import nan
-from typing import Optional, Union
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -73,9 +74,9 @@ class Engine:
         self,
         name: str = "",
         description: str = "",
-        input_variables: Optional[Iterable[InputVariable]] = None,
-        output_variables: Optional[Iterable[OutputVariable]] = None,
-        rule_blocks: Optional[Iterable[RuleBlock]] = None,
+        input_variables: Iterable[InputVariable] | None = None,
+        output_variables: Iterable[OutputVariable] | None = None,
+        rule_blocks: Iterable[RuleBlock] | None = None,
         load_rules: bool = False,
     ) -> None:
         """Creates an Engine with the parameters given.
@@ -110,12 +111,12 @@ class Engine:
 
     def configure(
         self,
-        conjunction: Optional[Union[TNorm, str]] = None,
-        disjunction: Optional[Union[SNorm, str]] = None,
-        implication: Optional[Union[TNorm, str]] = None,
-        aggregation: Optional[Union[SNorm, str]] = None,
-        defuzzifier: Optional[Union[Defuzzifier, str]] = None,
-        activation: Optional[Union[Activation, str]] = None,
+        conjunction: TNorm | str | None = None,
+        disjunction: SNorm | str | None = None,
+        implication: TNorm | str | None = None,
+        aggregation: SNorm | str | None = None,
+        defuzzifier: Defuzzifier | str | None = None,
+        activation: Activation | str | None = None,
     ) -> None:
         """Configures the engine with the given operators.
 
@@ -284,7 +285,7 @@ class Engine:
         # TODO: Implement
         raise NotImplementedError()
 
-    def infer_type(self) -> tuple["Engine.Type", str]:
+    def infer_type(self) -> tuple[Engine.Type, str]:
         """Infers the type of the engine based on its current configuration.
 
         @return a Tuple[Engine.Type, str] indicating the inferred type of the
@@ -293,3 +294,13 @@ class Engine:
         """
         # TODO: Implement
         raise NotImplementedError()
+
+    def copy(self) -> Engine:
+        """Creates a copy of the engine, including all variables, rule blocks,
+        and rules. The copy is a deep copy, meaning that all objects are
+        duplicated such that the copy can be modified without affecting the
+        original.
+
+        @return a deep copy of the engine
+        """
+        return copy.deepcopy(self)

@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
@@ -22,7 +23,6 @@ import math
 import typing
 from collections.abc import Iterable
 from math import inf, isnan, nan
-from typing import Optional
 
 from .exporter import FllExporter
 from .norm import SNorm
@@ -52,7 +52,7 @@ class Variable:
         minimum: float = -inf,
         maximum: float = inf,
         lock_range: bool = False,
-        terms: Optional[Iterable["Term"]] = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the variable.
         @param name is the name of the variable
@@ -71,7 +71,7 @@ class Variable:
         self.minimum = minimum
         self.maximum = maximum
         self.lock_range = lock_range
-        self.terms: list["Term"] = []
+        self.terms: list[Term] = []
         if terms:
             self.terms.extend(terms)
         self._value = scalar(nan)
@@ -84,7 +84,7 @@ class Variable:
         """
         return FllExporter().variable(self)
 
-    def term(self, name: str) -> "Term":
+    def term(self, name: str) -> Term:
         """Gets the term by the name.
         @param name is the name of the term
         @return the term of the given name.
@@ -157,7 +157,7 @@ class Variable:
 
         return "".join(result)
 
-    def highest_membership(self, x: Scalar) -> tuple[Scalar, Optional["Term"]]:
+    def highest_membership(self, x: Scalar) -> tuple[Scalar, Term | None]:
         r"""Gets the term which has the highest membership function value for
         $x$.
         @param x is the value of interest
@@ -165,7 +165,7 @@ class Variable:
         function value will be stored
         @return the term $i$ which maximimizes $\mu_i(x)$.
         """
-        result: tuple[Scalar, Optional["Term"]] = (0.0, None)
+        result: tuple[Scalar, Term | None] = (0.0, None)
         for term in self.terms:
             y = scalar(nan)
             with contextlib.suppress(ValueError):
@@ -193,7 +193,7 @@ class InputVariable(Variable):
         minimum: float = -inf,
         maximum: float = inf,
         lock_range: bool = False,
-        terms: Optional[Iterable["Term"]] = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the input variable.
         @param name is the name of the variable
@@ -295,9 +295,9 @@ class OutputVariable(Variable):
         lock_range: bool = False,
         lock_previous: bool = False,
         default_value: float = nan,
-        aggregation: Optional[SNorm] = None,
-        defuzzifier: Optional["Defuzzifier"] = None,
-        terms: Optional[Iterable["Term"]] = None,
+        aggregation: SNorm | None = None,
+        defuzzifier: Defuzzifier | None = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the output variable.
         @param name is the name of the variable
@@ -381,7 +381,7 @@ class OutputVariable(Variable):
         self.fuzzy.maximum = value
 
     @property
-    def aggregation(self) -> Optional[SNorm]:
+    def aggregation(self) -> SNorm | None:
         """Gets the aggregation operator
         @return the aggregation operator.
 

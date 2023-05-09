@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Expression",
@@ -28,7 +29,6 @@ __all__ = [
 import typing
 from collections.abc import Iterable
 from math import nan
-from typing import Optional
 
 from .exporter import FllExporter
 from .hedge import Any
@@ -69,9 +69,9 @@ class Proposition(Expression):
 
     def __init__(
         self,
-        variable: Optional["Variable"] = None,
-        hedges: Optional[Iterable["Hedge"]] = None,
-        term: Optional["Term"] = None,
+        variable: Variable | None = None,
+        hedges: Iterable[Hedge] | None = None,
+        term: Term | None = None,
     ) -> None:
         """Create the proposition.
         @param variable is the variable in the proposition
@@ -79,7 +79,7 @@ class Proposition(Expression):
         @param term is the term in the proposition.
         """
         self.variable = variable
-        self.hedges: list["Hedge"] = []
+        self.hedges: list[Hedge] = []
         if hedges:
             self.hedges.extend(hedges)
         self.term = term
@@ -119,8 +119,8 @@ class Operator(Expression):
     def __init__(
         self,
         name: str = "",
-        right: Optional[Expression] = None,
-        left: Optional[Expression] = None,
+        right: Expression | None = None,
+        left: Expression | None = None,
     ) -> None:
         """Create operator with the given parameters.
         @param name is the name of the operator
@@ -156,7 +156,7 @@ class Antecedent:
         @param text is the text of the antecedent.
         """
         self.text = text
-        self.expression: Optional[Expression] = None
+        self.expression: Expression | None = None
 
     def __str__(self) -> str:
         """Return the text of the antecedent."""
@@ -174,9 +174,9 @@ class Antecedent:
 
     def activation_degree(
         self,
-        conjunction: Optional[TNorm] = None,
-        disjunction: Optional[SNorm] = None,
-        node: Optional[Expression] = None,
+        conjunction: TNorm | None = None,
+        disjunction: SNorm | None = None,
+        node: Expression | None = None,
     ) -> Scalar:
         """Computes the activation degree of the antecedent on the expression
         tree from the given node
@@ -261,7 +261,7 @@ class Antecedent:
 
         raise RuntimeError(f"unexpected type of node '{node}': {type(node)}")
 
-    def load(self, engine: "Engine") -> None:
+    def load(self, engine: Engine) -> None:
         """Loads the antecedent with the given text and uses the engine to
         identify and retrieve references to the input variables and output
         variables as required
@@ -292,9 +292,9 @@ class Antecedent:
 
         stack: deque[Expression] = deque()
 
-        proposition: Optional[Proposition] = None
+        proposition: Proposition | None = None
         variables = {v.name: v for v in engine.variables}
-        token: Optional[str] = None
+        token: str | None = None
         for token in postfix.split():
             if state & s_variable:
                 variable = variables.get(token, None)
@@ -374,7 +374,7 @@ class Antecedent:
 
         self.expression = stack.pop()
 
-    def prefix(self, node: Optional[Expression] = None) -> str:
+    def prefix(self, node: Expression | None = None) -> str:
         """Returns a string represention of the given expression tree utilizing
         prefix notation
         @param node is a node in the expression tree of the antecedent
@@ -399,7 +399,7 @@ class Antecedent:
 
         raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
-    def infix(self, node: Optional[Expression] = None) -> str:
+    def infix(self, node: Expression | None = None) -> str:
         """Returns a string represention of the given expression tree utilizing
         infix notation
         @param node is a node in the expression tree of the antecedent
@@ -427,7 +427,7 @@ class Antecedent:
 
         raise RuntimeError(f"unexpected instance '{type(node)}': {str(node)}")
 
-    def postfix(self, node: Optional[Expression] = None) -> str:
+    def postfix(self, node: Expression | None = None) -> str:
         """Returns a string represention of the given expression tree utilizing
         postfix notation
         @param node is a node in the expression tree of the antecedent
@@ -490,7 +490,7 @@ class Consequent:
         """Unloads the consequent."""
         self.conclusions.clear()
 
-    def modify(self, activation_degree: Scalar, implication: Optional[TNorm]) -> None:
+    def modify(self, activation_degree: Scalar, implication: TNorm | None) -> None:
         """Modifies the proposition set according to the activation degree
         (computed in the Antecedent of the Rule) and the implication operator
         (given in the RuleBlock)
@@ -530,7 +530,7 @@ class Consequent:
                         f"'{type(proposition.variable)}'"
                     )
 
-    def load(self, engine: "Engine") -> None:
+    def load(self, engine: Engine) -> None:
         """Loads the consequent with the given text and uses the engine to
         identify and retrieve references to the input variables and output
         variables as required
@@ -558,10 +558,10 @@ class Consequent:
         s_variable, s_is, s_hedge, s_term, s_and, s_with = (2**i for i in range(6))
         state = s_variable
 
-        proposition: Optional[Proposition] = None
+        proposition: Proposition | None = None
         conclusions: list[Proposition] = []
         output_variables = {v.name: v for v in engine.output_variables}
-        token: Optional[str] = None
+        token: str | None = None
         for token in self.text.split():
             if state & s_variable:
                 variable = output_variables.get(token, None)
@@ -756,7 +756,7 @@ class Rule:
         self.triggered = array(False)
 
     def activate_with(
-        self, conjunction: Optional[TNorm], disjunction: Optional[SNorm]
+        self, conjunction: TNorm | None, disjunction: SNorm | None
     ) -> Scalar:
         """Activates the rule by computing its activation degree using the given
         conjunction and disjunction operators
@@ -771,7 +771,7 @@ class Rule:
         )
         return self.activation_degree
 
-    def trigger(self, implication: Optional[TNorm]) -> None:
+    def trigger(self, implication: TNorm | None) -> None:
         """Triggers the rule's implication (if the rule is enabled) using the
         given implication operator and the underlying activation degree
         @param implication is the implication operator.
@@ -795,7 +795,7 @@ class Rule:
         self.antecedent.unload()
         self.consequent.unload()
 
-    def load(self, engine: "Engine") -> None:
+    def load(self, engine: Engine) -> None:
         """Loads the rule with the text from Rule::getText(), and uses the
         engine to identify and retrieve references to the input variables and
         output variables as required
@@ -806,7 +806,7 @@ class Rule:
         self.consequent.load(engine)
 
     @staticmethod
-    def create(text: str, engine: Optional["Engine"] = None) -> "Rule":
+    def create(text: str, engine: Engine | None = None) -> Rule:
         """Create the rule from the text for the engine
         @param text is the text of the rule
         @param engine is the engine.
@@ -835,11 +835,11 @@ class RuleBlock:
         name: str = "",
         description: str = "",
         enabled: bool = True,
-        conjunction: Optional[TNorm] = None,
-        disjunction: Optional[SNorm] = None,
-        implication: Optional[TNorm] = None,
-        activation: Optional["Activation"] = None,
-        rules: Optional[Iterable[Rule]] = None,
+        conjunction: TNorm | None = None,
+        disjunction: SNorm | None = None,
+        implication: TNorm | None = None,
+        activation: Activation | None = None,
+        rules: Iterable[Rule] | None = None,
     ) -> None:
         """Create the rule block.
         @param name is the name of the rule block
@@ -884,7 +884,7 @@ class RuleBlock:
         for rule in self.rules:
             rule.unload()
 
-    def load_rules(self, engine: "Engine") -> None:
+    def load_rules(self, engine: Engine) -> None:
         """Loads all the rules into the rule block
         @param engine is the engine where this rule block is registered.
         """
@@ -900,7 +900,7 @@ class RuleBlock:
                 "failed to load the following rules:\n" + "\n".join(exceptions)
             )
 
-    def reload_rules(self, engine: "Engine") -> None:
+    def reload_rules(self, engine: Engine) -> None:
         """Unloads all the rules in the rule block and then loads each rule again
         @param engine is the engine where this rule block is registered.
         """

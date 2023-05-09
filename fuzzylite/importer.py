@@ -14,11 +14,12 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Importer", "FllImporter"]
 
 from pathlib import Path
-from typing import Optional, TypeVar, Union
+from typing import TypeVar
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -54,7 +55,7 @@ class Importer:
         """
         raise NotImplementedError()
 
-    def from_file(self, path: Union[Path, str]) -> Engine:
+    def from_file(self, path: Path | str) -> Engine:
         """Imports the engine from the given file
         @param path is the full path of the file containing the engine to import from
         @return the engine represented by the file.
@@ -142,9 +143,7 @@ class FllImporter(Importer):
             self._process(component, block, engine)
         return engine
 
-    def input_variable(
-        self, fll: str, engine: Optional[Engine] = None
-    ) -> InputVariable:
+    def input_variable(self, fll: str, engine: Engine | None = None) -> InputVariable:
         """Creates an input variable from the FuzzyLite Language.
         @param fll is the input variable in the FuzzyLite Language
         @param engine is the reference engine for the input variable
@@ -175,9 +174,7 @@ class FllImporter(Importer):
         iv.name = Op.as_identifier(iv.name)
         return iv
 
-    def output_variable(
-        self, fll: str, engine: Optional[Engine] = None
-    ) -> OutputVariable:
+    def output_variable(self, fll: str, engine: Engine | None = None) -> OutputVariable:
         """Creates an output variable from the FuzzyLite Language.
         @param fll is the output variable in the FuzzyLite Language
         @param engine is the reference engine for the output variable
@@ -216,7 +213,7 @@ class FllImporter(Importer):
         ov.name = Op.as_identifier(ov.name)
         return ov
 
-    def rule_block(self, fll: str, engine: Optional[Engine] = None) -> RuleBlock:
+    def rule_block(self, fll: str, engine: Engine | None = None) -> RuleBlock:
         """Creates a rule block from the FuzzyLite Language.
         @param fll is the rule block in the FuzzyLite Language
         @param engine is the reference engine for the rule block
@@ -252,7 +249,7 @@ class FllImporter(Importer):
                 )
         return rb
 
-    def term(self, fll: str, engine: Optional[Engine] = None) -> Term:
+    def term(self, fll: str, engine: Engine | None = None) -> Term:
         """Creates a term from the FuzzyLite Language.
         @param fll is the term in the FuzzyLite Language
         @param engine is the reference engine for the term
@@ -273,7 +270,7 @@ class FllImporter(Importer):
             term.configure(values[2])
         return term
 
-    def rule(self, fll: str, engine: Optional[Engine] = None) -> Optional[Rule]:
+    def rule(self, fll: str, engine: Engine | None = None) -> Rule | None:
         """Creates a rule from the FuzzyLite Language.
         @param fll is the rule in the FuzzyLite Language
         @param engine is the reference engine for the rule
@@ -281,21 +278,21 @@ class FllImporter(Importer):
         """
         return Rule.create(self.extract_value(fll, "rule"), engine)
 
-    def tnorm(self, fll: str) -> Optional[TNorm]:
+    def tnorm(self, fll: str) -> TNorm | None:
         """Creates a T-Norm from the FuzzyLite Language.
         @param fll is the T-Norm in the FuzzyLite Language
         @returns the T-Norm.
         """
         return self.component(TNorm, fll)
 
-    def snorm(self, fll: str) -> Optional[SNorm]:
+    def snorm(self, fll: str) -> SNorm | None:
         """Creates a S-Norm from the FuzzyLite Language.
         @param fll is the S-Norm in the FuzzyLite Language
         @returns the S-Norm.
         """
         return self.component(SNorm, fll)
 
-    def activation(self, fll: str) -> Optional[Activation]:
+    def activation(self, fll: str) -> Activation | None:
         """Creates an activation method from the FuzzyLite Language.
         @param fll is the activation method in the FuzzyLite Language
         @returns the activation method.
@@ -305,7 +302,7 @@ class FllImporter(Importer):
         parameters = values[1] if len(values) > 1 else None
         return self.component(Activation, name, parameters)
 
-    def defuzzifier(self, fll: str) -> Optional[Defuzzifier]:
+    def defuzzifier(self, fll: str) -> Defuzzifier | None:
         """Creates a defuzzifier from the FuzzyLite Language.
         @param fll is the defuzzifier in the FuzzyLite Language
         @returns the defuzzifier.
@@ -316,8 +313,8 @@ class FllImporter(Importer):
         return self.component(Defuzzifier, name, parameters)
 
     def component(
-        self, cls: type["FllImporter.T"], fll: str, parameters: Optional[str] = None
-    ) -> Optional["FllImporter.T"]:
+        self, cls: type[FllImporter.T], fll: str, parameters: str | None = None
+    ) -> FllImporter.T | None:
         """Create component from the factory.
         @param cls is the component class to create
         @param fll is the component in the FuzzyLite Language
@@ -361,7 +358,7 @@ class FllImporter(Importer):
         raise SyntaxError(f"expected boolean in {['true', 'false']}, but got '{fll}'")
 
     def extract_key_value(
-        self, fll: str, component: Optional[str] = None
+        self, fll: str, component: str | None = None
     ) -> tuple[str, str]:
         """Extract 'key: value' pair from the line of text in the FuzzyLite Language
         @param fll is the line of text in the FuzzyLite Language
@@ -374,7 +371,7 @@ class FllImporter(Importer):
             raise SyntaxError(f"expected '{key}: value' definition, but found '{fll}'")
         return parts[0].strip(), parts[1].strip()
 
-    def extract_value(self, fll: str, component: Optional[str] = None) -> str:
+    def extract_value(self, fll: str, component: str | None = None) -> str:
         """Extract the value from the line of text in the FuzzyLite Language
         @param fll is the line of text in the FuzzyLite Language
         @param component is the name of the specific key to extract the value from

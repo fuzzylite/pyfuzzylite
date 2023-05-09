@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "ConstructionFactory",
@@ -30,7 +31,7 @@ __all__ = [
 
 import copy
 from collections.abc import Iterator
-from typing import Callable, Generic, Optional, TypeVar
+from typing import Callable, Generic, TypeVar
 
 import numpy as np
 
@@ -613,13 +614,13 @@ class FactoryManager:
 
     def __init__(
         self,
-        tnorm: Optional[TNormFactory] = None,
-        snorm: Optional[SNormFactory] = None,
-        activation: Optional[ActivationFactory] = None,
-        defuzzifier: Optional[DefuzzifierFactory] = None,
-        term: Optional[TermFactory] = None,
-        hedge: Optional[HedgeFactory] = None,
-        function: Optional[FunctionFactory] = None,
+        tnorm: TNormFactory | None = None,
+        snorm: SNormFactory | None = None,
+        activation: ActivationFactory | None = None,
+        defuzzifier: DefuzzifierFactory | None = None,
+        term: TermFactory | None = None,
+        hedge: HedgeFactory | None = None,
+        function: FunctionFactory | None = None,
     ) -> None:
         """Creates a factory manager with the given factories (or default factories if none supplied)
         @param tnorm is the factory of TNorm%s

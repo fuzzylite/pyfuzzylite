@@ -1029,7 +1029,7 @@ class Linear(Term):
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
         where $v_i$ is the value of the input variable $i$ registered
         in the Linear::getEngine()
-        @param x is not utilized
+        @param _ is not utilized
         @return $\sum_i c_ix_i +k$.
         """
         if not self.engine:

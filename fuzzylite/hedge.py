@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Hedge",
@@ -237,7 +238,7 @@ class HedgeFunction(Hedge):
     @since 6.0
     """
 
-    def __init__(self, function: "Function") -> None:
+    def __init__(self, function: Function) -> None:
         """Create the hedge.
         @param function is the function.
         """

@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Defuzzifier",
@@ -31,7 +32,6 @@ __all__ = [
 import enum
 import warnings
 from math import nan
-from typing import Optional, Union
 
 import numpy as np
 
@@ -89,7 +89,7 @@ class IntegralDefuzzifier(Defuzzifier):
     # Default resolution for integral defuzzifiers
     default_resolution = 1000
 
-    def __init__(self, resolution: Optional[int] = None) -> None:
+    def __init__(self, resolution: int | None = None) -> None:
         """Creates an integral defuzzifier, where the resolution refers to the
         number of divisions in which the range `[minimum,maximum]` is divided
         in order to integrate the area under the curve.
@@ -328,9 +328,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
-    def __init__(
-        self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
-    ) -> None:
+    def __init__(self, type: str | WeightedDefuzzifier.Type | None = None) -> None:
         """Creates a WeightedDefuzzifier
         @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
         """
@@ -359,7 +357,7 @@ class WeightedDefuzzifier(Defuzzifier):
         """Not implemented."""
         raise NotImplementedError()
 
-    def infer_type(self, term: Term) -> "WeightedDefuzzifier.Type":
+    def infer_type(self, term: Term) -> WeightedDefuzzifier.Type:
         """Infers the type of the defuzzifier based on the given term. If the
         given term is Constant, Linear or Function, then the type is
         TakagiSugeno; otherwise, the type is Tsukamoto.
