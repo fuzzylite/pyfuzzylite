@@ -551,14 +551,12 @@ class PythonExporter(Exporter):
 
         result = ["fl."]
         if isinstance(term, Discrete):
-            # TODO: fl.Discrete.create()
             result += [
-                f"{term.class_name}({self.format(term.name)}, ",
-                "[",
-                ", ".join(
-                    self.format(value) for value in Discrete.values_from(term.xy)
+                f"{Discrete.create.__qualname__}(",
+                f"{self.format(term.name)}, ",
+                str(
+                    {self.format(x): self.format(y) for x, y in term.to_dict().items()}
                 ),
-                "])",
             ]
         elif isinstance(term, Function):
             result += [

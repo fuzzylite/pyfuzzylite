@@ -48,13 +48,13 @@ import re
 import typing
 from collections.abc import Iterable, Sequence
 from math import inf, isnan, nan
-from typing import Any, Callable, SupportsFloat, TypeVar
+from typing import Any, Callable, SupportsFloat, Union
 
 import numpy as np
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
-from .operation import Op, scalar, scalars
+from .operation import Op, array, scalar, scalars
 from .types import Array, Scalar
 
 if typing.TYPE_CHECKING:
@@ -248,7 +248,7 @@ class Activated(Term):
             raise ValueError("expected an implication operator, but none found")
         return self.implication.compute(
             self.term.membership(x), np.atleast_2d(self.degree).T
-        ).squeeze()
+        ).squeeze()  # type:ignore
 
 
 class Aggregated(Term):
@@ -695,21 +695,27 @@ class Discrete(Term):
     @since 4.0.
     """
 
-    Floatable = TypeVar("Floatable", SupportsFloat, str, bytes, np.generic)
+    Floatable = Union[SupportsFloat, str, bytes]
 
     def __init__(
         self,
         name: str = "",
-        xy: Array[np.floating[Any]] | None = None,
+        values: Array[np.floating[Any]] | Sequence[Floatable] | None = None,
         height: float = 1.0,
     ) -> None:
         """Create the term.
         @param name is the name of the term
-        @param xy is the list of pairs #TODO update
+        @param values is an 2D array of x,y pairs
         @param height is the height of the term.
         """
         super().__init__(name, height)
-        self.xy = xy if xy is not None else np.asarray([])
+        if isinstance(values, Sequence):
+            x = [float(xi) for xi in values[0::2]]
+            y = [float(yi) for yi in values[1::2]]
+            values = scalars([x, y]).T
+        elif values is None:
+            values = np.atleast_2d(array([]))
+        self.values: Array[np.floating[Any]] = values  # type: ignore
 
     def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$ by using binary
@@ -723,11 +729,16 @@ class Discrete(Term):
               $y_{\min}$ and $y_{\max}$is are the membership functions
                    of $\mu(x_{\min})$ and $\mu(x_{\max})$ (respectively).
         """
-        if not np.any(self.xy):
+        if self.values is None:
+            raise ValueError("expected xy coordinates to be set, but it is None")
+        if self.values.size == 0:
+            raise ValueError("expected xy to contain coordinate pairs, but it is empty")
+        if self.values.ndim != 2:
             raise ValueError(
-                "expected xy to contain discrete coordinates, but it is empty"
+                "expected xy to have with 2 columns, "
+                f"but got {self.values.ndim} in shape {self.values.shape}: {self.values}"
             )
-        return self.height * np.interp(scalar(x), self.xy[:, 0], self.xy[:, 1])
+        return self.height * np.interp(scalar(x), self.values[:, 0], self.values[:, 1])
 
     def tsukamoto(
         self, activation_degree: Scalar, minimum: float, maximum: float
@@ -740,7 +751,7 @@ class Discrete(Term):
         """Returns the parameters of the term as `x1 y1 xn yn [height]`
         @return `x1 y1 xn yn [height]`.
         """
-        return super()._parameters(self.xy)
+        return super()._parameters(self.to_list())
 
     def configure(self, parameters: str) -> None:
         """Configures the term with the parameters given as `x1 y1 xn yn [height]`
@@ -752,25 +763,25 @@ class Discrete(Term):
         else:
             self.height = float(as_list[-1])
             del as_list[-1]
-        self.xy = Discrete.to_xy(as_list[0::2], as_list[1::2])
+        self.values = Discrete.to_xy(as_list[0::2], as_list[1::2])
 
     def x(self) -> Array[np.floating[Any]]:
         """An iterable containing the $x$ values
         @return an iterable containing the $x$ values.
         """
-        return self.xy[:, 0]
+        return self.values[:, 0]
 
     def y(self) -> Array[np.floating[Any]]:
         """An iterable containing the $y$ values
         @return an iterable containing the $y$ values.
         """
-        return self.xy[:, 1]
+        return self.values[:, 1]
 
     def sort(self) -> None:
         """Ascendantly sorts the pairs of values in this Discrete term by the
         $x$-coordinate.
         """
-        self.xy[:] = self.xy[np.argsort(self.x())]
+        self.values[:] = self.values[np.argsort(self.x())]
 
     def to_dict(self) -> dict[float, float]:
         """Returns a dictionary of values {x: y}."""
@@ -778,12 +789,13 @@ class Discrete(Term):
 
     def to_list(self) -> list[float]:
         """Returns a list of values [x1, y1, x2, y2, ...]."""
-        return self.xy.flatten().tolist()  # type: ignore
+        return self.values.flatten().tolist()  # type: ignore
 
     @staticmethod
     def create(
         name: str,
         xy: str
+        | list[Floatable]
         | Sequence[Floatable]
         | tuple[Sequence[Floatable], tuple[Sequence[Floatable]]]
         | dict[Floatable, Floatable],
@@ -796,8 +808,19 @@ class Discrete(Term):
         @returns a Discrete term
         .
         """
-        # TODO
-        raise NotImplementedError()
+        x = scalar(0)
+        y = scalar(0)
+        if isinstance(xy, str):
+            xy = xy.split()
+        if isinstance(xy, Sequence):
+            x = array(xy[0::2])
+            y = array(xy[1::2])
+        if isinstance(xy, tuple):
+            x, y = xy
+        if isinstance(xy, dict):
+            x = array([xi for xi in xy])
+            y = array([yi for yi in xy.values()])
+        return Discrete(name, Discrete.to_xy(x, y), height=height)
 
     @staticmethod
     def to_xy(
@@ -814,24 +837,6 @@ class Discrete(Term):
                 f"expected same shape from x and y, but found x={x.shape} and y={y.shape}"
             )
         return scalars([x, y]).T
-
-    # TODO: Maybe remove this method
-    @staticmethod
-    def values_from(pairs: Array[np.floating[Any]]) -> list[float]:
-        """Flatten the list of discrete pairs.
-        @param pairs is the list of discrete pairs
-        @returns a flat list of values.
-        """
-        return list(pairs.flatten())
-
-    # TODO: maybe find way to do: dict(self)
-    @staticmethod
-    def dict_from(pairs: Array[np.floating[Any]]) -> dict[float, float]:
-        """Create a dictionary from the list of discrete pairs.
-        @param pairs is a list of discrete pairs
-        @returns a dictionary of pairs {x: y}.
-        """
-        return {x: y for x, y in zip(pairs[:, 0], pairs[:, 1])}
 
 
 class Gaussian(Term):

@@ -191,7 +191,7 @@ class TestTerm(unittest.TestCase):
             1.0: 0.0,
         }
         np.testing.assert_allclose(
-            discrete_triangle.xy,
+            discrete_triangle.values,
             fl.Discrete.to_xy(*zip(*xy.items())),
         )
 
@@ -594,20 +594,58 @@ class TestTerm(unittest.TestCase):
         term = fl.Discrete()
         with self.assertRaisesRegex(
             ValueError,
-            re.escape("expected xy to contain discrete coordinates, but it is empty"),
+            re.escape("expected xy to contain coordinate pairs, but it is empty"),
         ):
             term.membership(0.0)
         with self.assertRaisesRegex(
             ValueError,
-            re.escape("expected xy to contain discrete coordinates, but it is empty"),
+            re.escape("expected xy to contain coordinate pairs, but it is empty"),
         ):
-            term.xy = fl.scalar([])
+            term.values = fl.scalar([])
+            term.membership(0.0)
+        with self.assertRaisesRegex(
+            ValueError,
+            re.escape(
+                "expected xy to have with 2 columns, but got 1 in shape (1,): [1.]"
+            ),
+        ):
+            term.values = fl.scalar([1])
             term.membership(0.0)
 
-    @unittest.skip("TODO")
-    def test_todo(self) -> None:
+    def test_create(self) -> None:
         """Test the discrete term creation."""
-        fl.Discrete.create("", [])
+        x = np.array([0, 2, 4, 6])
+        y = np.array([1, 3, 5, 7])
+        xy_list = np.array([x, y]).T.flatten().tolist()
+
+        TermAssert(self, fl.Discrete.create("str", fl.Op.str(xy_list))).exports_fll(
+            "term: str Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        TermAssert(self, fl.Discrete.create("list", xy_list)).exports_fll(
+            "term: list Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        TermAssert(self, fl.Discrete.create("tuple", tuple((x, y)))).exports_fll(
+            "term: tuple Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        TermAssert(self, fl.Discrete.create("dict", dict(zip(x, y)))).exports_fll(
+            "term: dict Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        # As strings
+        TermAssert(
+            self, fl.Discrete.create("list", fl.Op.str(xy_list).split())
+        ).exports_fll(
+            "term: list Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        TermAssert(
+            self, fl.Discrete.create("tuple", tuple((x.astype(str), y.astype(str))))
+        ).exports_fll(
+            "term: tuple Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
+        TermAssert(
+            self, fl.Discrete.create("dict", dict(zip(x.astype(str), y.astype(str))))
+        ).exports_fll(
+            "term: dict Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
+        )
 
     def test_discrete_to_xy(self) -> None:
         """Test the conversion to xy pairs."""
@@ -619,7 +657,7 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(3, xy.membership(2))
 
         # Test iterators
-        it = iter(xy.xy)
+        it = iter(xy.values)
         np.testing.assert_equal(next(it), (0, 1))
         np.testing.assert_equal(next(it), (2, 3))
         np.testing.assert_equal(next(it), (4, 5))
@@ -628,17 +666,8 @@ class TestTerm(unittest.TestCase):
             next(it)
 
         np.testing.assert_equal(
-            fl.Discrete.to_xy([], []), np.asarray([]).reshape((-1, 2))
+            fl.Discrete.to_xy([], []), np.array([], ndmin=2).reshape((-1, 2))
         )
-        self.assertEqual(
-            fl.Discrete.values_from(fl.Discrete.to_xy([1, 3], [2, 4])), [1, 2, 3, 4]
-        )
-
-        with self.assertRaisesRegex(
-            ValueError,
-            re.escape(r"expected same shape from x and y, but found x=(3,) and y=(2,)"),
-        ):
-            fl.Discrete.to_xy([1, 2, 3], [0, 4])
 
     def test_gaussian(self) -> None:
         """Test the gaussian term."""
