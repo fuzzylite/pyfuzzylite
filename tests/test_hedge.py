@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import unittest
 from math import inf, isnan, nan
@@ -25,7 +26,7 @@ from tests.assert_component import BaseAssert
 class HedgeAssert(BaseAssert[fl.Hedge]):
     """Assert hedge."""
 
-    def evaluates(self, az: dict[float, float]) -> "HedgeAssert":
+    def evaluates(self, az: dict[float, float]) -> HedgeAssert:
         """Assert the hedge produces the expected values from the keys."""
         for a, z in az.items():
             if isnan(z):

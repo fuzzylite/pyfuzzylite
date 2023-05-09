@@ -14,6 +14,8 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import re
 import unittest
 
@@ -27,12 +29,12 @@ from tests.assert_component import BaseAssert
 class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
     """Defuzzifier assert."""
 
-    def configured_as(self, parameters: str) -> "DefuzzifierAssert":
+    def configured_as(self, parameters: str) -> DefuzzifierAssert:
         """Configures the actual defuzzifier with the parameters."""
         self.actual.configure(parameters)
         return self
 
-    def has_parameters(self, parameters: str) -> "DefuzzifierAssert":
+    def has_parameters(self, parameters: str) -> DefuzzifierAssert:
         """Assert that the defuzzifier has the given parameters."""
         self.test.assertEqual(self.actual.parameters(), parameters)
         return self
@@ -42,7 +44,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         minimum: float,
         maximum: float,
         terms: dict[fl.Term, float],
-    ) -> "DefuzzifierAssert":
+    ) -> DefuzzifierAssert:
         """Assert that the defuzzification of the given terms result in the expected values."""
         for term, result in terms.items():
             np.testing.assert_almost_equal(

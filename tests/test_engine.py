@@ -14,8 +14,9 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
-from typing import Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -24,7 +25,7 @@ from tests.assert_component import BaseAssert
 class EngineAssert(BaseAssert[fl.Engine]):
     """Engine assert."""
 
-    def has_type(self, expected: fl.Engine.Type) -> "EngineAssert":
+    def has_type(self, expected: fl.Engine.Type) -> EngineAssert:
         """Asserts the engine has the expectd type."""
         type = self.actual.infer_type()
         self.test.assertEqual(
@@ -32,7 +33,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def is_ready(self, expected: bool, status: str = "") -> "EngineAssert":
+    def is_ready(self, expected: bool, status: str = "") -> EngineAssert:
         """Asserts whether the engine is ready and its status."""
         ready, message = self.actual.is_ready()
         self.test.assertEqual(
@@ -46,7 +47,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         self.test.assertEqual(message, status)
         return self
 
-    def has_n_inputs(self, n: int) -> "EngineAssert":
+    def has_n_inputs(self, n: int) -> EngineAssert:
         """Asserts the engine has the expected number of input variables."""
         n_inputs = len(self.actual.input_variables)
         self.test.assertEqual(
@@ -54,14 +55,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_inputs(self, names: list[str]) -> "EngineAssert":
+    def has_inputs(self, names: list[str]) -> EngineAssert:
         """Asserts the engine has the expected input variables by name."""
         self.test.assertSequenceEqual(
             [iv.name for iv in self.actual.input_variables], names
         )
         return self
 
-    def has_n_outputs(self, n: int) -> "EngineAssert":
+    def has_n_outputs(self, n: int) -> EngineAssert:
         """Asserts the engine has the expected number of output variables."""
         n_outputs = len(self.actual.output_variables)
         self.test.assertEqual(
@@ -69,14 +70,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_outputs(self, names: list[str]) -> "EngineAssert":
+    def has_outputs(self, names: list[str]) -> EngineAssert:
         """Asserts the engine has the expected output variables by name."""
         self.test.assertSequenceEqual(
             [ov.name for ov in self.actual.output_variables], names
         )
         return self
 
-    def has_n_blocks(self, n: int) -> "EngineAssert":
+    def has_n_blocks(self, n: int) -> EngineAssert:
         """Asserts the engine has the expected number of rule blocks."""
         n_blocks = len(self.actual.rule_blocks)
         self.test.assertEqual(
@@ -84,14 +85,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_blocks(self, names: list[str]) -> "EngineAssert":
+    def has_blocks(self, names: list[str]) -> EngineAssert:
         """Asserts the engine has the expected number of rule blocks by name."""
         self.test.assertSequenceEqual(
             [rb.name for rb in self.actual.rule_blocks], names
         )
         return self
 
-    def evaluate_fld(self, fld: str, decimals: Optional[int] = None) -> "EngineAssert":
+    def evaluate_fld(self, fld: str, decimals: int | None = None) -> EngineAssert:
         """Asserts the engine produces the expected fld."""
         if decimals is None:
             decimals = fl.lib.decimals
@@ -111,7 +112,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
             obtained: list[str] = []
             for i, input_variable in enumerate(self.actual.input_variables):
-                input_variable.value = fl.Scalar(expected[i])
+                input_variable.value = fl.scalar(expected[i])
                 obtained.append(expected[i])
 
             self.actual.process()

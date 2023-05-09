@@ -14,6 +14,8 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
 
 import numpy as np
@@ -25,19 +27,19 @@ from tests.assert_component import BaseAssert
 class NormAssert(BaseAssert[fl.Norm]):
     """Assert norms."""
 
-    def is_t_norm(self) -> "NormAssert":
+    def is_t_norm(self) -> NormAssert:
         """Assert it is a T-Norm."""
         self.test.assertIsInstance(self.actual, fl.TNorm)
         return self
 
-    def is_s_norm(self) -> "NormAssert":
+    def is_s_norm(self) -> NormAssert:
         """Assert it is an S-Norm."""
         self.test.assertIsInstance(self.actual, fl.SNorm)
         return self
 
     def evaluates(
         self, abz: dict[tuple[float, float], float], commutative: bool = True
-    ) -> "NormAssert":
+    ) -> NormAssert:
         """Assert the norm produces the expected values."""
         for ab, z in abz.items():
             self.test.assertEqual(z, self.actual.compute(*ab), f"in ({ab})")

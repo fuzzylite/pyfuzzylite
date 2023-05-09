@@ -14,12 +14,12 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import unittest
 from collections.abc import Iterable, Sequence
 from typing import (
     Any,
-    Optional,
     Union,
 )
 
@@ -32,14 +32,14 @@ class FactoryAssert(
 ):
     """Factory assert."""
 
-    def has_class_name(self, name: str) -> "FactoryAssert":
+    def has_class_name(self, name: str) -> FactoryAssert:
         """Asserts the factory has the expected class name."""
         self.test.assertEqual(self.actual.class_name, name)
         return self
 
     def contains(
-        self, name: Union[str, Iterable[str]], contains: bool = True
-    ) -> "FactoryAssert":
+        self, name: str | Iterable[str], contains: bool = True
+    ) -> FactoryAssert:
         """Asserts whether the factory contains specific class names."""
         if isinstance(name, str):
             name = [name]
@@ -58,7 +58,7 @@ class FactoryAssert(
                 )
         return self
 
-    def constructs_exactly(self, name_type: dict[str, type]) -> "FactoryAssert":
+    def constructs_exactly(self, name_type: dict[str, type]) -> FactoryAssert:
         """Asserts the factory constructs expected types from the names."""
         if not isinstance(self.actual, fl.ConstructionFactory):
             raise ValueError(
@@ -70,7 +70,7 @@ class FactoryAssert(
             self.test.assertEqual(type(self.actual.construct(name)), clazz)
         return self
 
-    def copies_exactly(self, name_instance: dict[str, object]) -> "FactoryAssert":
+    def copies_exactly(self, name_instance: dict[str, object]) -> FactoryAssert:
         """Assert the factory clones the objects from the class names."""
         if not isinstance(self.actual, fl.CloningFactory):
             raise ValueError(
@@ -92,8 +92,8 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
     def contains_exactly(
         self,
         elements: set[str],
-        element_type: Optional[fl.Function.Element.Type] = None,
-    ) -> "FunctionFactoryAssert":
+        element_type: fl.Function.Element.Type | None = None,
+    ) -> FunctionFactoryAssert:
         """Assert the factory contains only the expected elements."""
         if element_type == fl.Function.Element.Type.Operator:
             self.test.assertSetEqual(set(self.actual.operators().keys()), elements)
@@ -107,7 +107,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
 
     def operation_is(
         self, operation_value: dict[tuple[str, Sequence[float]], float]
-    ) -> "FunctionFactoryAssert":
+    ) -> FunctionFactoryAssert:
         """Assert the operation on the sequence of values results in the expected value."""
         for operation, expected_value in operation_value.items():
             name = operation[0]

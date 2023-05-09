@@ -14,8 +14,9 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
-from typing import Optional, Union
 from unittest.mock import MagicMock
 
 import fuzzylite as fl
@@ -97,10 +98,10 @@ class AssertAntecedent:
     def can_load_antecedent(
         self,
         text: str,
-        postfix: Optional[str] = None,
-        prefix: Optional[str] = None,
-        infix: Optional[str] = None,
-    ) -> "AssertAntecedent":
+        postfix: str | None = None,
+        prefix: str | None = None,
+        infix: str | None = None,
+    ) -> AssertAntecedent:
         """Assert that the text can be loaded as an antecedent and it can be converted to any notation."""
         antecedent = fl.Antecedent(text)
         antecedent.load(self.engine)
@@ -118,7 +119,7 @@ class AssertAntecedent:
 
     def cannot_load_antecedent(
         self, text: str, exception: type[Exception], regex: str
-    ) -> "AssertAntecedent":
+    ) -> AssertAntecedent:
         """Assert the antecedent cannot be loaded."""
         antecedent = fl.Antecedent(text)
         with self.test.assertRaisesRegex(exception, regex):
@@ -127,15 +128,13 @@ class AssertAntecedent:
 
     def has_activation_degrees(
         self,
-        inputs: Union[
-            dict[fl.InputVariable, list[float]],
-            dict[fl.OutputVariable, list[list[fl.Activated]]],
-        ],
+        inputs: dict[fl.InputVariable, list[float]]
+        | dict[fl.OutputVariable, list[list[fl.Activated]]],
         rules: dict[str, list[float]],
-        conjunction: Optional[fl.TNorm] = None,
-        disjunction: Optional[fl.SNorm] = None,
+        conjunction: fl.TNorm | None = None,
+        disjunction: fl.SNorm | None = None,
         decimal_places: int = 3,
-    ) -> "AssertAntecedent":
+    ) -> AssertAntecedent:
         """Assert the rules have the expected activation degrees."""
         self.test.assertTrue(inputs, msg="inputs is empty")
         self.test.assertTrue(rules, msg="rules is empty")
@@ -523,7 +522,7 @@ class AssertConsequent:
         self.test = test
         self.engine = engine
 
-    def can_load_consequent(self, text: str) -> "AssertConsequent":
+    def can_load_consequent(self, text: str) -> AssertConsequent:
         """Assert the text can be loaded as a consequent."""
         consequent = fl.Consequent(text)
         consequent.load(self.engine)
@@ -534,7 +533,7 @@ class AssertConsequent:
 
     def cannot_load_consequent(
         self, text: str, exception: type[Exception], regex: str
-    ) -> "AssertConsequent":
+    ) -> AssertConsequent:
         """Assert the text cannot be loaded as a consequent."""
         consequent = fl.Consequent(text)
         with self.test.assertRaisesRegex(exception, regex):
@@ -546,9 +545,9 @@ class AssertConsequent:
         text: str,
         activation_degree: float,
         expected: dict[fl.OutputVariable, list[fl.Activated]],
-        implication: Optional[fl.TNorm] = None,
+        implication: fl.TNorm | None = None,
         decimal_places: int = 3,
-    ) -> "AssertConsequent":
+    ) -> AssertConsequent:
         """Assert the modification of the consequent results in the expected activation terms of the output variables."""
         self.test.assertTrue(expected, "expected cannot be empty")
 
@@ -583,8 +582,8 @@ class AssertConsequent:
         self,
         text: str,
         activation_degree: float,
-        implication: Optional[fl.TNorm] = None,
-    ) -> "AssertConsequent":
+        implication: fl.TNorm | None = None,
+    ) -> AssertConsequent:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -741,14 +740,14 @@ class RuleAssert:
         """Create the assert."""
         self.test = test
 
-    def can_parse_rule(self, text: str, as_text: Optional[str] = None) -> "RuleAssert":
+    def can_parse_rule(self, text: str, as_text: str | None = None) -> RuleAssert:
         """Assert the text can be parsed as a rule."""
         rule = fl.Rule()
         rule.parse(text)
         self.test.assertEqual(as_text if as_text else text, rule.text)
         return self
 
-    def can_load_rule(self, text: str, engine: fl.Engine) -> "RuleAssert":
+    def can_load_rule(self, text: str, engine: fl.Engine) -> RuleAssert:
         """Assert the text can be loaded as a rule in the engine."""
         rule = fl.Rule()
         rule.parse(text)
@@ -759,7 +758,7 @@ class RuleAssert:
         self.can_create_rule(text, engine)
         return self
 
-    def can_create_rule(self, text: str, engine: fl.Engine) -> "RuleAssert":
+    def can_create_rule(self, text: str, engine: fl.Engine) -> RuleAssert:
         """Assert the text can be created as a rule in the engine."""
         rule = fl.Rule.create(text, engine)
         self.test.assertEqual(text, rule.text)
@@ -767,7 +766,7 @@ class RuleAssert:
 
     def cannot_parse_rule(
         self, text: str, exception: type[Exception] = SyntaxError, regex: str = ""
-    ) -> "RuleAssert":
+    ) -> RuleAssert:
         """Assert the text cannot be parsed as a rule."""
         with self.test.assertRaisesRegex(exception, regex):
             rule = fl.Rule()
@@ -780,7 +779,7 @@ class RuleAssert:
         engine: fl.Engine,
         exception: type[Exception] = SyntaxError,
         regex: str = "",
-    ) -> "RuleAssert":
+    ) -> RuleAssert:
         """Assert the rule cannot be created in the engine."""
         with self.test.assertRaisesRegex(exception, regex):
             fl.Rule.create(text, engine)
@@ -840,11 +839,11 @@ class TestRule(unittest.TestCase):
     def test_deactivate(self) -> None:
         """Test the deactivation of a rule."""
         rule = fl.Rule()
-        rule.activation_degree = fl.nan
-        rule.triggered = True
+        rule.activation_degree = fl.scalar([fl.nan])
+        rule.triggered = fl.scalar([True])
         rule.deactivate()
         self.assertEqual(rule.activation_degree, 0.0)
-        self.assertEqual(rule.triggered, False)
+        self.assertEqual(rule.triggered, fl.scalar([False]))
 
     def test_activate_with(self) -> None:
         """Test rule activation weights."""

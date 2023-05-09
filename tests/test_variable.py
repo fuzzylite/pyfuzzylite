@@ -14,11 +14,11 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import math
 import unittest
 from collections.abc import Sequence
-from typing import Optional
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -27,7 +27,7 @@ from tests.assert_component import BaseAssert
 class VariableAssert(BaseAssert[fl.Variable]):
     """Variable assert."""
 
-    def fuzzy_values(self, fuzzification: dict[float, str]) -> "VariableAssert":
+    def fuzzy_values(self, fuzzification: dict[float, str]) -> VariableAssert:
         """Test the fuzzification of the given keys result in their expected values."""
         for x in fuzzification:
             self.test.assertEqual(
@@ -36,8 +36,8 @@ class VariableAssert(BaseAssert[fl.Variable]):
         return self
 
     def highest_memberships(
-        self, x_mf: dict[float, tuple[float, Optional[fl.Term]]]
-    ) -> "VariableAssert":
+        self, x_mf: dict[float, tuple[float, fl.Term | None]]
+    ) -> VariableAssert:
         """Test the highest memberships for the given keys result in the expected activation values and terms."""
         for x in x_mf:
             self.test.assertEqual(
@@ -174,12 +174,12 @@ class TestVariable(unittest.TestCase):
 class InputVariableAssert(BaseAssert[fl.InputVariable]):
     """Input variable assert."""
 
-    def exports_fll(self, fll: str) -> "InputVariableAssert":
+    def exports_fll(self, fll: str) -> InputVariableAssert:
         """Asserts exporting the input variable to FLL yields the expected FLL."""
         self.test.assertEqual(fl.FllExporter().input_variable(self.actual), fll)
         return self
 
-    def fuzzy_values(self, fuzzification: dict[float, str]) -> "InputVariableAssert":
+    def fuzzy_values(self, fuzzification: dict[float, str]) -> InputVariableAssert:
         """Assert the fuzzification of the given keys result in their expected fuzzy values."""
         for x in fuzzification:
             self.actual.value = x
@@ -263,14 +263,14 @@ class TestInputVariable(unittest.TestCase):
 class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
     """Output variable assert."""
 
-    def exports_fll(self, fll: str) -> "OutputVariableAssert":
+    def exports_fll(self, fll: str) -> OutputVariableAssert:
         """Assert exporting the output variable results in the expected FLL."""
         self.test.assertEqual(fl.FllExporter().output_variable(self.actual), fll)
         return self
 
     def activated_values(
         self, fuzzification: dict[Sequence[fl.Activated], str]
-    ) -> "OutputVariableAssert":
+    ) -> OutputVariableAssert:
         """Assert the list of activated terms results in the expected fuzzy value."""
         for x in fuzzification:
             self.actual.fuzzy.terms.clear()

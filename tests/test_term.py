@@ -14,13 +14,14 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import copy
 import operator
 import re
 import unittest
 from collections.abc import Sequence
-from typing import Callable, NoReturn, Optional
+from typing import Callable, NoReturn
 
 import numpy as np
 
@@ -31,13 +32,13 @@ from tests.assert_component import BaseAssert
 class TermAssert(BaseAssert[fl.Term]):
     """Term assert."""
 
-    def has_name(self, name: str, height: float = 1.0) -> "TermAssert":
+    def has_name(self, name: str, height: float = 1.0) -> TermAssert:
         """Assert the term has the expected name and height."""
         self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
         return self
 
-    def takes_parameters(self, parameters: int) -> "TermAssert":
+    def takes_parameters(self, parameters: int) -> TermAssert:
         """Assert the term takes the number of parameters for configuration."""
         with self.test.assertRaisesRegex(
             ValueError,
@@ -46,22 +47,22 @@ class TermAssert(BaseAssert[fl.Term]):
             self.actual.__class__().configure("")
         return self
 
-    def is_monotonic(self, monotonic: bool = True) -> "TermAssert":
+    def is_monotonic(self, monotonic: bool = True) -> TermAssert:
         """Assert the term is monotonic."""
         self.test.assertEqual(monotonic, self.actual.is_monotonic())
         return self
 
-    def is_not_monotonic(self) -> "TermAssert":
+    def is_not_monotonic(self) -> TermAssert:
         """Assert the term is not monotonic."""
         self.test.assertEqual(False, self.actual.is_monotonic())
         return self
 
-    def configured_as(self, parameters: str) -> "TermAssert":
+    def configured_as(self, parameters: str) -> TermAssert:
         """Configure the term with the parameters."""
         self.actual.configure(parameters)
         return self
 
-    def has_membership(self, x: float, mf: float) -> "TermAssert":
+    def has_membership(self, x: float, mf: float) -> TermAssert:
         """Assert the term's membership function produces $f(x) = mf$."""
         message = "\n".join(
             [f"{str(self.actual)}", f"expected: \u03BC(x={x:.3f})={mf}, but"]
@@ -73,12 +74,13 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_memberships(
         self, x_mf: dict[float, float], height: float = 1.0
-    ) -> "TermAssert":
-        """Assert the term term's membership function produces $f(x{_keys}) = mf_{values}$."""
+    ) -> TermAssert:
+        """Assert the term's membership function produces $f(x{_keys}) = mf_{values}$."""
         inputs = fl.scalar([x for x in x_mf])  # don't care
         expected = height * fl.scalar([mf for mf in x_mf.values()])
         if isinstance(self.actual, fl.Linear):
-            for input_variable in self.actual.engine.input_variables:
+            self.test.assertIsNotNone(self.actual.engine)
+            for input_variable in self.actual.engine.input_variables:  # type: ignore
                 input_variable.value = np.full_like(
                     inputs, np.atleast_1d(input_variable.value)[0]
                 )
@@ -93,7 +95,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def membership_fails(
         self, x: float, exception: type[Exception], message: str, regex: bool = False
-    ) -> "TermAssert":
+    ) -> TermAssert:
         """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaises(exception) as error:
             self.actual.membership(x)
@@ -105,7 +107,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def memberships_fail(
         self, x_mf: dict[float, float], exception: type[Exception], regex: str
-    ) -> "TermAssert":
+    ) -> TermAssert:
         """Assert the membership function raises the exception when evaluating $f(x_{keys})$."""
         for x, _ in x_mf.items():
             self.membership_fails(x, exception, regex)
@@ -113,7 +115,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_tsukamoto(
         self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0
-    ) -> "TermAssert":
+    ) -> TermAssert:
         """Assert the term computes Tsukamoto correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
         if np.isnan(mf):
@@ -132,7 +134,7 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_tsukamotos(
         self, x_mf: dict[float, float], minimum: float = -1.0, maximum: float = 1.0
-    ) -> "TermAssert":
+    ) -> TermAssert:
         """Assert the term computes all Tsukamoto values correctly."""
         for x in x_mf:
             self.has_tsukamoto(x, x_mf[x], minimum, maximum)
@@ -143,7 +145,7 @@ class TermAssert(BaseAssert[fl.Term]):
         func: Callable[..., None],
         args: Sequence[str] = (),
         **keywords: dict[str, object],
-    ) -> "TermAssert":
+    ) -> TermAssert:
         """Applies function on the term with the arguments and keywords as parameters."""
         func(self.actual, *args, **keywords)
         return self
@@ -601,7 +603,7 @@ class TestTerm(unittest.TestCase):
             ValueError,
             re.escape("expected xy to contain coordinate pairs, but it is empty"),
         ):
-            term.values = fl.scalar([])
+            term.values = fl.Discrete.to_xy([], [])
             term.membership(0.0)
         with self.assertRaisesRegex(
             ValueError,
@@ -609,7 +611,7 @@ class TestTerm(unittest.TestCase):
                 "expected xy to have with 2 columns, but got 1 in shape (1,): [1.]"
             ),
         ):
-            term.values = fl.scalar([1])
+            term.values = fl.array([1.0])
             term.membership(0.0)
 
     def test_create(self) -> None:
@@ -1600,29 +1602,29 @@ class TestTerm(unittest.TestCase):
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
     """Function node assert."""
 
-    def prefix_is(self, prefix: str) -> "FunctionNodeAssert":
+    def prefix_is(self, prefix: str) -> FunctionNodeAssert:
         """Assert the prefix notation of the node is the expected prefix notation."""
         self.test.assertEqual(prefix, self.actual.prefix())
         return self
 
-    def infix_is(self, infix: str) -> "FunctionNodeAssert":
+    def infix_is(self, infix: str) -> FunctionNodeAssert:
         """Assert the infix notation of the node is the expected infix notation."""
         self.test.assertEqual(infix, self.actual.infix())
         return self
 
-    def postfix_is(self, postfix: str) -> "FunctionNodeAssert":
+    def postfix_is(self, postfix: str) -> FunctionNodeAssert:
         """Assert the postfix notation of the node is the expected postfix notation."""
         self.test.assertEqual(postfix, self.actual.postfix())
         return self
 
-    def value_is(self, expected: str) -> "FunctionNodeAssert":
+    def value_is(self, expected: str) -> FunctionNodeAssert:
         """Assert the value of the node is the expected value."""
         self.test.assertEqual(expected, self.actual.value())
         return self
 
     def evaluates_to(
-        self, value: float, variables: Optional[dict[str, float]] = None
-    ) -> "FunctionNodeAssert":
+        self, value: float, variables: dict[str, fl.Scalar] | None = None
+    ) -> FunctionNodeAssert:
         """Assert the node evaluates to the expected value (optionally) given variables."""
         self.test.assertAlmostEqual(
             value,
@@ -1634,7 +1636,7 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
 
     def fails_to_evaluate(
         self, exception: type[Exception], message: str
-    ) -> "FunctionNodeAssert":
+    ) -> FunctionNodeAssert:
         """Assert the node raises the expection on evaluation."""
         with self.test.assertRaisesRegex(exception, message):
             self.actual.evaluate()

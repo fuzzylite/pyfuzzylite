@@ -14,6 +14,8 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import importlib
 import logging
 import pathlib
@@ -26,17 +28,19 @@ class TestExamples(unittest.TestCase):
     """Test the examples."""
 
     def test_imports(self) -> None:
-        from fuzzylite import examples
-        from fuzzylite.examples import hybrid, mamdani, takagi_sugeno
-        from fuzzylite.examples.mamdani import SimpleDimmer
-        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+        """Tests the examples can be imported."""
+        from fuzzylite import examples  # noqa
+        from fuzzylite.examples import hybrid, mamdani, takagi_sugeno  # noqa
+        from fuzzylite.examples.mamdani import SimpleDimmer  # noqa
+        from fuzzylite.examples.mamdani.SimpleDimmer import engine  # noqa
 
     def test_absolute_imports(self) -> None:
-        import fuzzylite
-        import fuzzylite.examples
-        import fuzzylite.examples.mamdani
-        import fuzzylite.examples.mamdani.SimpleDimmer
-        from fuzzylite.examples.mamdani.SimpleDimmer import engine
+        """Tests the examples can be imported with absolute imports."""
+        import fuzzylite  # noqa
+        import fuzzylite.examples  # noqa
+        import fuzzylite.examples.mamdani  # noqa
+        import fuzzylite.examples.mamdani.SimpleDimmer  # noqa
+        from fuzzylite.examples.mamdani.SimpleDimmer import engine  # noqa
 
     def test_examples(self) -> None:
         """Test all the examples are included and can be imported."""
