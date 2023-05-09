@@ -15,9 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-
 from math import inf, isinf, isnan, nan  # noqa
-
 
 from .activation import *
 from .defuzzifier import *
@@ -31,6 +29,7 @@ from .norm import *
 from .operation import *
 from .rule import *
 from .term import *
+from .types import *
 from .variable import *
 
 lib: Library = Library(

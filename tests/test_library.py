@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import unittest
 
@@ -29,7 +30,7 @@ class TestLibrary(unittest.TestCase):
 __annotations__ __builtins__ __cached__ __doc__ __file__ __loader__
 __name__ __package__ __path__ __spec__ __version__
 
-inf isinf isnan lib nan scalar
+inf isinf isnan lib nan scalar array
 
 activation Activation First General Highest Last Lowest Proportional Threshold
 
@@ -63,7 +64,7 @@ term Activated Aggregated Bell Binary Concave Constant Cosine Discrete Function 
 GaussianProduct Linear PiShape Ramp Rectangle SShape Sigmoid SigmoidDifference SigmoidProduct
 Spike Term Trapezoid Triangle ZShape
 
-types
+types Scalar Array
 
 variable InputVariable OutputVariable Variable
 """
