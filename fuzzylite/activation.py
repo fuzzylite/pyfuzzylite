@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Activation",
@@ -28,7 +29,7 @@ __all__ = [
 
 import enum
 import heapq
-from typing import Callable, Union
+from typing import Callable
 
 import numpy as np
 
@@ -430,8 +431,8 @@ class Threshold(Activation):
         GreaterThan = ">"
 
         __operator__: dict[
-            "Threshold.Comparator",
-            Callable[[Scalar, Scalar], Union[bool, Array[np.bool_]]],
+            str,
+            Callable[[Scalar, Scalar], bool | Array[np.bool_]],
         ] = {
             LessThan: Op.lt,
             LessThanOrEqualTo: Op.le,
@@ -442,13 +443,13 @@ class Threshold(Activation):
         }
 
         @property
-        def operator(self) -> Callable[[Scalar, Scalar], Union[bool, Array[np.bool_]]]:
+        def operator(self) -> Callable[[Scalar, Scalar], bool | Array[np.bool_]]:
             """Gets the function reference for the operator."""
             return Threshold.Comparator.__operator__[self.value]
 
     def __init__(
         self,
-        comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
+        comparator: Comparator | str = Comparator.GreaterThanOrEqualTo,
         threshold: float = 0.0,
     ) -> None:
         """Creates a Threshold activation method
