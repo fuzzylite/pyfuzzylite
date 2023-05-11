@@ -19,7 +19,6 @@ from __future__ import annotations
 __all__ = ["Operation", "Op", "scalar", "array"]
 
 import inspect
-import math
 from collections.abc import Iterable, Sequence
 from typing import Any, Callable, SupportsFloat
 
@@ -41,145 +40,80 @@ class Operation:
     def eq(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
-        """Returns whether $a$ is equal to $b$ at the given tolerance
+    ) -> Scalar:
+        """Returns whether $a$ is equal to $b$, considering nan == nan is True
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is equal to $b$ at the given tolerance.
+        @return whether $a$ is equal to $b$.
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))
+        return scalar((a == b) | ((a != a) & (b != b)))
 
     @staticmethod
     def neq(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
-        """Returns whether $a$ is not equal to $b$ at the given tolerance
+    ) -> Scalar:
+        """Returns whether $a$ is not equal to $b$
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is equal to $b$ at the given tolerance.
+        @return whether $a$ is equal to $b$.
 
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)))
+        return scalar(np.logical_not((a == b) | ((a != a) & (b != b))))
 
     @staticmethod
     def gt(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
+    ) -> Scalar:
         """Returns whether $a$ is greater than $b$ at the given tolerance
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is greater than $b$ at the given tolerance.
+        @return whether $a$ is greater than $b$.
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))) & (
-            a > b
-        )
+        return scalar(a > b)
 
     @staticmethod
     def ge(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
+    ) -> Scalar:
         """Returns whether $a$ is greater than or equal to $b$ at the
         given tolerance
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is greater than or equal to $b$ at the
-        given tolerance.
+        @return whether $a$ is greater than or equal to $b$.
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return (
-            (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)) | (a > b)
-        )
+        return scalar((a >= b) | ((a != a) & (b != b)))
 
     @staticmethod
     def le(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
+    ) -> Scalar:
         """Returns whether $a$ is less than or equal to $b$ at the given
         tolerance
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is less than or equal to $b$ at the given
-        tolerance.
+        @return whether $a$ is less than or equal to $b$.
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return (
-            (a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b)) | (a < b)
-        )
+        return scalar((a <= b) | ((a != a) & (b != b)))
 
     @staticmethod
     def lt(
         a: Scalar,
         b: Scalar,
-        abs_tolerance: float | None = None,
-    ) -> bool | Array[np.bool_]:
+    ) -> Scalar:
         """Returns whether $a$ is less than $b$ at the given tolerance
         @param a
         @param b
-        @param macheps is the minimum difference upon which two
         floating-point values are considered equivalent
         @return whether $a$ is less than $b$ at the given tolerance.
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        a = Operation.as_scalar(a)
-        b = Operation.as_scalar(b)
-        return ~((a == b) | (np.abs(a - b) < abs_tolerance) | ((a != a) & (b != b))) & (
-            a < b
-        )
+        return scalar(a < b)
 
     @staticmethod
-    def logical_and(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
+    def logical_and(a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the logical AND
         @param a
         @param b
@@ -190,10 +124,10 @@ class Operation:
         \end{cases}
         $.
         """
-        return Operation.eq(a, 1.0) & Operation.eq(b, 1.0)
+        return scalar((a == 1.0) * (b == 1.0))
 
     @staticmethod
-    def logical_or(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
+    def logical_or(a: Scalar, b: Scalar) -> Scalar:
         r"""Computes the logical OR
         @param a
         @param b
@@ -204,7 +138,7 @@ class Operation:
         \end{cases}
         $.
         """
-        return Operation.eq(a, 1.0) | Operation.eq(b, 1.0)
+        return scalar((a == 1.0) | (b == 1.0))
 
     @staticmethod
     def as_identifier(name: str) -> str:
@@ -274,11 +208,6 @@ class Operation:
         return len(required_parameters)
 
     @staticmethod
-    def pi() -> float:
-        """Gets the value of Pi."""
-        return math.pi
-
-    @staticmethod
     def describe(
         instance: object,
         slots: bool = True,
@@ -344,7 +273,7 @@ class Operation:
 
     @staticmethod
     def as_scalar(
-        values: float | Sequence[Any] | Scalar | np.generic,
+        values: float | Sequence[Any] | Scalar | np.generic | Array[np.generic],
     ) -> Scalar:
         """Convert the value into a floating point defined by the library
         @param value is the value to convert.
