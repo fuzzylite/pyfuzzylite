@@ -46,9 +46,13 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         terms: dict[fl.Term, float],
     ) -> DefuzzifierAssert:
         """Assert that the defuzzification of the given terms result in the expected values."""
-        for term, result in terms.items():
-            np.testing.assert_almost_equal(
-                self.actual.defuzzify(term, minimum, maximum), result, decimal=3
+        for term, expected in terms.items():
+            obtained = self.actual.defuzzify(term, minimum, maximum)
+            np.testing.assert_allclose(
+                obtained,
+                expected,
+                atol=fl.lib.atol,
+                err_msg=f"{self.actual.class_name}({term}) = {obtained}, but expected {expected}",
             )
 
         return self
@@ -437,8 +441,82 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.infer_type(fl.Constant()),
             fl.WeightedDefuzzifier.Type.TakagiSugeno,
         )
+        with self.assertRaises(TypeError) as error:
+            defuzzifier.infer_type(fl.Triangle())
         self.assertEqual(
-            defuzzifier.infer_type(fl.Triangle()), fl.WeightedDefuzzifier.Type.Tsukamoto
+            str(error.exception),
+            "cannot infer type of WeightedDefuzzifier from term: unnamed Triangle nan nan nan",
+        )
+
+    def test_infer_type(self) -> None:
+        """Test the inference of weighted defuzzifier based on terms."""
+        takagi_sugeno_terms = [fl.Constant(), fl.Linear(), fl.Function()]
+        tsukamoto_terms = [
+            fl.Concave(),
+            fl.Ramp(),
+            fl.SShape(),
+            fl.Sigmoid(),
+            fl.ZShape(),
+        ]
+
+        # Takagi-Sugeno
+        for term in takagi_sugeno_terms:
+            self.assertEqual(
+                fl.WeightedDefuzzifier().infer_type(term),
+                fl.WeightedDefuzzifier.Type.TakagiSugeno,
+            )
+        # Tsukamoto
+        for term in tsukamoto_terms:
+            self.assertTrue(term.is_monotonic())
+            self.assertEqual(
+                fl.WeightedDefuzzifier().infer_type(term),
+                fl.WeightedDefuzzifier.Type.Tsukamoto,
+            )
+        # Activated: TakagiSugeno
+        for term in takagi_sugeno_terms:
+            self.assertEqual(
+                fl.WeightedDefuzzifier().infer_type(fl.Activated(term)),
+                fl.WeightedDefuzzifier.Type.TakagiSugeno,
+            )
+        # Activated: Tsukamoto
+        for term in tsukamoto_terms:
+            self.assertEqual(
+                fl.WeightedDefuzzifier().infer_type(fl.Activated(term)),
+                fl.WeightedDefuzzifier.Type.Tsukamoto,
+            )
+
+        # Aggregated: None
+        self.assertEqual(
+            fl.WeightedDefuzzifier().infer_type(fl.Aggregated()),
+            fl.WeightedDefuzzifier.Type.Automatic,
+        )
+        # Aggregated: TakagiSugeno
+        self.assertEqual(
+            fl.WeightedDefuzzifier().infer_type(
+                fl.Aggregated(
+                    terms=[fl.Activated(term) for term in takagi_sugeno_terms]
+                )
+            ),
+            fl.WeightedDefuzzifier.Type.TakagiSugeno,
+        )
+        # Aggregated: Tsukamoto
+        self.assertEqual(
+            fl.WeightedDefuzzifier().infer_type(
+                fl.Aggregated(terms=[fl.Activated(term) for term in tsukamoto_terms])
+            ),
+            fl.WeightedDefuzzifier.Type.Tsukamoto,
+        )
+        # Aggregated: Mixed
+        with self.assertRaises(TypeError) as error:
+            fl.WeightedDefuzzifier().infer_type(
+                fl.Aggregated(
+                    terms=[fl.Activated(term) for term in [fl.Constant(), fl.Concave()]]
+                )
+            )
+        self.assertEqual(
+            str(error.exception),
+            "cannot infer type of WeightedDefuzzifier, "
+            "got multiple types: ['Type.TakagiSugeno', 'Type.Tsukamoto']",
         )
 
     def test_weighted_average(self) -> None:
@@ -455,7 +533,7 @@ class TestDefuzzifier(unittest.TestCase):
         defuzzifier = fl.WeightedAverage()
         defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(
-            ValueError, "expected a type of defuzzifier, but found none"
+            ValueError, "expected a type of weighted defuzzifier, but found none"
         ):
             defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(
@@ -466,44 +544,7 @@ class TestDefuzzifier(unittest.TestCase):
         ):
             defuzzifier.defuzzify(fl.Triangle())
 
-        DefuzzifierAssert(self, fl.WeightedAverage()).defuzzifies(
-            -fl.inf,
-            fl.inf,
-            {
-                fl.Aggregated(): fl.nan,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 2.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 0.5),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 2.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", -1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 0.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", -3.0), 0.5),
-                    ]
-                ): -1.0,
-            },
-        )
-        DefuzzifierAssert(self, fl.WeightedAverage()).configured_as(
-            "Tsukamoto"
-        ).defuzzifies(
+        DefuzzifierAssert(self, fl.WeightedAverage("TakagiSugeno")).defuzzifies(
             -fl.inf,
             fl.inf,
             {
@@ -545,13 +586,16 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
             "TakagiSugeno"
         ).exports_fll("WeightedSum TakagiSugeno")
+        DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
+            "Tsukamoto"
+        ).exports_fll("WeightedSum Tsukamoto")
         with self.assertRaises(KeyError):
             fl.WeightedSum().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedSum()
         defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(
-            ValueError, "expected a type of defuzzifier, but found none"
+            ValueError, "expected a type of weighted defuzzifier, but found none"
         ):
             defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(
@@ -562,44 +606,7 @@ class TestDefuzzifier(unittest.TestCase):
         ):
             defuzzifier.defuzzify(fl.Triangle())
 
-        DefuzzifierAssert(self, fl.WeightedSum()).defuzzifies(
-            -fl.inf,
-            fl.inf,
-            {
-                fl.Aggregated(): fl.nan,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 6.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 0.5),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 5.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", -1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
-                    ]
-                ): 0.0,
-                fl.Aggregated(
-                    terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", -3.0), 0.5),
-                    ]
-                ): -2.5,
-            },
-        )
-        DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
-            "Tsukamoto"
-        ).defuzzifies(
+        DefuzzifierAssert(self, fl.WeightedSum("TakagiSugeno")).defuzzifies(
             -fl.inf,
             fl.inf,
             {

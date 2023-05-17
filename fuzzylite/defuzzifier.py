@@ -36,7 +36,7 @@ from math import nan
 import numpy as np
 
 from .operation import Op, scalar
-from .term import Aggregated, Constant, Function, Linear, Term
+from .term import Activated, Aggregated, Constant, Function, Linear, Term
 from .types import Scalar
 
 
@@ -228,7 +228,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
             return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        y_max = y == y.max(axis=1, keepdims=True)
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         lom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -264,7 +264,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
             return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        y_max = y == y.max(axis=1, keepdims=True)
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         mom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -300,7 +300,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
             return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        y_max = y == y.max(axis=1, keepdims=True)
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         som = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -358,16 +358,27 @@ class WeightedDefuzzifier(Defuzzifier):
         raise NotImplementedError()
 
     def infer_type(self, term: Term) -> WeightedDefuzzifier.Type:
-        """Infers the type of the defuzzifier based on the given term. If the
-        given term is Constant, Linear or Function, then the type is
-        TakagiSugeno; otherwise, the type is Tsukamoto.
-
+        """Infers the type of the defuzzifier based on the given term.
         @param term is the given term
-        @return the inferred type of the defuzzifier based on the given term
+        @return the inferred type of the defuzzifier based on the given term.
         """
-        if isinstance(term, (Constant, Linear, Function)):
+        if isinstance(term, Aggregated):
+            types = {self.infer_type(t_i) for t_i in term.terms}
+            if len(types) == 1:
+                return types.pop()
+            if len(types) == 0:
+                # cannot infer type of empty term, and won't matter anyway,
+                return WeightedDefuzzifier.Type.Automatic
+            raise TypeError(
+                f"cannot infer type of {self.class_name}, got multiple types: {sorted(str(t) for t in types)}"
+            )
+        elif isinstance(term, Activated):  # noqa: RET506 - False Positive
+            return self.infer_type(term.term)
+        elif isinstance(term, (Constant, Linear, Function)):
             return WeightedDefuzzifier.Type.TakagiSugeno
-        return WeightedDefuzzifier.Type.Tsukamoto
+        elif term.is_monotonic():
+            return WeightedDefuzzifier.Type.Tsukamoto
+        raise TypeError(f"cannot infer type of {self.class_name} from {term}")
 
 
 class WeightedAverage(WeightedDefuzzifier):
@@ -409,33 +420,27 @@ class WeightedAverage(WeightedDefuzzifier):
             )
 
         if not self.type:
-            raise ValueError("expected a type of defuzzifier, but found none")
+            raise ValueError("expected a type of weighted defuzzifier, but found none")
 
         if not fuzzy_output.terms:
             return nan
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
-            this_type = self.infer_type(fuzzy_output.terms[0])
+            this_type = self.infer_type(fuzzy_output)
 
         weighted_sum = scalar(0.0)
         weights = scalar(0.0)
-        if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
-            # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.membership(w)
-                weighted_sum += w * z
-                weights += w
-        else:
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.tsukamoto(
-                    w, fuzzy_output.minimum, fuzzy_output.maximum
-                )
-                weighted_sum += w * z
-                weights += w
-
+        membership = (
+            Term.tsukamoto.__name__
+            if this_type == WeightedDefuzzifier.Type.Tsukamoto
+            else Term.membership.__name__
+        )
+        for activated in fuzzy_output.terms:
+            w = activated.degree
+            z = activated.term.__getattribute__(membership)(w)
+            weighted_sum += w * z
+            weights += w
         return weighted_sum / weights
 
 
@@ -478,28 +483,23 @@ class WeightedSum(WeightedDefuzzifier):
             )
 
         if not self.type:
-            raise ValueError("expected a type of defuzzifier, but found none")
+            raise ValueError("expected a type of weighted defuzzifier, but found none")
 
         if not fuzzy_output.terms:
             return nan
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
-            this_type = self.infer_type(fuzzy_output.terms[0])
+            this_type = self.infer_type(fuzzy_output)
 
         weighted_sum = scalar(0.0)
-        if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
-            # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.membership(w)
-                weighted_sum += w * z
-        else:
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.tsukamoto(
-                    w, fuzzy_output.minimum, fuzzy_output.maximum
-                )
-                weighted_sum += w * z
-
+        membership = (
+            Term.tsukamoto.__name__
+            if this_type == WeightedDefuzzifier.Type.Tsukamoto
+            else Term.membership.__name__
+        )
+        for activated in fuzzy_output.terms:
+            w = activated.degree
+            z = activated.term.__getattribute__(membership)(w)
+            weighted_sum += w * z
         return weighted_sum
