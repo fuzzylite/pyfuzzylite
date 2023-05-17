@@ -69,7 +69,9 @@ class TermAssert(BaseAssert[fl.Term]):
         )
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
-        np.testing.assert_equal(mf, self.actual.membership(x), message)
+        np.testing.assert_allclose(
+            mf, self.actual.membership(x), atol=fl.lib.atol, err_msg=message
+        )
         return self
 
     def has_memberships(
@@ -89,7 +91,7 @@ class TermAssert(BaseAssert[fl.Term]):
         np.testing.assert_allclose(
             expected,
             obtained,
-            atol=1e-3,
+            atol=fl.lib.atol,
         )
         return self
 
@@ -113,31 +115,18 @@ class TermAssert(BaseAssert[fl.Term]):
             self.membership_fails(x, exception, regex)
         return self
 
-    def has_tsukamoto(
-        self, x: float, mf: float, minimum: float = -1.0, maximum: float = 1.0
-    ) -> TermAssert:
+    def has_tsukamoto(self, x: float, mf: float) -> TermAssert:
         """Assert the term computes Tsukamoto correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
-        if np.isnan(mf):
-            self.test.assertEqual(
-                True,
-                np.isnan(self.actual.tsukamoto(x, minimum, maximum)),
-                f"{str(self.actual)}\nwhen x={x:.3f}",
-            )
-        else:
-            self.test.assertEqual(
-                mf,
-                self.actual.tsukamoto(x, minimum, maximum),
-                f"{str(self.actual)}\nwhen x={x:.3f}",
-            )
+        np.testing.assert_allclose(
+            mf, self.actual.tsukamoto(x), atol=fl.lib.atol, err_msg=f"when x={x:.3f}"
+        )
         return self
 
-    def has_tsukamotos(
-        self, x_mf: dict[float, float], minimum: float = -1.0, maximum: float = 1.0
-    ) -> TermAssert:
+    def has_tsukamotos(self, x_mf: dict[float, float]) -> TermAssert:
         """Assert the term computes all Tsukamoto values correctly."""
         for x in x_mf:
-            self.has_tsukamoto(x, x_mf[x], minimum, maximum)
+            self.has_tsukamoto(x, x_mf[x])
         return self
 
     def apply(
@@ -170,8 +159,6 @@ class TestTerm(unittest.TestCase):
 
         with self.assertRaisesRegex(NotImplementedError, ""):
             fl.Term().membership(np.nan)
-        with self.assertRaisesRegex(NotImplementedError, ""):
-            fl.Term().tsukamoto(np.nan, np.nan, np.nan)
 
         # does nothing, for test coverage
         fl.Term().update_reference(None)
@@ -426,24 +413,83 @@ class TestTerm(unittest.TestCase):
                 np.inf: 1.0,
                 -np.inf: 0.0,
             }
-        ).configured_as(
-            "0.00 -0.500 0.5"
-        ).exports_fll(
-            "term: concave Concave 0.000 -0.500 0.500"
+        ).has_tsukamotos(
+            {
+                0.0: -np.inf,
+                0.25: -1.0,
+                0.5: 0.0,
+                0.75: 0.333,
+                1.0: 0.5,
+                # invalid values:
+                -1.0: 1.5,
+                -0.5: 2.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 1.0,
+            }
+        )
+
+        TermAssert(self, fl.Concave("concave")).configured_as("0.00 -0.50").exports_fll(
+            "term: concave Concave 0.000 -0.500"
         ).has_memberships(
             {
+                0.0: 0.5,
+                0.1: 0.45454545454545453,
+                0.25: 0.4,
+                0.4: 0.35714285714285715,
+                0.5: 0.333333,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
+            }
+        ).has_tsukamotos(
+            {
+                0.0: np.inf,
+                0.25: 1.0,
+                0.5: 0.0,
+                0.75: -0.333,
+                1.0: -0.5,
+                # invalid values
+                -1.0: -1.5,
+                -0.5: -2.0,
+                np.nan: np.nan,
+                np.inf: -1,
+                -np.inf: -1,
+            }
+        )
+
+        TermAssert(self, fl.Concave("concave")).configured_as(
+            "0.00 -0.500 0.5"
+        ).exports_fll("term: concave Concave 0.000 -0.500 0.500").has_memberships(
+            {
                 -0.5: 0.5,
-                -0.4: 0.4166666666666667,
-                -0.25: 0.3333333333333333,
-                -0.1: 0.2777777777777778,
+                -0.4: 0.416,
+                -0.25: 0.333,
+                -0.1: 0.277,
                 0.0: 0.25,
-                0.1: 0.22727272727272727,
+                0.1: 0.227,
                 0.25: 0.2,
-                0.4: 0.17857142857142858,
-                0.5: 0.16666666666666666,
+                0.4: 0.178,
+                0.5: 0.166,
                 np.nan: np.nan,
                 np.inf: 0.0,
                 -np.inf: 0.5,
+            }
+        ).has_tsukamotos(
+            {
+                0.0: np.inf,
+                0.125: 1.0,
+                0.25: 0.0,
+                0.375: -0.333,
+                0.5: -0.5,
+                # invalid values
+                0.75: -0.666,
+                1.0: -0.75,
+                -1.0: -1.25,
+                -0.5: -1.5,
+                np.nan: np.nan,
+                np.inf: -1,
+                -np.inf: -1,
             }
         )
 
@@ -880,61 +926,104 @@ class TestTerm(unittest.TestCase):
         """Test the ramp term."""
         TermAssert(self, fl.Ramp("ramp")).exports_fll(
             "term: ramp Ramp nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("1 1").exports_fll(
-            "term: ramp Ramp 1.000 1.000"
+        ).takes_parameters(2).is_monotonic()
+
+        TermAssert(self, fl.Ramp("ramp")).configured_as("0 0").exports_fll(
+            "term: ramp Ramp 0.000 0.000"
         ).has_memberships(
             {
-                -0.5: 0.0,
-                -0.4: 0.0,
-                -0.25: 0.0,
-                -0.1: 0.0,
-                0.0: 0.0,
-                0.1: 0.0,
-                0.25: 0.0,
-                0.4: 0.0,
-                0.5: 0.0,
+                -0.5: np.nan,
+                -0.4: np.nan,
+                -0.25: np.nan,
+                -0.1: np.nan,
+                0.0: np.nan,
+                0.1: np.nan,
+                0.25: np.nan,
+                0.4: np.nan,
+                0.5: np.nan,
                 np.nan: np.nan,
-                np.inf: 0.0,
-                -np.inf: 0.0,
+                np.inf: np.nan,
+                -np.inf: np.nan,
             }
-        ).configured_as(
-            "-0.250 0.750"
-        ).exports_fll(
-            "term: ramp Ramp -0.250 0.750"
+        ).has_tsukamotos(
+            {
+                0.0: 0.0,
+                0.5: 0.0,
+                1.0: 0.0,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
+        )
+
+        TermAssert(self, fl.Ramp()).configured_as("-0.250 0.750").exports_fll(
+            "term: unnamed Ramp -0.250 0.750"
         ).has_memberships(
             {
                 -0.5: 0.0,
                 -0.4: 0.0,
                 -0.25: 0.0,
-                -0.1: 0.150,
-                0.0: 0.250,
-                0.1: 0.350,
-                0.25: 0.500,
-                0.4: 0.650,
-                0.5: 0.750,
+                -0.1: 0.15,
+                0.0: 0.25,
+                0.1: 0.35,
+                0.25: 0.50,
+                0.4: 0.65,
+                0.5: 0.75,
                 np.nan: np.nan,
                 np.inf: 1.0,
                 -np.inf: 0.0,
             }
         ).has_tsukamotos(
             {
-                0.0: -0.250,
-                0.1: -0.150,
+                0.0: -0.25,
                 0.25: 0.0,
-                0.4: 0.15000000000000002,
                 0.5: 0.25,
-                0.6: 0.35,
                 0.75: 0.5,
-                0.9: 0.65,
                 1.0: 0.75,
+                # invalid values
+                -1.0: -1.25,
+                -0.5: -0.75,
                 np.nan: np.nan,
                 np.inf: np.inf,
                 -np.inf: -np.inf,
             }
-        ).configured_as(
-            "0.250 -0.750 0.5"
-        ).exports_fll(
-            "term: ramp Ramp 0.250 -0.750 0.500"
+        )
+
+        TermAssert(self, fl.Ramp()).configured_as("0.250 -0.750").exports_fll(
+            "term: unnamed Ramp 0.250 -0.750"
+        ).has_memberships(
+            {
+                -0.5: 0.750,
+                -0.4: 0.650,
+                -0.25: 0.500,
+                -0.1: 0.350,
+                0.0: 0.250,
+                0.1: 0.150,
+                0.25: 0.0,
+                0.4: 0.0,
+                0.5: 0.0,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
+            },
+        ).has_tsukamotos(
+            {
+                0.0: 0.25,
+                0.25: 0.0,
+                0.5: -0.25,
+                0.75: -0.5,
+                1.0: -0.75,
+                # invalid values
+                -1.0: 1.25,
+                -0.5: 0.75,
+                np.nan: np.nan,
+                np.inf: -np.inf,
+                -np.inf: np.inf,
+            }
+        )
+
+        TermAssert(self, fl.Ramp()).configured_as("0.250 -0.750 0.5").exports_fll(
+            "term: unnamed Ramp 0.250 -0.750 0.500"
         ).has_memberships(
             {
                 -0.5: 0.750,
@@ -953,15 +1042,16 @@ class TestTerm(unittest.TestCase):
             height=0.5,
         ).has_tsukamotos(
             {
-                0.0: 0.250,
-                0.1: 0.04999999999999999,
+                0.0: 0.25,
+                0.125: 0,
                 0.25: -0.25,
-                0.4: -0.550,
-                0.5: -0.75,  # maximum \mu(x)=0.5.
-                # 0.6: -0.75,
-                # 0.75: -0.75,
-                # 0.9: -0.75,
-                # 1.0: -0.75,
+                0.375: -0.5,
+                0.5: -0.75,
+                # invalid values
+                0.75: -1.25,
+                1.0: -1.75,
+                -1.0: 2.25,
+                -0.5: 1.25,
                 np.nan: np.nan,
                 np.inf: -np.inf,
                 -np.inf: np.inf,
@@ -1011,49 +1101,6 @@ class TestTerm(unittest.TestCase):
             height=0.5,
         )
 
-    def test_s_shape(self) -> None:
-        """Test the s-shape term."""
-        TermAssert(self, fl.SShape("s_shape")).exports_fll(
-            "term: s_shape SShape nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("-0.4 0.4").exports_fll(
-            "term: s_shape SShape -0.400 0.400"
-        ).has_memberships(
-            {
-                -0.5: 0.0,
-                -0.4: 0.0,
-                -0.25: 0.07031250000000001,
-                -0.1: 0.28125000000000006,
-                0.0: 0.5,
-                0.1: 0.71875,
-                0.25: 0.9296875,
-                0.4: 1.0,
-                0.5: 1.0,
-                np.nan: np.nan,
-                np.inf: 1.0,
-                -np.inf: 0.0,
-            }
-        ).configured_as(
-            "-0.4 0.4 0.5"
-        ).exports_fll(
-            "term: s_shape SShape -0.400 0.400 0.500"
-        ).has_memberships(
-            {
-                -0.5: 0.0,
-                -0.4: 0.0,
-                -0.25: 0.07031250000000001,
-                -0.1: 0.28125000000000006,
-                0.0: 0.5,
-                0.1: 0.71875,
-                0.25: 0.9296875,
-                0.4: 1.0,
-                0.5: 1.0,
-                np.nan: np.nan,
-                np.inf: 1.0,
-                -np.inf: 0.0,
-            },
-            height=0.5,
-        )
-
     def test_sigmoid(self) -> None:
         """Test the sigmoid term."""
         TermAssert(self, fl.Sigmoid("sigmoid")).exports_fll(
@@ -1062,39 +1109,102 @@ class TestTerm(unittest.TestCase):
             "term: sigmoid Sigmoid 0.000 10.000"
         ).has_memberships(
             {
-                -0.5: 0.0066928509242848554,
-                -0.4: 0.01798620996209156,
-                -0.25: 0.07585818002124355,
-                -0.1: 0.2689414213699951,
+                -0.5: 0.007,
+                -0.4: 0.018,
+                -0.25: 0.076,
+                -0.1: 0.269,
                 0.0: 0.5,
-                0.1: 0.7310585786300049,
-                0.25: 0.9241418199787566,
-                0.4: 0.9820137900379085,
-                0.5: 0.9933071490757153,
+                0.1: 0.731,
+                0.25: 0.924,
+                0.4: 0.982,
+                0.5: 0.993,
                 np.nan: np.nan,
                 np.inf: 1.0,
                 -np.inf: 0.0,
             }
-        ).configured_as(
-            "0 10 .5"
-        ).exports_fll(
+        ).has_tsukamotos(
+            {
+                0.0: -np.inf,
+                0.25: -0.109,
+                0.5: 0.0,
+                0.75: 0.109,
+                1.0: np.inf,
+                # invalid values
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
+        )
+
+        TermAssert(self, fl.Sigmoid("sigmoid")).configured_as("0 -10").exports_fll(
+            "term: sigmoid Sigmoid 0.000 -10.000"
+        ).has_memberships(
+            {
+                -0.5: 0.994,
+                -0.4: 0.982,
+                -0.25: 0.924,
+                -0.1: 0.731,
+                0.0: 0.5,
+                0.1: 0.269,
+                0.25: 0.076,
+                0.4: 0.018,
+                0.5: 0.007,
+                np.nan: np.nan,
+                np.inf: 0.0,
+                -np.inf: 1.0,
+            }
+        ).has_tsukamotos(
+            {
+                0.0: np.inf,
+                0.25: 0.109,
+                0.5: 0.0,
+                0.75: -0.109,
+                1.0: -np.inf,
+                # invalid values
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
+        )
+
+        TermAssert(self, fl.Sigmoid("sigmoid")).configured_as("0 10 .5").exports_fll(
             "term: sigmoid Sigmoid 0.000 10.000 0.500"
         ).has_memberships(
             {
-                -0.5: 0.0066928509242848554,
-                -0.4: 0.01798620996209156,
-                -0.25: 0.07585818002124355,
-                -0.1: 0.2689414213699951,
+                -0.5: 0.007,
+                -0.4: 0.018,
+                -0.25: 0.076,
+                -0.1: 0.269,
                 0.0: 0.5,
-                0.1: 0.7310585786300049,
-                0.25: 0.9241418199787566,
-                0.4: 0.9820137900379085,
-                0.5: 0.9933071490757153,
+                0.1: 0.731,
+                0.25: 0.924,
+                0.4: 0.982,
+                0.5: 0.993,
                 np.nan: np.nan,
                 np.inf: 1.0,
                 -np.inf: 0.0,
             },
             height=0.5,
+        ).has_tsukamotos(
+            {
+                0.0: -np.inf,
+                0.125: -0.11,
+                0.25: 0,
+                0.375: 0.11,
+                0.5: np.inf,
+                # invalid values
+                0.75: np.nan,
+                1.0: np.nan,
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
         )
 
     def test_sigmoid_difference(self) -> None:
@@ -1228,6 +1338,79 @@ class TestTerm(unittest.TestCase):
                 -np.inf: 0.0,
             },
             height=0.5,
+        )
+
+    def test_s_shape(self) -> None:
+        """Test the s-shape term."""
+        TermAssert(self, fl.SShape("s_shape")).exports_fll(
+            "term: s_shape SShape nan nan"
+        ).takes_parameters(2).is_monotonic().configured_as("-0.5 0.5").exports_fll(
+            "term: s_shape SShape -0.500 0.500"
+        ).has_memberships(
+            {
+                -0.5: 0.0,
+                -0.4: 0.02,
+                -0.25: 0.125,
+                -0.1: 0.32,
+                0.0: 0.5,
+                0.1: 0.68,
+                0.25: 0.875,
+                0.4: 0.98,
+                0.5: 1.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
+            }
+        ).has_tsukamotos(
+            {
+                0.0: -0.5,
+                0.25: -0.146,
+                0.5: 0.0,
+                0.75: 0.146,
+                1.0: 0.5,
+                # invalid values
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
+        )
+
+        TermAssert(self, fl.SShape("s_shape")).configured_as(
+            "-0.5 0.5 0.5"
+        ).exports_fll("term: s_shape SShape -0.500 0.500 0.500").has_memberships(
+            {
+                -0.5: 0.0,
+                -0.4: 0.02,
+                -0.25: 0.125,
+                -0.1: 0.32,
+                0.0: 0.5,
+                0.1: 0.68,
+                0.25: 0.875,
+                0.4: 0.98,
+                0.5: 1.0,
+                np.nan: np.nan,
+                np.inf: 1.0,
+                -np.inf: 0.0,
+            },
+            height=0.5,
+        ).has_tsukamotos(
+            {
+                0.0: -0.5,
+                0.125: -0.146,
+                0.25: 0,
+                0.375: 0.146,
+                0.5: 0.5,
+                # invalid values
+                0.75: np.nan,
+                1.0: np.nan,
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
         )
 
     def test_trapezoid(self) -> None:
@@ -1410,13 +1593,13 @@ class TestTerm(unittest.TestCase):
         ).has_memberships(
             {
                 -0.5: 0.000,
-                -0.4: 0.19999999999999996,
+                -0.4: 0.2,
                 -0.25: 0.5,
                 -0.1: 0.8,
                 0.0: 1.000,
                 0.1: 0.8,
                 0.25: 0.5,
-                0.4: 0.19999999999999996,
+                0.4: 0.2,
                 0.5: 0.000,
                 np.nan: np.nan,
                 np.inf: 0.0,
@@ -1435,7 +1618,7 @@ class TestTerm(unittest.TestCase):
                 0.0: 0.5,
                 0.1: 0.4,
                 0.25: 0.25,
-                0.4: 0.09999999999999998,
+                0.4: 0.1,
                 0.5: 0.000,
                 np.nan: np.nan,
                 np.inf: 0.0,
@@ -1448,7 +1631,7 @@ class TestTerm(unittest.TestCase):
         ).has_memberships(
             {
                 -0.5: 0.000,
-                -0.4: 0.09999999999999998,
+                -0.4: 0.1,
                 -0.25: 0.25,
                 -0.1: 0.4,
                 0.0: 0.5,
@@ -1471,8 +1654,8 @@ class TestTerm(unittest.TestCase):
                 -0.25: 1.000,
                 -0.1: 1.000,
                 0.0: 1.000,
-                0.1: 0.7500000000000001,
-                0.25: 0.37500000000000006,
+                0.1: 0.75,
+                0.25: 0.375,
                 0.4: 0.000,
                 0.5: 0.000,
                 np.nan: np.nan,
@@ -1487,8 +1670,8 @@ class TestTerm(unittest.TestCase):
             {
                 -0.5: 0.000,
                 -0.4: 0.000,
-                -0.25: 0.37500000000000006,
-                -0.1: 0.7500000000000001,
+                -0.25: 0.375,
+                -0.1: 0.750,
                 0.0: 1.000,
                 0.1: 1.000,
                 0.25: 1.000,
@@ -1505,43 +1688,73 @@ class TestTerm(unittest.TestCase):
         """Test the z-shape term."""
         TermAssert(self, fl.ZShape("z_shape")).exports_fll(
             "term: z_shape ZShape nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("-0.4 0.4").exports_fll(
-            "term: z_shape ZShape -0.400 0.400"
+        ).takes_parameters(2).is_monotonic().configured_as("-0.5 0.5").exports_fll(
+            "term: z_shape ZShape -0.500 0.500"
         ).has_memberships(
             {
                 -0.5: 1.0,
-                -0.4: 1.0,
-                -0.25: 0.9296875,
-                -0.1: 0.71875,
+                -0.4: 0.98,
+                -0.25: 0.875,
+                -0.1: 0.68,
                 0.0: 0.5,
-                0.1: 0.28125000000000006,
-                0.25: 0.07031250000000001,
-                0.4: 0.0,
+                0.1: 0.32,
+                0.25: 0.125,
+                0.4: 0.02,
                 0.5: 0.0,
                 np.nan: np.nan,
                 np.inf: 0.0,
                 -np.inf: 1.0,
             }
-        ).configured_as(
-            "-0.4 0.4 0.5"
-        ).exports_fll(
-            "term: z_shape ZShape -0.400 0.400 0.500"
-        ).has_memberships(
+        ).has_tsukamotos(
+            {
+                0.0: 0.5,
+                0.25: 0.146,
+                0.5: 0.0,
+                0.75: -0.146,
+                1.0: -0.5,
+                # invalid values
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
+        )
+
+        TermAssert(self, fl.ZShape("z_shape")).configured_as(
+            "-0.5 0.5 0.5"
+        ).exports_fll("term: z_shape ZShape -0.500 0.500 0.500").has_memberships(
             {
                 -0.5: 1.0,
-                -0.4: 1.0,
-                -0.25: 0.9296875,
-                -0.1: 0.71875,
+                -0.4: 0.98,
+                -0.25: 0.875,
+                -0.1: 0.68,
                 0.0: 0.5,
-                0.1: 0.28125000000000006,
-                0.25: 0.07031250000000001,
-                0.4: 0.0,
+                0.1: 0.32,
+                0.25: 0.125,
+                0.4: 0.02,
                 0.5: 0.0,
                 np.nan: np.nan,
                 np.inf: 0.0,
                 -np.inf: 1.0,
             },
             height=0.5,
+        ).has_tsukamotos(
+            {
+                0.0: 0.5,
+                0.125: 0.146,
+                0.25: 0.0,
+                0.375: -0.146,
+                0.5: -0.5,
+                # invalid values
+                0.75: np.nan,
+                1.0: np.nan,
+                -1.0: np.nan,
+                -0.5: np.nan,
+                np.nan: np.nan,
+                np.inf: np.nan,
+                -np.inf: np.nan,
+            }
         )
 
     def test_division_by_zero_fails_with_float(self) -> None:
@@ -1592,11 +1805,6 @@ class TestTerm(unittest.TestCase):
 
         fl.lib.floating_point_type = float
         self.assertEqual(fl.lib.floating_point_type, float)
-
-    @unittest.skip("Testing of Tsukamoto")
-    def test_tsukamoto(self) -> None:
-        """Not implemeted."""
-        raise NotImplementedError()
 
 
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):

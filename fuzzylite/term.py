@@ -157,23 +157,21 @@ class Term:
 
     def tsukamoto(
         self,
-        activation_degree: Scalar,
-        minimum: float,
-        maximum: float,
+        y: Scalar,
     ) -> Scalar:
         r"""For monotonic terms, computes the tsukamoto value of the term for the
         given activation degree $\alpha$, that is,
-        $ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $@f. If
+        $ g_j(\alpha) = \{ z \in\mathbb{R} : \mu_j(z) = \alpha \} $. If
         the term is not monotonic (or does not override this method) the
         method computes the has_membership function $\mu(\alpha)$.
-        :param activation_degree: is the activationDegree
-        :param minimum is the minimum value of the range of the term
-        :param maximum is the maximum value of the range of the term
+        :param y: is the activation degree
         :return the tsukamoto value of the term for the given activation degree
-                if the term is monotonic (or overrides this method), or
-                the has_membership function for the activation degree otherwise.
+                if the term is monotonic (or overrides this method)
+        :raises NotImplementedError if the term is not monotonic (or does not override this method).
         """
-        return self.membership(activation_degree)
+        raise NotImplementedError(
+            f"expected term to implement tsukamoto, but it did not: {str(self)}"
+        )
 
     def is_monotonic(self) -> bool:
         """Indicates whether the term is monotonic.
@@ -553,13 +551,15 @@ class Concave(Term):
         """Returns True because this term is monotonic."""
         return True
 
-    def tsukamoto(
-        self, activation_degree: Scalar, minimum: float, maximum: float
-    ) -> Scalar:
+    def tsukamoto(self, y: Scalar) -> Scalar:
         """Returns the tsukamoto value of the term."""
+        # The equation is the same for increasing and decreasing.
+        y = scalar(y)
+        h = self.height
         i = self.inflection
         e = self.end
-        return (i - e) / self.membership(activation_degree) + 2 * e - i
+        x = h * (i - e) / y + 2 * e - i
+        return x
 
     def parameters(self) -> str:
         """Returns the parameters of the term as
@@ -740,9 +740,7 @@ class Discrete(Term):
             )
         return self.height * np.interp(scalar(x), self.values[:, 0], self.values[:, 1])
 
-    def tsukamoto(
-        self, activation_degree: Scalar, minimum: float, maximum: float
-    ) -> Scalar:
+    def tsukamoto(self, y: Scalar) -> Scalar:
         """Not implemented."""
         # todo: approximate tsukamoto
         raise NotImplementedError()
@@ -1228,7 +1226,7 @@ class Ramp(Term):
         decreasing = self.start > self.end
         return (  # type: ignore
             self.height
-            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(np.isnan(x) | (increasing == decreasing), np.nan, 1.0)
             * np.where(
                 increasing & (self.end > x) & (x > self.start),
                 (x - self.start) / (self.end - self.start),
@@ -1244,20 +1242,14 @@ class Ramp(Term):
         """Returns True as this term is monotonic."""
         return True
 
-    def tsukamoto(
-        self, activation_degree: Scalar, minimum: float, maximum: float
-    ) -> Scalar:
+    def tsukamoto(self, y: Scalar) -> Scalar:
         """Returns the Tsukamoto value of the term."""
-        right = inf if self.start < self.end else -inf
-        left = -inf if self.end > self.start else inf
-
-        return np.interp(
-            activation_degree,
-            [0, self.height],
-            [self.start, self.end],
-            right=right,
-            left=left,
-        )
+        y = scalar(y)
+        h = self.height
+        s = self.start
+        e = self.end
+        x = s + (e - s) * y / h
+        return x
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1334,7 +1326,6 @@ class Rectangle(Term):
         self.height = 1.0 if len(values) == 2 else values[-1]
 
 
-# TODO: Tsukamoto
 class Sigmoid(Term):
     """The Sigmoid class is an edge Term that represents the sigmoid membership
     function.
@@ -1377,6 +1368,18 @@ class Sigmoid(Term):
             * 1.0
             / (1.0 + np.exp(-self.slope * (x - self.inflection)))
         )
+
+    def tsukamoto(
+        self,
+        y: Scalar,
+    ) -> Scalar:
+        """Returns the Tsukamoto value of the term."""
+        y = scalar(y)
+        h = self.height
+        i = self.inflection
+        s = self.slope
+        x = i + np.log(h / y - 1.0) / -s
+        return x
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -1450,7 +1453,6 @@ class SigmoidDifference(Term):
     def parameters(self) -> str:
         """Returns the parameters of the term
         @return `"left rising falling right [height]"`.
-
         """
         return super()._parameters(self.left, self.rising, self.falling, self.right)
 
@@ -1585,7 +1587,6 @@ class Spike(Term):
         self.height = 1.0 if len(values) == 2 else values[-1]
 
 
-# TODO: Tsukamoto
 class SShape(Term):
     """The SShape class is an edge Term that represents the S-shaped membership
     function.
@@ -1642,6 +1643,25 @@ class SShape(Term):
         )
         return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape  # type: ignore
 
+    def tsukamoto(
+        self,
+        y: Scalar,
+    ) -> Scalar:
+        """Computes the Tsukamoto activation degree of the term
+        @param y is the activation degree of the term
+        @return the Tsukamoto activation degree of the term.
+        """
+        y = scalar(y)
+        h = self.height
+        s = self.start
+        e = self.end
+        x = np.where(
+            y <= h / 2.0,
+            s + (e - s) * np.sqrt(y / (2 * h)),
+            e - (e - s) * np.sqrt((h - y) / (2 * h)),
+        )
+        return x
+
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
         return True
@@ -1671,7 +1691,6 @@ class Trapezoid(Term):
     @since 4.0.
     """
 
-    # TODO: properly rename the parameters.
     def __init__(
         self,
         name: str = "",
@@ -1846,7 +1865,6 @@ class Triangle(Term):
         self.height = 1.0 if len(values) == 3 else values[-1]
 
 
-# TODO: Tsukamoto
 class ZShape(Term):
     """The ZShape class is an edge Term that represents the Z-shaped membership
     function.
@@ -1892,7 +1910,7 @@ class ZShape(Term):
             x <= self.start,
             1.0,
             np.where(
-                x <= 0.5 * (self.start + self.end),
+                x < 0.5 * (self.start + self.end),
                 1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2,
                 np.where(
                     x < self.end,
@@ -1902,6 +1920,22 @@ class ZShape(Term):
             ),
         )
         return self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape  # type: ignore
+
+    def tsukamoto(
+        self,
+        y: Scalar,
+    ) -> Scalar:
+        """Computes the Tsukamoto inference of the term with the given."""
+        y = scalar(y)
+        h = self.height
+        s = self.start
+        e = self.end
+        x = np.where(
+            y <= h / 2.0,
+            e - (e - s) * np.sqrt(y / (2 * h)),
+            s + (e - s) * np.sqrt((h - y) / (2 * h)),
+        )
+        return x
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
