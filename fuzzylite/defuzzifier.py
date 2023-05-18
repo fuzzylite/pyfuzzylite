@@ -439,8 +439,8 @@ class WeightedAverage(WeightedDefuzzifier):
         for activated in fuzzy_output.terms:
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
-            weighted_sum += w * z
-            weights += w
+            weighted_sum = weighted_sum + w * z
+            weights = weights + w
         return weighted_sum / weights
 
 
@@ -501,5 +501,5 @@ class WeightedSum(WeightedDefuzzifier):
         for activated in fuzzy_output.terms:
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
-            weighted_sum += w * z
+            weighted_sum = weighted_sum + w * z
         return weighted_sum

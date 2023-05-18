@@ -40,10 +40,10 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         return self
 
     def defuzzifies(
-        self,
-        minimum: float,
-        maximum: float,
-        terms: dict[fl.Term, float],
+            self,
+            minimum: float,
+            maximum: float,
+            terms: dict[fl.Term, float],
     ) -> DefuzzifierAssert:
         """Assert that the defuzzification of the given terms result in the expected values."""
         for term, expected in terms.items():
@@ -533,14 +533,14 @@ class TestDefuzzifier(unittest.TestCase):
         defuzzifier = fl.WeightedAverage()
         defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(
-            ValueError, "expected a type of weighted defuzzifier, but found none"
+                ValueError, "expected a type of weighted defuzzifier, but found none"
         ):
             defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape(
-                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
-            ),
+                ValueError,
+                re.escape(
+                    "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
+                ),
         ):
             defuzzifier.defuzzify(fl.Triangle())
 
@@ -595,14 +595,14 @@ class TestDefuzzifier(unittest.TestCase):
         defuzzifier = fl.WeightedSum()
         defuzzifier.type = None  # type: ignore
         with self.assertRaisesRegex(
-            ValueError, "expected a type of weighted defuzzifier, but found none"
+                ValueError, "expected a type of weighted defuzzifier, but found none"
         ):
             defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape(
-                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
-            ),
+                ValueError,
+                re.escape(
+                    "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
+                ),
         ):
             defuzzifier.defuzzify(fl.Triangle())
 
@@ -641,6 +641,9 @@ class TestDefuzzifier(unittest.TestCase):
                 ): -2.5,
             },
         )
+
+    def test_tsukamoto_defuzzifier(self) -> None:
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":
