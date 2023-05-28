@@ -72,7 +72,7 @@ class Variable:
         self.maximum = maximum
         self.lock_range = lock_range
         self.terms: list[Term] = []
-        if terms:
+        if terms:  # TODO: replace instead of extend
             self.terms.extend(terms)
         self._value = scalar(nan)
 
@@ -125,6 +125,7 @@ class Variable:
         @return the input value of an InputVariable, or the output value of
         an OutputVariable.
         """
+        # TODO: Clip here instead of setter
         return self._value
 
     @value.setter
@@ -152,7 +153,7 @@ class Variable:
             if not result:
                 result.append(f"{Op.str(fx)}/{term.name}")
             else:
-                pm = "+" if Op.ge(fx, 0.0) or isnan(fx) else "-"
+                pm = "+" if fx >= 0.0 or isnan(fx) else "-"
                 result.append(f" {pm} {Op.str(fx)}/{term.name}")
 
         return "".join(result)
@@ -425,12 +426,12 @@ class OutputVariable(Variable):
                     exception = ex
             else:
                 exception = ValueError(
-                    f"expected a defuzzifier in output variable {self.name}, "
-                    "but found none"
+                    f"expected a defuzzifier in output variable '{self.name}', "
+                    "but found None"
                 )
 
         if not is_valid:
-            # if a previous defuzzification was successfully performed and
+            # if a previous defuzzification was successfully performed
             # and the output value is supposed not to change when the output is empty
             if self.lock_previous and not isnan(self.previous_value):
                 result = self.previous_value

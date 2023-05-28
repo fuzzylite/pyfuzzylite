@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 import unittest
 from collections.abc import Sequence
+from unittest.mock import MagicMock
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -102,9 +103,9 @@ class TestVariable(unittest.TestCase):
 
         variable.lock_range = True
         variable.value = -10.0
-        self.assertEqual(variable.value, minimum)
+        self.assertEqual(variable.value, -1.0)
         variable.value = 10.0
-        self.assertEqual(variable.value, maximum)
+        self.assertEqual(variable.value, 1.0)
 
     def test_fuzzify(self) -> None:
         """Test the fuzzification of values."""
@@ -263,6 +264,39 @@ class TestInputVariable(unittest.TestCase):
 class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
     """Output variable assert."""
 
+    def clear(self) -> OutputVariableAssert:
+        """Clear the output variable."""
+        self.actual.clear()
+        return self
+
+    def when_fuzzy_output(
+        self, *, is_empty: bool, implication: fl.TNorm | None = None
+    ) -> OutputVariableAssert:
+        """Set the output variable to the given terms."""
+        if is_empty:
+            self.actual.fuzzy.terms = []
+        else:
+            self.actual.fuzzy.terms = [
+                fl.Activated(term, degree=1.0, implication=implication)
+                for term in self.actual.terms
+            ]
+        return self
+
+    def defuzzify(self, raises: Exception | None = None) -> OutputVariableAssert:
+        """Defuzzify the output variable."""
+        if raises:
+            with self.test.assertRaises(type(raises)) as error:
+                self.actual.defuzzify()
+            self.test.assertEqual(str(error.exception), str(raises))
+        else:
+            self.actual.defuzzify()
+        return self
+
+    def then_fuzzy_value_is(self, value: str | list[str]) -> OutputVariableAssert:
+        """Assert the fuzzy value of the output variable."""
+        self.test.assertEqual(self.actual.fuzzy_value(), value)
+        return self
+
     def exports_fll(self, fll: str) -> OutputVariableAssert:
         """Assert exporting the output variable results in the expected FLL."""
         self.test.assertEqual(fl.FllExporter().output_variable(self.actual), fll)
@@ -283,6 +317,31 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
 
 class TestOutputVariable(unittest.TestCase):
     """Test the output variable."""
+
+    def output_variable(
+        self,
+        enabled: bool = True,
+        name: str = "name",
+        description: str = "description",
+        minimum: float = -1.0,
+        maximum: float = 1.0,
+        terms: list[fl.Term] | None = None,
+    ) -> fl.OutputVariable:
+        """Create an output variable."""
+        return fl.OutputVariable(
+            enabled=enabled,
+            name=name,
+            description=description,
+            minimum=minimum,
+            maximum=maximum,
+            terms=terms
+            if terms is not None
+            else [
+                fl.Triangle("low", -1.0, -1.0, 0.0),
+                fl.Triangle("medium", -0.5, 0.0, 0.5),
+                fl.Triangle("high", 0.0, 1.0, 1.0),
+            ],
+        )
 
     def test_constructor(self) -> None:
         """Test the constructor."""
@@ -305,11 +364,7 @@ class TestOutputVariable(unittest.TestCase):
         )
         OutputVariableAssert(
             self,
-            fl.OutputVariable(
-                name="name",
-                description="description",
-                minimum=-1.0,
-                maximum=1.0,
+            self.output_variable(
                 terms=[fl.Triangle("A", -1.0, 1.0), fl.Triangle("B", -10.0, 10.0)],
             ),
         ).exports_fll(
@@ -339,11 +394,7 @@ class TestOutputVariable(unittest.TestCase):
         ]
         OutputVariableAssert(
             self,
-            fl.OutputVariable(
-                name="name",
-                description="description",
-                minimum=-1.0,
-                maximum=1.0,
+            self.output_variable(
                 terms=[low, medium, high],
             ),
         ).activated_values(
@@ -369,11 +420,7 @@ class TestOutputVariable(unittest.TestCase):
             fl.Triangle("Medium", -0.5, 0.0, 0.5),
             fl.Triangle("High", 0.0, 1.0, 1.0),
         ]
-        variable = fl.OutputVariable(
-            name="name",
-            description="description",
-            minimum=-1.0,
-            maximum=1.0,
+        variable = self.output_variable(
             terms=[low, medium, high],
         )
         variable.value = 0.0
@@ -412,81 +459,93 @@ class TestOutputVariable(unittest.TestCase):
         self.assertSequenceEqual(variable.fuzzy.terms, [])
 
     def test_defuzzification(self) -> None:
-        """Test the defuzzification of the output variable."""
-        low, medium, high = [
-            fl.Triangle("Low", -1.0, -1.0, 0.0),
-            fl.Triangle("Medium", -0.5, 0.0, 0.5),
-            fl.Triangle("High", 0.0, 1.0, 1.0),
-        ]
-        variable = fl.OutputVariable(
-            name="name",
-            description="description",
-            minimum=-1.0,
-            maximum=1.0,
-            terms=[low, medium, high],
+        """Test the defuzzification of the output variable with multiple values."""
+        # Test that nothing changes when the output variable is disabled
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=False,
+            value=1.0,
+            previous_value=fl.nan,
+        ).defuzzify().then(
+            enabled=False,
+            value=1.0,
+            previous_value=fl.nan,
         )
-        variable.default_value = 0.123
-        variable.enabled = False
-        variable.value = 0.0
-        variable.previous_value = math.nan
 
-        # test defuzzification on disabled variable changes nothing
-        variable.defuzzify()
-        self.assertEqual(variable.enabled, False)
-        self.assertEqual(variable.value, 0.0)
-        self.assertEqual(math.isnan(variable.previous_value), True)
+        # Test the default value and previous value are used when the output variable is enabled
+        # but there is nothing to defuzzify
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            value=1.0,
+            previous_value=fl.nan,
+            defuzzifier=None,
+            default_value=0.123,
+        ).defuzzify().then(
+            value=0.123,
+            previous_value=1.0,
+        )
 
-        # tests default value is set for an invalid defuzzification
-        variable.enabled = True
-        variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.0)
-        self.assertEqual(variable.value, 0.123)
+        # Test the previous value is used when locking the previous value is enabled and the output value is invalid
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            value=fl.nan,
+            previous_value=1.0,
+            lock_previous=True,
+            default_value=0.123,
+        ).defuzzify().then(
+            value=1.0,
+            previous_value=1.0,
+        )
 
-        variable.default_value = 0.246
-        variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.123)
-        self.assertEqual(variable.value, 0.246)
+        # When the default value is used when the previous value is invalid
+        # and locking the previous value is enabled
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            value=fl.nan,
+            previous_value=fl.nan,
+            lock_previous=True,
+            default_value=0.123,
+        ).defuzzify().then(
+            value=0.123,
+            previous_value=fl.nan,
+        )
 
-        # tests locking of previous value
-        variable.default_value = 0.123
-        variable.lock_previous = True
-        variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.246)
-        self.assertEqual(variable.value, 0.246)
+        # When the defuzzifier is None and there are terms to defuzzify
+        # then the default value is used and previous value is stored
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            name="Output",
+            defuzzifier=None,
+            value=1.0,
+            previous_value=fl.nan,
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=False).defuzzify(
+            raises=ValueError(
+                "expected a defuzzifier in output variable 'Output', but found None"
+            )
+        ).then(
+            value=0.123,
+            previous_value=1.0,
+        )
 
-        variable.previous_value = 0.1
-        variable.value = math.nan
-        variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.1)
-        self.assertEqual(variable.value, 0.1)
-
-        # tests exception on defuzzification
-        variable.fuzzy.terms.extend([fl.Activated(term) for term in variable.terms])
-        variable.lock_previous = False
-        variable.value = 0.4
-        variable.default_value = 0.5
-        with self.assertRaisesRegex(
-            ValueError,
-            "expected a defuzzifier in output variable name, but found none",
-        ):
-            variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.4)
-        self.assertEqual(variable.value, 0.5)
-
+        # When the defuzzifier raises an exception and there are terms to defuzzify
+        # then the default value is used and previous value is stored
         defuzzifier = fl.Defuzzifier()
-        from unittest.mock import MagicMock
-
         defuzzifier.defuzzify = MagicMock(  # type: ignore
             side_effect=ValueError("mocking exception during defuzzification")
         )
-        variable.defuzzifier = defuzzifier
-        variable.default_value = 0.6
-        with self.assertRaisesRegex(
-            ValueError, "mocking exception during defuzzification"
-        ):
-            variable.defuzzify()
-        self.assertEqual(variable.previous_value, 0.5)
-        self.assertEqual(variable.value, 0.6)
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            name="Output",
+            defuzzifier=defuzzifier,
+            value=1.0,
+            previous_value=fl.nan,
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=False).defuzzify(
+            raises=ValueError("mocking exception during defuzzification")
+        ).then(
+            value=0.123,
+            previous_value=1.0,
+        )
 
 
 if __name__ == "__main__":
