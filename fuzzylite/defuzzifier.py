@@ -485,14 +485,11 @@ class WeightedSum(WeightedDefuzzifier):
         if not self.type:
             raise ValueError("expected a type of weighted defuzzifier, but found none")
 
-        if not fuzzy_output.terms:
-            return nan
-
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output)
 
-        weighted_sum = scalar(0.0)
+        weighted_sum = scalar(0.0) if fuzzy_output.terms else nan
         membership = (
             Term.tsukamoto.__name__
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
