@@ -20,9 +20,11 @@ import math
 import unittest
 from collections.abc import Sequence
 from unittest.mock import MagicMock
-
+import numpy as np
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
+
+from typing import Any, Generic, TypeVar
 
 
 class VariableAssert(BaseAssert[fl.Variable]):
@@ -325,6 +327,7 @@ class TestOutputVariable(unittest.TestCase):
         description: str = "description",
         minimum: float = -1.0,
         maximum: float = 1.0,
+        default_value: float = fl.nan,
         terms: list[fl.Term] | None = None,
     ) -> fl.OutputVariable:
         """Create an output variable."""
@@ -334,6 +337,7 @@ class TestOutputVariable(unittest.TestCase):
             description=description,
             minimum=minimum,
             maximum=maximum,
+            default_value=default_value,
             terms=terms
             if terms is not None
             else [
@@ -460,7 +464,8 @@ class TestOutputVariable(unittest.TestCase):
 
     def test_defuzzification(self) -> None:
         """Test the defuzzification of the output variable with multiple values."""
-        # Test that nothing changes when the output variable is disabled
+        # When the output variable is disabled
+        # Then nothing changes on defuzzify
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=False,
             value=1.0,
@@ -471,64 +476,83 @@ class TestOutputVariable(unittest.TestCase):
             previous_value=fl.nan,
         )
 
-        # Test the default value and previous value are used when the output variable is enabled
-        # but there is nothing to defuzzify
-        OutputVariableAssert(self, self.output_variable()).when(
-            enabled=True,
-            value=1.0,
-            previous_value=fl.nan,
-            defuzzifier=None,
-            default_value=0.123,
-        ).defuzzify().then(
-            value=0.123,
-            previous_value=1.0,
-        )
-
-        # Test the previous value is used when locking the previous value is enabled and the output value is invalid
-        OutputVariableAssert(self, self.output_variable()).when(
-            enabled=True,
-            value=fl.nan,
-            previous_value=1.0,
-            lock_previous=True,
-            default_value=0.123,
-        ).defuzzify().then(
-            value=1.0,
-            previous_value=1.0,
-        )
-
-        # When the default value is used when the previous value is invalid
-        # and locking the previous value is enabled
-        OutputVariableAssert(self, self.output_variable()).when(
-            enabled=True,
-            value=fl.nan,
-            previous_value=fl.nan,
-            lock_previous=True,
-            default_value=0.123,
-        ).defuzzify().then(
-            value=0.123,
-            previous_value=fl.nan,
-        )
-
-        # When the defuzzifier is None and there are terms to defuzzify
-        # then the default value is used and previous value is stored
+        # When the output variable is enabled
+        #   And the defuzzifier is None
+        # Then an error is raised
+        #   And nothing changes on defuzzify
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
             name="Output",
-            defuzzifier=None,
             value=1.0,
             previous_value=fl.nan,
+            defuzzifier=None,
             default_value=0.123,
-        ).when_fuzzy_output(is_empty=False).defuzzify(
+        ).defuzzify(
             raises=ValueError(
                 "expected a defuzzifier in output variable 'Output', but found None"
             )
         ).then(
+            value=1.0,
+            previous_value=fl.nan,
+        )
+
+        # When the output variable is enabled
+        #   And there is nothing to defuzzify
+        #   And there is a valid defuzzifier
+        # Then the default value is used
+        #   And the previous value is stored
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            value=1.0,
+            previous_value=fl.nan,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
             value=0.123,
             previous_value=1.0,
         )
 
-        # When the defuzzifier raises an exception and there are terms to defuzzify
-        # then the default value is used and previous value is stored
+        # When the output variable is enabled
+        #   And there is nothing to defuzzify
+        #   And there is a valid defuzzifier
+        #   And it is locking the previous value
+        # Then the previous value is used
+        #   And the previous value is updated
+        #   And the default value is not used
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=1.0,
+            previous_value=-1.0,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=-1.0,
+            previous_value=1.0,
+        )
+
+        # When the output variable is enabled
+        #   And there is nothing to defuzzify
+        #   And there is a valid defuzzifier
+        #   And it is locking the previous value
+        #   And the previous value is invalid
+        # Then the default value is used
+        #   And the previous value is updated
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=1.0,
+            previous_value=fl.nan,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=0.123,
+            previous_value=1.0,
+        )
+
+        # When the defuzzifier raises an exception
+        #   and there are terms to defuzzify
+        # then nothing changes on defuzzify
         defuzzifier = fl.Defuzzifier()
         defuzzifier.defuzzify = MagicMock(  # type: ignore
             side_effect=ValueError("mocking exception during defuzzification")
@@ -540,11 +564,204 @@ class TestOutputVariable(unittest.TestCase):
             value=1.0,
             previous_value=fl.nan,
             default_value=0.123,
-        ).when_fuzzy_output(is_empty=False).defuzzify(
+        ).when_fuzzy_output(is_empty=False).then_fuzzy_value_is(
+            "1.000/low + 1.000/medium + 1.000/high"
+        ).defuzzify(
             raises=ValueError("mocking exception during defuzzification")
         ).then(
+            value=1.0,
+            previous_value=fl.nan,
+        ).then_fuzzy_value_is(
+            "1.000/low + 1.000/medium + 1.000/high"
+        )
+
+    def test_defuzzification_arrays(self) -> None:
+        """Test the defuzzification of the output variable with multiple values."""
+        # When the output variable is disabled
+        # Then nothing changes on defuzzify
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=False,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+        ).defuzzify().then(
+            enabled=False,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+        )
+
+        # When the output variable is enabled
+        #   And the defuzzifier is None
+        # Then an error is raised
+        #   And nothing changes on defuzzify
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            name="Output",
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+            defuzzifier=None,
+            default_value=0.123,
+        ).defuzzify(
+            raises=ValueError(
+                "expected a defuzzifier in output variable 'Output', but found None"
+            )
+        ).then(
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+        )
+
+        # When the defuzzifier raises an exception
+        #   and there are terms to defuzzify
+        # then nothing changes on defuzzify
+        defuzzifier = fl.Defuzzifier()
+        defuzzifier.defuzzify = MagicMock(  # type: ignore
+            side_effect=ValueError("mocking exception during defuzzification")
+        )
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            name="Output",
+            defuzzifier=defuzzifier,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=False).then_fuzzy_value_is(
+            "1.000/low + 1.000/medium + 1.000/high"
+        ).defuzzify(
+            raises=ValueError("mocking exception during defuzzification")
+        ).then(
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+        ).then_fuzzy_value_is(
+            "1.000/low + 1.000/medium + 1.000/high"
+        )
+
+        # When the output variable is enabled
+        #   And there is nothing to defuzzify
+        #   And there is a valid defuzzifier
+        #   And it is not locking the previous value
+        # Then the default value is used
+        #   And the previous value is updated to the last value
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
             value=0.123,
-            previous_value=1.0,
+            previous_value=3.0,
+        )
+
+        # When the fuzzy output is empty
+        # Cases:
+        # default_value = nan | 0.123
+        # previous_value = nan | 1.0
+
+        # (a) when default value is nan and previous value is nan
+        #     then value is nan and previous value is nan
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=fl.array([1.0, 2.0, fl.nan]),
+            previous_value=-1.0,
+            defuzzifier=fl.Centroid(),
+            default_value=fl.nan,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=fl.nan,
+            previous_value=fl.nan,
+        )
+
+        # (b) when default value is nan and previous value is not nan
+        #     then previous value is updated and value is previous_value
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=fl.array([1.0, 2.0, fl.inf]),
+            previous_value=-1.0,
+            defuzzifier=fl.Centroid(),
+            default_value=fl.nan,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=fl.inf,
+            previous_value=fl.inf,
+        )
+
+        # (c) when default value is not nan and previous value is nan
+        #     then previous value is updated and value is default_value
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=fl.array([1.0, 2.0, fl.nan]),
+            previous_value=-1.0,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=0.123,
+            previous_value=fl.nan,
+        )
+
+        # (d) when default value is not nan and previous value is not nan
+        #     then previous value is updated and value is previous value
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            lock_previous=True,
+            value=fl.array([1.0, 2.0, 4.0]),
+            previous_value=-1.0,
+            defuzzifier=fl.Centroid(),
+            default_value=0.123,
+        ).when_fuzzy_output(is_empty=True).defuzzify().then(
+            value=4.0,
+            previous_value=4.0,
+        )
+
+        # When the fuzzy output is not empty
+        def mock_defuzzify(*args: Any, **kwargs: Any) -> fl.Array:
+            return fl.array(
+                [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
+            )
+
+        defuzzifier.defuzzify = MagicMock(side_effect=mock_defuzzify)
+        # And locking the previous value is not enabled
+        # And default value is nan
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            defuzzifier=defuzzifier,
+            lock_previous=False,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+            default_value=fl.nan,
+        ).defuzzify().then(
+            value=fl.array(
+                [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
+            ),
+            previous_value=3.0,
+        )
+
+        # And locking the previous value is not enabled
+        # And default value is not nan
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            defuzzifier=defuzzifier,
+            lock_previous=False,
+            value=fl.array([1.0, 2.0, 3.0]),
+            previous_value=fl.nan,
+            default_value=0.123,
+        ).defuzzify().then(
+            value=fl.array([0.123, 1.0, 0.123, 2.0, 0.123, 3.0, -np.inf, np.inf, 0.0]),
+            previous_value=3.0,
+        )
+
+        # And locking the previous value is enabled
+        # And previous_value is nan
+        # And default value is nan
+        OutputVariableAssert(self, self.output_variable()).when(
+            enabled=True,
+            defuzzifier=defuzzifier,
+            lock_previous=True,
+            value=fl.array([1.0, 2.0, fl.nan]),
+            previous_value=fl.nan,
+            default_value=fl.nan,
+        ).when_fuzzy_output(is_empty=False).defuzzify().then(
+            value=fl.array([np.nan, 1.0, 1.0, 2.0, 2.0, 3.0, -np.inf, np.inf, 0.0]),
+            previous_value=fl.nan,
         )
 
 

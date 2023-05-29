@@ -23,7 +23,7 @@ import math
 import typing
 from collections.abc import Iterable
 from math import inf, isnan, nan
-
+import numpy as np
 from .exporter import FllExporter
 from .norm import SNorm
 from .operation import Op, scalar
@@ -125,7 +125,6 @@ class Variable:
         @return the input value of an InputVariable, or the output value of
         an OutputVariable.
         """
-        # TODO: Clip here instead of setter
         return self._value
 
     @value.setter
@@ -134,9 +133,10 @@ class Variable:
         @param value is the input value of an InputVariable, or the output
         value of an OutputVariable.
         """
-        self._value = (
-            Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
-        )
+        if self.lock_range:
+            self._value = np.clip(value, self.minimum, self.maximum)
+        else:
+            self._value = value
 
     def fuzzify(self, x: Scalar) -> str:
         r"""Evaluates the membership function of value $x$ for each
@@ -333,7 +333,7 @@ class OutputVariable(Variable):
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
         self.default_value = default_value
-        self.previous_value = scalar(nan)
+        self.previous_value: float = nan
 
     def __str__(self) -> str:
         """Gets a string representation of the variable in the FuzzyLite Language
@@ -352,7 +352,6 @@ class OutputVariable(Variable):
     def name(self, value: str) -> None:
         """Sets the name of the output variable
         @param value is the name of the output variable.
-
         """
         self.fuzzy.name = value
 
@@ -365,7 +364,6 @@ class OutputVariable(Variable):
     def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
         @param value is the minimum value of the output variable.
-
         """
         self.fuzzy.minimum = value
 
@@ -385,7 +383,6 @@ class OutputVariable(Variable):
     def aggregation(self) -> SNorm | None:
         """Gets the aggregation operator
         @return the aggregation operator.
-
         """
         return self.fuzzy.aggregation
 
@@ -403,53 +400,42 @@ class OutputVariable(Variable):
         """
         if not self.enabled:
             return
-        if math.isfinite(self.value):
-            self.previous_value = self.value
 
-        result = scalar(nan)
-        exception = None
-        is_valid = bool(self.fuzzy.terms)
-        if is_valid:
-            # Checks whether the variable can be defuzzified without exceptions.
-            # If it cannot be defuzzified, be that due to a missing defuzzifier
-            # or aggregation operator, the expected behaviour is to leave the
-            # variable in a state that reflects an invalid defuzzification,
-            # that is, apply logic of default values and previous values.
-            is_valid = False
-            if self.defuzzifier:
-                try:
-                    result = self.defuzzifier.defuzzify(
-                        self.fuzzy, self.minimum, self.maximum
-                    )
-                    is_valid = True
-                except ValueError as ex:
-                    exception = ex
-            else:
-                exception = ValueError(
-                    f"expected a defuzzifier in output variable '{self.name}', "
-                    "but found None"
-                )
+        if not self.defuzzifier:
+            raise ValueError(
+                f"expected a defuzzifier in output variable '{self.name}', "
+                "but found None"
+            )
+        # value at t+1
+        value = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)
 
-        if not is_valid:
-            # if a previous defuzzification was successfully performed
-            # and the output value is supposed not to change when the output is empty
-            if self.lock_previous and not isnan(self.previous_value):
-                result = self.previous_value
-            else:
-                result = self.default_value
+        # previous value is the last element of the value at t
+        self.previous_value = np.take(self.value, -1)
 
-        self.value = result
+        # Locking previous values
+        if self.lock_previous:
+            with np.nditer(value, op_flags=["readwrite"]) as iterator:
+                previous_value = self.previous_value
+                for value_i in iterator:
+                    if np.isnan(value_i):
+                        value_i[...] = previous_value
+                    else:
+                        previous_value = value_i
 
-        if exception:
-            raise exception
+        # Applying default values
+        if not np.isnan(self.default_value):
+            value[np.isnan(value)] = self.default_value
+
+        # Committing the value
+        self.value = value
 
     def clear(self) -> None:
         r"""Clears the output variable by setting $\tilde{y}=\{\}$,
         $y^{t}=\mbox{NaN}$, $y^{t-1}=\mbox{NaN}$.
         """
         self.fuzzy.clear()
-        self.previous_value = scalar(nan)
-        self._value = nan
+        self.previous_value = nan
+        self._value = scalar(nan)
 
     def fuzzy_value(self) -> str:
         r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
