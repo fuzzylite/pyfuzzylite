@@ -18,15 +18,18 @@ from __future__ import annotations
 
 import math
 import unittest
+from typing import Callable
+
+import numpy.testing as npt
 
 import fuzzylite as fl
-import numpy as np
-import numpy.testing as npt
-from typing import Callable
 
 
 class AssertOperator:
+    """Assert operator."""
+
     def __init__(self, commutative: bool = True, scalable: bool = True) -> None:
+        """Construct assert operator."""
         self.commutative = commutative
         self.scalable = scalable
 
@@ -37,6 +40,7 @@ class AssertOperator:
         b: fl.Scalar,
         expected: fl.Scalar,
     ) -> AssertOperator:
+        """Assert operator."""
         obtained = operator(a, b)
         npt.assert_equal(obtained, expected)
         return self
@@ -46,6 +50,7 @@ class AssertOperator:
         operator: Callable[[fl.Scalar, fl.Scalar], fl.Scalar],
         operands_result: dict[tuple[fl.Scalar, fl.Scalar], fl.Scalar],
     ) -> AssertOperator:
+        """Assert that."""
         for (a, b), expected in operands_result.items():
             obtained = operator(a, b)
             npt.assert_equal(
@@ -131,7 +136,7 @@ class TestOperation(unittest.TestCase):
         )
 
     def test_operator_gt(self) -> None:
-        """Test operator neq."""
+        """Test operator gt."""
         AssertOperator(commutative=False, scalable=True).assert_that(
             fl.Op.gt,
             {
@@ -153,7 +158,7 @@ class TestOperation(unittest.TestCase):
         )
 
     def test_operator_lt(self) -> None:
-        """Test operator neq."""
+        """Test operator lt."""
         AssertOperator(commutative=False, scalable=True).assert_that(
             fl.Op.lt,
             {
@@ -175,7 +180,7 @@ class TestOperation(unittest.TestCase):
         )
 
     def test_operator_ge(self) -> None:
-        """Test operator neq."""
+        """Test operator ge."""
         AssertOperator(commutative=False, scalable=True).assert_that(
             fl.Op.ge,
             {
@@ -197,7 +202,7 @@ class TestOperation(unittest.TestCase):
         )
 
     def test_operator_le(self) -> None:
-        """Test operator neq."""
+        """Test operator le."""
         AssertOperator(commutative=False, scalable=True).assert_that(
             fl.Op.le,
             {

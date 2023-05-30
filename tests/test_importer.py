@@ -234,7 +234,7 @@ RuleBlock: steer_away
         """Test defuzzifiers can be imported."""
         defuzzifier = "Centroid"
         self.assertEqual(
-            defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier))
+            defuzzifier + " 1000", str(fl.FllImporter().defuzzifier(defuzzifier))
         )
         defuzzifier = "WeightedAverage TakagiSugeno"
         self.assertEqual(defuzzifier, str(fl.FllImporter().defuzzifier(defuzzifier)))

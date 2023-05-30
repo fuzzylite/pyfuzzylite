@@ -714,12 +714,12 @@ class TestOutputVariable(unittest.TestCase):
         )
 
         # When the fuzzy output is not empty
-        def mock_defuzzify(*args: Any, **kwargs: Any) -> fl.Array:
+        def mock_defuzzify(*args: Any, **kwargs: Any) -> fl.Scalar:
             return fl.array(
                 [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
             )
 
-        defuzzifier.defuzzify = MagicMock(side_effect=mock_defuzzify)
+        defuzzifier.defuzzify = MagicMock(side_effect=mock_defuzzify)  # type: ignore
         # And locking the previous value is not enabled
         # And default value is nan
         OutputVariableAssert(self, self.output_variable()).when(

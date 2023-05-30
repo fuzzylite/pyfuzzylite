@@ -1831,15 +1831,11 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         return self
 
     def evaluates_to(
-        self, value: float, variables: dict[str, fl.Scalar] | None = None
+        self, expected: float, variables: dict[str, fl.Scalar] | None = None
     ) -> FunctionNodeAssert:
         """Assert the node evaluates to the expected value (optionally) given variables."""
-        self.test.assertAlmostEqual(
-            value,
-            self.actual.evaluate(variables),
-            places=15,
-            msg=f"when value is {value:.3f}",
-        )
+        obtained = self.actual.evaluate(variables)
+        np.testing.assert_allclose(obtained, expected, atol=fl.lib.atol)
         return self
 
     def fails_to_evaluate(

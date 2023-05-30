@@ -19,6 +19,8 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock
 
+import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
@@ -156,8 +158,11 @@ class AssertAntecedent:
                     conjunction=conjunction, disjunction=disjunction
                 )
                 expected = values[index]
-                self.test.assertAlmostEqual(
-                    expected, obtained, places=decimal_places, msg=f"at index {index}"
+                np.testing.assert_allclose(
+                    obtained,
+                    expected,
+                    atol=fl.lib.atol,
+                    err_msg=f"at index {index}",
                 )
             index += 1
 
@@ -563,11 +568,11 @@ class AssertConsequent:
 
             for expected_term, expected_activation in expected_terms.items():
                 obtained_activation = obtained_terms[expected_term]
-                self.test.assertAlmostEqual(
-                    expected_activation,
+                np.testing.assert_allclose(
                     obtained_activation,
-                    places=decimal_places,
-                    msg=f"for activated term {expected_term}",
+                    expected_activation,
+                    atol=fl.lib.atol,
+                    err_msg=f"for activated term {expected_term}",
                 )
 
             for activated in variable.fuzzy.terms:
@@ -840,10 +845,10 @@ class TestRule(unittest.TestCase):
         """Test the deactivation of a rule."""
         rule = fl.Rule()
         rule.activation_degree = fl.scalar([fl.nan])
-        rule.triggered = fl.scalar([True])
+        rule.triggered = fl.array([True])
         rule.deactivate()
         self.assertEqual(rule.activation_degree, 0.0)
-        self.assertEqual(rule.triggered, fl.scalar([False]))
+        self.assertEqual(rule.triggered, fl.array([False]))
 
     def test_activate_with(self) -> None:
         """Test rule activation weights."""

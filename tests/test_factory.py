@@ -23,6 +23,8 @@ from typing import (
     Union,
 )
 
+import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
@@ -109,16 +111,21 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
         self, operation_value: dict[tuple[str, Sequence[float]], float]
     ) -> FunctionFactoryAssert:
         """Assert the operation on the sequence of values results in the expected value."""
-        for operation, expected_value in operation_value.items():
+        for operation, expected in operation_value.items():
             name = operation[0]
             args = operation[1]
             element = self.actual.objects[name]
-            value = element.method(*args)
+            obtained = element.method(*args)
             message = (
                 f"expected {name}({', '.join([fl.Op.str(x) for x in args])}) to result in "
-                f"{fl.Op.str(expected_value)}, but got {fl.Op.str(value)}"
+                f"{fl.Op.str(expected)}, but got {fl.Op.str(obtained)}"
             )
-            self.test.assertAlmostEqual(expected_value, value, places=15, msg=message)
+            np.testing.assert_allclose(
+                obtained,
+                expected,
+                atol=fl.lib.atol,
+                err_msg=message,
+            )
         return self
 
 
@@ -334,7 +341,7 @@ class TestFunctionFactory(unittest.TestCase):
         errors = []
 
         def evaluate(
-            function_element: fl.Function.Element, parameters: list[float]
+            function_element: fl.Function.Element, parameters: list[fl.Scalar]
         ) -> None:
             try:
                 function_element.method(*parameters)
