@@ -19,34 +19,34 @@ class AssertIntegration:
         self.vectorize = vectorize
 
     def assert_that(
-            self, defuzzifier: fl.Defuzzifier, input_expected: dict[float, float]
+        self, defuzzifier: fl.Defuzzifier, input_expected: dict[float, float]
     ) -> None:
         """Asserts integration of a Mamdani or Takagi-Sugeno system with a defuzzifier."""
         for output in self.engine.output_variables:
             output.defuzzifier = defuzzifier
 
         self.engine.restart()
-        for input, expected in input_expected.items():
+        for input, expected_output in input_expected.items():
             self.engine.input_variables[0].value = input
             self.engine.process()
             obtained = self.engine.output_variables[0].value
             np.testing.assert_allclose(
                 obtained,
-                expected,
-                err_msg=f"{defuzzifier.class_name}({input}) = {obtained}, but expected {expected}",
+                expected_output,
+                err_msg=f"{defuzzifier.class_name}({input}) = {obtained}, but expected {expected_output}",
                 atol=fl.lib.atol,
             )
         if self.vectorize:
             self.engine.restart()
             inputs = np.array([x for x in input_expected])
-            expected = np.array([x for x in input_expected.values()])
+            expected_outputs = np.array([x for x in input_expected.values()])
             self.engine.input_variables[0].value = inputs
             self.engine.process()
             obtained = self.engine.output_variables[0].value
             np.testing.assert_allclose(
                 obtained,
-                expected,
-                err_msg=f"{defuzzifier.class_name}([{inputs}]) = {obtained}, but expected {expected}",
+                expected_outputs,
+                err_msg=f"{defuzzifier.class_name}([{inputs}]) = {obtained}, but expected {expected_outputs}",
                 atol=fl.lib.atol,
             )
 
@@ -182,7 +182,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
                 -2.5: 0.375,
                 -1: 0.392,
                 0: 0.399,
-                1: .405,
+                1: 0.405,
                 2.5: 0.426,
                 5: 0.674,
                 7.5: 0.964,
@@ -206,7 +206,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
                 -2.5: 0.401,
                 -1: 0.406,
                 0: 0.411,
-                1: .420,
+                1: 0.420,
                 2.5: 0.455,
                 5: 0.675,
                 7.5: 1.027,

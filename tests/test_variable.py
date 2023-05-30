@@ -19,12 +19,13 @@ from __future__ import annotations
 import math
 import unittest
 from collections.abc import Sequence
+from typing import Any
 from unittest.mock import MagicMock
+
 import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
-
-from typing import Any, Generic, TypeVar
 
 
 class VariableAssert(BaseAssert[fl.Variable]):
@@ -522,13 +523,13 @@ class TestOutputVariable(unittest.TestCase):
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
             lock_previous=True,
-            value=1.0,
+            value=2.0,
             previous_value=-1.0,
             defuzzifier=fl.Centroid(),
             default_value=0.123,
         ).when_fuzzy_output(is_empty=True).defuzzify().then(
-            value=-1.0,
-            previous_value=1.0,
+            value=2.0,
+            previous_value=2.0,
         )
 
         # When the output variable is enabled
@@ -541,13 +542,13 @@ class TestOutputVariable(unittest.TestCase):
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
             lock_previous=True,
-            value=1.0,
-            previous_value=fl.nan,
+            value=fl.nan,
+            previous_value=0.5,
             defuzzifier=fl.Centroid(),
             default_value=0.123,
         ).when_fuzzy_output(is_empty=True).defuzzify().then(
             value=0.123,
-            previous_value=1.0,
+            previous_value=fl.nan,
         )
 
         # When the defuzzifier raises an exception

@@ -23,7 +23,9 @@ import math
 import typing
 from collections.abc import Iterable
 from math import inf, isnan, nan
+
 import numpy as np
+
 from .exporter import FllExporter
 from .norm import SNorm
 from .operation import Op, scalar
@@ -410,21 +412,21 @@ class OutputVariable(Variable):
         value = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)
 
         # previous value is the last element of the value at t
-        self.previous_value = np.take(self.value, -1)
+        self.previous_value = np.take(self.value, -1).astype(float)
 
         # Locking previous values
         if self.lock_previous:
-            with np.nditer(value, op_flags=["readwrite"]) as iterator:
+            with np.nditer(value, op_flags=[["readwrite"]]) as iterator:
                 previous_value = self.previous_value
                 for value_i in iterator:
                     if np.isnan(value_i):
-                        value_i[...] = previous_value
+                        value_i[...] = previous_value  # type:ignore
                     else:
-                        previous_value = value_i
+                        previous_value = value_i  # type: ignore
 
         # Applying default values
         if not np.isnan(self.default_value):
-            value[np.isnan(value)] = self.default_value
+            value[np.isnan(value)] = self.default_value  # type: ignore
 
         # Committing the value
         self.value = value
