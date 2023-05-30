@@ -36,24 +36,27 @@ class Library:
 
     def __init__(
         self,
-        decimals: int,
-        abs_tolerance: float,
-        floating_point_type: type[float | Scalar] = float,
+        decimals: int = 3,
+        floating_point_type: type[float | Scalar] = np.float64,
         factory_manager: FactoryManager | None = None,
+        logger: logging.Logger | None = None,
     ) -> None:
         """Creates an instance of the library.
         @param decimals is the number of decimals utilized when formatting scalar values
-        @param abs_tolerance is the minimum difference at which two scalar values are considered equivalent
         @param floating_point_type is the type of floating point (default is float, but numpy.float_ can also be used)
         @param factory_manager is the central manager of fuzzylite object factories
         @param logger is the logger of fuzzylite.
         """
         self.decimals = decimals
-        self.abs_tolerance = abs_tolerance
         self.floating_point_type = floating_point_type
-        self.factory_manager = factory_manager if factory_manager else FactoryManager()
-        self.logger = logging.getLogger("fuzzylite")
+        self.factory_manager = factory_manager or FactoryManager()
+        self.logger = logger or logging.getLogger("fuzzylite")
         np.seterr(invalid="ignore", divide="ignore")
+
+    @property
+    def atol(self) -> float:
+        """@return the absolute tolerance used by the library."""
+        return float(10**-self.decimals)
 
     def floating_point(self, value: SupportsFloat | str | bytes) -> float:
         """Convert the value into a floating point defined by the library
