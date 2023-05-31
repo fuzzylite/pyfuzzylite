@@ -299,7 +299,7 @@ RuleBlock: rb
             fl.FllExporter().to_string(defuzzifier),
             fl.FllExporter().defuzzifier(defuzzifier),
         )
-        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 100")
+        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 1000")
 
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
@@ -388,7 +388,7 @@ engine.input_variables = [
         minimum=0,
         maximum=1,
         lock_range=False,
-        terms=[fl.Triangle("A", nan, nan, nan)]
+        terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
     )
 ]
 engine.output_variables = [
@@ -402,7 +402,7 @@ engine.output_variables = [
         aggregation=None,
         defuzzifier=None,
         lock_previous=False,
-        terms=[fl.Triangle("A", nan, nan, nan)]
+        terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
     )
 ]
 engine.rule_blocks = [
@@ -442,7 +442,7 @@ fl.InputVariable(
     minimum=0,
     maximum=1,
     lock_range=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
+    terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
 )""",
         )
         iv.terms.append(fl.Triangle("Z"))
@@ -457,8 +457,8 @@ fl.InputVariable(
     maximum=1,
     lock_range=False,
     terms=[
-        fl.Triangle("A", nan, nan, nan),
-        fl.Triangle("Z", nan, nan, nan)
+        fl.Triangle("A", fl.nan, fl.nan, fl.nan),
+        fl.Triangle("Z", fl.nan, fl.nan, fl.nan)
     ]
 )""",
         )
@@ -488,7 +488,7 @@ fl.OutputVariable(
     aggregation=None,
     defuzzifier=None,
     lock_previous=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
+    terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
 )""",
         )
         ov.terms.append(fl.Triangle("Z"))
@@ -506,8 +506,8 @@ fl.OutputVariable(
     defuzzifier=None,
     lock_previous=False,
     terms=[
-        fl.Triangle("A", nan, nan, nan),
-        fl.Triangle("Z", nan, nan, nan)
+        fl.Triangle("A", fl.nan, fl.nan, fl.nan),
+        fl.Triangle("Z", fl.nan, fl.nan, fl.nan)
     ]
 )""",
         )
@@ -628,7 +628,7 @@ fl.RuleBlock(
             fl.PythonExporter().defuzzifier(defuzzifier),
         )
         self.assertEqual(
-            fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(100)"
+            fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(1000)"
         )
 
         defuzzifier = fl.WeightedAverage()

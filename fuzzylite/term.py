@@ -221,6 +221,19 @@ class Activated(Term):
         self.degree = degree
         self.implication = implication
 
+    @property
+    def degree(self) -> Scalar:
+        """Gets the activation degree of the term."""
+        return self._degree
+
+    @degree.setter
+    def degree(self, value: Scalar) -> None:
+        """Sets the activation degree of the term, replacing {nan: 0.0, -inf: 0.0, inf: 1.0}.
+        Note: nan input values may result in nan activations, which would result in nan defuzzifications,
+        thus we replace nan with 0.0 to avoid activations, and sensibly replace infinity values if they were present.
+        """
+        self._degree = np.nan_to_num(value, nan=0.0, neginf=0.0, posinf=1.0)
+
     def parameters(self) -> str:
         """Returns the parameters of the term
         @return `"degree implication term"`.
@@ -240,12 +253,12 @@ class Activated(Term):
         @param x is a value
         @return $d \otimes \mu(x)$, where $d$ is the activation degree.
         """
-        if not self.term:
-            raise ValueError("expected a term to activate, but none found")
         if not self.implication:
             raise ValueError("expected an implication operator, but none found")
+
         return self.implication.compute(
-            self.term.membership(x), np.atleast_2d(self.degree).T
+            np.atleast_2d(self.degree).T,
+            self.term.membership(x),
         ).squeeze()  # type:ignore
 
 
@@ -330,10 +343,11 @@ class Aggregated(Term):
         If the same term is present multiple times, the aggregation operator
         is utilized to sum the activation degrees of the term. If the
         aggregation operator is fl::null, a regular sum is performed.
-        @param erm is the term for which to compute the aggregated
+        @param term is the term for which to compute the aggregated
         activation degree
         @return the aggregated activation degree for the given term.
         """
+        # TODO: Fix once self.terms is a dictionary
         result = scalar(0.0)
         for activation in self.terms:
             if activation.term == term:

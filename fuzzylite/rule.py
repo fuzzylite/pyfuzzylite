@@ -667,7 +667,7 @@ class Rule:
         self.enabled: bool = True
         self.weight: float = 1.0
         self.activation_degree = scalar(0.0)
-        self.triggered = array(False)
+        self.triggered = array([False])
         self.antecedent: Antecedent = Antecedent()
         self.consequent: Consequent = Consequent()
 
@@ -681,6 +681,7 @@ class Rule:
         @return the text of the rule.
         """
         result = [Rule.IF, self.antecedent.text, Rule.THEN, self.consequent.text]
+        # TODO: update to consider fl.lib.atol
         if not Op.eq(self.weight, 1.0):
             result.extend([Rule.WITH, Op.str(self.weight)])
         return " ".join(result)

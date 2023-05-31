@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Exporter", "FllExporter", "PythonExporter", "FldExporter"]
 
@@ -22,7 +23,7 @@ import io
 import math
 import typing
 from pathlib import Path
-from typing import IO, Any, Optional, Union
+from typing import IO, Any
 
 from .operation import Op
 
@@ -59,7 +60,7 @@ class Exporter:
         """
         raise NotImplementedError()
 
-    def to_file(self, path: Union[str, Path], instance: object) -> None:
+    def to_file(self, path: str | Path, instance: object) -> None:
         """Stores the string representation of the FuzzyLite component into the specified file
         @param path is the full path of the file to export the component to
         @param instance is the component to export.
@@ -141,7 +142,7 @@ class FllExporter(Exporter):
             f"expected a fuzzylite object, but found '{type(instance).__name__}'"
         )
 
-    def engine(self, engine: "Engine") -> str:
+    def engine(self, engine: Engine) -> str:
         """Returns a string representation of the engine
         @param engine is the engine
         @return a string representation of the engine.
@@ -158,7 +159,7 @@ class FllExporter(Exporter):
         result += [""]
         return self.separator.join(result)
 
-    def variable(self, v: "Variable") -> str:
+    def variable(self, v: Variable) -> str:
         """Returns a string representation of the variable
         @param v is the variable
         @return a string representation of the variable.
@@ -177,7 +178,7 @@ class FllExporter(Exporter):
             result += [f"{self.indent}{self.term(term)}" for term in v.terms]
         return self.separator.join(result)
 
-    def input_variable(self, iv: "InputVariable") -> str:
+    def input_variable(self, iv: InputVariable) -> str:
         """Returns a string representation of the input variable
         @param iv is the input variable
         @return a string representation of the input variable.
@@ -196,7 +197,7 @@ class FllExporter(Exporter):
             result += [f"{self.indent}{self.term(term)}" for term in iv.terms]
         return self.separator.join(result)
 
-    def output_variable(self, ov: "OutputVariable") -> str:
+    def output_variable(self, ov: OutputVariable) -> str:
         """Returns a string representation of the output variable
         @param ov is the variable
         @return a string representation of the output variable.
@@ -219,7 +220,7 @@ class FllExporter(Exporter):
             result += [f"{self.indent}{self.term(term)}" for term in ov.terms]
         return self.separator.join(result)
 
-    def rule_block(self, rb: "RuleBlock") -> str:
+    def rule_block(self, rb: RuleBlock) -> str:
         """Returns a string representation of the rule block
         @param rb is the rule block
         @return a string representation of the rule block.
@@ -240,7 +241,7 @@ class FllExporter(Exporter):
             result += [f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
         return self.separator.join(result)
 
-    def term(self, term: "Term") -> str:
+    def term(self, term: Term) -> str:
         """Returns a string representation of the linguistic term
         @param term is the linguistic term
         @return a string representation of the linguistic term.
@@ -251,21 +252,21 @@ class FllExporter(Exporter):
             result += [parameters]
         return " ".join(result)
 
-    def norm(self, norm: Optional["Norm"]) -> str:
+    def norm(self, norm: Norm | None) -> str:
         """Returns a string representation of the norm
         @param norm is the norm
         @return a string representation of the norm.
         """
         return norm.class_name if norm else "none"
 
-    def activation(self, activation: Optional["Activation"]) -> str:
+    def activation(self, activation: Activation | None) -> str:
         """Returns a string representation of the activation method
         @param activation is the activation method
         @return a string representation of the activation method.
         """
         return activation.class_name if activation else "none"
 
-    def defuzzifier(self, defuzzifier: Optional["Defuzzifier"]) -> str:
+    def defuzzifier(self, defuzzifier: Defuzzifier | None) -> str:
         """Returns a string representation of the defuzzifier
         @param defuzzifier is the defuzzifier
         @return a string representation of the defuzzifier.
@@ -281,7 +282,7 @@ class FllExporter(Exporter):
             result += [defuzzifier.type.name]
         return " ".join(result)
 
-    def rule(self, rule: "Rule") -> str:
+    def rule(self, rule: Rule) -> str:
         """Returns a string representation of the rule
         @param rule is the rule
         @return a string representation of the rule.
@@ -307,7 +308,7 @@ class PythonExporter(Exporter):
         """
         self.indent = indent
 
-    def engine(self, engine: "Engine", level: int = 0) -> str:
+    def engine(self, engine: Engine, level: int = 0) -> str:
         """Returns a string representation of the engine
         @param engine is the engine to export
         @param level refers to the number of indentation to add
@@ -426,7 +427,7 @@ class PythonExporter(Exporter):
             result += [",\n".join(values), f"{level * self.indent}]"]
         return "\n".join(result)
 
-    def input_variable(self, iv: "InputVariable", level: int = 1) -> str:
+    def input_variable(self, iv: InputVariable, level: int = 1) -> str:
         """Returns a string representation of the input variable in the Python
         programming language
         @param iv is the input variable
@@ -463,7 +464,7 @@ class PythonExporter(Exporter):
 
         return "\n".join(input_variable)
 
-    def output_variable(self, ov: "OutputVariable", level: int = 1) -> str:
+    def output_variable(self, ov: OutputVariable, level: int = 1) -> str:
         """Returns a string representation of the output variable in the Python
         programming language
         @param ov is the output variable
@@ -503,7 +504,7 @@ class PythonExporter(Exporter):
 
         return "\n".join(output_variable)
 
-    def rule_block(self, rb: "RuleBlock", level: int = 1) -> str:
+    def rule_block(self, rb: RuleBlock, level: int = 1) -> str:
         """Returns a string representation of the rule block in the Python
         programming language
         @param rb is the rule block
@@ -540,7 +541,7 @@ class PythonExporter(Exporter):
 
         return "\n".join(rule_block)
 
-    def term(self, term: "Term") -> str:
+    def term(self, term: Term) -> str:
         """Returns a string representation of the term in the Python
         programming language
         @param term is the linguistic term
@@ -585,7 +586,7 @@ class PythonExporter(Exporter):
             ]
         return "".join(result)
 
-    def norm(self, norm: Optional["Norm"]) -> str:
+    def norm(self, norm: Norm | None) -> str:
         """Returns a string representation of the norm in the Python
         programming language
         @param norm is the norm
@@ -594,7 +595,7 @@ class PythonExporter(Exporter):
         """
         return f"fl.{norm.class_name}()" if norm else str(None)
 
-    def activation(self, activation: Optional["Activation"]) -> str:
+    def activation(self, activation: Activation | None) -> str:
         """Returns a string representation of the activation method in the Python
         programming language
         @param activation is the activation method
@@ -603,7 +604,7 @@ class PythonExporter(Exporter):
         """
         return f"fl.{activation.class_name}()" if activation else str(None)
 
-    def defuzzifier(self, defuzzifier: Optional["Defuzzifier"]) -> str:
+    def defuzzifier(self, defuzzifier: Defuzzifier | None) -> str:
         """Returns a string representation of the defuzzifier in the Python
         programming language
         @param defuzzifier is the defuzzifier
@@ -621,7 +622,7 @@ class PythonExporter(Exporter):
             parameters = f'"{defuzzifier.type.name}"'
         return f"fl.{defuzzifier.class_name}({parameters})"
 
-    def rule(self, rule: "Rule") -> str:
+    def rule(self, rule: Rule) -> str:
         """Returns a string representation of the rule in the Python
         programming language
         @param rule is the rule
@@ -674,7 +675,7 @@ class FldExporter(Exporter):
         self.input_values = input_values
         self.output_values = output_values
 
-    def header(self, engine: "Engine") -> str:
+    def header(self, engine: Engine) -> str:
         """Gets the header of the dataset for the given engine
         @param engine is the engine to be exported
         @return the header of the dataset for the given engine.
@@ -700,10 +701,10 @@ class FldExporter(Exporter):
 
     def to_string_from_scope(
         self,
-        engine: "Engine",
+        engine: Engine,
         values: int = 1024,
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
-        active_variables: Optional[set["InputVariable"]] = None,
+        active_variables: set[InputVariable] | None = None,
     ) -> str:
         """Returns a FuzzyLite Dataset from the engine.
         @param engine is the engine to export
@@ -721,10 +722,10 @@ class FldExporter(Exporter):
     def to_file_from_scope(
         self,
         path: Path,
-        engine: "Engine",
+        engine: Engine,
         values: int = 1024,
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
-        active_variables: Optional[set["InputVariable"]] = None,
+        active_variables: set[InputVariable] | None = None,
     ) -> None:
         """Saves the engine as a FuzzyLite Dataset into the specified file
         @param path is the full path of the file
@@ -738,11 +739,11 @@ class FldExporter(Exporter):
 
     def write_from_scope(
         self,
-        engine: "Engine",
+        engine: Engine,
         writer: IO[str],
         values: int,
         scope: ScopeOfValues,
-        active_variables: Optional[set["InputVariable"]] = None,
+        active_variables: set[InputVariable] | None = None,
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export
@@ -789,7 +790,7 @@ class FldExporter(Exporter):
             incremented = Op.increment(sample_values, min_values, max_values)
 
     def to_string_from_reader(
-        self, engine: "Engine", reader: IO[str], skip_lines: int = 0
+        self, engine: Engine, reader: IO[str], skip_lines: int = 0
     ) -> str:
         """Returns a FuzzyLite Dataset from the engine.
         @param engine is the engine to export
@@ -803,7 +804,7 @@ class FldExporter(Exporter):
         return writer.getvalue()
 
     def to_file_from_reader(
-        self, path: Path, engine: "Engine", reader: IO[str], skip_lines: int = 0
+        self, path: Path, engine: Engine, reader: IO[str], skip_lines: int = 0
     ) -> None:
         """Saves the engine as a FuzzyLite Dataset into the specified file
         @param engine is the engine to export
@@ -816,7 +817,7 @@ class FldExporter(Exporter):
             self.write_from_reader(engine, writer, reader, skip_lines)
 
     def write_from_reader(
-        self, engine: "Engine", writer: IO[str], reader: IO[str], skip_lines: int = 0
+        self, engine: Engine, writer: IO[str], reader: IO[str], skip_lines: int = 0
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export
@@ -838,10 +839,10 @@ class FldExporter(Exporter):
 
     def write(
         self,
-        engine: "Engine",
+        engine: Engine,
         writer: IO[str],
         input_values: list[float],
-        active_variables: set["InputVariable"],
+        active_variables: set[InputVariable],
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export

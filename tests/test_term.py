@@ -238,16 +238,6 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        activated = fl.Activated(None, 1.0)  # type: ignore
-        self.assertEqual("term: _ Activated (1.000*none)", str(activated))
-
-        activated.configure("")
-
-        with self.assertRaisesRegex(
-            ValueError, "expected a term to activate, but none found"
-        ):
-            activated.membership(0.0)
-
         activated = fl.Activated(fl.Triangle("x", 0, 1), degree=1.0)
         with self.assertRaisesRegex(
             ValueError, "expected an implication operator, but none found"

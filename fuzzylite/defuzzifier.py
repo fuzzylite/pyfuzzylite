@@ -167,7 +167,8 @@ class Bisector(IntegralDefuzzifier):
         bisectors = np.where(index, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return np.nanmean(bisectors, axis=1).squeeze()  # type: ignore
+            z = np.nanmean(bisectors, axis=1).squeeze()
+            return z  # type: ignore
 
 
 class Centroid(IntegralDefuzzifier):
@@ -196,7 +197,8 @@ class Centroid(IntegralDefuzzifier):
             return nan
         x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
-        return ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()  # type: ignore
+        z = ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()
+        return z  # type: ignore
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
@@ -232,7 +234,8 @@ class LargestOfMaximum(IntegralDefuzzifier):
         lom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return np.nanmax(lom, axis=1, keepdims=True).squeeze()  # type: ignore
+            z = np.nanmax(lom, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
@@ -268,7 +271,8 @@ class MeanOfMaximum(IntegralDefuzzifier):
         mom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return np.nanmean(mom, axis=1, keepdims=True).squeeze()  # type: ignore
+            z = np.nanmean(mom, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
@@ -304,7 +308,8 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         som = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return np.nanmin(som, axis=1, keepdims=True).squeeze()  # type: ignore
+            z = np.nanmin(som, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class WeightedDefuzzifier(Defuzzifier):
