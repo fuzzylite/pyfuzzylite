@@ -25,7 +25,10 @@ import typing
 from pathlib import Path
 from typing import IO, Any
 
+import numpy as np
+
 from .operation import Op
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -555,9 +558,10 @@ class PythonExporter(Exporter):
             result += [
                 f"{Discrete.create.__qualname__}(",
                 f"{self.format(term.name)}, ",
-                str(
+                repr(
                     {self.format(x): self.format(y) for x, y in term.to_dict().items()}
-                ),
+                ).replace("'", ""),
+                ")",
             ]
         elif isinstance(term, Function):
             result += [
@@ -757,9 +761,6 @@ class FldExporter(Exporter):
         if active_variables is None:
             active_variables = set(engine.input_variables)
 
-        if self.headers:
-            writer.writelines(self.header(engine) + "\n")
-
         if scope == FldExporter.ScopeOfValues.AllVariables:
             if len(engine.input_variables) == 0:
                 raise ValueError("expected input variables in engine, but got none")
@@ -775,19 +776,21 @@ class FldExporter(Exporter):
             resolution if iv in active_variables else 0 for iv in engine.input_variables
         ]
 
-        input_values = [Op.scalar("nan")] * len(engine.input_variables)
+        input_values = []
         incremented = True
         while incremented:
-            for i, iv in enumerate(engine.input_variables):
-                if iv in active_variables:
-                    input_values[i] = iv.minimum + sample_values[i] * iv.drange / max(
-                        1.0, resolution
+            row = []
+            for index, variable in enumerate(engine.input_variables):
+                if variable in active_variables:
+                    row.append(
+                        variable.minimum
+                        + sample_values[index] * variable.drange / max(1.0, resolution)
                     )
                 else:
-                    input_values[i] = iv.value
-            self.write(engine, writer, input_values, active_variables)
-
+                    row.append(np.take(variable.value, -1).astype(float))
+            input_values.append(row)
             incremented = Op.increment(sample_values, min_values, max_values)
+        self.write(engine, writer, np.array(input_values))
 
     def to_string_from_reader(
         self, engine: Engine, reader: IO[str], skip_lines: int = 0
@@ -825,49 +828,58 @@ class FldExporter(Exporter):
         @param reader is the reader of a set of lines containing space-separated input values
         @param skip_lines is the number of lines to initially skip.
         """
-        if self.headers:
-            writer.writelines(self.header(engine) + "\n")
-        active_variables = set(engine.input_variables)
+        input_values = []
         for i, line in enumerate(reader.readlines()):
             if i < skip_lines:
                 continue
             line = line.strip()
             if not line or line[0] == "#":
                 continue
-            input_values = [Op.scalar(x) for x in line.split()]
-            self.write(engine, writer, input_values, active_variables)
+            input_values.append([Op.scalar(x) for x in line.split()])
+
+        self.write(engine, writer, np.asarray(input_values))
 
     def write(
         self,
         engine: Engine,
         writer: IO[str],
-        input_values: list[float],
-        active_variables: set[InputVariable],
+        input_values: Scalar,
     ) -> None:
         """Writes the engine into the given writer
         @param engine is the engine to export
         @param writer is the output where the engine will be written to
-        @param input_values is the vector of input values
-        @param active_variables contains the input variables to generate values for.
+        @param input_values is a matrix of input values.
         """
-        # if not input_values:
-        #     writer.writelines("\n")
-        if len(input_values) < len(engine.input_variables):
+        input_values = np.atleast_2d(input_values)
+        if input_values.shape[1] < len(engine.input_variables):
             raise ValueError(
-                f"not enough input values ({len(input_values)}) "
-                f"for the input variables ({len(engine.input_variables)})"
+                f"expected {len(engine.input_variables)} input values (one per input variable), "
+                f"but got {input_values.shape[1]} instead"
             )
 
-        values: list[str] = []
-        for i, iv in enumerate(engine.input_variables):
-            if iv in active_variables:
-                iv.value = input_values[i]
-            if self.input_values:
-                values.append(Op.str(iv.value))
+        engine.restart()
+
+        for index, variable in enumerate(engine.input_variables):
+            variable.value = input_values[:, index]
 
         engine.process()
 
+        values: list[Any] = []
+        if self.input_values:
+            values.append(engine.input_values())
         if self.output_values:
-            values.extend(Op.str(ov.value) for ov in engine.output_variables)
+            values.append(engine.output_values())
+        if not values:
+            # TODO: Fix this. It's a hack to use hstack without blowing up.
+            values = [[]]
 
-        writer.writelines(self.separator.join(values) + "\n")
+        from . import lib
+
+        np.savetxt(
+            writer,
+            np.hstack(values),
+            fmt=f"%0.{lib.decimals}f",
+            delimiter=self.separator,
+            header=self.header(engine) if self.headers else "",
+            comments="",
+        )

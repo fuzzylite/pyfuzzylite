@@ -23,11 +23,14 @@ import enum
 from collections.abc import Iterable
 from math import nan
 
+import numpy as np
+
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
+from .types import Scalar
 from .variable import InputVariable, OutputVariable, Variable
 
 
@@ -229,6 +232,36 @@ class Engine:
             f"rule block '{name}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
+    def input_values(self) -> Scalar:
+        """Returns the input values of the engine
+        @return the input values of the engine.
+        """
+        return np.atleast_2d(  # type:ignore
+            np.array([v.value for v in self.input_variables])
+        ).T
+
+    def output_values(self) -> Scalar:
+        """Returns the input values of the engine
+        @return the input values of the engine.
+        """
+        return np.atleast_2d(  # type:ignore
+            np.array([v.value for v in self.output_variables])
+        ).T
+
+    # @property
+    # def inputs(self) -> dict[str, Scalar]:
+    #     """Returns the input values of the engine
+    #     @return the input values of the engine.
+    #     """
+    #     return {v.name: v.value for v in self.input_variables}
+    #
+    # @property
+    # def outputs(self) -> dict[str, Scalar]:
+    #     """Returns the output values of the engine
+    #     @return the output values of the engine.
+    #     """
+    #     return {v.name: v.value for v in self.output_variables}
+
     def restart(self) -> None:
         """Restarts the engine by setting the values of the input variables to
         fl::nan and clearing the output variables
@@ -296,6 +329,7 @@ class Engine:
         raise NotImplementedError()
 
     def copy(self) -> Engine:
+        # TODO: Revisit deep copies and deal with engines in Function and Linear
         """Creates a copy of the engine, including all variables, rule blocks,
         and rules. The copy is a deep copy, meaning that all objects are
         duplicated such that the copy can be modified without affecting the

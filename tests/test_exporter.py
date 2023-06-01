@@ -25,6 +25,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import numpy as np
+
 import fuzzylite as fl
 from fuzzylite.examples.mamdani import SimpleDimmer
 
@@ -569,8 +571,8 @@ fl.RuleBlock(
             fl.PythonExporter().to_string(term), fl.PythonExporter().term(term)
         )
         self.assertEqual(
+            'fl.Discrete.create("B", {0.000: 0.000, 0.500: 1.000, 1.000: 0.000})',
             fl.PythonExporter().term(term),
-            'fl.Discrete("B", [0.000, 0.000, 0.500, 1.000, 1.000, 0.000])',
         )
 
         term = fl.Function("C", "x + 1")
@@ -677,44 +679,56 @@ class TestFldExporter(unittest.TestCase):
         """Test writing lines."""
         # Empty write
         writer = io.StringIO()
-        fl.FldExporter().write(fl.Engine(), writer, [], set())
-        self.assertEqual("\n", writer.getvalue())
+        fl.FldExporter().write(fl.Engine(), writer, fl.array([]))
+        self.assertEqual("", writer.getvalue())
 
         # Not enough values
-        with self.assertRaisesRegex(ValueError, "not enough input values"):
+        with self.assertRaises(ValueError) as error:
             fl.FldExporter().write(
-                fl.Engine(input_variables=[fl.InputVariable()]), writer, [], set()
+                fl.Engine(input_variables=[fl.InputVariable()]), writer, fl.array([])
             )
+        self.assertEqual(
+            "expected 1 input values (one per input variable), but got 0 instead",
+            str(error.exception),
+        )
 
         # input and output values
         writer = io.StringIO()
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
-        fl.FldExporter(input_values=True, output_values=True).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=True, output_values=True, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.250 0.750\n", writer.getvalue())
 
         # input values only
         writer = io.StringIO()
-        fl.FldExporter(input_values=True, output_values=False).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=True, output_values=False, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.250\n", writer.getvalue())
 
         # output values only
         writer = io.StringIO()
-        fl.FldExporter(input_values=False, output_values=True).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=False, output_values=True, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.750\n", writer.getvalue())
 
         # no values
         writer = io.StringIO()
         engine.process = MagicMock()  # type: ignore
-        fl.FldExporter(input_values=False, output_values=False).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=False, output_values=False, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
         engine.process.assert_called_once()
 
         # active variables
@@ -724,8 +738,8 @@ class TestFldExporter(unittest.TestCase):
         test_variable.value = 0.0
         engine.input_variables.append(test_variable)
 
-        fl.FldExporter().write(engine, writer, [fl.inf, fl.inf], {test_variable})
-        self.assertEqual("0.250 inf 0.750\n", writer.getvalue())
+        fl.FldExporter(headers=False).write(engine, writer, np.array([fl.inf, fl.inf]))
+        self.assertEqual("inf inf nan\n", writer.getvalue())
 
     def test_write_from_reader_empty_engine_empty(self) -> None:
         """Test exporting an empty engine."""
@@ -733,7 +747,7 @@ class TestFldExporter(unittest.TestCase):
 
         writer = io.StringIO()
         fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
 
         writer = io.StringIO()
         fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
@@ -747,12 +761,12 @@ class TestFldExporter(unittest.TestCase):
         )
 
         writer = io.StringIO()
-        fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("Input Output\n", writer.getvalue())
-
-        writer = io.StringIO()
-        fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("", writer.getvalue())
+        with self.assertRaises(ValueError) as error:
+            fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual(
+            "expected 1 input values (one per input variable), but got 0 instead",
+            str(error.exception),
+        )
 
     def test_write_from_reader_empty_or_commented(self) -> None:
         """Test exporter ignores comments."""
@@ -762,7 +776,7 @@ class TestFldExporter(unittest.TestCase):
             """
         writer = io.StringIO()
         fl.FldExporter().write_from_reader(fl.Engine(), writer, io.StringIO(reader))
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
 
     def test_write_from_reader(self) -> None:
         """Test exporter can read an FLD and export it again."""
