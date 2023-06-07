@@ -70,7 +70,11 @@ class TermAssert(BaseAssert[fl.Term]):
         # TODO: Find out why we get different values in different platforms
         # compare against exact values on Mac OSX
         np.testing.assert_allclose(
-            mf, self.actual.membership(x), atol=fl.lib.atol, err_msg=message
+            mf,
+            self.actual.membership(x),
+            atol=fl.lib.atol,
+            rtol=fl.lib.rtol,
+            err_msg=message,
         )
         return self
 
@@ -92,6 +96,7 @@ class TermAssert(BaseAssert[fl.Term]):
             expected,
             obtained,
             atol=fl.lib.atol,
+            rtol=fl.lib.rtol,
         )
         return self
 
@@ -119,7 +124,11 @@ class TermAssert(BaseAssert[fl.Term]):
         """Assert the term computes Tsukamoto correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
         np.testing.assert_allclose(
-            mf, self.actual.tsukamoto(x), atol=fl.lib.atol, err_msg=f"when x={x:.3f}"
+            mf,
+            self.actual.tsukamoto(x),
+            atol=fl.lib.atol,
+            rtol=fl.lib.rtol,
+            err_msg=f"when x={x:.3f}",
         )
         return self
 
@@ -946,8 +955,8 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        TermAssert(self, fl.Ramp()).configured_as("-0.250 0.750").exports_fll(
-            "term: unnamed Ramp -0.250 0.750"
+        TermAssert(self, fl.Ramp("ramp")).configured_as("-0.250 0.750").exports_fll(
+            "term: ramp Ramp -0.250 0.750"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -979,8 +988,8 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        TermAssert(self, fl.Ramp()).configured_as("0.250 -0.750").exports_fll(
-            "term: unnamed Ramp 0.250 -0.750"
+        TermAssert(self, fl.Ramp("ramp")).configured_as("0.250 -0.750").exports_fll(
+            "term: ramp Ramp 0.250 -0.750"
         ).has_memberships(
             {
                 -0.5: 0.750,
@@ -1012,8 +1021,8 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        TermAssert(self, fl.Ramp()).configured_as("0.250 -0.750 0.5").exports_fll(
-            "term: unnamed Ramp 0.250 -0.750 0.500"
+        TermAssert(self, fl.Ramp("ramp")).configured_as("0.250 -0.750 0.5").exports_fll(
+            "term: ramp Ramp 0.250 -0.750 0.500"
         ).has_memberships(
             {
                 -0.5: 0.750,
@@ -1747,6 +1756,7 @@ class TestTerm(unittest.TestCase):
             }
         )
 
+    @unittest.skip("Not using Python floats anymore since version 8")
     def test_division_by_zero_fails_with_float(self) -> None:
         """Test the division by zero when using Python floats."""
         self.assertEqual(fl.lib.floating_point_type, float)
@@ -1825,7 +1835,12 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
     ) -> FunctionNodeAssert:
         """Assert the node evaluates to the expected value (optionally) given variables."""
         obtained = self.actual.evaluate(variables)
-        np.testing.assert_allclose(obtained, expected, atol=fl.lib.atol)
+        np.testing.assert_allclose(
+            obtained,
+            expected,
+            atol=fl.lib.atol,
+            rtol=fl.lib.rtol,
+        )
         return self
 
     def fails_to_evaluate(

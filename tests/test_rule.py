@@ -162,6 +162,7 @@ class AssertAntecedent:
                     obtained,
                     expected,
                     atol=fl.lib.atol,
+                    rtol=fl.lib.rtol,
                     err_msg=f"at index {index}",
                 )
             index += 1
@@ -572,6 +573,7 @@ class AssertConsequent:
                     obtained_activation,
                     expected_activation,
                     atol=fl.lib.atol,
+                    rtol=fl.lib.rtol,
                     err_msg=f"for activated term {expected_term}",
                 )
 

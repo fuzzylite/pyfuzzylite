@@ -40,6 +40,8 @@ class Library:
         floating_point_type: type[float | Scalar] = np.float64,
         factory_manager: FactoryManager | None = None,
         logger: logging.Logger | None = None,
+        atol: float = 1e-03,  # TODO: like numpy? Or relative to number of decimals?
+        rtol: float = 0,  # TODO: like numpy? Or relative to number of decimals?
     ) -> None:
         """Creates an instance of the library.
         @param decimals is the number of decimals utilized when formatting scalar values
@@ -51,12 +53,9 @@ class Library:
         self.floating_point_type = floating_point_type
         self.factory_manager = factory_manager or FactoryManager()
         self.logger = logger or logging.getLogger("fuzzylite")
+        self.atol = atol
+        self.rtol = rtol
         np.seterr(invalid="ignore", divide="ignore")
-
-    @property
-    def atol(self) -> float:
-        """@return the absolute tolerance used by the library."""
-        return float(10**-self.decimals)
 
     def floating_point(self, value: SupportsFloat | str | bytes) -> float:
         """Convert the value into a floating point defined by the library
