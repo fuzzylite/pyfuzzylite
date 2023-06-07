@@ -29,6 +29,7 @@ __all__ = [
 
 import enum
 import heapq
+import operator
 from typing import Callable
 
 import numpy as np
@@ -175,9 +176,10 @@ class First(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                # TODO: How does an array of activation degrees work with this now?
                 if (
                     activated < self.rules
-                    and Op.gt(activation_degree, 0.0)
+                    and activation_degree > 0.0
                     and activation_degree >= self.threshold
                 ):
                     rule.trigger(implication)
@@ -241,7 +243,7 @@ class Last(Activation):
                 activation_degree = rule.activate_with(conjunction, disjunction)
                 if (
                     activated < self.rules
-                    and Op.gt(activation_degree, 0.0)
+                    and activation_degree > 0.0
                     and activation_degree >= self.threshold
                 ):
                     rule.trigger(implication)
@@ -294,7 +296,7 @@ class Highest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                if activation_degree > 0.0:
                     heapq.heappush(activate, (-activation_degree, index))
 
         activated = 0
@@ -350,7 +352,7 @@ class Lowest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                if activation_degree > 0.0:
                     heapq.heappush(activate, (activation_degree, index))
 
         activated = 0
@@ -389,7 +391,7 @@ class Proportional(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                if activation_degree > 0.0:
                     activate.append(rule)
                     sum_degrees += activation_degree
 
@@ -434,12 +436,12 @@ class Threshold(Activation):
             str,
             Callable[[Scalar, Scalar], bool | Array[np.bool_]],
         ] = {
-            LessThan: Op.lt,
-            LessThanOrEqualTo: Op.le,
-            EqualTo: Op.eq,
-            NotEqualTo: Op.neq,
-            GreaterThanOrEqualTo: Op.ge,
-            GreaterThan: Op.gt,
+            LessThan: operator.lt,
+            LessThanOrEqualTo: operator.le,
+            EqualTo: operator.eq,
+            NotEqualTo: operator.ne,
+            GreaterThanOrEqualTo: operator.ge,
+            GreaterThan: operator.gt,
         }
 
         @property
