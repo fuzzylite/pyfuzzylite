@@ -331,7 +331,9 @@ class WeightedDefuzzifier(Defuzzifier):
         Tsukamoto: Manually set to Tsukamoto
         """
 
-        Automatic, TakagiSugeno, Tsukamoto = range(3)
+        Automatic = enum.auto()
+        TakagiSugeno = enum.auto()
+        Tsukamoto = enum.auto()
 
     @enum.unique
     class Mode(enum.Enum):
@@ -341,12 +343,13 @@ class WeightedDefuzzifier(Defuzzifier):
         Sum: Sum of fuzzy terms
         """
 
-        Average, Sum = ("Average", "Sum")
+        Average = enum.auto()
+        Sum = enum.auto()
 
     def __init__(
         self,
         mode: str | WeightedDefuzzifier.Mode,
-        type: str | WeightedDefuzzifier.Type = "Automatic",
+        type: str | WeightedDefuzzifier.Type = Type.Automatic,
     ) -> None:
         """Creates a WeightedDefuzzifier
         @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
@@ -466,7 +469,9 @@ class WeightedAverage(WeightedDefuzzifier):
     @since 4.0
     """
 
-    def __init__(self, type: str | WeightedDefuzzifier.Type = "Automatic") -> None:
+    def __init__(
+        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
+    ) -> None:
         """Creates a WeightedAverage defuzzifier."""
         super().__init__(WeightedDefuzzifier.Mode.Average, type)
 
@@ -484,6 +489,8 @@ class WeightedSum(WeightedDefuzzifier):
     @since 4.0
     """
 
-    def __init__(self, type: str | WeightedDefuzzifier.Type = "Automatic") -> None:
+    def __init__(
+        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
+    ) -> None:
         """Creates a WeightedSum defuzzifier."""
         super().__init__(WeightedDefuzzifier.Mode.Sum, type)

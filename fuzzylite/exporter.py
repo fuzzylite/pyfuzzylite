@@ -654,12 +654,10 @@ class FldExporter(Exporter):
         to generate.
         """
 
-        (
-            # /**Generates $n$ values for each variable*/
-            EachVariable,
-            # /**Generates $n$ values for all variables*/
-            AllVariables,
-        ) = range(2)
+        # /**Generates $n$ values for each variable*/
+        EachVariable = enum.auto()
+        # /**Generates $n$ values for all variables*/
+        AllVariables = enum.auto()
 
     def __init__(
         self,

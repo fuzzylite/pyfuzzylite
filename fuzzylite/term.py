@@ -2010,7 +2010,8 @@ class Function(Term):
         class Type(enum.Enum):
             """Determines the type of the element."""
 
-            Operator, Function = range(2)
+            Operator = enum.auto()
+            Function = enum.auto()
 
         def __init__(
             self,
