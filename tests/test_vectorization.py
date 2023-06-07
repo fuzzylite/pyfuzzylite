@@ -1,3 +1,19 @@
+"""pyfuzzylite (TM), a fuzzy logic control library in Python.
+
+Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+
+This file is part of pyfuzzylite.
+
+pyfuzzylite is free software: you can redistribute it and/or modify it under
+the terms of the FuzzyLite License included with the software.
+
+You should have received a copy of the FuzzyLite License along with
+pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+
+pyfuzzylite is a trademark of FuzzyLite Limited
+fuzzylite is a registered trademark of FuzzyLite Limited.
+"""
 from __future__ import annotations
 
 import unittest
@@ -35,6 +51,7 @@ class AssertIntegration:
                 expected_output,
                 err_msg=f"{defuzzifier.class_name}({input}) = {obtained}, but expected {expected_output}",
                 atol=fl.lib.atol,
+                rtol=fl.lib.rtol,
             )
         if self.vectorize:
             self.engine.restart()
@@ -48,6 +65,7 @@ class AssertIntegration:
                 expected_outputs,
                 err_msg=f"{defuzzifier.class_name}([{inputs}]) = {obtained}, but expected {expected_outputs}",
                 atol=fl.lib.atol,
+                rtol=fl.lib.rtol,
             )
 
 
@@ -159,8 +177,8 @@ class TestWeightedDefuzzifier(unittest.TestCase):
         AssertIntegration(takagi_sugeno.SimpleDimmer.engine).assert_that(
             fl.WeightedSum(),
             {
-                0.0: 0.0,
-                1.0: 0.0,
+                0.0: np.nan,
+                1.0: np.nan,
                 0.25: 0.75,
                 0.375: 0.625,
                 0.5: 0.5,
@@ -212,8 +230,8 @@ class TestWeightedDefuzzifier(unittest.TestCase):
                 7.5: 1.027,
                 10: 1.009,
                 20: 0.011,
-                -np.inf: 0.0,
-                np.inf: 0.0,
+                -np.inf: np.nan,
+                np.inf: np.nan,
                 np.nan: np.nan,
             },
         )

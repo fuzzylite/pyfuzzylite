@@ -89,6 +89,7 @@ class BaseAssert(Generic[T]):
                     obtained,
                     expected,
                     atol=fl.lib.atol,
+                    rtol=fl.lib.rtol,
                     err_msg=f"in attribute '{key}'",
                 )
             else:

@@ -333,15 +333,33 @@ class WeightedDefuzzifier(Defuzzifier):
 
         Automatic, TakagiSugeno, Tsukamoto = range(3)
 
-    def __init__(self, type: str | WeightedDefuzzifier.Type | None = None) -> None:
+    @enum.unique
+    class Mode(enum.Enum):
+        """The Mode enum indicates the mode of the WeightedDefuzzifier.
+
+        Average: Weighted average of fuzzy terms
+        Sum: Sum of fuzzy terms
+        """
+
+        Average, Sum = ("Average", "Sum")
+
+    def __init__(
+        self,
+        mode: str | WeightedDefuzzifier.Mode,
+        type: str | WeightedDefuzzifier.Type = "Automatic",
+    ) -> None:
         """Creates a WeightedDefuzzifier
         @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
         """
-        if type is None:
-            type = WeightedDefuzzifier.Type.Automatic
-        elif isinstance(type, str):
-            type = WeightedDefuzzifier.Type[type]
-        self.type = type
+        if isinstance(mode, str):
+            self.mode = WeightedDefuzzifier.Mode[mode]
+        else:
+            self.mode = mode
+
+        if isinstance(type, str):
+            self.type = WeightedDefuzzifier.Type[type]
+        else:
+            self.type = type
 
     def __str__(self) -> str:
         """Gets a string representation of the defuzzifier."""
@@ -358,109 +376,29 @@ class WeightedDefuzzifier(Defuzzifier):
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
-        """Not implemented."""
-        raise NotImplementedError()
-
-    def infer_type(self, term: Term) -> WeightedDefuzzifier.Type:
+    @classmethod
+    def infer_type(cls, term: Term) -> WeightedDefuzzifier.Type:
         """Infers the type of the defuzzifier based on the given term.
         @param term is the given term
         @return the inferred type of the defuzzifier based on the given term.
         """
         if isinstance(term, Aggregated):
-            types = {self.infer_type(t_i) for t_i in term.terms}
+            types = {cls.infer_type(t_i) for t_i in term.terms}
             if len(types) == 1:
                 return types.pop()
             if len(types) == 0:
                 # cannot infer type of empty term, and won't matter anyway,
                 return WeightedDefuzzifier.Type.Automatic
             raise TypeError(
-                f"cannot infer type of {self.class_name}, got multiple types: {sorted(str(t) for t in types)}"
+                f"cannot infer type of {cls.__name__}, got multiple types: {sorted(str(t) for t in types)}"
             )
         elif isinstance(term, Activated):  # noqa: RET506 - False Positive
-            return self.infer_type(term.term)
+            return cls.infer_type(term.term)
         elif isinstance(term, (Constant, Linear, Function)):
             return WeightedDefuzzifier.Type.TakagiSugeno
         elif term.is_monotonic():
             return WeightedDefuzzifier.Type.Tsukamoto
-        raise TypeError(f"cannot infer type of {self.class_name} from {term}")
-
-
-class WeightedAverage(WeightedDefuzzifier):
-    """The WeightedAverage class is a WeightedDefuzzifier that computes the
-    weighted average of a fuzzy set represented in an Aggregated Term.
-
-    @author Juan Rada-Vilela, Ph.D.
-    @see WeightedAverageCustom
-    @see WeightedSum
-    @see WeightedSumCustom
-    @see WeightedDefuzzifier
-    @see Defuzzifier
-    @since 4.0
-    """
-
-    def defuzzify(
-        self,
-        term: Term,
-        minimum: float = nan,
-        maximum: float = nan,
-    ) -> Scalar:
-        r"""Computes the weighted average of the given fuzzy set represented in
-        an Aggregated term as $y = \dfrac{\sum_i w_iz_i}{\sum_i w_i} $,
-        where $w_i$ is the activation degree of term $i$, and
-        $z_i = \mu_i(w_i) $.
-
-        From version 6.0, the implication and aggregation operators are not
-        utilized for defuzzification.
-
-        @param term is the fuzzy set represented as an Aggregated Term
-        @param minimum is the minimum value of the range (only used for Tsukamoto)
-        @param maximum is the maximum value of the range (only used for Tsukamoto)
-        @return the weighted average of the given fuzzy set
-        """
-        fuzzy_output = term
-        if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(
-                f"expected an Aggregated term, but found {type(fuzzy_output)}"
-            )
-
-        if not self.type:
-            raise ValueError("expected a type of weighted defuzzifier, but found none")
-
-        if not fuzzy_output.terms:
-            return nan
-
-        this_type = self.type
-        if self.type == WeightedDefuzzifier.Type.Automatic:
-            this_type = self.infer_type(fuzzy_output)
-
-        weighted_sum = scalar(0.0)
-        weights = scalar(0.0)
-        membership = (
-            Term.tsukamoto.__name__
-            if this_type == WeightedDefuzzifier.Type.Tsukamoto
-            else Term.membership.__name__
-        )
-        for activated in fuzzy_output.terms:
-            w = activated.degree
-            z = activated.term.__getattribute__(membership)(w)
-            weighted_sum = weighted_sum + w * z
-            weights = weights + w
-        return weighted_sum / weights
-
-
-class WeightedSum(WeightedDefuzzifier):
-    """The WeightedSum class is a WeightedDefuzzifier that computes the
-    weighted sum of a fuzzy set represented in an Aggregated Term.
-
-    @author Juan Rada-Vilela, Ph.D.
-    @see WeightedSumCustom
-    @see WeightedAverage
-    @see WeightedAverageCustom
-    @see WeightedDefuzzifier
-    @see Defuzzifier
-    @since 4.0
-    """
+        raise TypeError(f"cannot infer type of {cls.__name__} from {term}")
 
     def defuzzify(
         self,
@@ -495,6 +433,7 @@ class WeightedSum(WeightedDefuzzifier):
             this_type = self.infer_type(fuzzy_output)
 
         weighted_sum = scalar(0.0) if fuzzy_output.terms else nan
+        weights = scalar(0.0)
         membership = (
             Term.tsukamoto.__name__
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
@@ -504,4 +443,47 @@ class WeightedSum(WeightedDefuzzifier):
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
             weighted_sum = weighted_sum + w * z
-        return weighted_sum
+            weights = weights + w
+
+        y = weighted_sum / weights
+        if self.mode == WeightedDefuzzifier.Mode.Sum:
+            # This is done to get "invalid" output values from activated terms with zero activation degrees.
+            # Thus, returning nan values in those cases. A regular weighted sum would result in zero.
+            y = y * weights
+        return y
+
+
+class WeightedAverage(WeightedDefuzzifier):
+    """The WeightedAverage class is a WeightedDefuzzifier that computes the
+    weighted average of a fuzzy set represented in an Aggregated Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see WeightedAverageCustom
+    @see WeightedSum
+    @see WeightedSumCustom
+    @see WeightedDefuzzifier
+    @see Defuzzifier
+    @since 4.0
+    """
+
+    def __init__(self, type: str | WeightedDefuzzifier.Type = "Automatic") -> None:
+        """Creates a WeightedAverage defuzzifier."""
+        super().__init__(WeightedDefuzzifier.Mode.Average, type)
+
+
+class WeightedSum(WeightedDefuzzifier):
+    """The WeightedSum class is a WeightedDefuzzifier that computes the
+    weighted sum of a fuzzy set represented in an Aggregated Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see WeightedSumCustom
+    @see WeightedAverage
+    @see WeightedAverageCustom
+    @see WeightedDefuzzifier
+    @see Defuzzifier
+    @since 4.0
+    """
+
+    def __init__(self, type: str | WeightedDefuzzifier.Type = "Automatic") -> None:
+        """Creates a WeightedSum defuzzifier."""
+        super().__init__(WeightedDefuzzifier.Mode.Sum, type)

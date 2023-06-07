@@ -52,6 +52,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
                 obtained,
                 expected,
                 atol=fl.lib.atol,
+                rtol=fl.lib.rtol,
                 err_msg=f"{self.actual.class_name}({term}) = {obtained}, but expected {expected}",
             )
 
@@ -420,10 +421,11 @@ class TestDefuzzifier(unittest.TestCase):
     def test_weighted_defuzzifier(self) -> None:
         """Test the weighted defuzzifier and its methods."""
         self.assertEqual(
-            fl.WeightedDefuzzifier().type, fl.WeightedDefuzzifier.Type.Automatic
+            fl.WeightedDefuzzifier(None).type,  # type: ignore
+            fl.WeightedDefuzzifier.Type.Automatic,
         )
 
-        defuzzifier = fl.WeightedDefuzzifier()
+        defuzzifier = fl.WeightedDefuzzifier(None)  # type: ignore
         defuzzifier.configure("TakagiSugeno")
         self.assertEqual(defuzzifier.type, fl.WeightedDefuzzifier.Type.TakagiSugeno)
 
@@ -434,18 +436,22 @@ class TestDefuzzifier(unittest.TestCase):
         with self.assertRaises(KeyError):
             defuzzifier.configure("ABC")
 
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(ValueError) as value_error:
             defuzzifier.defuzzify(fl.Term(), fl.nan, fl.nan)
+        self.assertEqual(
+            "expected an Aggregated term, but found <class 'fuzzylite.term.Term'>",
+            str(value_error.exception),
+        )
 
         self.assertEqual(
             defuzzifier.infer_type(fl.Constant()),
             fl.WeightedDefuzzifier.Type.TakagiSugeno,
         )
-        with self.assertRaises(TypeError) as error:
+        with self.assertRaises(TypeError) as type_error:
             defuzzifier.infer_type(fl.Triangle())
         self.assertEqual(
-            str(error.exception),
-            "cannot infer type of WeightedDefuzzifier from term: unnamed Triangle nan nan nan",
+            str(type_error.exception),
+            "cannot infer type of WeightedDefuzzifier from term: _ Triangle nan nan nan",
         )
 
     def test_infer_type(self) -> None:
@@ -462,37 +468,37 @@ class TestDefuzzifier(unittest.TestCase):
         # Takagi-Sugeno
         for term in takagi_sugeno_terms:
             self.assertEqual(
-                fl.WeightedDefuzzifier().infer_type(term),
+                fl.WeightedDefuzzifier.infer_type(term),
                 fl.WeightedDefuzzifier.Type.TakagiSugeno,
             )
         # Tsukamoto
         for term in tsukamoto_terms:
             self.assertTrue(term.is_monotonic())
             self.assertEqual(
-                fl.WeightedDefuzzifier().infer_type(term),
+                fl.WeightedDefuzzifier.infer_type(term),
                 fl.WeightedDefuzzifier.Type.Tsukamoto,
             )
         # Activated: TakagiSugeno
         for term in takagi_sugeno_terms:
             self.assertEqual(
-                fl.WeightedDefuzzifier().infer_type(fl.Activated(term)),
+                fl.WeightedDefuzzifier.infer_type(fl.Activated(term)),
                 fl.WeightedDefuzzifier.Type.TakagiSugeno,
             )
         # Activated: Tsukamoto
         for term in tsukamoto_terms:
             self.assertEqual(
-                fl.WeightedDefuzzifier().infer_type(fl.Activated(term)),
+                fl.WeightedDefuzzifier.infer_type(fl.Activated(term)),
                 fl.WeightedDefuzzifier.Type.Tsukamoto,
             )
 
         # Aggregated: None
         self.assertEqual(
-            fl.WeightedDefuzzifier().infer_type(fl.Aggregated()),
+            fl.WeightedDefuzzifier.infer_type(fl.Aggregated()),
             fl.WeightedDefuzzifier.Type.Automatic,
         )
         # Aggregated: TakagiSugeno
         self.assertEqual(
-            fl.WeightedDefuzzifier().infer_type(
+            fl.WeightedDefuzzifier.infer_type(
                 fl.Aggregated(
                     terms=[fl.Activated(term) for term in takagi_sugeno_terms]
                 )
@@ -501,14 +507,14 @@ class TestDefuzzifier(unittest.TestCase):
         )
         # Aggregated: Tsukamoto
         self.assertEqual(
-            fl.WeightedDefuzzifier().infer_type(
+            fl.WeightedDefuzzifier.infer_type(
                 fl.Aggregated(terms=[fl.Activated(term) for term in tsukamoto_terms])
             ),
             fl.WeightedDefuzzifier.Type.Tsukamoto,
         )
         # Aggregated: Mixed
         with self.assertRaises(TypeError) as error:
-            fl.WeightedDefuzzifier().infer_type(
+            fl.WeightedDefuzzifier.infer_type(
                 fl.Aggregated(
                     terms=[fl.Activated(term) for term in [fl.Constant(), fl.Concave()]]
                 )
@@ -642,9 +648,81 @@ class TestDefuzzifier(unittest.TestCase):
             },
         )
 
-    def test_tsukamoto_defuzzifier(self) -> None:
+    def test_weighted_sum_tsukamoto(self) -> None:
         """Test the Tsukamoto defuzzifier."""
-        raise NotImplementedError()
+        DefuzzifierAssert(self, fl.WeightedSum("Tsukamoto")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(): fl.nan,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.015),
+                        fl.Activated(fl.Ramp("b", 0.6, 0.4), 1.0),
+                        fl.Activated(fl.Ramp("c", 0.7, 1.0), 0.015),
+                    ]
+                ): 0.410,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Sigmoid("a", 0.13, 30), 0.015),
+                        fl.Activated(fl.Sigmoid("b", 0.5, -30), 1.0),
+                        fl.Activated(fl.Sigmoid("c", 0.83, 30), 0.015),
+                    ]
+                ): -fl.inf,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Concave("a", 0.24, 0.25), 0.015),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 1.0),
+                        fl.Activated(fl.Concave("c", 0.9, 1.0), 0.015),
+                    ]
+                ): 0.310,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.SShape("a", 0.000, 0.250), 0.015),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.SShape("c", 0.700, 1.000), 0.015),
+                    ]
+                ): 0.311,
+            },
+        )
+
+    def test_weighted_average_tsukamoto(self) -> None:
+        """Test the Tsukamoto defuzzifier."""
+        DefuzzifierAssert(self, fl.WeightedAverage("Tsukamoto")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(): fl.nan,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.015),
+                        fl.Activated(fl.Ramp("b", 0.6, 0.4), 1.0),
+                        fl.Activated(fl.Ramp("c", 0.7, 1.0), 0.015),
+                    ]
+                ): 0.398,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Sigmoid("a", 0.13, 30), 0.015),
+                        fl.Activated(fl.Sigmoid("b", 0.5, -30), 1.0),
+                        fl.Activated(fl.Sigmoid("c", 0.83, 30), 0.015),
+                    ]
+                ): -fl.inf,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Concave("a", 0.24, 0.25), 0.015),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 1.0),
+                        fl.Activated(fl.Concave("c", 0.9, 1.0), 0.015),
+                    ]
+                ): 0.301,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.SShape("a", 0.000, 0.250), 0.015),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.SShape("c", 0.700, 1.000), 0.015),
+                    ]
+                ): 0.302,
+            },
+        )
 
     def test_all_defuzzifiers_return_nan_when_empty_output(self) -> None:
         """Test that all defuzzifiers return NaN when the output is empty."""
