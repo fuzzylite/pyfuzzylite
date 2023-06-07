@@ -22,6 +22,7 @@ import copy
 import enum
 from collections.abc import Iterable
 from math import nan
+from typing import Any
 
 import numpy as np
 
@@ -30,7 +31,7 @@ from .defuzzifier import Defuzzifier
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
-from .types import Scalar
+from .types import Array
 from .variable import InputVariable, OutputVariable, Variable
 
 
@@ -232,17 +233,19 @@ class Engine:
             f"rule block '{name}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
-    def input_values(self) -> Scalar:
-        """Returns the input values of the engine
+    def input_values(self) -> Array[np.floating[Any]]:
+        """Returns a matrix containing the input values of the engine,
+        where columns represent variables and rows represent input values
         @return the input values of the engine.
         """
         return np.atleast_2d(  # type:ignore
             np.array([v.value for v in self.input_variables])
         ).T
 
-    def output_values(self) -> Scalar:
-        """Returns the input values of the engine
-        @return the input values of the engine.
+    def output_values(self) -> Array[np.floating[Any]]:
+        """Returns a matrix containing the output values of the engine,
+        where columns represent variables and rows represent output values
+        @return the output values of the engine.
         """
         return np.atleast_2d(  # type:ignore
             np.array([v.value for v in self.output_variables])

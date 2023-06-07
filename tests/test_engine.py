@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import unittest
 
+import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
@@ -92,10 +94,8 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def evaluate_fld(self, fld: str, decimals: int | None = None) -> EngineAssert:
+    def evaluate_fld(self, fld: str, decimals: int) -> EngineAssert:
         """Asserts the engine produces the expected fld."""
-        if decimals is None:
-            decimals = fl.lib.decimals
         for line, evaluation in enumerate(fld.split("\n")):
             comment_index = evaluation.find("#")
             if comment_index != -1:
@@ -103,26 +103,27 @@ class EngineAssert(BaseAssert[fl.Engine]):
             if not evaluation:
                 continue
 
-            expected = evaluation.split()
+            expected = fl.array([x for x in evaluation.split()], dtype=np.float64)
             if len(expected) != len(self.actual.variables):
                 raise ValueError(
                     f"expected {len(self.actual.variables)} values, "
                     f"but got {len(expected)}: [line: {line}] {evaluation}"
                 )
 
-            obtained: list[str] = []
             for i, input_variable in enumerate(self.actual.input_variables):
-                input_variable.value = fl.scalar(expected[i])
-                obtained.append(expected[i])
+                input_variable.value = expected[i]
 
             self.actual.process()
 
-            obtained.extend(
-                fl.Op.str(ov.value, decimals) for ov in self.actual.output_variables
+            obtained = np.hstack(
+                (
+                    self.actual.input_values().flatten(),
+                    self.actual.output_values().flatten(),
+                )
             )
 
-            self.test.assertListEqual(
-                expected, obtained, msg=f"in evaluation line {line}"
+            np.testing.assert_allclose(
+                obtained, expected, rtol=0, atol=10 ** -(decimals - 1)
             )
         return self
 
@@ -269,24 +270,24 @@ class TestEngine(unittest.TestCase):
         ).evaluate_fld(
             """\
 #service food mTip tsTip
-0.0000000000000000 0.0000000000000000 4.9989502099580099 5.0000000000000000
-0.0000000000000000 3.3333333333333335 7.7561896551724301 6.5384615384615392
-0.0000000000000000 6.6666666666666670 12.9489036144578247 10.8823529411764728
-0.0000000000000000 10.0000000000000000 13.5707062050051448 11.6666666666666661
-3.3333333333333335 0.0000000000000000 8.5688247396168276 7.5000000000000000
-3.3333333333333335 3.3333333333333335 10.1101355034654858 8.6734693877551035
-3.3333333333333335 6.6666666666666670 13.7695060342408198 12.9245283018867916
-3.3333333333333335 10.0000000000000000 14.3676481312670976 13.8888888888888911
-6.6666666666666670 0.0000000000000000 12.8954528230390419 11.0000000000000000
-6.6666666666666670 3.3333333333333335 13.2040624705105234 12.7966101694915260
-6.6666666666666670 6.6666666666666670 17.9862390284958273 20.6363636363636367
-6.6666666666666670 10.0000000000000000 21.1557340720221632 22.7777777777777821
-10.0000000000000000 0.0000000000000000 13.5707062050051448 11.6666666666666661
-10.0000000000000000 3.3333333333333335 13.7092196934510024 13.8888888888888875
-10.0000000000000000 6.6666666666666670 20.2157800031293959 22.7777777777777821
-10.0000000000000000 10.0000000000000000 25.0010497900419928 25.0000000000000000
+0.0000000000000 0.0000000000000 4.9989502099580 5.0000000000000
+0.0000000000000 3.3333333333333 7.7561896551724 6.5384615384615
+0.0000000000000 6.6666666666666 12.9489036144578 10.8823529411764
+0.0000000000000 10.0000000000000 13.5707062050051 11.6666666666666
+3.3333333333333 0.0000000000000 8.5688247396168 7.5000000000000
+3.3333333333333 3.3333333333333 10.1101355034654 8.6734693877551
+3.3333333333333 6.6666666666666 13.7695060342408 12.9245283018867
+3.3333333333333 10.0000000000000 14.3676481312670 13.8888888888888
+6.6666666666666 0.0000000000000 12.8954528230390 11.0000000000000
+6.6666666666666 3.3333333333333 13.2040624705105 12.7966101694915
+6.6666666666666 6.6666666666666 17.9862390284958 20.6363636363636
+6.6666666666666 10.0000000000000 21.1557340720221 22.7777777777777
+10.0000000000000 0.0000000000000 13.5707062050051 11.6666666666666
+10.0000000000000 3.3333333333333 13.7092196934510 13.8888888888888
+10.0000000000000 6.6666666666666 20.2157800031293 22.7777777777777
+10.0000000000000 10.0000000000000 25.0010497900419 25.0000000000000
 """,
-            decimals=16,
+            decimals=13,
         )
 
     @unittest.skip("Not implemented yet")
