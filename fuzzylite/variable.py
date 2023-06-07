@@ -389,10 +389,9 @@ class OutputVariable(Variable):
         return self.fuzzy.aggregation
 
     @aggregation.setter
-    def aggregation(self, value: SNorm) -> None:
+    def aggregation(self, value: SNorm | None) -> None:
         """Sets the aggregation operator
-        @param aggregation is the aggregation.
-
+        @param value is the aggregation.
         """
         self.fuzzy.aggregation = value
 

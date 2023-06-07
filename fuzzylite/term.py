@@ -2041,7 +2041,7 @@ class Function(Term):
             self.description = description
             self.type = type
             self.method = method
-            self.arity = Op.arity_of(method) if arity < 0 else arity
+            self.arity = arity
             self.precedence = precedence
             self.associativity = associativity
 
