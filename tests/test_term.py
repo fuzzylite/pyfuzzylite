@@ -688,7 +688,10 @@ class TestTerm(unittest.TestCase):
             "term: list Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
         )
         TermAssert(
-            self, fl.Discrete.create("tuple", tuple((x.astype(str), y.astype(str))))
+            self,
+            fl.Discrete.create(
+                "tuple", tuple((x.astype(str).tolist(), y.astype(str).tolist()))
+            ),
         ).exports_fll(
             "term: tuple Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
         )

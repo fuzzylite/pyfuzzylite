@@ -155,7 +155,7 @@ class CloningFactory(Generic[T]):
         self.objects: dict[str, T] = {}
 
     def __iter__(self) -> Iterator[str]:
-        """Get iterator iterator of objects."""
+        """Get iterator of objects."""
         return self.objects.__iter__()
 
     @property

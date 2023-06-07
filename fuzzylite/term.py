@@ -818,15 +818,15 @@ class Discrete(Term):
         @param height is the height of the term
         @returns a Discrete term.
         """
-        x = scalar(0)
-        y = scalar(0)
+        x: Scalar = scalar(0)
+        y: Scalar = scalar(0)
         if isinstance(xy, str):
             xy = xy.split()
         if isinstance(xy, Sequence):
             x = array(xy[0::2])
             y = array(xy[1::2])
         if isinstance(xy, tuple):
-            x, y = xy
+            x, y = map(array, xy)
         if isinstance(xy, dict):
             x = array([xi for xi in xy])
             y = array([yi for yi in xy.values()])

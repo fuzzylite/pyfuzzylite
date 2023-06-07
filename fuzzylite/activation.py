@@ -82,6 +82,7 @@ class Activation:
         """Configures the activation method with the given parameters.
         @param parameters contains a list of space-separated parameter values.
         """
+        pass
 
     def __str__(self) -> str:
         """Returns the FLL code for the activation method

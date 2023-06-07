@@ -209,7 +209,6 @@ class Operation:
     @staticmethod
     def describe(
         instance: object,
-        slots: bool = True,
         variables: bool = True,
         class_hierarchy: bool = False,
     ) -> str:
@@ -225,10 +224,6 @@ class Operation:
             return str(None)
         key_values = {}
         if instance:
-            if slots and hasattr(instance, "__slots__") and instance.__slots__:
-                for slot in instance.__slots__:
-                    key_values[slot] = str(getattr(instance, slot))
-
             if variables and hasattr(instance, "__dict__") and instance.__dict__:
                 for variable in instance.__dict__:
                     key_values[variable] = str(getattr(instance, variable))

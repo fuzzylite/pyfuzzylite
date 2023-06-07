@@ -19,7 +19,7 @@ from __future__ import annotations
 __all__ = ["Importer", "FllImporter"]
 
 from pathlib import Path
-from typing import TypeVar
+from typing import overload
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
@@ -77,8 +77,6 @@ class FllImporter(Importer):
     @since 4.0
     @todo parse methods returning respective instances from blocks of text.
     """
-
-    T = TypeVar("T", Activation, Defuzzifier, SNorm, TNorm)
 
     def __init__(self, separator: str = "\n") -> None:
         """Creates an importer with the specific separator
@@ -312,9 +310,36 @@ class FllImporter(Importer):
         parameters = values[1] if len(values) > 1 else None
         return self.component(Defuzzifier, name, parameters)
 
+    @overload
     def component(
-        self, cls: type[FllImporter.T], fll: str, parameters: str | None = None
-    ) -> FllImporter.T | None:
+        self, cls: type[Activation], fll: str, parameters: str | None = None
+    ) -> Activation | None:
+        ...
+
+    @overload
+    def component(
+        self, cls: type[Defuzzifier], fll: str, parameters: str | None = None
+    ) -> Defuzzifier | None:
+        ...
+
+    @overload
+    def component(
+        self, cls: type[SNorm], fll: str, parameters: str | None = None
+    ) -> SNorm | None:
+        ...
+
+    @overload
+    def component(
+        self, cls: type[TNorm], fll: str, parameters: str | None = None
+    ) -> TNorm | None:
+        ...
+
+    def component(
+        self,
+        cls: type[Activation | Defuzzifier | TNorm | SNorm],
+        fll: str,
+        parameters: str | None = None,
+    ) -> Activation | Defuzzifier | TNorm | SNorm | None:
         """Create component from the factory.
         @param cls is the component class to create
         @param fll is the component in the FuzzyLite Language
@@ -334,11 +359,11 @@ class FllImporter(Importer):
                 f"to construct objects of type '{cls}'"
             )
 
-        factory: ConstructionFactory[FllImporter.T] = getattr(
-            lib.factory_manager, factory_attr
-        )
+        factory: ConstructionFactory[
+            Activation | Defuzzifier | SNorm | TNorm
+        ] = getattr(lib.factory_manager, factory_attr)
         result = factory.construct(fll)
-        if parameters and hasattr(result, "configure"):
+        if parameters and isinstance(result, (Activation, Defuzzifier)):
             result.configure(parameters)
         return result
 

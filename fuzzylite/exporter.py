@@ -624,6 +624,8 @@ class PythonExporter(Exporter):
             parameters = f"{defuzzifier.resolution}"
         elif isinstance(defuzzifier, WeightedDefuzzifier):
             parameters = f'"{defuzzifier.type.name}"'
+        else:
+            parameters = ""
         return f"fl.{defuzzifier.class_name}({parameters})"
 
     def rule(self, rule: Rule) -> str:

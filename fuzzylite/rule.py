@@ -287,6 +287,7 @@ class Antecedent:
         # (3) After a hedge comes a hedge or a term
         # (4) After a term comes a variable or an operator
 
+        # TODO: replace with enum.Flag("State", "VARIABLE IS HEDGE TERM AND_OR".split())
         s_variable, s_is, s_hedge, s_term, s_and_or = (2**i for i in range(5))
         state = s_variable
 
