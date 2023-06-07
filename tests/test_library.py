@@ -27,7 +27,7 @@ class TestLibrary(unittest.TestCase):
     def test_library_exports_dir(self) -> None:
         """Test the library exports expected components."""
         expected = """
-__annotations__ __builtins__ __cached__ __doc__ __file__ __loader__
+__builtins__ __cached__ __doc__ __file__ __loader__
 __name__ __package__ __path__ __spec__ __version__
 
 inf isinf isnan lib nan scalar array

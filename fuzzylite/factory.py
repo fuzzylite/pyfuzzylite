@@ -376,8 +376,6 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return maximum - importance * step
 
     def _register_operators(self) -> None:
-        import operator
-
         operator_type = Function.Element.Type.Operator
         p: Callable[[int], int] = self._precedence
         operators = [
@@ -386,7 +384,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "!",
                 "Logical NOT",
                 operator_type,
-                operator.not_,
+                np.logical_not,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -395,7 +393,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "~",
                 "Negate",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -405,7 +403,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "^",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -414,7 +412,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "**",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -423,7 +421,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".-",
                 "Unary minus",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -432,7 +430,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".+",
                 "Unary plus",
                 operator_type,
-                operator.pos,
+                np.positive,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -442,7 +440,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "*",
                 "Multiplication",
                 operator_type,
-                operator.mul,
+                np.multiply,
                 arity=2,
                 precedence=p(2),
             ),
@@ -450,22 +448,32 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "/",
                 "Division",
                 operator_type,
-                operator.truediv,
+                np.true_divide,
                 arity=2,
                 precedence=p(2),
             ),
             Function.Element(
-                "%", "Modulo", operator_type, operator.mod, arity=2, precedence=p(2)
+                "%",
+                "Modulo",
+                operator_type,
+                np.remainder,
+                arity=2,
+                precedence=p(2),
             ),
             # Fourth order: Addition, Subtraction
             Function.Element(
-                "+", "Addition", operator_type, operator.add, arity=2, precedence=p(3)
+                "+",
+                "Addition",
+                operator_type,
+                np.add,
+                arity=2,
+                precedence=p(3),
             ),
             Function.Element(
                 "-",
                 "Subtraction",
                 operator_type,
-                operator.sub,
+                np.subtract,
                 arity=2,
                 precedence=p(3),
             ),
@@ -474,7 +482,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.AND,
                 "Logical AND",
                 operator_type,
-                Op.logical_and,
+                np.logical_and,
                 arity=2,
                 precedence=p(4),
             ),
@@ -483,7 +491,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.OR,
                 "Logical OR",
                 operator_type,
-                Op.logical_or,
+                np.logical_or,
                 arity=2,
                 precedence=p(5),
             ),
@@ -507,8 +515,12 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "le", "Less than or equal to (<=)", function_type, Op.le, arity=2
             ),
             Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
-            Function.Element("min", "Minimum", function_type, np.min, arity=2),
-            Function.Element("max", "Maximum", function_type, np.max, arity=2),
+            Function.Element(
+                "min", "Minimum", function_type, min, arity=2
+            ),  # because is variadiac, whereas np.min takes arrays as args
+            Function.Element(
+                "max", "Maximum", function_type, max, arity=2
+            ),  # because is variadiac, whereas np.max takes arrays as args
             Function.Element(
                 "acos", "Inverse cosine", function_type, np.arccos, arity=1
             ),
@@ -557,7 +569,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 np.arctanh,
                 arity=1,
             ),
-            Function.Element("pow", "Power", function_type, np.power, arity=2),
+            Function.Element("pow", "Power", function_type, np.float_power, arity=2),
             Function.Element(
                 "atan2", "Inverse tangent (y,x)", function_type, np.arctan2, arity=2
             ),

@@ -19,7 +19,7 @@ from __future__ import annotations
 __all__ = ["Operation", "Op", "scalar", "array"]
 
 import inspect
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any, Callable, SupportsFloat
 
 import numpy as np
@@ -27,7 +27,6 @@ import numpy as np
 from .types import Array, Scalar
 
 
-# TODO: Change approximations to np.close and pass abs_tolerance as keyword argument instead, thus removing it from library
 class Operation:
     """The Operation class contains methods for numeric operations, string
     manipulation, and other functions, all of which are also accessible via
@@ -46,7 +45,7 @@ class Operation:
         @param b
         @return whether $a$ is equal to $b$.
         """
-        return scalar((a == b) | ((a != a) & (b != b)))
+        return np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
     def neq(
@@ -59,7 +58,7 @@ class Operation:
         @return whether $a$ is equal to $b$.
 
         """
-        return scalar(np.logical_not((a == b) | ((a != a) & (b != b))))
+        return ~np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
     def gt(
@@ -84,7 +83,7 @@ class Operation:
         @param b
         @return whether $a$ is greater than or equal to $b$.
         """
-        return scalar((a >= b) | ((a != a) & (b != b)))
+        return (a >= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
     def le(
@@ -97,7 +96,7 @@ class Operation:
         @param b
         @return whether $a$ is less than or equal to $b$.
         """
-        return scalar((a <= b) | ((a != a) & (b != b)))
+        return (a <= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
     def lt(
@@ -124,7 +123,7 @@ class Operation:
         \end{cases}
         $.
         """
-        return scalar((a == 1.0) * (b == 1.0))
+        return np.logical_and(a, b)
 
     @staticmethod
     def logical_or(a: Scalar, b: Scalar) -> Scalar:
@@ -138,7 +137,7 @@ class Operation:
         \end{cases}
         $.
         """
-        return scalar((a == 1.0) | (b == 1.0))
+        return np.logical_or(a, b)
 
     @staticmethod
     def as_identifier(name: str) -> str:
@@ -148,7 +147,7 @@ class Operation:
 
         """
         result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
-        return result if result else "unnamed"
+        return result if result else "_"
 
     @staticmethod
     def scale(
@@ -296,11 +295,12 @@ class Operation:
     @staticmethod
     def as_array(
         values: Any,
+        **kwargs: Any,
     ) -> Array[Any]:
         """Convert the value into a floating point defined by the library
         @param values is the value to convert.
         """
-        return np.asarray(values)
+        return np.asarray(values, **kwargs)
 
     @staticmethod
     def linspace(
@@ -357,8 +357,8 @@ class Operation:
             decimals = lib.decimals
         if isinstance(x, (float, np.floating)):
             return f"{x:.{decimals}f}"
-        if isinstance(x, (np.ndarray, Iterable)):
-            return " ".join(map(Operation.str, np.atleast_1d(np.asarray(x))))
+        if isinstance(x, (np.ndarray, Sequence)):
+            return " ".join([Op.str(x_i, decimals) for x_i in np.atleast_1d(x)])
         return str(x)
 
 
