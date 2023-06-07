@@ -661,8 +661,8 @@ class TestTerm(unittest.TestCase):
 
     def test_create(self) -> None:
         """Test the discrete term creation."""
-        x = np.array([0, 2, 4, 6])
-        y = np.array([1, 3, 5, 7])
+        x = fl.array([0, 2, 4, 6])
+        y = fl.array([1, 3, 5, 7])
         xy_list = np.array([x, y]).T.flatten().tolist()
 
         TermAssert(self, fl.Discrete.create("str", fl.Op.str(xy_list))).exports_fll(
@@ -671,10 +671,14 @@ class TestTerm(unittest.TestCase):
         TermAssert(self, fl.Discrete.create("list", xy_list)).exports_fll(
             "term: list Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
         )
-        TermAssert(self, fl.Discrete.create("tuple", tuple((x, y)))).exports_fll(
+        TermAssert(
+            self, fl.Discrete.create("tuple", (x.tolist(), y.tolist()))
+        ).exports_fll(
             "term: tuple Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
         )
-        TermAssert(self, fl.Discrete.create("dict", dict(zip(x, y)))).exports_fll(
+        TermAssert(
+            self, fl.Discrete.create("dict", dict(zip(x.tolist(), y.tolist())))
+        ).exports_fll(
             "term: dict Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
         )
         # As strings

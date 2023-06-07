@@ -709,7 +709,7 @@ class Discrete(Term):
     @since 4.0.
     """
 
-    Floatable = Union[SupportsFloat, str, bytes]
+    Floatable = Union[SupportsFloat, str]
 
     def __init__(
         self,
@@ -807,7 +807,6 @@ class Discrete(Term):
     def create(
         name: str,
         xy: str
-        | list[Floatable]
         | Sequence[Floatable]
         | tuple[Sequence[Floatable], tuple[Sequence[Floatable]]]
         | dict[Floatable, Floatable],
@@ -817,8 +816,7 @@ class Discrete(Term):
         @param name is the name of the term
         @param xy is a flexible set of parameters
         @param height is the height of the term
-        @returns a Discrete term
-        .
+        @returns a Discrete term.
         """
         x = scalar(0)
         y = scalar(0)
