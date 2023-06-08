@@ -142,7 +142,7 @@ class BoundedDifference(TNorm):
         """
         a = scalar(a)
         b = scalar(b)
-        return np.maximum(0, scalar(a) + scalar(b) - 1)
+        return np.maximum(0, a + b - 1)
 
 
 class DrasticProduct(TNorm):
