@@ -69,6 +69,11 @@ class TestActivation(unittest.TestCase):
         activation.parameters = MagicMock(return_value="param1 param2")  # type: ignore
         self.assertEqual("Activation param1 param2", str(activation))
 
+    @unittest.skip("Not implemented")
+    def test_all_activations(self) -> None:
+        """Test all the activations."""
+        raise NotImplementedError()
+
 
 if __name__ == "__main__":
     unittest.main()

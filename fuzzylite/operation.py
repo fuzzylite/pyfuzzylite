@@ -16,15 +16,15 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
-__all__ = ["Operation", "Op", "scalar", "array"]
+__all__ = ["Operation", "Op"]
 
 import inspect
 from collections.abc import Sequence
-from typing import Any, Callable, SupportsFloat
+from typing import Callable
 
 import numpy as np
 
-from .types import Array, Scalar
+from .types import Scalar, ScalarArray, scalar
 
 
 class Operation:
@@ -170,7 +170,7 @@ class Operation:
         @return the source value linearly interpolated to the target range:
         $ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} $.
         """
-        x = Operation.as_scalar(x)
+        x = scalar(x)
         return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
             x - from_minimum
         ) + to_minimum
@@ -189,7 +189,7 @@ class Operation:
         \end{cases}
         $.
         """
-        return np.clip(Operation.as_scalar(x), minimum, maximum)
+        return np.clip(scalar(x), minimum, maximum)
 
     @staticmethod
     def arity_of(method: Callable) -> int:  # type: ignore
@@ -257,50 +257,7 @@ class Operation:
         return "\n".join(lines)
 
     @staticmethod
-    def scalar(x: SupportsFloat | str | bytes) -> float:
-        """Convert the value into a floating point defined by the library
-        @param x is the value to convert.
-        """
-        from . import lib
-
-        return lib.floating_point(x)
-
-    @staticmethod
-    def as_scalar(
-        values: float | Sequence[Any] | Scalar | np.generic | Array[np.generic],
-    ) -> Scalar:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        from . import lib
-
-        return np.asarray(values, dtype=lib.floating_point_type)
-
-    @staticmethod
-    def as_scalars(
-        values: float | Sequence[Any] | Scalar | np.generic,
-    ) -> Array[np.floating[Any]]:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        from . import lib
-
-        return np.asarray(values, dtype=lib.floating_point_type)
-
-    @staticmethod
-    def as_array(
-        values: Any,
-        **kwargs: Any,
-    ) -> Array[Any]:
-        """Convert the value into a floating point defined by the library
-        @param values is the value to convert.
-        """
-        return np.asarray(values, **kwargs)
-
-    @staticmethod
-    def linspace(
-        start: float, end: float, resolution: int = 1000
-    ) -> Array[np.floating[Any]]:
+    def linspace(start: float, end: float, resolution: int = 1000) -> ScalarArray:
         """Returns a list of values from start to end with the given resolution using midpoint method."""
         # dx = ((end - start) / resolution)
         # result = start + (i + 0.5) * dx
@@ -358,6 +315,3 @@ class Operation:
 
 
 Op = Operation
-scalar = Op.as_scalar
-scalars = Op.as_scalars
-array = Op.as_array

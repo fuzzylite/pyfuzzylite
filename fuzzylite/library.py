@@ -16,16 +16,13 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
+__all__ = ["Library"]
+
 import logging
-from collections.abc import Sequence
-from typing import SupportsFloat
 
 import numpy as np
 
 from .factory import FactoryManager
-from .types import Scalar
-
-__all__ = ["Library"]
 
 
 class Library:
@@ -37,7 +34,6 @@ class Library:
     def __init__(
         self,
         decimals: int = 3,
-        floating_point_type: type[float | Scalar] = np.float64,
         factory_manager: FactoryManager | None = None,
         logger: logging.Logger | None = None,
         atol: float = 1e-03,  # TODO: like numpy? Or relative to number of decimals?
@@ -50,26 +46,11 @@ class Library:
         @param logger is the logger of fuzzylite.
         """
         self.decimals = decimals
-        self.floating_point_type = floating_point_type
         self.factory_manager = factory_manager or FactoryManager()
         self.logger = logger or logging.getLogger("fuzzylite")
         self.atol = atol
         self.rtol = rtol
         np.seterr(invalid="ignore", divide="ignore")
-
-    def floating_point(self, value: SupportsFloat | str | bytes) -> float:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        return self.floating_point_type(value)  # type: ignore
-
-    def floating_points(self, values: Sequence[np.generic]) -> Scalar:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        return np.asarray(
-            values, dtype=self.floating_point_type
-        )  # self.floating_point_type(value)
 
     def configure_logging(self, level: int, reset: bool = True) -> None:
         """Configure the logging service.

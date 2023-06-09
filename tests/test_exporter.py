@@ -1161,12 +1161,7 @@ class TestExporters(unittest.TestCase):
         import pathlib
 
         fl.lib.configure_logging(logging.INFO)
-
         fl.lib.decimals = 3
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64
 
         path = "/tmp/source/"
         examples = pathlib.Path(path)
@@ -1183,11 +1178,6 @@ class TestExporters(unittest.TestCase):
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64
-
         examples = "/tmp/source/takagi_sugeno/"
         TestExporters.export(examples + "/approximation.fll")
 
@@ -1197,11 +1187,6 @@ class TestExporters(unittest.TestCase):
         import importlib
         import pathlib
         import time
-
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64
 
         path = pathlib.Path(file_path)
         if path.suffix == ".fll":

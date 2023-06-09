@@ -29,6 +29,7 @@ from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .term import Term
+from .types import to_float
 from .variable import InputVariable, OutputVariable
 
 
@@ -193,7 +194,7 @@ class FllImporter(Importer):
             elif key == "range":
                 ov.range = self.range(value)
             elif key == "default":
-                ov.default_value = Op.scalar(value)
+                ov.default_value = to_float(value)
             elif key == "lock-previous":
                 ov.lock_previous = self.boolean(value)
             elif key == "lock-range":
@@ -372,7 +373,7 @@ class FllImporter(Importer):
         values = fll.split()
         if len(values) != 2:
             raise SyntaxError(f"expected range of two values, but got {values}")
-        return Op.scalar(values[0]), Op.scalar(values[1])
+        return to_float(values[0]), to_float(values[1])
 
     def boolean(self, fll: str) -> bool:
         """Gets a boolean from a value in the FuzzyLite Language."""

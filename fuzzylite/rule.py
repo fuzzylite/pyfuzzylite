@@ -33,8 +33,8 @@ from math import nan
 from .exporter import FllExporter
 from .hedge import Any
 from .norm import SNorm, TNorm
-from .operation import Op, array, scalar
-from .types import Scalar
+from .operation import Op
+from .types import Scalar, array, scalar
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:

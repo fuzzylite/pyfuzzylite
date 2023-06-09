@@ -28,7 +28,7 @@ from typing import IO, Any
 import numpy as np
 
 from .operation import Op
-from .types import Scalar
+from .types import Scalar, to_float
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -585,7 +585,7 @@ class PythonExporter(Exporter):
             result += [
                 f"{term.class_name}(",
                 f"{self.format(term.name)}, ",
-                ", ".join(self.format(Op.scalar(p)) for p in term.parameters().split()),
+                ", ".join(self.format(to_float(p)) for p in term.parameters().split()),
                 ")",
             ]
         return "".join(result)
@@ -835,7 +835,7 @@ class FldExporter(Exporter):
             line = line.strip()
             if not line or line[0] == "#":
                 continue
-            input_values.append([Op.scalar(x) for x in line.split()])
+            input_values.append([to_float(x) for x in line.split()])
 
         self.write(engine, writer, np.asarray(input_values))
 

@@ -45,8 +45,7 @@ from typing import Callable
 
 import numpy as np
 
-from .operation import scalar
-from .types import Scalar
+from .types import Scalar, scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function

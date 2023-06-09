@@ -34,9 +34,9 @@ from typing import Callable
 
 import numpy as np
 
-from .operation import Op, scalar
+from .operation import Op
 from .rule import Rule, RuleBlock
-from .types import Array, Scalar
+from .types import Array, Scalar, scalar, to_float
 
 
 class Activation:
@@ -158,7 +158,7 @@ class First(Activation):
         if parameters:
             rules, threshold = parameters.split()
             self.rules = int(rules)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the first $n$ rules whose activation degrees are greater than or
@@ -223,7 +223,7 @@ class Last(Activation):
         if parameters:
             rules, threshold = parameters.split()
             self.rules = int(rules)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the last $n$ rules whose activation degrees are greater
@@ -436,7 +436,7 @@ class Threshold(Activation):
         __operator__: dict[
             str,
             Callable[[Scalar, Scalar], bool | Array[np.bool_]],
-        ] = {
+        ] = {  # pyright: ignore
             LessThan: operator.lt,
             LessThanOrEqualTo: operator.le,
             EqualTo: operator.eq,
@@ -479,7 +479,7 @@ class Threshold(Activation):
         if parameters:
             comparator, threshold = parameters.split()
             self.comparator = Threshold.Comparator(comparator)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the rules whose activation degrees satisfy the comparison

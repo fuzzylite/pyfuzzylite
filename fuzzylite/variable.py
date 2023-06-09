@@ -28,9 +28,9 @@ import numpy as np
 
 from .exporter import FllExporter
 from .norm import SNorm
-from .operation import Op, scalar
+from .operation import Op
 from .term import Aggregated
-from .types import Scalar
+from .types import Scalar, scalar
 
 if typing.TYPE_CHECKING:
     from .defuzzifier import Defuzzifier

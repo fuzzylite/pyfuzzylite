@@ -1766,7 +1766,7 @@ class TestTerm(unittest.TestCase):
     @unittest.skip("Not using Python floats anymore since version 8")
     def test_division_by_zero_fails_with_float(self) -> None:
         """Test the division by zero when using Python floats."""
-        self.assertEqual(fl.lib.floating_point_type, float)
+        self.assertEqual(fl.types.float_type, float)
 
         TermAssert(self, fl.Function.create("dbz", "0.0/x")).membership_fails(
             0.0, ZeroDivisionError, "float division by zero"
@@ -1788,7 +1788,8 @@ class TestTerm(unittest.TestCase):
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
 
-        fl.lib.floating_point_type = np.float64
+        default_float = fl.types.float_type
+        fl.types.float_type = np.float64
         np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
@@ -1807,11 +1808,11 @@ class TestTerm(unittest.TestCase):
                 {0.0: fl.nan, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan}
             )
         except Exception:
-            fl.lib.floating_point_type = float
+            fl.types.float_type = default_float
             raise
 
-        fl.lib.floating_point_type = float
-        self.assertEqual(fl.lib.floating_point_type, float)
+        fl.types.float_type = default_float
+        self.assertEqual(fl.types.float_type, default_float)
 
 
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):

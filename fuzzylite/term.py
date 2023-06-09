@@ -54,8 +54,8 @@ import numpy as np
 
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
-from .operation import Op, array, scalar, scalars
-from .types import Array, Scalar
+from .operation import Op
+from .types import Scalar, ScalarArray, array, float_type, scalar, to_float
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
@@ -435,7 +435,7 @@ class Bell(Term):
         """Configures the term with the parameters
         @param parameters as `"center width slope [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.center, self.width, self.slope = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
@@ -497,7 +497,7 @@ class Binary(Term):
         """Configures the term with the parameters
         @param parameters as `"start direction [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.start, self.direction = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -585,7 +585,7 @@ class Concave(Term):
         """Configures the term with the parameters given
         @param parameters as `"inflection end [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.inflection, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -624,7 +624,7 @@ class Constant(Term):
         """Configures the term with the parameters
         @param parameters as `"value"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         if not values:
             raise ValueError("not enough values to unpack (expected 1, got 0)")
         self.value = values[0]
@@ -692,7 +692,7 @@ class Cosine(Term):
         """Configures the term with the parameters
         @param parameters as `"center width [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.center, self.width = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -714,7 +714,7 @@ class Discrete(Term):
     def __init__(
         self,
         name: str = "",
-        values: Array[np.floating[Any]] | Sequence[Floatable] | None = None,
+        values: ScalarArray | Sequence[Floatable] | None = None,
         height: float = 1.0,
     ) -> None:
         """Create the term.
@@ -724,12 +724,12 @@ class Discrete(Term):
         """
         super().__init__(name, height)
         if isinstance(values, Sequence):
-            x = [float(xi) for xi in values[0::2]]
-            y = [float(yi) for yi in values[1::2]]
-            values = scalars([x, y]).T
+            x = [to_float(xi) for xi in values[0::2]]
+            y = [to_float(yi) for yi in values[1::2]]
+            values = scalar([x, y]).T
         elif values is None:
-            values = np.atleast_2d(array([]))
-        self.values: Array[np.floating[Any]] = values  # type: ignore
+            values = np.atleast_2d(scalar([]))
+        self.values = values
 
     def membership(self, x: Scalar) -> Scalar:
         r"""Computes the membership function evaluated at $x$ by using binary
@@ -777,13 +777,13 @@ class Discrete(Term):
             del as_list[-1]
         self.values = Discrete.to_xy(as_list[0::2], as_list[1::2])
 
-    def x(self) -> Array[np.floating[Any]]:
+    def x(self) -> ScalarArray:
         """An iterable containing the $x$ values
         @return an iterable containing the $x$ values.
         """
         return self.values[:, 0]
 
-    def y(self) -> Array[np.floating[Any]]:
+    def y(self) -> ScalarArray:
         """An iterable containing the $y$ values
         @return an iterable containing the $y$ values.
         """
@@ -823,30 +823,27 @@ class Discrete(Term):
         if isinstance(xy, str):
             xy = xy.split()
         if isinstance(xy, Sequence):
-            x = array(xy[0::2])
-            y = array(xy[1::2])
+            x = scalar(xy[0::2])
+            y = scalar(xy[1::2])
         if isinstance(xy, tuple):
-            x, y = map(array, xy)
+            x, y = map(scalar, xy)
         if isinstance(xy, dict):
-            x = array([xi for xi in xy])
-            y = array([yi for yi in xy.values()])
+            x = scalar([xi for xi in xy])
+            y = scalar([yi for yi in xy.values()])
         return Discrete(name, Discrete.to_xy(x, y), height=height)
 
     @staticmethod
-    def to_xy(
-        x: Scalar | Sequence[Floatable],
-        y: Scalar | Sequence[Floatable],
-    ) -> Array[np.floating[Any]]:
+    def to_xy(x: Any, y: Any) -> ScalarArray:
         """Creates a list of values from the given values.
         @param values is a string or a flat list of (x, y)-pairs or a dictionary of values {x: y}.
         """
-        x = scalars(x)
-        y = scalars(y)
+        x = array(x, dtype=float_type)
+        y = array(y, dtype=float_type)
         if x.shape != y.shape:
             raise ValueError(
                 f"expected same shape from x and y, but found x={x.shape} and y={y.shape}"
             )
-        return scalars([x, y]).T
+        return array([x, y]).T
 
 
 class Gaussian(Term):
@@ -904,7 +901,7 @@ class Gaussian(Term):
         """Configures the term with the parameters
         @param parameters as `"mean standardDeviation [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.mean, self.standard_deviation = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -996,7 +993,7 @@ class GaussianProduct(Term):
         @param parameters as `"meanA standardDeviationA meanB
         standardDeviationB [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         (
             self.mean_a,
             self.standard_deviation_a,
@@ -1053,7 +1050,7 @@ class Linear(Term):
                 f"expected {len(self.engine.input_variables)} (+1) coefficients (one for each input variable plus an optional constant), "
                 f"but found {len(self.coefficients)} coefficients: {self.coefficients}"
             )
-        coefficients = scalars([self.coefficients[: len(self.engine.input_variables)]])
+        coefficients = scalar([self.coefficients[: len(self.engine.input_variables)]])
         constant = (
             self.coefficients[-1]
             if len(self.coefficients) > len(self.engine.input_variables)
@@ -1067,7 +1064,7 @@ class Linear(Term):
         r"""Configures the term with the values of $\mathbf{c}^\star$
         @param parameters as `"c1 ... ci ... cn k"`.
         """
-        self.coefficients = [Op.scalar(p) for p in parameters.split()]
+        self.coefficients = [to_float(p) for p in parameters.split()]
 
     def parameters(self) -> str:
         r"""Returns the vector $\mathbf{c}^\star$
@@ -1180,7 +1177,7 @@ class PiShape(Term):
         @param parameters as `"bottomLeft topLeft topRight bottomRight
         [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -1273,7 +1270,7 @@ class Ramp(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1333,7 +1330,7 @@ class Rectangle(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1407,7 +1404,7 @@ class Sigmoid(Term):
         """Configures the term with the parameters
         @param parameters as `"inflection slope [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.inflection, self.slope = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1472,7 +1469,7 @@ class SigmoidDifference(Term):
         """Configures the term with the parameters
         @param parameters as `"left rising falling right [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -1537,7 +1534,7 @@ class SigmoidProduct(Term):
         """Configures the term with the parameters
         @param parameters as `"left rising falling right [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.left, self.rising, self.falling, self.right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -1594,7 +1591,7 @@ class Spike(Term):
         """Configures the term with the parameters
         @param parameters as `"center width [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.center, self.width = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1688,7 +1685,7 @@ class SShape(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -1785,7 +1782,7 @@ class Trapezoid(Term):
         """Configures the term with the parameters
         @param parameters as `"bottom_left top_left top_right bottom_right [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
         self.height = 1.0 if len(values) == 4 else values[-1]
 
@@ -1872,7 +1869,7 @@ class Triangle(Term):
         """Configures the term with the parameters
         @param parameters as `"left top right [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.left, self.top, self.right = values[0:3]
         self.height = 1.0 if len(values) == 3 else values[-1]
 
@@ -1963,7 +1960,7 @@ class ZShape(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(Op.scalar(x) for x in parameters.split())
+        values = tuple(to_float(x) for x in parameters.split())
         self.start, self.end = values[0:2]
         self.height = 1.0 if len(values) == 2 else values[-1]
 
@@ -2501,7 +2498,7 @@ class Function(Term):
                 stack.append(node)
             elif is_operand:
                 try:
-                    node = Function.Node(constant=Op.scalar(token))
+                    node = Function.Node(constant=to_float(token))
                 except ValueError:
                     node = Function.Node(variable=token)
                 stack.append(node)

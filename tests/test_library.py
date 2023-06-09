@@ -30,7 +30,7 @@ class TestLibrary(unittest.TestCase):
 __builtins__ __cached__ __doc__ __file__ __loader__
 __name__ __package__ __path__ __spec__ __version__
 
-inf isinf isnan lib nan scalar array
+inf isinf isnan lib nan
 
 activation Activation First General Highest Last Lowest Proportional Threshold
 
@@ -64,7 +64,7 @@ term Activated Aggregated Bell Binary Concave Constant Cosine Discrete Function 
 GaussianProduct Linear PiShape Ramp Rectangle SShape Sigmoid SigmoidDifference SigmoidProduct
 Spike Term Trapezoid Triangle ZShape
 
-types Scalar Array
+types Array Float Scalar ScalarArray array float_type to_float scalar
 
 variable InputVariable OutputVariable Variable
 """
