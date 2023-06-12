@@ -20,7 +20,7 @@ __all__ = ["Operation", "Op"]
 
 import inspect
 from collections.abc import Sequence
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 
@@ -257,7 +257,7 @@ class Operation:
         return "\n".join(lines)
 
     @staticmethod
-    def linspace(start: float, end: float, resolution: int = 1000) -> ScalarArray:
+    def midpoints(start: float, end: float, resolution: int = 1000) -> ScalarArray:
         """Returns a list of values from start to end with the given resolution using midpoint method."""
         # dx = ((end - start) / resolution)
         # result = start + (i + 0.5) * dx
@@ -297,7 +297,7 @@ class Operation:
 
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: float | object, decimals: int | None = None) -> str:
+    def str(x: Any, decimals: int | None = None) -> str:
         """Returns a string representation of the given value
         @param x is the value
         @param decimals is the number of decimals to display

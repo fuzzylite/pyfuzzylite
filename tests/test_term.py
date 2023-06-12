@@ -173,7 +173,7 @@ class TestTerm(unittest.TestCase):
         fl.Term().update_reference(None)
 
         discrete_triangle = fl.Triangle("triangle", -1.0, 0.0, 1.0).discretize(
-            -1, 1, 11
+            -1, 1, 10, midpoints=False
         )
         xy = {
             -1.0: 0.0,

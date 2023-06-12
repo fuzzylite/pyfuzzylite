@@ -180,7 +180,7 @@ class Term:
         return False
 
     def discretize(
-        self, start: float, end: float, resolution: int = 100, bounded_mf: bool = True
+        self, start: float, end: float, resolution: int = 10, midpoints: bool = True
     ) -> Discrete:
         """Discretise the term.
         @param start is the start of the range
@@ -188,10 +188,11 @@ class Term:
         @param resolution is the number of points to discretise
         @param bounded_mf whether to bound the membership values to [0.0, 1.0].
         """
-        x = np.linspace(start, end, resolution)
+        if midpoints:
+            x = Op.midpoints(start, end, resolution)
+        else:
+            x = np.linspace(start, end, resolution + 1, endpoint=True)
         y = self.membership(x)
-        if bounded_mf:
-            y = np.clip(y, 0.0, 1.0)
         xy = Discrete.to_xy(x, y)
         return Discrete(self.name, xy)
 

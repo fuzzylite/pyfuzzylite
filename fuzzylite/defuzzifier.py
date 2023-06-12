@@ -157,7 +157,7 @@ class Bisector(IntegralDefuzzifier):
         """
         if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         area = np.nancumsum(y, axis=1)
         # normalising the cumulative sum is not necessary, but it is convenient because it results in nan
@@ -195,7 +195,7 @@ class Centroid(IntegralDefuzzifier):
         """
         if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         z = ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()
         return z  # type: ignore
@@ -228,7 +228,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
         """
         if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         lom = np.where(y_max, x, np.nan)
@@ -265,7 +265,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
         """
         if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         mom = np.where(y_max, x, np.nan)
@@ -302,7 +302,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         """
         if np.any(~np.isfinite([minimum, maximum])):
             return nan
-        x = np.atleast_2d(Op.linspace(minimum, maximum, self.resolution))
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
         som = np.where(y_max, x, np.nan)
