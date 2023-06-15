@@ -54,6 +54,7 @@ def lint(session: nox.Session) -> None:
     posargs = list(session.posargs)
     if "-qodana" in posargs:
         posargs.remove("-qodana")
+        linters.pop("qodana")
     if not posargs:
         posargs = list(linters.keys())
     for linter in posargs:
