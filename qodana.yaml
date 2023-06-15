@@ -4,3 +4,5 @@ exclude:
   - name: PyClassHasNoInitInspection
   - name: PyIncorrectDocstringInspection
   - name: PyMethodMayBeStaticInspection
+include:
+  - name: CheckDependencyLicenses
