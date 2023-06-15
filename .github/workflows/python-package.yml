@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, development]
   pull_request:
-    branches: [main, development]
+    branches: [main, development, feature/*]
 
 jobs:
   build:
@@ -15,7 +15,9 @@ jobs:
         python-version: ["3.9"] #, "3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # required by Qodana on PRs
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -31,7 +33,11 @@ jobs:
           nox -e install
       - name: Lint
         run: |
-          nox -e lint
+          nox -e lint -- cloud
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@main
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
       - name: Test
         run: |
           nox -e test

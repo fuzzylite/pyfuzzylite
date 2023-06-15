@@ -55,6 +55,10 @@ def lint(session: nox.Session) -> None:
     session.run(*"mypy --version".split(), external=True)
     session.run("mypy", *files, external=True)
 
+    if "cloud" not in session.posargs:
+        # assumes qodana is installed (eg, `brew install jetbrains/utils/qodana`)
+        session.run(*"qodana scan --print-problems".split(), external=True)
+
 
 @nox.session(python=False)
 def install(session: nox.Session) -> None:
