@@ -37,7 +37,7 @@ jobs:
       - name: Qodana Scan
         uses: JetBrains/qodana-action@main
         with:
-          args: --baseline,qodana.sarif.json,--print-problems,--upload-results,true
+          args: --baseline,qodana.sarif.json,--print-problems
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
       - uses: github/codeql-action/upload-sarif@v2
