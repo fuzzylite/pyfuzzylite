@@ -21,8 +21,8 @@ include = [
     "AUTHOR",
     "CHANGELOG",
     "fuzzylite.png",
-    "LICENSE",
-    "LICENSE.FuzzyLite",
+    "LICENSE.FuzzyLite.txt",
+    "LICENSE.GPL.txt",
     "README.md",
     "THANKS",
 ]
