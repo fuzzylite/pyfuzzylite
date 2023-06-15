@@ -36,6 +36,8 @@ jobs:
           nox -e lint -- cloud
       - name: Qodana Scan
         uses: JetBrains/qodana-action@main
+        with:
+          args: --baseline,qodana.sarif.json
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
       - name: Test
