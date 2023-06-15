@@ -60,8 +60,8 @@ operation Op Operation
 
 rule Antecedent Consequent Expression Operator Proposition Rule RuleBlock
 
-term Activated Aggregated Bell Binary Concave Constant Cosine Discrete Function Gaussian
-GaussianProduct Linear PiShape Ramp Rectangle SShape Sigmoid SigmoidDifference SigmoidProduct
+term Activated Aggregated Arc Bell Binary Concave Constant Cosine Discrete Function Gaussian
+GaussianProduct Linear PiShape Ramp Rectangle SShape SemiEllipse Sigmoid SigmoidDifference SigmoidProduct
 Spike Term Trapezoid Triangle ZShape
 
 types Array Float Scalar ScalarArray array float_type to_float scalar

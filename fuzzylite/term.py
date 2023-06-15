@@ -19,6 +19,7 @@ from __future__ import annotations
 __all__ = [
     "Activated",
     "Aggregated",
+    "Arc",
     "Bell",
     "Binary",
     "Concave",
@@ -33,6 +34,7 @@ __all__ = [
     "Ramp",
     "Rectangle",
     "SShape",
+    "SemiEllipse",
     "Sigmoid",
     "SigmoidDifference",
     "SigmoidProduct",
@@ -140,6 +142,21 @@ class Term:
         :param parameters is the takes_parameters to configure the term.
         """
         pass
+
+    def _parse(
+        self, required: int, parameters: str, *, height: bool = True
+    ) -> list[float]:
+        values = [to_float(x) for x in parameters.split()]
+        if height and len(values) == required:
+            values.append(1.0)
+        if len(values) == required + height:
+            return values
+        height_message = f" (or {required + 1} including height)" if height else ""
+        raise ValueError(
+            f"expected {required} parameters"
+            f"{height_message}"
+            f", but got {len(values)}: '{parameters}'",
+        )
 
     def membership(self, x: Scalar) -> Scalar:
         r"""Computes the has_membership function value at $x$
@@ -377,6 +394,73 @@ class Aggregated(Term):
         self.terms.clear()
 
 
+class Arc(Term):
+    """The Arc class is an edge term that represents the arc-shaped membership function."""
+
+    def __init__(
+        self,
+        name: str = "",
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
+    ) -> None:
+        """Create the term.
+        @param name is the name of the term
+        @param start is the start of the term
+        @param end is the end of the term.
+        """
+        super().__init__(name, height)
+        self.start = start
+        self.end = end
+
+    def membership(self, x: Scalar) -> Scalar:
+        """Computes the membership function value of $x$."""
+        x = scalar(x)
+        s = self.start
+        e = self.end
+        r = e - s
+        c = s + r
+        left = s > e
+        right = s < e
+        y = (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                (left & (c <= x) & (x <= s)) | (right & (s <= x) & (x <= c)),
+                np.sqrt(r**2 - (x - c) ** 2) / abs(r),
+                (left & (x < e)) | (right & (x > e)),
+            )
+        )
+        return y  # type: ignore
+
+    def tsukamoto(
+        self,
+        y: Scalar,
+    ) -> Scalar:
+        """Computes the tsukamoto function value of $y$."""
+        y = scalar(y)
+        h = self.height
+        s = self.start
+        e = self.end
+        r = e - s
+        c = s + r
+        sign = -1 if s < e else 1
+        x = c + sign * np.sqrt(r**2 - (y * r / h) ** 2)
+        return x
+
+    def is_monotonic(self) -> bool:
+        """Returns True because the term is monotonic."""
+        return True
+
+    def parameters(self) -> str:
+        """Returns the parameters of the term."""
+        return super()._parameters(self.start, self.end)
+
+    def configure(self, parameters: str) -> None:
+        """Configures the term with the given parameters: start end [height]."""
+        self.start, self.end, self.height = self._parse(2, parameters)
+
+
 class Bell(Term):
     """The Bell class is an extended Term that represents the generalized bell
     curve membership function.
@@ -417,14 +501,15 @@ class Bell(Term):
               $s$ is the slope of the Bell.
         """
         x = scalar(x)
-        return (
+        c = self.center
+        w = self.width
+        s = self.slope
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * (
-                1.0
-                / (1.0 + (np.abs((x - self.center) / self.width) ** (2.0 * self.slope)))
-            )
+            * (1.0 / (1.0 + (np.abs((x - c) / w) ** (2.0 * s))))
         )
+        return y
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -436,9 +521,7 @@ class Bell(Term):
         """Configures the term with the parameters
         @param parameters as `"center width slope [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.center, self.width, self.slope = values[0:3]
-        self.height = 1.0 if len(values) == 3 else values[-1]
+        self.center, self.width, self.slope, self.height = self._parse(3, parameters)
 
 
 class Binary(Term):
@@ -482,11 +565,12 @@ class Binary(Term):
         x = scalar(x)
         right = (self.direction > self.start) & (x >= self.start)
         left = (self.direction < self.start) & (x <= self.start)
-        return (  # type: ignore
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(right | left, 1.0, 0.0)
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -498,9 +582,7 @@ class Binary(Term):
         """Configures the term with the parameters
         @param parameters as `"start direction [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.start, self.direction = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.start, self.direction, self.height = self._parse(2, parameters)
 
 
 class Concave(Term):
@@ -545,22 +627,24 @@ class Concave(Term):
               $e$ is the end of the Concave.
         """
         x = scalar(x)
-        increasing = (self.inflection <= self.end) & (x < self.end)
-        decreasing = (self.inflection >= self.end) & (x > self.end)
-        return (  # type: ignore
+        i = self.inflection
+        e = self.end
+        increasing = (i <= e) & (x < e)
+        decreasing = (i >= e) & (x > e)
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
                 increasing,
-                (self.end - self.inflection) / (2.0 * self.end - self.inflection - x),
+                (e - i) / (2.0 * e - i - x),
                 np.where(
                     decreasing,
-                    (self.inflection - self.end)
-                    / (self.inflection - 2.0 * self.end + x),
+                    (i - e) / (i - 2.0 * e + x),
                     1.0,
                 ),
             )
         )
+        return y  # type: ignore
 
     def is_monotonic(self) -> bool:
         """Returns True because this term is monotonic."""
@@ -586,9 +670,7 @@ class Concave(Term):
         """Configures the term with the parameters given
         @param parameters as `"inflection end [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.inflection, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.inflection, self.end, self.height = self._parse(2, parameters)
 
 
 class Constant(Term):
@@ -613,7 +695,8 @@ class Constant(Term):
         @param x is irrelevant
         @return $c$, where $c$ is the constant value.
         """
-        return np.full_like(x, fill_value=self.value)
+        y = np.full_like(x, fill_value=self.value)
+        return y
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -625,11 +708,7 @@ class Constant(Term):
         """Configures the term with the parameters
         @param parameters as `"value"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        if not values:
-            raise ValueError("not enough values to unpack (expected 1, got 0)")
-        self.value = values[0]
-        self.height = 1.0
+        self.value = self._parse(1, parameters, height=False)[0]
 
 
 class Cosine(Term):
@@ -671,17 +750,20 @@ class Cosine(Term):
               $w$ is the width of the Cosine.
         """
         x = scalar(x)
-        increasing = x >= self.center - 0.5 * self.width
-        decreasing = x <= self.center + 0.5 * self.width
-        return (  # type: ignore
+        c = self.center
+        w = self.width
+        increasing = x >= c - 0.5 * w
+        decreasing = x <= c + 0.5 * w
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
                 np.isfinite(x) & (increasing | decreasing),
-                0.5 * (1.0 + np.cos(2.0 / self.width * np.pi * (x - self.center))),
+                0.5 * (1.0 + np.cos(2.0 / w * np.pi * (x - c))),
                 0.0,
             )
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -693,9 +775,7 @@ class Cosine(Term):
         """Configures the term with the parameters
         @param parameters as `"center width [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.center, self.width = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.center, self.width, self.height = self._parse(2, parameters)
 
 
 class Discrete(Term):
@@ -753,11 +833,12 @@ class Discrete(Term):
                 "expected xy to have with 2 columns, "
                 f"but got {self.values.ndim} in shape {self.values.shape}: {self.values}"
             )
-        return self.height * np.interp(scalar(x), self.values[:, 0], self.values[:, 1])
+        y = self.height * np.interp(scalar(x), self.values[:, 0], self.values[:, 1])
+        return y
 
     def tsukamoto(self, y: Scalar) -> Scalar:
         """Not implemented."""
-        # todo: approximate tsukamoto
+        # todo: approximate tsukamoto if monotonic
         raise NotImplementedError()
 
     def parameters(self) -> str:
@@ -774,7 +855,7 @@ class Discrete(Term):
         if len(as_list) % 2 == 0:
             self.height = 1.0
         else:
-            self.height = float(as_list[-1])
+            self.height = to_float(as_list[-1])
             del as_list[-1]
         self.values = Discrete.to_xy(as_list[0::2], as_list[1::2])
 
@@ -883,14 +964,14 @@ class Gaussian(Term):
               $\sigma$ is the standard deviation of the Gaussian.
         """
         x = scalar(x)
-        return (  # type: ignore
+        m = self.mean
+        std = self.standard_deviation
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * np.exp(
-                (-(x - self.mean) * (x - self.mean))
-                / (2.0 * self.standard_deviation * self.standard_deviation)
-            )
+            * np.exp((-((x - m) ** 2)) / (2.0 * std**2))
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -902,9 +983,7 @@ class Gaussian(Term):
         """Configures the term with the parameters
         @param parameters as `"mean standardDeviation [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.mean, self.standard_deviation = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.mean, self.standard_deviation, self.height = self._parse(2, parameters)
 
 
 class GaussianProduct(Term):
@@ -960,23 +1039,22 @@ class GaussianProduct(Term):
               &\mbox{otherwise}\end{cases}$.
         """
         x = scalar(x)
+        ma = self.mean_a
+        stda = self.standard_deviation_a
+        mb = self.mean_b
+        stdb = self.standard_deviation_b
         a = np.where(
-            x < self.mean_a,
-            np.exp(
-                (-(x - self.mean_a) * (x - self.mean_a))
-                / (2.0 * self.standard_deviation_a * self.standard_deviation_a)
-            ),
+            x < ma,
+            np.exp((-((x - ma) ** 2)) / (2.0 * stda**2)),
             1.0,
         )
         b = np.where(
-            x > self.mean_b,
-            np.exp(
-                (-(x - self.mean_b) * (x - self.mean_b))
-                / (2.0 * self.standard_deviation_b * self.standard_deviation_b)
-            ),
+            x > mb,
+            np.exp((-((x - mb) ** 2)) / (2.0 * stdb**2)),
             1.0,
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b  # type: ignore
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Provides the parameters of the term
@@ -994,14 +1072,13 @@ class GaussianProduct(Term):
         @param parameters as `"meanA standardDeviationA meanB
         standardDeviationB [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
         (
             self.mean_a,
             self.standard_deviation_a,
             self.mean_b,
             self.standard_deviation_b,
-        ) = values[0:4]
-        self.height = 1.0 if len(values) == 4 else values[-1]
+            self.height,
+        ) = self._parse(4, parameters)
 
 
 class Linear(Term):
@@ -1058,8 +1135,8 @@ class Linear(Term):
             else 0.0
         )
         inputs = np.array([iv.value for iv in self.engine.input_variables], ndmin=2).T
-        result = (coefficients * inputs).sum(axis=1) + constant
-        return result  # type:ignore
+        y = (coefficients * inputs).sum(axis=1) + constant
+        return y  # type:ignore
 
     def configure(self, parameters: str) -> None:
         r"""Configures the term with the values of $\mathbf{c}^\star$
@@ -1130,40 +1207,38 @@ class PiShape(Term):
               $b_r$ is the bottom right of the PiShape,.
         """
         x = scalar(x)
+        bl = self.bottom_left
+        tl = self.top_left
+        br = self.bottom_right
+        tr = self.top_right
         s_shape = np.where(
-            x <= self.bottom_left,
+            x <= bl,
             0.0,
             np.where(
-                x <= 0.5 * (self.bottom_left + self.top_left),
-                2.0
-                * ((x - self.bottom_left) / (self.top_left - self.bottom_left)) ** 2,
+                x <= 0.5 * (bl + tl),
+                2.0 * ((x - bl) / (tl - bl)) ** 2,
                 np.where(
-                    x < self.top_left,
-                    1.0
-                    - 2.0
-                    * ((x - self.top_left) / (self.top_left - self.bottom_left)) ** 2,
+                    x < tl,
+                    1.0 - 2.0 * ((x - tl) / (tl - bl)) ** 2,
                     1.0,
                 ),
             ),
         )
         z_shape = np.where(
-            x <= self.top_right,
+            x <= tr,
             1.0,
             np.where(
-                x <= 0.5 * (self.top_right + self.bottom_right),
-                1.0
-                - 2.0
-                * ((x - self.top_right) / (self.bottom_right - self.top_right)) ** 2,
+                x <= 0.5 * (tr + br),
+                1.0 - 2.0 * ((x - tr) / (br - tr)) ** 2,
                 np.where(
-                    x < self.bottom_right,
-                    2.0
-                    * ((x - self.bottom_right) / (self.bottom_right - self.top_right))
-                    ** 2,
+                    x < br,
+                    2.0 * ((x - br) / (br - tr)) ** 2,
                     0.0,
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape  # type: ignore
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1178,9 +1253,13 @@ class PiShape(Term):
         @param parameters as `"bottomLeft topLeft topRight bottomRight
         [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
-        self.height = 1.0 if len(values) == 4 else values[-1]
+        (
+            self.bottom_left,
+            self.top_left,
+            self.top_right,
+            self.bottom_right,
+            self.height,
+        ) = self._parse(4, parameters)
 
 
 class Ramp(Term):
@@ -1232,21 +1311,24 @@ class Ramp(Term):
               $e$ is the end of the Ramp.
         """
         x = scalar(x)
-        increasing = self.start < self.end
-        decreasing = self.start > self.end
-        return (  # type: ignore
+        s = self.start
+        e = self.end
+        increasing = s < e
+        decreasing = s > e
+        y = (
             self.height
             * np.where(np.isnan(x) | (increasing == decreasing), np.nan, 1.0)
             * np.where(
-                increasing & (self.end > x) & (x > self.start),
-                (x - self.start) / (self.end - self.start),
+                increasing & (e > x) & (x > s),
+                (x - s) / (e - s),
                 np.where(
-                    decreasing & (self.end < x) & (x < self.start),
-                    (self.start - x) / (self.start - self.end),
-                    (increasing & (x >= self.end)) | (decreasing & (x <= self.end)),
+                    decreasing & (e < x) & (x < s),
+                    (s - x) / (s - e),
+                    (increasing & (x >= e)) | (decreasing & (x <= e)),
                 ),
             )
         )
+        return y  # type: ignore
 
     def is_monotonic(self) -> bool:
         """Returns True as this term is monotonic."""
@@ -1271,9 +1353,7 @@ class Ramp(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.start, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.start, self.end, self.height = self._parse(2, parameters)
 
 
 class Rectangle(Term):
@@ -1315,11 +1395,10 @@ class Rectangle(Term):
               $e$ is the end of the Rectangle.
         """
         x = scalar(x)
-        return (
-            self.height
-            * np.where(np.isnan(x), np.nan, 1.0)
-            * ((self.start <= x) & (x <= self.end))
-        )
+        s = min(self.start, self.end)
+        e = max(self.start, self.end)
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * ((s <= x) & (x <= e))
+        return y
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1331,9 +1410,49 @@ class Rectangle(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.start, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.start, self.end, self.height = self._parse(2, parameters)
+
+
+class SemiEllipse(Term):
+    """The SemiEllipse class is a basic Term that represents the semi-ellipse membership function."""
+
+    def __init__(
+        self,
+        name: str = "",
+        start: float = nan,
+        end: float = nan,
+        height: float = 1.0,
+    ) -> None:
+        """Create the term."""
+        super().__init__(name, height)
+        self.start = start
+        self.end = end
+
+    def membership(self, x: Scalar) -> Scalar:
+        """Computes the membership function evaluated at $x$."""
+        x = scalar(x)
+        s = min(self.start, self.end)
+        e = max(self.start, self.end)
+        r = (e - s) / 2
+        c = s + r
+        y = (
+            self.height
+            * np.where(np.isnan(x), np.nan, 1.0)
+            * np.where(
+                (x >= s) & (x <= e),
+                np.sqrt(r * r - (x - c) ** 2) / r,
+                0,
+            )
+        )
+        return y  # type: ignore
+
+    def parameters(self) -> str:
+        """Returns the parameters of the term."""
+        return super()._parameters(self.start, self.end)
+
+    def configure(self, parameters: str) -> None:
+        """Configures the term with the parameters: start end [height]."""
+        self.start, self.end, self.height = self._parse(2, parameters)
 
 
 class Sigmoid(Term):
@@ -1372,12 +1491,14 @@ class Sigmoid(Term):
               $i$ is the inflection of the Sigmoid.
         """
         x = scalar(x)
-        return (
+        i = self.inflection
+        s = self.slope
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * 1.0
-            / (1.0 + np.exp(-self.slope * (x - self.inflection)))
+            / (1.0 + np.exp(-s * (x - i)))
         )
+        return y
 
     def tsukamoto(
         self,
@@ -1405,9 +1526,7 @@ class Sigmoid(Term):
         """Configures the term with the parameters
         @param parameters as `"inflection slope [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.inflection, self.slope = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.inflection, self.slope, self.height = self._parse(2, parameters)
 
 
 class SigmoidDifference(Term):
@@ -1456,9 +1575,14 @@ class SigmoidDifference(Term):
               $s_r$ is the right slope of the SigmoidDifference.
         """
         x = scalar(x)
-        a = 1.0 / (1.0 + np.exp(-self.rising * (x - self.left)))
-        b = 1.0 / (1.0 + np.exp(-self.falling * (x - self.right)))
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * np.abs(a - b)  # type: ignore
+        left = self.left
+        right = self.right
+        rise = self.rising
+        fall = self.falling
+        a = 1.0 / (1.0 + np.exp(-rise * (x - left)))
+        b = 1.0 / (1.0 + np.exp(-fall * (x - right)))
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * np.abs(a - b)
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1470,9 +1594,13 @@ class SigmoidDifference(Term):
         """Configures the term with the parameters
         @param parameters as `"left rising falling right [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.left, self.rising, self.falling, self.right = values[0:4]
-        self.height = 1.0 if len(values) == 4 else values[-1]
+        (
+            self.left,
+            self.rising,
+            self.falling,
+            self.right,
+            self.height,
+        ) = self._parse(4, parameters)
 
 
 class SigmoidProduct(Term):
@@ -1521,9 +1649,14 @@ class SigmoidProduct(Term):
               $s_r$ is the right slope of the SigmoidProduct.
         """
         x = scalar(x)
-        a = 1.0 + np.exp(-self.rising * (x - self.left))
-        b = 1.0 + np.exp(-self.falling * (x - self.right))
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) / (a * b)
+        left = self.left
+        right = self.right
+        rise = self.rising
+        fall = self.falling
+        a = 1.0 + np.exp(-rise * (x - left))
+        b = 1.0 + np.exp(-fall * (x - right))
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) / (a * b)
+        return y
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1535,9 +1668,13 @@ class SigmoidProduct(Term):
         """Configures the term with the parameters
         @param parameters as `"left rising falling right [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.left, self.rising, self.falling, self.right = values[0:4]
-        self.height = 1.0 if len(values) == 4 else values[-1]
+        (
+            self.left,
+            self.rising,
+            self.falling,
+            self.right,
+            self.height,
+        ) = self._parse(4, parameters)
 
 
 class Spike(Term):
@@ -1550,7 +1687,6 @@ class Spike(Term):
     @since 5.0.
     """
 
-    # TODO: Properly rename the parameters.
     def __init__(
         self,
         name: str = "",
@@ -1576,11 +1712,15 @@ class Spike(Term):
               $w$ is the width of the Spike,
               $c$ is the center of the Spike.
         """
-        return (  # type: ignore
+        x = scalar(x)
+        c = self.center
+        w = self.width
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * np.exp(-np.abs(10.0 / self.width * (x - self.center)))
+            * np.exp(-np.abs(10.0 / w * (x - c)))
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1592,9 +1732,7 @@ class Spike(Term):
         """Configures the term with the parameters
         @param parameters as `"center width [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.center, self.width = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.center, self.width, self.height = self._parse(2, parameters)
 
 
 class SShape(Term):
@@ -1638,20 +1776,23 @@ class SShape(Term):
               $e$ is the end of the SShape.
         """
         x = scalar(x)
+        s = self.start
+        e = self.end
         s_shape = np.where(
             x <= self.start,
             0.0,
             np.where(
-                x <= 0.5 * (self.start + self.end),
-                2.0 * ((x - self.start) / (self.end - self.start)) ** 2,
+                x <= 0.5 * (s + e),
+                2.0 * ((x - s) / (e - s)) ** 2,
                 np.where(
-                    x < self.end,
-                    1.0 - 2.0 * ((x - self.end) / (self.end - self.start)) ** 2,
+                    x < e,
+                    1.0 - 2.0 * ((x - e) / (e - s)) ** 2,
                     1.0,
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape  # type: ignore
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape
+        return y  # type: ignore
 
     def tsukamoto(
         self,
@@ -1686,9 +1827,7 @@ class SShape(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.start, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.start, self.end, self.height = self._parse(2, parameters)
 
 
 class Trapezoid(Term):
@@ -1746,30 +1885,34 @@ class Trapezoid(Term):
               $d$ is the fourth vertex of the Trapezoid.
         """
         x = scalar(x)
-        return (  # type: ignore
+        bl = self.bottom_left
+        br = self.bottom_right
+        tl = self.top_left
+        tr = self.top_right
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
-                ((x < self.bottom_left) | (x > self.bottom_right)),
+                ((x < bl) | (x > br)),
                 0.0,
                 np.where(
-                    ((self.top_left <= x) & (x <= self.top_right))
-                    | ((self.bottom_left == -inf) & (x < self.top_left))
-                    | ((self.bottom_right == inf) & (x > self.top_right)),
+                    ((tl <= x) & (x <= tr))
+                    | ((bl == -inf) & (x < tl))
+                    | ((br == inf) & (x > tr)),
                     1.0,
                     np.where(
-                        x < self.top_left,
-                        (x - self.bottom_left) / (self.top_left - self.bottom_left),
+                        x < tl,
+                        (x - bl) / (tl - bl),
                         np.where(
-                            x > self.top_right,
-                            (self.bottom_right - x)
-                            / (self.bottom_right - self.top_right),
+                            x > tr,
+                            (br - x) / (br - tr),
                             nan,
                         ),
                     ),
                 ),
             )
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1783,9 +1926,13 @@ class Trapezoid(Term):
         """Configures the term with the parameters
         @param parameters as `"bottom_left top_left top_right bottom_right [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.bottom_left, self.top_left, self.top_right, self.bottom_right = values[0:4]
-        self.height = 1.0 if len(values) == 4 else values[-1]
+        (
+            self.bottom_left,
+            self.top_left,
+            self.top_right,
+            self.bottom_right,
+            self.height,
+        ) = self._parse(4, parameters)
 
 
 class Triangle(Term):
@@ -1836,29 +1983,31 @@ class Triangle(Term):
               $c$ is the third vertex of the Triangle.
         """
         x = scalar(x)
-        return (  # type: ignore
+        a = self.left
+        b = self.top
+        c = self.right
+        y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
-                (x < self.left) | (x > self.right),
+                (x < a) | (x > c),
                 0.0,
                 np.where(
-                    (x == self.top)
-                    | ((self.left == -inf) & (x < self.top))
-                    | ((self.right == inf) & (x > self.top)),
+                    (x == b) | ((a == -inf) & (x < b)) | ((c == inf) & (x > b)),
                     1.0,
                     np.where(
-                        x < self.top,
-                        (x - self.left) / (self.top - self.left),
+                        x < b,
+                        (x - a) / (b - a),
                         np.where(
-                            x > self.top,
-                            (self.right - x) / (self.right - self.top),
+                            x > b,
+                            (c - x) / (c - b),
                             nan,
                         ),
                     ),
                 ),
             )
         )
+        return y  # type: ignore
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -1870,9 +2019,7 @@ class Triangle(Term):
         """Configures the term with the parameters
         @param parameters as `"left top right [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.left, self.top, self.right = values[0:3]
-        self.height = 1.0 if len(values) == 3 else values[-1]
+        self.left, self.top, self.right, self.height = self._parse(3, parameters)
 
 
 class ZShape(Term):
@@ -1916,20 +2063,23 @@ class ZShape(Term):
               $e$ is the end of the ZShape.
         """
         x = scalar(x)
+        s = self.start
+        e = self.end
         z_shape = np.where(
-            x <= self.start,
+            x <= s,
             1.0,
             np.where(
-                x < 0.5 * (self.start + self.end),
-                1.0 - 2.0 * ((x - self.start) / (self.end - self.start)) ** 2,
+                x < 0.5 * (s + e),
+                1.0 - 2.0 * ((x - s) / (e - s)) ** 2,
                 np.where(
-                    x < self.end,
-                    2.0 * ((x - self.end) / (self.end - self.start)) ** 2,
+                    x < e,
+                    2.0 * ((x - e) / (e - s)) ** 2,
                     0.0,
                 ),
             ),
         )
-        return self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape  # type: ignore
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * z_shape
+        return y  # type: ignore
 
     def tsukamoto(
         self,
@@ -1961,9 +2111,7 @@ class ZShape(Term):
         """Configures the term with the parameters
         @param parameters as `"start end [height]"`.
         """
-        values = tuple(to_float(x) for x in parameters.split())
-        self.start, self.end = values[0:2]
-        self.height = 1.0 if len(values) == 2 else values[-1]
+        self.start, self.end, self.height = self._parse(2, parameters)
 
 
 class Function(Term):
@@ -2327,7 +2475,8 @@ class Function(Term):
                 f"resolve the name ambiguity of the following variables: {overrides}"
             )
         engine_variables.update(self.variables)
-        return self.evaluate(engine_variables)
+        y = self.evaluate(engine_variables)
+        return y
 
     def evaluate(self, variables: dict[str, Scalar] | None = None) -> Scalar:
         """Computes the function value of this term using the given map of
