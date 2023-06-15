@@ -41,23 +41,64 @@ def format(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
     """Run static code analysis and checks format is correct."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    linters = {
+        "black": "lint_black",
+        "ruff": "lint_ruff",
+        "pyright": "lint_pyright",
+        "mypy": "lint_mypy",
+        "qodana": "lint_qodana",
+    }
+    # Case 1: posargs is empty, run all linters
+    # Case 2: posargs only contains -qodana, run all linters except qodana
+    # Case 3: posargs is not empty, run only the specified linters
+    posargs = list(session.posargs)
+    if "-qodana" in posargs:
+        posargs.remove("-qodana")
+    if not posargs:
+        posargs = list(linters.keys())
+    for linter in posargs:
+        session.notify(linters[linter])
 
+
+@nox.session(python=False)
+def lint_black(session: nox.Session) -> None:
+    """Run black linter."""
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
     session.run(*"black --version".split(), external=True)
     session.run(*"black --check".split(), *files, external=True)
 
+
+@nox.session(python=False)
+def lint_ruff(session: nox.Session) -> None:
+    """Run ruff linter."""
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
     session.run(*"ruff check".split(), *files, external=True)
     session.run(*"ruff --version".split(), external=True)
 
+
+@nox.session(python=False)
+def lint_pyright(session: nox.Session) -> None:
+    """Run pyright linter."""
     session.run(*"pyright --version".split(), external=True)
     session.run("pyright", external=True)
 
+
+@nox.session(python=False)
+def lint_mypy(session: nox.Session) -> None:
+    """Run mypy linter."""
+    files = ["fuzzylite/", "tests/", "noxfile.py"]
     session.run(*"mypy --version".split(), external=True)
     session.run("mypy", *files, external=True)
 
-    if "cloud" not in session.posargs:
-        # assumes qodana is installed (eg, `brew install jetbrains/utils/qodana`)
-        session.run(*"qodana scan --print-problems".split(), external=True)
+
+@nox.session(python=False)
+def lint_qodana(session: nox.Session) -> None:
+    """Run qodana linter."""
+    # assumes qodana is installed (eg, `brew install jetbrains/utils/qodana`)
+    session.run(
+        *"qodana scan --print-problems --baseline qodana.sarif.json".split(),
+        external=True,
+    )
 
 
 @nox.session(python=False)

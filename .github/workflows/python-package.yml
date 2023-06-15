@@ -33,11 +33,11 @@ jobs:
           nox -e install
       - name: Lint
         run: |
-          nox -e lint -- cloud
+          nox -e lint -- -qodana
       - name: Qodana Scan
         uses: JetBrains/qodana-action@main
         with:
-          args: --baseline,qodana.sarif.json
+          args: --baseline,qodana.sarif.json,--print-problems,--upload-results,true
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
       - uses: github/codeql-action/upload-sarif@v2

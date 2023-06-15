@@ -1,5 +1,7 @@
 version: "1.0"
 linter: jetbrains/qodana-python:2023.1-eap
+profile:
+    name: qodana.starter # use qodana.recommended to get more inspections
 exclude:
   - name: PyClassHasNoInitInspection
   - name: PyIncorrectDocstringInspection
