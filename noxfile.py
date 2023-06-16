@@ -97,7 +97,7 @@ def lint_qodana(session: nox.Session) -> None:
     """Run qodana linter."""
     # assumes qodana is installed (eg, `brew install jetbrains/utils/qodana`)
     session.run(
-        *"qodana scan --print-problems --baseline qodana.sarif.json".split(),
+        *"qodana scan --print-problems --clear-cache ".split(),
         external=True,
     )
 

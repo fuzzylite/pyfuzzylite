@@ -1,10 +1,20 @@
 version: "1.0"
-linter: jetbrains/qodana-python:2023.1-eap
+linter: jetbrains/qodana-python:latest
+failThreshold: 0
 profile:
     name: qodana.starter # use qodana.recommended to get more inspections
 exclude:
   - name: PyClassHasNoInitInspection
   - name: PyIncorrectDocstringInspection
   - name: PyMethodMayBeStaticInspection
+  - name: ExcludePaths
+    paths:
+      - .*/
+      - __pycache__*/
+
 include:
   - name: CheckDependencyLicenses
+  - name: IncludePaths
+    paths:
+      - fuzzylite/
+      - tests/
