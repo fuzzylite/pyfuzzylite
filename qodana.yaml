@@ -1,6 +1,14 @@
 version: "1.0"
 linter: jetbrains/qodana-python:latest
 failThreshold: 0
+
+bootstrap: |
+  python3 --version
+  ls -la
+  python3 -m pip install poetry nox
+  nox -e install
+  ls -la
+
 profile:
     name: qodana.starter # use qodana.recommended to get more inspections
 exclude:
@@ -11,10 +19,5 @@ exclude:
     paths:
       - .*/
       - __pycache__*/
-
 include:
   - name: CheckDependencyLicenses
-  - name: IncludePaths
-    paths:
-      - fuzzylite/
-      - tests/
