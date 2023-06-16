@@ -1,0 +1,26 @@
+name: lint-qodana
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development, feature/*]
+
+jobs:
+  qodana:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # required by Qodana on PRs
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@v2023.1.4
+        with:
+          args: -p,qodana.yaml,--baseline,qodana.sarif.json,--print-problems
+          upload-result: true
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+      - name: Qodana Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
