@@ -155,8 +155,6 @@ class Bisector(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the bisector of the fuzzy set
         """
-        if np.any(~np.isfinite([minimum, maximum])):
-            return nan
         x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         area = np.nancumsum(y, axis=1)
@@ -193,8 +191,6 @@ class Centroid(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the centroid of the fuzzy set
         """
-        if np.any(~np.isfinite([minimum, maximum])):
-            return nan
         x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         z = ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()
@@ -226,8 +222,6 @@ class LargestOfMaximum(IntegralDefuzzifier):
         @return the largest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if np.any(~np.isfinite([minimum, maximum])):
-            return nan
         x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
@@ -263,8 +257,6 @@ class MeanOfMaximum(IntegralDefuzzifier):
         @return the mean $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if np.any(~np.isfinite([minimum, maximum])):
-            return nan
         x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
@@ -300,8 +292,6 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         @return the smallest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if np.any(~np.isfinite([minimum, maximum])):
-            return nan
         x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
         y = np.atleast_2d(term.membership(x))
         y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
@@ -428,14 +418,11 @@ class WeightedDefuzzifier(Defuzzifier):
                 f"expected an Aggregated term, but found {type(fuzzy_output)}"
             )
 
-        if not self.type:
-            raise ValueError("expected a type of weighted defuzzifier, but found none")
-
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output)
 
-        weighted_sum = scalar(0.0) if fuzzy_output.terms else nan
+        weighted_sum = scalar(0.0 if fuzzy_output.terms else nan)
         weights = scalar(0.0)
         membership = (
             Term.tsukamoto.__name__

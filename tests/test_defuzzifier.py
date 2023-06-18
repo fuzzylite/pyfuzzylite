@@ -44,6 +44,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         minimum: float,
         maximum: float,
         terms: dict[fl.Term, float],
+        vectorized: bool = True,
     ) -> DefuzzifierAssert:
         """Assert that the defuzzification of the given terms result in the expected values."""
         for term, expected in terms.items():
@@ -55,7 +56,28 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
                 rtol=fl.lib.rtol,
                 err_msg=f"{self.actual.class_name}({term}) = {obtained}, but expected {expected}",
             )
+        if vectorized:
 
+            class StackTerm(fl.Term):
+                def __init__(self, terms: list[fl.Term]) -> None:
+                    super().__init__("_")
+                    self.terms = terms
+
+                def membership(self, x: Scalar) -> Scalar:
+                    return np.vstack([term.membership(x) for term in self.terms])
+
+            expected_vector = np.atleast_1d(np.array([x for x in terms.values()]))
+            obtained_vector = np.atleast_1d(
+                self.actual.defuzzify(
+                    StackTerm(terms=list(terms.keys())), minimum, maximum
+                )
+            )
+            np.testing.assert_allclose(
+                obtained_vector,
+                expected_vector,
+                atol=fl.lib.atol,
+                rtol=fl.lib.rtol,
+            )
         return self
 
 
@@ -537,11 +559,6 @@ class TestDefuzzifier(unittest.TestCase):
             fl.WeightedAverage().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedAverage()
-        defuzzifier.type = None  # type: ignore
-        with self.assertRaisesRegex(
-            ValueError, "expected a type of weighted defuzzifier, but found none"
-        ):
-            defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
         with self.assertRaisesRegex(
             ValueError,
             re.escape(
@@ -584,6 +601,7 @@ class TestDefuzzifier(unittest.TestCase):
                     ]
                 ): -1.0,
             },
+            vectorized=False,
         )
 
     def test_weighted_sum(self) -> None:
@@ -599,11 +617,7 @@ class TestDefuzzifier(unittest.TestCase):
             fl.WeightedSum().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedSum()
-        defuzzifier.type = None  # type: ignore
-        with self.assertRaisesRegex(
-            ValueError, "expected a type of weighted defuzzifier, but found none"
-        ):
-            defuzzifier.defuzzify(fl.Aggregated(terms=[fl.Activated(fl.Term())]))
+
         with self.assertRaisesRegex(
             ValueError,
             re.escape(
@@ -646,6 +660,7 @@ class TestDefuzzifier(unittest.TestCase):
                     ]
                 ): -2.5,
             },
+            vectorized=False,
         )
 
     def test_weighted_sum_tsukamoto(self) -> None:
@@ -684,6 +699,7 @@ class TestDefuzzifier(unittest.TestCase):
                     ]
                 ): 0.311,
             },
+            vectorized=False,
         )
 
     def test_weighted_average_tsukamoto(self) -> None:
@@ -722,6 +738,7 @@ class TestDefuzzifier(unittest.TestCase):
                     ]
                 ): 0.302,
             },
+            vectorized=False,
         )
 
     def test_all_defuzzifiers_return_nan_when_empty_output(self) -> None:
