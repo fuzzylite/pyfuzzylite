@@ -1,16 +1,37 @@
 version: "1.0"
 linter: jetbrains/qodana-python:latest
 failThreshold: 0
-
 profile:
-    name: qodana.starter # use qodana.recommended to get more inspections
+  name: qodana.starter # use qodana.recommended to get more inspections
 exclude:
   - name: PyClassHasNoInitInspection
-  - name: PyIncorrectDocstringInspection
   - name: PyMethodMayBeStaticInspection
-  - name: ExcludePaths
-    paths:
-      - .*/
-      - __pycache__*/
+  - name: Restricted_Python_calls
+  - name: Query_bound_parameters
+  - name: Query_restricted
+  - name: Query_index_required
+  - name: AppEngineThreadsafeCGIHandlerInspection
+  - name: AppEngineThreadsafeInspection
 include:
   - name: CheckDependencyLicenses
+  - name: IncludePaths
+  - name: Annotator
+  - name: EmptyDirectory
+  - name: InconsistentLineSeparators
+  - name: IncorrectFormatting
+  - name: ProblematicWhitespace
+  - name: QodanaServiceMessage
+  - name: RedundantSuppression
+  - name: LossyEncoding
+  - name: GrazieInspection
+  - name: LanguageDetectionInspection
+  - name: SpellCheckingInspection
+  - name: PyIncorrectDocstringInspection
+  - name: PyMissingOrEmptyDocstringInspection
+  - name: PyMissingTypeHintsInspection
+  - name: PyUnresolvedReferencesInspection
+  - name: IgnoreFileDuplicateEntry
+  - name: YAMLSchemaDeprecation
+  - name: YAMLDuplicatedKeys
+  - name: YAMLRecursiveAlias
+  - name: YAMLUnresolvedAlias
