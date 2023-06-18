@@ -15,10 +15,12 @@ By: [Juan Rada-Vilela](https://fuzzylite.com/jcrada), Ph.D.
 
 
 [main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)   
+[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
 
 [development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml) 
+[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
 
 ***
 
@@ -135,10 +137,10 @@ RuleBlock: mamdani
 
 
 
-fuzzylite&reg; is a registered trademark of FuzzyLite Limited.
-jfuzzylite&trade; is a trademark of FuzzyLite Limited.
-pyfuzzylite&trade; is a trademark of FuzzyLite Limited.
-QtFuzzyLite&trade; is a trademark of FuzzyLite Limited.
+fuzzylite&reg; is a registered trademark of FuzzyLite Limited    
+jfuzzylite&trade; is a trademark of FuzzyLite Limited  
+pyfuzzylite&trade; is a trademark of FuzzyLite Limited  
+QtFuzzyLite&trade; is a trademark of FuzzyLite Limited  
 
 
-Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved.
+Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved
