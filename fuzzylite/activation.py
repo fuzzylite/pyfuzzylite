@@ -84,6 +84,17 @@ class Activation:
         """
         pass
 
+    def assert_is_float(self, activation_degree: Scalar) -> None:
+        """Asserts that the activation degree is not a vector.
+        @param activation_degree is the activation degree to assert.
+        """
+        elements = np.float_(activation_degree).size
+        if elements > 1:
+            raise TypeError(
+                "expected activation degree to be a single scalar, "
+                f"but got {elements} elements in '{activation_degree}'"
+            )
+
     def __str__(self) -> str:
         """Returns the FLL code for the activation method
         @return FLL code for the activation method.
@@ -146,9 +157,8 @@ class First(Activation):
     def parameters(self) -> str:
         """Returns the number of rules and the threshold of the activation method
         @return "rules threshold"
-        TODO: convert to f-string.
         """
-        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
+        return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the given number of rules and
@@ -177,7 +187,7 @@ class First(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                # TODO: How does an array of activation degrees work with this now?
+                self.assert_is_float(activation_degree)
                 if (
                     activated < self.rules
                     and activation_degree > 0.0
@@ -213,7 +223,7 @@ class Last(Activation):
         """Returns the number of rules and the threshold of the activation method
         @return "rules threshold".
         """
-        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
+        return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the given number of rules and
@@ -242,6 +252,7 @@ class Last(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if (
                     activated < self.rules
                     and activation_degree > 0.0
@@ -297,6 +308,7 @@ class Highest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if activation_degree > 0.0:
                     heapq.heappush(activate, (-activation_degree, index))
 
@@ -353,6 +365,7 @@ class Lowest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if activation_degree > 0.0:
                     heapq.heappush(activate, (activation_degree, index))
 
@@ -392,6 +405,7 @@ class Proportional(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if activation_degree > 0.0:
                     activate.append(rule)
                     sum_degrees += activation_degree
@@ -452,7 +466,7 @@ class Threshold(Activation):
 
     def __init__(
         self,
-        comparator: Comparator | str = Comparator.GreaterThanOrEqualTo,
+        comparator: Comparator | str = Comparator.GreaterThan,
         threshold: float = 0.0,
     ) -> None:
         """Creates a Threshold activation method
@@ -467,9 +481,8 @@ class Threshold(Activation):
     def parameters(self) -> str:
         """Returns the comparator followed by the threshold.
         @return comparator and threshold
-        TODO: convert to f-string.
         """
-        return " ".join([self.comparator.value, Op.str(self.threshold)])
+        return f"{self.comparator.value} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the comparator and the
@@ -495,5 +508,6 @@ class Threshold(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if self.comparator.operator(activation_degree, self.threshold):
                     rule.trigger(implication)
