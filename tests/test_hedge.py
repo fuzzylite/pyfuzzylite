@@ -17,9 +17,11 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 from __future__ import annotations
 
 import unittest
-from math import inf, isnan, nan
+
+import numpy as np
 
 import fuzzylite as fl
+from fuzzylite import inf, nan
 from tests.assert_component import BaseAssert
 
 
@@ -29,10 +31,10 @@ class HedgeAssert(BaseAssert[fl.Hedge]):
     def evaluates(self, az: dict[float, float]) -> HedgeAssert:
         """Assert the hedge produces the expected values from the keys."""
         for a, z in az.items():
-            if isnan(z):
-                self.test.assertEqual(isnan(self.actual.hedge(a)), True, f"when x={a}")
-            else:
-                self.test.assertEqual(self.actual.hedge(a), z, f"when x={a}")
+            np.testing.assert_equal(self.actual.hedge(a), z, err_msg=f"when x={a}")
+        vector_a = np.array(list(az.keys()))
+        vector_z = np.array(list(az.values()))
+        np.testing.assert_equal(vector_z, self.actual.hedge(vector_a))
         return self
 
 
@@ -92,38 +94,34 @@ class TestHedge(unittest.TestCase):
 
     def test_seldom(self) -> None:
         """Test the Seldom hedge."""
-        with self.assertRaisesRegex(ValueError, r"math domain error"):
-            HedgeAssert(self, fl.Seldom()).evaluates({-1.0: nan})
-            HedgeAssert(self, fl.Seldom()).evaluates({-0.5: nan})
-            HedgeAssert(self, fl.Seldom()).evaluates({inf: nan})
-            HedgeAssert(self, fl.Seldom()).evaluates({-inf: nan})
-
         HedgeAssert(self, fl.Seldom()).has_name("seldom").evaluates(
             {
+                -1.0: nan,
+                -0.5: nan,
                 0.00: 0.0,
                 0.25: 0.3535533905932738,
                 0.50: 0.5,
                 0.75: 0.6464466094067263,
                 1.00: 1.0,
+                inf: nan,
+                -inf: nan,
                 nan: nan,
             }
         )
 
     def test_somewhat(self) -> None:
         """Test the Somewhat hedge."""
-        with self.assertRaisesRegex(ValueError, r"math domain error"):
-            HedgeAssert(self, fl.Somewhat()).evaluates({-1.0: nan})
-            HedgeAssert(self, fl.Somewhat()).evaluates({-0.5: nan})
-            HedgeAssert(self, fl.Somewhat()).evaluates({-inf: nan})
-
         HedgeAssert(self, fl.Somewhat()).has_name("somewhat").evaluates(
             {
+                -1.0: nan,
+                -0.5: nan,
                 0.00: 0.0,
                 0.25: 0.5,
                 0.50: 0.7071067811865476,
                 0.75: 0.8660254037844386,
                 1.00: 1.0,
                 inf: inf,
+                -inf: nan,
                 nan: nan,
             }
         )
@@ -170,9 +168,7 @@ class TestHedge(unittest.TestCase):
             self,
             fl.HedgeLambda(
                 "my_hedge",
-                lambda x: (
-                    2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
-                ),
+                lambda x: (np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)),
             ),
         ).has_name("my_hedge").evaluates(
             {

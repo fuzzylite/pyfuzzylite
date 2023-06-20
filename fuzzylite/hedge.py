@@ -28,14 +28,15 @@ __all__ = [
     "HedgeFunction",
 ]
 
-import math
 import typing
 from typing import Callable
 
+import numpy as np
+
+from .types import Scalar, scalar
+
 if typing.TYPE_CHECKING:
     from .term import Function
-
-from .types import Scalar
 
 
 class Hedge:
@@ -85,7 +86,9 @@ class Any(Hedge):
         @param x is irrelevant
         @return `1.0`.
         """
-        return 1.0
+        x = scalar(x)
+        y = np.full_like(x, 1.0)
+        return y
 
 
 class Extremely(Hedge):
@@ -107,7 +110,9 @@ class Extremely(Hedge):
         1-2(1-x)^2 & \mbox{otherwise} \cr
         \end{cases}$.
         """
-        return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
+        x = scalar(x)
+        y = np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)
+        return y
 
 
 class Not(Hedge):
@@ -125,7 +130,9 @@ class Not(Hedge):
         @param x is a membership function value
         @return $1-x$.
         """
-        return 1.0 - x
+        x = scalar(x)
+        y = 1 - x
+        return y
 
 
 class Seldom(Hedge):
@@ -148,7 +155,9 @@ class Seldom(Hedge):
         \end{cases}
         $.
         """
-        return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
+        x = scalar(x)
+        y = np.where(x <= 0.5, np.sqrt(0.5 * x), 1 - np.sqrt(0.5 * (1 - x)))
+        return y
 
 
 class Somewhat(Hedge):
@@ -166,7 +175,9 @@ class Somewhat(Hedge):
         @param x is a membership function value
         @return $\sqrt{x}$.
         """
-        return math.sqrt(x)
+        x = scalar(x)
+        y = np.sqrt(x)
+        return y
 
 
 class Very(Hedge):
@@ -184,7 +195,9 @@ class Very(Hedge):
         @param x is a membership function value
         @return $x^2$.
         """
-        return x * x
+        x = scalar(x)
+        y = x**2
+        return y
 
 
 class HedgeLambda(Hedge):
