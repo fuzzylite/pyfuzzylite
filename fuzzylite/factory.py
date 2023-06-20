@@ -79,6 +79,7 @@ from .norm import (
 from .operation import Op
 from .rule import Rule
 from .term import (
+    Arc,
     Bell,
     Binary,
     Concave,
@@ -92,6 +93,7 @@ from .term import (
     PiShape,
     Ramp,
     Rectangle,
+    SemiEllipse,
     Sigmoid,
     SigmoidDifference,
     SigmoidProduct,
@@ -327,6 +329,7 @@ class TermFactory(ConstructionFactory[Term]):
         self.constructors = {
             term().class_name: term
             for term in [
+                Arc,
                 Bell,
                 Binary,
                 Concave,
@@ -340,6 +343,7 @@ class TermFactory(ConstructionFactory[Term]):
                 PiShape,
                 Ramp,
                 Rectangle,
+                SemiEllipse,
                 Sigmoid,
                 SigmoidDifference,
                 SigmoidProduct,
