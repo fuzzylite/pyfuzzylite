@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import unittest
 from unittest.mock import MagicMock
+
 import numpy as np
+
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
@@ -33,19 +35,21 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
         weight: float = 1.0,
         loaded: bool = True,
     ) -> fl.Rule:
+        """Mocks a rule with the given activation degree and weight."""
         rule = fl.Rule()
         rule.text = f"if {id.upper()} is {id.lower()} then {id.upper()} is {id.lower()} with {weight}"
-        rule.antecedent.activation_degree = MagicMock(return_value=activation_degree)
-        rule.consequent.modify = MagicMock()
-        rule.is_loaded = MagicMock(return_value=loaded)
+        rule.antecedent.activation_degree = MagicMock(return_value=activation_degree)  # type: ignore
+        rule.consequent.modify = MagicMock()  # type: ignore
+        rule.is_loaded = MagicMock(return_value=loaded)  # type: ignore
         return rule
 
     def given(
         self, rule: str, activation_degree: fl.Scalar, weight: float = 1.0
     ) -> ActivationAssert:
         """Given a rule with an activation degree and weight."""
-        rule = self.mock_rule(rule, activation_degree=activation_degree, weight=weight)
-        self.actual.rules.append(rule)
+        self.actual.rules.append(
+            self.mock_rule(rule, activation_degree=activation_degree, weight=weight)
+        )
         return self
 
     def activate(self, method: fl.Activation) -> ActivationAssert:
@@ -399,6 +403,7 @@ class TestActivation(unittest.TestCase):
         )
 
     def test_highest_activation(self) -> None:
+        """Asserts the highest activation is correct."""
         self.assertEqual("Highest 1", str(fl.Highest()))
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
@@ -463,6 +468,7 @@ class TestActivation(unittest.TestCase):
         )
 
     def test_lowest_activation(self) -> None:
+        """Asserts the lowest activation is correct."""
         self.assertEqual("Lowest 1", str(fl.Lowest()))
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
@@ -527,6 +533,7 @@ class TestActivation(unittest.TestCase):
         )
 
     def test_proportional_activation(self) -> None:
+        """Asserts the proportional activation is correct."""
         self.assertEqual("Proportional", str(fl.Proportional()))
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
@@ -564,6 +571,7 @@ class TestActivation(unittest.TestCase):
         )
 
     def test_threshold_activation(self) -> None:
+        """Asserts the threshold activation is correct."""
         # Default: > 0.0
         self.assertEqual("Threshold > 0.000", str(fl.Threshold()))
 

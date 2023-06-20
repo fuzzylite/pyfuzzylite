@@ -156,7 +156,7 @@ class First(Activation):
 
     def parameters(self) -> str:
         """Returns the number of rules and the threshold of the activation method
-        @return "rules threshold"
+        @return "rules threshold".
         """
         return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
@@ -480,7 +480,7 @@ class Threshold(Activation):
 
     def parameters(self) -> str:
         """Returns the comparator followed by the threshold.
-        @return comparator and threshold
+        @return comparator and threshold.
         """
         return f"{self.comparator.value} {Op.str(self.threshold)}"
 
