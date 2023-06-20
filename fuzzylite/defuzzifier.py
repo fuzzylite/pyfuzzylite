@@ -31,10 +31,10 @@ __all__ = [
 
 import enum
 import warnings
-from math import nan
 
 import numpy as np
 
+from . import nan
 from .operation import Op
 from .term import Activated, Aggregated, Constant, Function, Linear, Term
 from .types import Scalar, scalar

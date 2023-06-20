@@ -21,10 +21,10 @@ __all__ = ["Engine"]
 import copy
 import enum
 from collections.abc import Iterable
-from math import nan
 
 import numpy as np
 
+from . import nan
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .exporter import FllExporter

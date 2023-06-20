@@ -19,13 +19,12 @@ from __future__ import annotations
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
 import contextlib
-import math
 import typing
 from collections.abc import Iterable
-from math import inf, isnan, nan
 
 import numpy as np
 
+from . import inf, isnan, nan
 from .exporter import FllExporter
 from .norm import SNorm
 from .operation import Op
@@ -440,6 +439,7 @@ class OutputVariable(Variable):
 
     def fuzzy_value(self) -> str:
         r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
+        # TODO: fix for vectorisation
         result: list[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
@@ -448,6 +448,6 @@ class OutputVariable(Variable):
                 result.append(f"{Op.str(degree)}/{term.name}")
             else:
                 result.append(
-                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(math.fabs(degree))}/{term.name}"
+                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(np.fabs(degree))}/{term.name}"
                 )
         return "".join(result)

@@ -28,8 +28,8 @@ __all__ = [
 
 import typing
 from collections.abc import Iterable
-from math import nan
 
+from . import nan
 from .exporter import FllExporter
 from .hedge import Any
 from .norm import SNorm, TNorm

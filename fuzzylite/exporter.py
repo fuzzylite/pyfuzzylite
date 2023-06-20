@@ -20,13 +20,13 @@ __all__ = ["Exporter", "FllExporter", "PythonExporter", "FldExporter"]
 
 import enum
 import io
-import math
 import typing
 from pathlib import Path
 from typing import IO, Any
 
 import numpy as np
 
+from . import isinf, isnan
 from .operation import Op
 from .types import Scalar, to_float
 
@@ -406,9 +406,9 @@ class PythonExporter(Exporter):
         if isinstance(x, str):
             return f'"{x}"'
         if isinstance(x, float):
-            if math.isinf(x):
+            if isinf(x):
                 return ("" if x > 0 else "-") + "fl.inf"
-            if math.isnan(x):
+            if isnan(x):
                 return "fl.nan"
             return Op.str(x)
         if isinstance(x, bool):

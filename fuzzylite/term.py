@@ -49,11 +49,11 @@ import enum
 import re
 import typing
 from collections.abc import Iterable, Sequence
-from math import inf, isnan, nan
 from typing import Any, Callable, SupportsFloat, Union
 
 import numpy as np
 
+from . import inf, isnan, nan
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .operation import Op
