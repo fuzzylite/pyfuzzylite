@@ -9,6 +9,7 @@
 - All enum values are automatically assigned with enum.auto(), instead of manual assignments
 - New: Arc and SemiEllipse terms.
 - Using `from __future__ import annotations` in every file to use better type annotations
+- Many more tests and better structures for tests
 
 ## __init__.py
 - fl.inf, fl.nan, fl.isnan, fl.isinf now map to their numpy equivalents
@@ -75,8 +76,22 @@
 - New: Discrete.to_list, Discrete.to_dict, Discrete.to_xy
 - New: Discrete.create to create a Discrete term from a list, dict or pairs
 
+## new: types.py
+- New: fl.Scalar type to support float and numpy arrays
+- New: fl.ScalarArray type to support numpy arrays of floats
+- New: fl.Array (mapping to np.NDArray) to support numpy arrays of any type
 
+## variable.py
+- Changed: OutputVariable.defuzzify is simpler and works with vectorized operations
 
+## noxfile.py
+- New: default sessions to run tests
+- New: pyright session to run type checking
+- Changed: simplified command texts
+
+## pyproject.py
+- New: numpy as a dependency
+- New: pyright configuration
 
 
 
