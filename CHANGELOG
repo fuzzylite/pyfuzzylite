@@ -1,24 +1,97 @@
-# Version 7.0
-
-- Postfix output prints left to right operands
-- Expression tree of Function.Node is created right to left such that its output is consistent with
-  printing left to right operands
-- Additional pow operator "**" available for functions
-- Unary plus ".+" and minus ".-" operators for functions
-- Function right nodes are first to evaluate
-- NormFunction and NormLambda for dynamic norms
-- Github Actions
-
-# Version 7.1.0
-
-- Dual license: GNU GPL and MIT
-- Requires Python >=3.7
-- Improved tooling (poetry, nox, Github Actions)
-- Documentation everywhere
-- Renamed constructor parameters of term.Spike: inflection->center, slope->width
-- Renamed parameters of term.Triangle: vertex_a->left, vertex_b->top, vertex_c->right
-- Renamed parameters of term.Trapezoid: vertex_a->bottom_left, vertex_b->top_left, vertex_c->top_right, vertex_d->bottom_right
-
 # Version 8.0.0
 - Dual license: GNU GPL and paid proprietary license for commercial purposes
 - Requires Python >=3.9
+- Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
+- Arguments that can be float and numpy arrays are now of type fl.Scalar (see fuzzylite/types.py)
+- Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
+- Op.scalar now converts any argument to a numpy array, instead of a float
+- Op.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
+- All enum values are automatically assigned with enum.auto(), instead of manual assignments
+- New: Arc and SemiEllipse terms.
+- Using `from __future__ import annotations` in every file to use better type annotations
+
+## __init__.py
+- fl.inf, fl.nan, fl.isnan, fl.isinf now map to their numpy equivalents
+
+## activation.py
+- Only General activation support vector operations, other methods require still float operations
+
+## defuzzifier.py
+- Integral defuzzifiers are vectorized, so they operate efficiently on vector operations.
+- Integral defuzzifiers use 1000 steps instead of 100
+- Weighted defuzzifiers were refactored
+- Bug fix: Weighted defuzzifiers were not infering the type correctly (see WeightedDefuzzifier::infer_type)
+- WeightedSum produces nan values if the fuzzy output is empty
+
+## engine.py
+- New: Engine.input_values() and Engine.output_values() produce 2D matrices with their respective values
+
+## exporter.py
+- Discrete term exported as `Discrete.create(name: str, values: dict[float, float])`
+
+## factory.py
+- New: Arc and SemiEllipse added to TermFactory
+- FunctionFactory: Operators and Functions now map to their equivalent methods in numpy, but preserving their previous names
+
+## hedges.py
+- Vectorized all hedges
+
+## library.py
+- New: rtol parameter for relative tolerance across the library
+- Renamed: `abs_tolerance` renamed to `atol`
+- Moved: `floating_point_type` moved to `types.py` and renamed to `float_type`
+
+## norm.py
+- Vectorized all norms
+
+## operation.py
+- Vectorized all comparative operations (eq, neq, lt, le, gt, ge)
+- Removed tolerance from all comparative operations (eq, neq, lt, le, gt, ge)
+- Improved: numpy for all operations
+- Changed: empty identifiers now return "_" instead of "unnamed" (see `as_identifier(name:str)`
+- Removed: `pi` method.
+- Removed: `slots` parameter in `describe` method.
+- Moved: `scalar` method to `types.py`
+- New: `midpoints` method to discretize a range of values into a list of midpoints
+
+## rule.py
+- Enabled vectorization
+- Changed: in `Rule`, `triggered` is now an array of bools and `activation_degrees` is now a Scalar to support vectorization
+
+## term.py
+- All terms are vectorized: membership and tsukamoto functions return fl.Scalar
+- All equations are simplified and use numpy
+- New: Arc edge and SemiEllipsis terms
+- Fix: Tsukamoto functions use the term's height
+- Fix: Bugs in Tsukamoto functions for Concave
+- New: `_parse` method to parse configuration parameters
+- Change: Term.tsukamoto now raises exception if the term is not monotonic, before it returned the membership function value
+- Change: Term.discretize now discretizes by default using midpoints
+- Change: Activated.degree is a property now that automatically replaces nan and inf values
+- Change: Discrete.values are now a numpy array instead of list of Discrete.Pair
+- Removed: Discrete.Pair
+- Change: Discrete.membership interpolates with numpy, which takes the first or last y-value for x-values beyond range
+- Removed: Discrete.pairs_from, Discrete.values_from, Discrete.dict_from, Discrete.list_from
+- New: Discrete.to_list, Discrete.to_dict, Discrete.to_xy
+- New: Discrete.create to create a Discrete term from a list, dict or pairs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

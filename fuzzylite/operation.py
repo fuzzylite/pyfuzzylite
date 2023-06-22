@@ -24,7 +24,8 @@ from typing import Any, Callable
 
 import numpy as np
 
-from .types import Scalar, ScalarArray, scalar
+from .library import scalar, settings
+from .types import Array, Scalar, ScalarArray
 
 
 class Operation:
@@ -140,6 +141,12 @@ class Operation:
         return np.logical_or(a, b)
 
     @staticmethod
+    def is_close(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
+        """Return whether a and b are close within the library's absolute and relative tolerances."""
+        z = np.isclose(a, b, atol=settings.atol, rtol=settings.rtol, equal_nan=True)
+        return z
+
+    @staticmethod
     def as_identifier(name: str) -> str:
         """Convert the name into a valid FuzzyLite identifier
         @param name is the name to convert
@@ -234,9 +241,8 @@ class Operation:
                     for cls in inspect.getmro(instance.__class__)
                 )
 
-        class_name = instance.__class__.__name__
         sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
-        return f"{class_name}[{sorted_dict}]"
+        return f"{Op.class_name(instance)}[{sorted_dict}]"
 
     @staticmethod
     def strip_comments(fll: str, delimiter: str = "#") -> str:
@@ -295,22 +301,28 @@ class Operation:
                 incremented = Op.increment(x, minimum, maximum, position)
         return incremented
 
+    @staticmethod
+    def class_name(x: Any, /) -> str:
+        """Returns the class name of the given object.
+        @param x is the object
+        @return the class name of the given object.
+        """
+        if inspect.isclass(x):
+            return str(x.__name__)
+        return str(x.__class__.__name__)
+
     # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Any, decimals: int | None = None) -> str:
+    def str(x: Any) -> str:
         """Returns a string representation of the given value
         @param x is the value
         @param decimals is the number of decimals to display
         @return a string representation of the given value.
         """
-        if not decimals:
-            from . import lib
-
-            decimals = lib.decimals
         if isinstance(x, (float, np.floating)):
-            return f"{x:.{decimals}f}"
+            return f"{x:.{settings.decimals}f}"
         if isinstance(x, (np.ndarray, Sequence)):
-            return " ".join([Op.str(x_i, decimals) for x_i in np.atleast_1d(x)])
+            return " ".join([Op.str(x_i) for x_i in np.atleast_1d(x)])
         return str(x)
 
 

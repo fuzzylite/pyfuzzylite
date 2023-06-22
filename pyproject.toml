@@ -56,12 +56,12 @@ Documentation = "https://fuzzylite.com/documentation"
 
 [tool.poetry.dependencies]
 python = "^3.9"
+numpy = "^1.20"               # Numeric manipulation and vectorisation
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"             # Code formatting
 coverage = "^7.2.3"           # Code coverage
 mypy = "^1.2.0"               # Static analysis
-numpy = "^1.20"               # Numeric manipulation and vectorisation
 poetry-bumpversion = "^0.3.0" # Version management
 pyhamcrest = "^2.0.4"         # Test Driven Development
 pytest = "^7.3.1"             # Test Driven Development
@@ -76,24 +76,24 @@ target-version = ["py39"]
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
 select = [
-    "A",   # flake8-builtins 
+    "A", # flake8-builtins
     "ANN", # flake8-annotations
     # "ARG", # flake8-unused-arguments
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    "D",   # pydocstyle
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
     "ICN", # flake8-import-conventions
     "ISC", # flake8-implicit-str-concat
-    "N",   # pep8 naming
+    "N", # pep8 naming
     "NPY", # NumPy-specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib
-    "UP",  # pyupgrade
+    "UP", # pyupgrade
     "RET", # flake8-return
     "SIM", # flake8-simplify
     # "TRY", # tryceratops
@@ -101,24 +101,24 @@ select = [
 ]
 
 fixable = [
-    "A",   # flake8-builtins 
+    "A", # flake8-builtins
     "ANN", # flake8-annotations
     # "ARG", # flake8-unused-arguments
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    "D",   # pydocstyle
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
     "ICN", # flake8-import-conventions
     "ISC", # flake8-implicit-str-concat
-    "N",   # pep8 naming
+    "N", # pep8 naming
     "NPY", # NumPy-specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib
-    "UP",  # pyupgrade
+    "UP", # pyupgrade
     "RET", # flake8-return
     "SIM", # flake8-simplify
     # "TRY", # tryceratops
@@ -126,31 +126,31 @@ fixable = [
 ]
 
 ignore = [
-    "A001",   # Variable `__name__` is shadowing a python builtin
-    "A002",   # Argument `type` is shadowing a python builtin
-    "A003",   # Class attribute `format` is shadowing a python builtin
+    "A001", # Variable `__name__` is shadowing a python builtin
+    "A002", # Argument `type` is shadowing a python builtin
+    "A003", # Class attribute `format` is shadowing a python builtin
     "ANN101", # Missing type annotation for `self` in method
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**args`
-    "B007",   # [*] Loop control variable `x` not used within loop body
-    "D100",   # Missing docstring in public module
-    "D104",   # Missing docstring in public package
-    "D205",   # 1 blank line required between summary line and description"
+    "B007", # [*] Loop control variable `x` not used within loop body
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     # "D417",   # Missing argument descriptions in the docstring
     "E501", # Line too long (handled by black)
     # "F401", #  imported but unused
-    "F405",    # Imports from star
-    "F403",    # Detect names from star imports
-    "N817",    # CamelCase imported as acronym 
-    "N999",    # Invalid module name
-    "N812",    # Lowercase  imported as non-lowercase 
-    "PD901",   # df is a bad variable name
+    "F405", # Imports from star
+    "F403", # Detect names from star imports
+    "N817", # CamelCase imported as acronym
+    "N999", # Invalid module name
+    "N812", # Lowercase  imported as non-lowercase
+    "PD901", # df is a bad variable name
     "PLW2901", # `for` loop variable `line` overwritten by assignment target
-    "RET504",  # Unnecessary variable assignment before `return` statement
-    "RET505",  # Unnecessary `else` after `return` statement
-    "SIM102",  # Use a single `if` statement instead of nested `if` statements
-    "SIM300",  # Yoda conditions are discouraged
+    "RET504", # Unnecessary variable assignment before `return` statement
+    "RET505", # Unnecessary `else` after `return` statement
+    "SIM102", # Use a single `if` statement instead of nested `if` statements
+    "SIM300", # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
 ]
 
@@ -181,7 +181,6 @@ reportMissingImports = true
 reportMissingTypeStubs = false
 
 pythonVersion = "3.9"
-pythonPlatform = "MacOS"
 
 
 [tool.mypy]
@@ -191,7 +190,7 @@ exclude = []
 incremental = true
 
 
-plugins = "numpy.typing.mypy_plugin"
+#plugins = "numpy.typing.mypy_plugin"
 
 verbosity = 0
 show_traceback = true
@@ -209,3 +208,11 @@ implicit_reexport = true
 # ignore warnings of fl.nan not being explicitly exported.
 module = "numpy"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "fuzzylite.importer"
+disable_error_code = ["type-abstract"]
+
+[[tool.mypy.overrides]]
+module = "fuzzylite.factory"
+disable_error_code = ["type-abstract"]

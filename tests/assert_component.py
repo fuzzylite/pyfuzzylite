@@ -88,8 +88,8 @@ class BaseAssert(Generic[T]):
                 np.testing.assert_allclose(
                     obtained,
                     expected,
-                    atol=fl.lib.atol,
-                    rtol=fl.lib.rtol,
+                    atol=fl.settings.atol,
+                    rtol=fl.settings.rtol,
                     err_msg=f"in attribute '{key}'",
                 )
             else:

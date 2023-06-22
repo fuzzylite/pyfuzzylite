@@ -21,14 +21,15 @@ __all__ = ["Exporter", "FllExporter", "PythonExporter", "FldExporter"]
 import enum
 import io
 import typing
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Any
 
 import numpy as np
 
-from . import isinf, isnan
+from .library import isinf, isnan, settings, to_float
 from .operation import Op
-from .types import Scalar, to_float
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -40,7 +41,7 @@ if typing.TYPE_CHECKING:
     from .variable import InputVariable, OutputVariable, Variable
 
 
-class Exporter:
+class Exporter(ABC):
     """The Exporter class is the abstract class for exporters to translate an
     Engine into different formats.
 
@@ -51,11 +52,7 @@ class Exporter:
     @since 4.0
     """
 
-    @property
-    def class_name(self) -> str:
-        """Gets the name of the exporter."""
-        return self.__class__.__name__
-
+    @abstractmethod
     def to_string(self, instance: object) -> str:
         """Returns a string representation of the FuzzyLite component
         @param instance is the FuzzyLite component
@@ -249,7 +246,7 @@ class FllExporter(Exporter):
         @param term is the linguistic term
         @return a string representation of the linguistic term.
         """
-        result = ["term:", Op.as_identifier(term.name), term.class_name]
+        result = ["term:", Op.as_identifier(term.name), Op.class_name(term)]
         parameters = term.parameters()
         if parameters:
             result += [parameters]
@@ -260,14 +257,14 @@ class FllExporter(Exporter):
         @param norm is the norm
         @return a string representation of the norm.
         """
-        return norm.class_name if norm else "none"
+        return Op.class_name(norm) if norm else "none"
 
     def activation(self, activation: Activation | None) -> str:
         """Returns a string representation of the activation method
         @param activation is the activation method
         @return a string representation of the activation method.
         """
-        return activation.class_name if activation else "none"
+        return Op.class_name(activation) if activation else "none"
 
     def defuzzifier(self, defuzzifier: Defuzzifier | None) -> str:
         """Returns a string representation of the defuzzifier
@@ -278,7 +275,7 @@ class FllExporter(Exporter):
             return "none"
         from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
 
-        result = [defuzzifier.class_name]
+        result = [Op.class_name(defuzzifier)]
         if isinstance(defuzzifier, IntegralDefuzzifier):
             result += [str(defuzzifier.resolution)]
         elif isinstance(defuzzifier, WeightedDefuzzifier):
@@ -573,7 +570,7 @@ class PythonExporter(Exporter):
             ]
         elif isinstance(term, Linear):
             result += [
-                f"{term.class_name}(",
+                f"{Op.class_name(term)}(",
                 f"{self.format(term.name)}, ",
                 "[",
                 ", ".join(self.format(c) for c in term.coefficients),
@@ -583,7 +580,7 @@ class PythonExporter(Exporter):
             ]
         else:
             result += [
-                f"{term.class_name}(",
+                f"{Op.class_name(term)}(",
                 f"{self.format(term.name)}, ",
                 ", ".join(self.format(to_float(p)) for p in term.parameters().split()),
                 ")",
@@ -597,7 +594,7 @@ class PythonExporter(Exporter):
         @return a string representation of the norm in the Python
         programming language.
         """
-        return f"fl.{norm.class_name}()" if norm else str(None)
+        return f"fl.{Op.class_name(norm)}()" if norm else str(None)
 
     def activation(self, activation: Activation | None) -> str:
         """Returns a string representation of the activation method in the Python
@@ -606,7 +603,7 @@ class PythonExporter(Exporter):
         @return a string representation of the activation method in the Python
         programming language.
         """
-        return f"fl.{activation.class_name}()" if activation else str(None)
+        return f"fl.{Op.class_name(activation)}()" if activation else str(None)
 
     def defuzzifier(self, defuzzifier: Defuzzifier | None) -> str:
         """Returns a string representation of the defuzzifier in the Python
@@ -626,7 +623,7 @@ class PythonExporter(Exporter):
             parameters = f'"{defuzzifier.type.name}"'
         else:
             parameters = ""
-        return f"fl.{defuzzifier.class_name}({parameters})"
+        return f"fl.{Op.class_name(defuzzifier)}({parameters})"
 
     def rule(self, rule: Rule) -> str:
         """Returns a string representation of the rule in the Python
@@ -873,12 +870,10 @@ class FldExporter(Exporter):
             # TODO: Fix this. It's a hack to use hstack without blowing up.
             values = [[]]
 
-        from . import lib
-
         np.savetxt(
             writer,
             np.hstack(values),
-            fmt=f"%0.{lib.decimals}f",
+            fmt=f"%0.{settings.decimals}f",
             delimiter=self.separator,
             header=self.header(engine) if self.headers else "",
             comments="",

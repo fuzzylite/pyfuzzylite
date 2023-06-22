@@ -40,18 +40,21 @@ __all__ = [
     "NormLambda",
     "NormFunction",
 ]
+
 import typing
+from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
 
-from .types import Scalar, scalar
+from .library import scalar
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
 
 
-class Norm:
+class Norm(ABC):
     """The Norm class is the abstract class for norms.
     @author Juan Rada-Vilela, Ph.D.
     @see TNorm
@@ -67,13 +70,7 @@ class Norm:
 
         return FllExporter().norm(self)
 
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the class of the norm
-        @return the name of the class of the norm.
-        """
-        return self.__class__.__name__
-
+    @abstractmethod
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the norm for $a$ and $b$
         @param a is a membership function value
@@ -95,9 +92,23 @@ class TNorm(Norm):
     @since 4.0.
     """
 
-    def compute(self, a: Scalar, b: Scalar) -> Scalar:
-        """Not implemented."""
-        raise NotImplementedError()
+    pass
+
+
+class SNorm(Norm):
+    """The SNorm class is the base class for all S-Norms, and it is utilized as
+    the disjunction fuzzy logic operator and as the aggregation (or
+    `accumulation` in versions 5.0 and earlier) fuzzy logic operator.
+    @author Juan Rada-Vilela, Ph.D.
+    @see RuleBlock::getDisjunction()
+    @see OutputVariable::fuzzyOutput()
+    @see Aggregated::getAggregation()
+    @see SNormFactory
+    @see Norm
+    @since 4.0.
+    """
+
+    pass
 
 
 class AlgebraicProduct(TNorm):
@@ -258,24 +269,6 @@ class NilpotentMinimum(TNorm):
         a = scalar(a)
         b = scalar(b)
         return np.where(a + b > 1.0, np.minimum(a, b), 0.0)
-
-
-class SNorm(Norm):
-    """The SNorm class is the base class for all S-Norms, and it is utilized as
-    the disjunction fuzzy logic operator and as the aggregation (or
-    `accumulation` in versions 5.0 and earlier) fuzzy logic operator.
-    @author Juan Rada-Vilela, Ph.D.
-    @see RuleBlock::getDisjunction()
-    @see OutputVariable::fuzzyOutput()
-    @see Aggregated::getAggregation()
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
-    """
-
-    def compute(self, a: Scalar, b: Scalar) -> Scalar:
-        """Not implemented."""
-        raise NotImplementedError()
 
 
 class AlgebraicSum(SNorm):

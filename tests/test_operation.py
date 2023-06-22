@@ -277,7 +277,7 @@ class TestOperation(unittest.TestCase):
 
     def test_str(self) -> None:
         """Test string operation uses global decimals."""
-        fl.lib.decimals = 3
+        fl.settings.decimals = 3
         self.assertEqual(fl.Op.str(0.3), "0.300")
         self.assertEqual(fl.Op.str(-0.3), "-0.300")
         self.assertEqual(fl.Op.str(3), "3")
@@ -287,13 +287,13 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(fl.Op.str(-math.inf), "-inf")
         self.assertEqual(fl.Op.str(math.nan), "nan")
 
-        fl.lib.decimals = 5
+        fl.settings.decimals = 5
         self.assertEqual(fl.Op.str(0.3), "0.30000")
 
-        fl.lib.decimals = 0
+        fl.settings.decimals = 0
         self.assertEqual(fl.Op.str(0.3), "0")
 
-        fl.lib.decimals = 3
+        fl.settings.decimals = 3
 
     def test_scale(self) -> None:
         """Test linear interpolation."""
@@ -311,6 +311,16 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(math.isnan(fl.Op.scale(math.nan, 0, 1, 0, 10)), True)
         self.assertEqual(fl.Op.scale(math.inf, 0, 1, 0, 10), math.inf)
         self.assertEqual(fl.Op.scale(-math.inf, 0, 1, 0, 10), -math.inf)
+
+    def test_decimals(self) -> None:
+        """Test decimals."""
+        import fuzzylite as fl
+
+        x = fl.Op.str(1.0)
+        self.assertEqual("1.000", x)
+        fl.library.settings.decimals = 6
+        x = fl.Op.str(1.0)
+        self.assertEqual("1.000000", x)
 
     @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:

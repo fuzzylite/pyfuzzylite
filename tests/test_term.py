@@ -27,6 +27,7 @@ import numpy as np
 from numpy import inf, nan
 
 import fuzzylite as fl
+from fuzzylite import Scalar
 from tests.assert_component import BaseAssert
 
 
@@ -68,22 +69,6 @@ class TermAssert(BaseAssert[fl.Term]):
         self.actual.configure(parameters)
         return self
 
-    def has_membership(self, x: float, mf: float) -> TermAssert:
-        """Assert the term's membership function produces $f(x) = mf$."""
-        message = "\n".join(
-            [f"{str(self.actual)}", f"expected: \u03BC(x={x:.3f})={mf}, but"]
-        )
-        # TODO: Find out why we get different values in different platforms
-        # compare against exact values on Mac OSX
-        np.testing.assert_allclose(
-            mf,
-            self.actual.membership(x),
-            atol=fl.lib.atol,
-            rtol=fl.lib.rtol,
-            err_msg=message,
-        )
-        return self
-
     def has_memberships(
         self, x_mf: dict[float, float], height: float = 1.0
     ) -> TermAssert:
@@ -101,47 +86,31 @@ class TermAssert(BaseAssert[fl.Term]):
         np.testing.assert_allclose(
             expected,
             obtained,
-            atol=fl.lib.atol,
-            rtol=fl.lib.rtol,
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
         )
         return self
 
     def membership_fails(
-        self, x: float, exception: type[Exception], message: str, regex: bool = False
+        self, x: float, exception: type[Exception], message: str
     ) -> TermAssert:
         """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaises(exception) as error:
             self.actual.membership(x)
-        if regex:
-            self.test.assertRegex(str(error.exception), message, msg=f"when x={x:.3f}")
-        else:
-            self.test.assertEqual(str(error.exception), message, msg=f"when x={x:.3f}")
-        return self
-
-    def memberships_fail(
-        self, x_mf: dict[float, float], exception: type[Exception], regex: str
-    ) -> TermAssert:
-        """Assert the membership function raises the exception when evaluating $f(x_{keys})$."""
-        for x, _ in x_mf.items():
-            self.membership_fails(x, exception, regex)
-        return self
-
-    def has_tsukamoto(self, x: float, mf: float) -> TermAssert:
-        """Assert the term computes Tsukamoto correctly."""
-        self.test.assertEqual(True, self.actual.is_monotonic())
-        np.testing.assert_allclose(
-            mf,
-            self.actual.tsukamoto(x),
-            atol=fl.lib.atol,
-            rtol=fl.lib.rtol,
-            err_msg=f"when y={x:.3f}",
-        )
+        self.test.assertEqual(str(error.exception), message, msg=f"when x={x:.3f}")
         return self
 
     def has_tsukamotos(self, x_mf: dict[float, float]) -> TermAssert:
         """Assert the term computes all Tsukamoto values correctly."""
-        for x in x_mf:
-            self.has_tsukamoto(x, x_mf[x])
+        self.test.assertEqual(True, self.actual.is_monotonic())
+        expected = fl.scalar([mf for mf in x_mf.values()])
+        obtained = self.actual.tsukamoto(fl.scalar([x for x in x_mf]))
+        np.testing.assert_allclose(
+            expected,
+            obtained,
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
+        )
         return self
 
     def apply(
@@ -155,6 +124,14 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
 
+class BaseTerm(fl.Term):
+    """Base term for testing."""
+
+    def membership(self, x: Scalar) -> Scalar:
+        """Returns nan for testing."""
+        return np.full_like(x, nan)
+
+
 class TestTerm(unittest.TestCase):
     """Test terms."""
 
@@ -164,40 +141,33 @@ class TestTerm(unittest.TestCase):
 
     def test_term(self) -> None:
         """Test the base term."""
-        self.assertEqual(fl.Term().name, "")
-        self.assertEqual(fl.Term("X").name, "X")
-        self.assertEqual(fl.Term("X").height, 1.0)
-        self.assertEqual(fl.Term("X", 0.5).height, 0.5)
+        self.assertEqual(BaseTerm().name, "")
+        self.assertEqual(BaseTerm("X").name, "X")
+        self.assertEqual(BaseTerm("X").height, 1.0)
+        self.assertEqual(BaseTerm("X", 0.5).height, 0.5)
 
-        self.assertEqual(str(fl.Term("xxx", 0.5)), "term: xxx Term 0.500")
-        self.assertEqual(fl.Term().is_monotonic(), False)
-
-        with self.assertRaisesRegex(NotImplementedError, ""):
-            fl.Term().membership(nan)
+        self.assertEqual(str(BaseTerm("xxx", 0.5)), "term: xxx BaseTerm 0.500")
+        self.assertEqual(BaseTerm().is_monotonic(), False)
 
         # does nothing, for test coverage
-        fl.Term().update_reference(None)
+        BaseTerm().update_reference(None)
 
-        discrete_triangle = fl.Triangle("triangle", -1.0, 0.0, 1.0).discretize(
-            -1, 1, 10, midpoints=False
-        )
+        discrete_base = BaseTerm().discretize(-1, 1, 10, midpoints=False)
         xy = {
-            -1.0: 0.0,
-            -0.8: 0.2,
-            -0.6: 0.4,
-            -0.4: 0.6,
-            -0.2: 0.8,
-            0.0: 1.0,
-            0.2: 0.8,
-            0.4: 0.6,
-            0.6: 0.4,
-            0.8: 0.2,
-            1.0: 0.0,
+            -1.0: nan,
+            -0.8: nan,
+            -0.6: nan,
+            -0.4: nan,
+            -0.2: nan,
+            0.0: nan,
+            0.2: nan,
+            0.4: nan,
+            0.6: nan,
+            0.8: nan,
+            1.0: nan,
         }
-        np.testing.assert_allclose(
-            discrete_triangle.values,
-            fl.Discrete.to_xy(*zip(*xy.items())),
-        )
+        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
+        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
 
     def test_activated(self) -> None:
         """Test the activated term."""
@@ -486,19 +456,20 @@ class TestTerm(unittest.TestCase):
             "term: bell Bell 0.000 0.250 3.000 0.500"
         ).has_memberships(
             {
-                -0.5: 0.007692307692307693,
-                -0.4: 0.02812588877808538,
-                -0.25: 0.25,
-                -0.1: 0.49796035438842495,
-                0.0: 0.5,
-                0.1: 0.49796035438842495,
-                0.25: 0.25,
-                0.4: 0.02812588877808538,
-                0.5: 0.007692307692307693,
+                -0.5: 0.015384615384615385,
+                -0.4: 0.05625177755617076,
+                -0.25: 0.5,
+                -0.1: 0.9959207087768499,
+                0.0: 1.0,
+                0.1: 0.9959207087768499,
+                0.25: 0.5,
+                0.4: 0.05625177755617076,
+                0.5: 0.015384615384615385,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
             },
+            height=0.5,
         )
 
     def test_binary(self) -> None:
@@ -713,18 +684,19 @@ class TestTerm(unittest.TestCase):
         ).has_memberships(
             {
                 -0.5: 0.0,
-                -0.4: 0.047745751406263165,
-                -0.25: 0.25,
-                -0.1: 0.45225424859373686,
-                0.0: 0.5,
-                0.1: 0.45225424859373686,
-                0.25: 0.25,
-                0.4: 0.047745751406263165,
+                -0.4: 0.09549150281252633,
+                -0.25: 0.5,
+                -0.1: 0.9045084971874737,
+                0.0: 1.0,
+                0.1: 0.9045084971874737,
+                0.25: 0.5,
+                0.4: 0.09549150281252633,
                 0.5: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
             },
+            height=0.5,
         )
 
     def test_discrete(self) -> None:
@@ -1976,33 +1948,12 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-    @unittest.skip("Not using Python floats anymore since version 8")
-    def test_division_by_zero_fails_with_float(self) -> None:
-        """Test the division by zero when using Python floats."""
-        self.assertEqual(fl.types.float_type, float)
-
-        TermAssert(self, fl.Function.create("dbz", "0.0/x")).membership_fails(
-            0.0, ZeroDivisionError, "float division by zero"
-        ).has_memberships({fl.inf: 0.0, -fl.inf: -0.0, fl.nan: fl.nan})
-
-        TermAssert(self, fl.Function.create("dbz", "inf/x")).membership_fails(
-            0.0, ZeroDivisionError, "float division by zero"
-        ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, fl.nan: fl.nan})
-
-        TermAssert(self, fl.Function.create("dbz", ".-inf/x")).membership_fails(
-            0.0, ZeroDivisionError, "float division by zero"
-        ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
-
-        TermAssert(self, fl.Function.create("dbz", "nan/x")).membership_fails(
-            0.0, ZeroDivisionError, "float division by zero"
-        ).has_memberships({fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan})
-
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
 
-        default_float = fl.types.float_type
-        fl.types.float_type = np.float64
+        default_float = fl.settings.float_type
+        fl.settings.float_type = np.float64
         np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
         try:
             TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
@@ -2021,11 +1972,11 @@ class TestTerm(unittest.TestCase):
                 {0.0: fl.nan, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan}
             )
         except Exception:
-            fl.types.float_type = default_float
+            fl.settings.float_type = default_float
             raise
 
-        fl.types.float_type = default_float
-        self.assertEqual(fl.types.float_type, default_float)
+        fl.settings.float_type = default_float
+        self.assertEqual(fl.settings.float_type, default_float)
 
 
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
@@ -2059,8 +2010,8 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         np.testing.assert_allclose(
             obtained,
             expected,
-            atol=fl.lib.atol,
-            rtol=fl.lib.rtol,
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
         )
         return self
 
@@ -2118,8 +2069,8 @@ class TestFunction(unittest.TestCase):
 
         function_a = fl.Function.create("f", "2*i_A + o_A + x", engine_a)
         assert_that = TermAssert(self, function_a)
-        assert_that.exports_fll("term: f Function 2*i_A + o_A + x").has_membership(
-            0.0, nan
+        assert_that.exports_fll("term: f Function 2*i_A + o_A + x").has_memberships(
+            {0.0: nan}
         )
         input_a.value = 3.0
         output_a.value = 1.0

@@ -30,80 +30,20 @@ __all__ = [
 ]
 
 import copy
+import inspect
 from collections.abc import Iterator
+from types import ModuleType
 from typing import Callable, Generic, TypeVar
 
 import numpy as np
 
-from .activation import (
-    Activation,
-    First,
-    General,
-    Highest,
-    Last,
-    Lowest,
-    Proportional,
-    Threshold,
-)
-from .defuzzifier import (
-    Bisector,
-    Centroid,
-    Defuzzifier,
-    LargestOfMaximum,
-    MeanOfMaximum,
-    SmallestOfMaximum,
-    WeightedAverage,
-    WeightedSum,
-)
-from .hedge import Any, Extremely, Hedge, Not, Seldom, Somewhat, Very
-from .norm import (
-    AlgebraicProduct,
-    AlgebraicSum,
-    BoundedDifference,
-    BoundedSum,
-    DrasticProduct,
-    DrasticSum,
-    EinsteinProduct,
-    EinsteinSum,
-    HamacherProduct,
-    HamacherSum,
-    Maximum,
-    Minimum,
-    NilpotentMaximum,
-    NilpotentMinimum,
-    NormalizedSum,
-    SNorm,
-    TNorm,
-    UnboundedSum,
-)
+from .activation import Activation
+from .defuzzifier import Defuzzifier
+from .hedge import Hedge
+from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule
-from .term import (
-    Arc,
-    Bell,
-    Binary,
-    Concave,
-    Constant,
-    Cosine,
-    Discrete,
-    Function,
-    Gaussian,
-    GaussianProduct,
-    Linear,
-    PiShape,
-    Ramp,
-    Rectangle,
-    SemiEllipse,
-    Sigmoid,
-    SigmoidDifference,
-    SigmoidProduct,
-    Spike,
-    SShape,
-    Term,
-    Trapezoid,
-    Triangle,
-    ZShape,
-)
+from .term import Function, Term
 
 T = TypeVar("T")
 
@@ -117,20 +57,34 @@ class ConstructionFactory(Generic[T]):
     @since 5.0
     """
 
-    def __init__(self) -> None:
+    def __init__(self, constructors: dict[str, type[T]] | None = None) -> None:
         """Create the construction factory."""
-        self.constructors: dict[str, Callable[[], T]] = {}
+        self.constructors = constructors or {}
 
     def __iter__(self) -> Iterator[str]:
         """Gets the iterator of constructors."""
         return self.constructors.__iter__()
 
-    @property
-    def class_name(self) -> str:
-        """Returns the class name of the factory
-        @return the class name of the factory.
+    def import_from(self, module: ModuleType, cls: type[T]) -> list[type[T]]:
+        """Imports constructors from a module.
+        @param module is the module from which constructors are imported
+        @param cls is the class of the constructors to be imported
+        @return a list of constructors imported from the module.
         """
-        return self.__class__.__name__
+
+        def constructable(obj: type[T]) -> bool:
+            try:
+                return (
+                    issubclass(obj, cls) and not inspect.isabstract(obj) and bool(obj())
+                )
+            except:  # noqa: E722
+                return False
+
+        constructors = [
+            constructor
+            for _, constructor in inspect.getmembers(module, predicate=constructable)
+        ]
+        return constructors
 
     def construct(self, key: str) -> T:
         """Creates an object by executing the constructor associated to the given key
@@ -140,7 +94,7 @@ class ConstructionFactory(Generic[T]):
         """
         if key in self.constructors:
             return self.constructors[key]()
-        raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
+        raise ValueError(f"constructor of '{key}' not found in {Op.class_name(self)}")
 
 
 class CloningFactory(Generic[T]):
@@ -152,20 +106,13 @@ class CloningFactory(Generic[T]):
     @since 5.0
     """
 
-    def __init__(self) -> None:
+    def __init__(self, objects: dict[str, T] | None = None) -> None:
         """Create cloning factory."""
-        self.objects: dict[str, T] = {}
+        self.objects = objects or {}
 
     def __iter__(self) -> Iterator[str]:
         """Get iterator of objects."""
         return self.objects.__iter__()
-
-    @property
-    def class_name(self) -> str:
-        """Returns the class name of the factory
-        @return the class name of the factory.
-        """
-        return self.__class__.__name__
 
     def copy(self, key: str) -> T:
         """Creates a deep copy of the registered object
@@ -175,7 +122,7 @@ class CloningFactory(Generic[T]):
         """
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
-        raise ValueError(f"object with key '{key}' not found in {self.class_name}")
+        raise ValueError(f"object with key '{key}' not found in {Op.class_name(self)}")
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
@@ -192,19 +139,12 @@ class ActivationFactory(ConstructionFactory[Activation]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            activation().class_name: activation
-            for activation in [
-                First,
-                General,
-                Highest,
-                Last,
-                Lowest,
-                Proportional,
-                Threshold,
-            ]
+        from . import activation
+
+        activations = {
+            Op.class_name(a): a for a in self.import_from(activation, Activation)
         }
+        super().__init__(constructors=activations)
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
@@ -219,19 +159,12 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            defuzzifier().class_name: defuzzifier
-            for defuzzifier in [
-                Bisector,
-                Centroid,
-                LargestOfMaximum,
-                MeanOfMaximum,
-                SmallestOfMaximum,
-                WeightedAverage,
-                WeightedSum,
-            ]
+        from . import defuzzifier
+
+        defuzzifiers = {
+            Op.class_name(d): d for d in self.import_from(defuzzifier, Defuzzifier)
         }
+        super().__init__(constructors=defuzzifiers)
 
     # TODO: Implement?
     # def construct(self, key: str, parameter: Union[int, str]):
@@ -250,11 +183,10 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            hedge().name: hedge
-            for hedge in [Any, Extremely, Not, Seldom, Somewhat, Very]
-        }
+        from . import hedge
+
+        hedges = {Op.class_name(h).lower(): h for h in self.import_from(hedge, Hedge)}
+        super().__init__(constructors=hedges)
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
@@ -269,21 +201,10 @@ class SNormFactory(ConstructionFactory[SNorm]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            snorm().class_name: snorm
-            for snorm in [
-                AlgebraicSum,
-                BoundedSum,
-                DrasticSum,
-                EinsteinSum,
-                HamacherSum,
-                Maximum,
-                NilpotentMaximum,
-                NormalizedSum,
-                UnboundedSum,
-            ]
-        }
+        from . import norm as norm
+
+        snorms = {Op.class_name(n): n for n in self.import_from(norm, SNorm)}
+        super().__init__(constructors=snorms)
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
@@ -298,19 +219,10 @@ class TNormFactory(ConstructionFactory[TNorm]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            tnorm().class_name: tnorm
-            for tnorm in [
-                AlgebraicProduct,
-                BoundedDifference,
-                DrasticProduct,
-                EinsteinProduct,
-                HamacherProduct,
-                Minimum,
-                NilpotentMinimum,
-            ]
-        }
+        from . import norm as norm
+
+        tnorms = {Op.class_name(n): n for n in self.import_from(norm, TNorm)}
+        super().__init__(constructors=tnorms)
 
 
 class TermFactory(ConstructionFactory[Term]):
@@ -325,35 +237,14 @@ class TermFactory(ConstructionFactory[Term]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            term().class_name: term
-            for term in [
-                Arc,
-                Bell,
-                Binary,
-                Concave,
-                Constant,
-                Cosine,
-                Discrete,
-                Function,
-                Gaussian,
-                GaussianProduct,
-                Linear,
-                PiShape,
-                Ramp,
-                Rectangle,
-                SemiEllipse,
-                Sigmoid,
-                SigmoidDifference,
-                SigmoidProduct,
-                Spike,
-                SShape,
-                Trapezoid,
-                Triangle,
-                ZShape,
-            ]
+        from . import term as term
+
+        terms = {
+            Op.class_name(t): t
+            for t in self.import_from(term, Term)
+            if t not in {term.Activated, term.Aggregated}
         }
+        super().__init__(constructors=terms)
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
@@ -370,16 +261,18 @@ class FunctionFactory(CloningFactory[Function.Element]):
 
     def __init__(self) -> None:
         """Create the factory."""
-        super().__init__()
-        self._register_operators()
-        self._register_functions()
+        elements = {
+            element.name: element
+            for element in self._create_operators() + self._create_functions()
+        }
+        super().__init__(objects=elements)
 
     def _precedence(self, importance: int) -> int:
         maximum = 100
         step = 10
         return maximum - importance * step
 
-    def _register_operators(self) -> None:
+    def _create_operators(self) -> list[Function.Element]:
         operator_type = Function.Element.Type.Operator
         p: Callable[[int], int] = self._precedence
         operators = [
@@ -500,71 +393,243 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 precedence=p(5),
             ),
         ]
-        for op in operators:
-            self.objects[op.name] = op
+        return operators
 
-    def _register_functions(self) -> None:
+    def _create_functions(self) -> list[Function.Element]:
         function_type = Function.Element.Type.Function
-
+        p: Callable[[int], int] = self._precedence
         functions = [
-            Function.Element("gt", "Greater than (>)", function_type, Op.gt, arity=2),
             Function.Element(
-                "ge", "Greater than or equal to (>=)", function_type, Op.ge, arity=2
-            ),
-            Function.Element("eq", "Equal to (==)", function_type, Op.eq, arity=2),
-            Function.Element(
-                "neq", "Not equal to (!=)", function_type, Op.neq, arity=2
-            ),
-            Function.Element(
-                "le", "Less than or equal to (<=)", function_type, Op.le, arity=2
-            ),
-            Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
-            Function.Element(
-                "min", "Minimum", function_type, min, arity=2
-            ),  # because is variadiac, whereas np.min takes arrays as args
-            Function.Element(
-                "max", "Maximum", function_type, max, arity=2
-            ),  # because is variadiac, whereas np.max takes arrays as args
-            Function.Element(
-                "acos", "Inverse cosine", function_type, np.arccos, arity=1
-            ),
-            Function.Element("asin", "Inverse sine", function_type, np.arcsin, arity=1),
-            Function.Element(
-                "atan", "Inverse tangent", function_type, np.arctan, arity=1
-            ),
-            Function.Element("ceil", "Ceiling", function_type, np.ceil, arity=1),
-            Function.Element("cos", "Cosine", function_type, np.cos, arity=1),
-            Function.Element(
-                "cosh", "Hyperbolic cosine", function_type, np.cosh, arity=1
-            ),
-            Function.Element("exp", "Exponential", function_type, np.exp, arity=1),
-            Function.Element("abs", "Absolute", function_type, np.fabs, arity=1),
-            Function.Element("fabs", "Absolute", function_type, np.fabs, arity=1),
-            Function.Element("floor", "Floor", function_type, np.floor, arity=1),
-            Function.Element(
-                "log", "Natural logarithm", function_type, np.log, arity=1
+                "gt",
+                "Greater than (>)",
+                function_type,
+                Op.gt,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "log10", "Common logarithm", function_type, np.log10, arity=1
-            ),
-            Function.Element("round", "Round", function_type, np.round, arity=1),
-            Function.Element("sin", "Sine", function_type, np.sin, arity=1),
-            Function.Element(
-                "sinh", "Hyperbolic sine", function_type, np.sinh, arity=1
-            ),
-            Function.Element("sqrt", "Square root", function_type, np.sqrt, arity=1),
-            Function.Element("tan", "Tangent", function_type, np.tan, arity=1),
-            Function.Element(
-                "tanh", "Hyperbolic tangent", function_type, np.tanh, arity=1
+                "ge",
+                "Greater than or equal to (>=)",
+                function_type,
+                Op.ge,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "log1p", "Natural logarithm plus one", function_type, np.log1p, arity=1
+                "eq",
+                "Equal to (==)",
+                function_type,
+                Op.eq,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "acosh", "Inverse hyperbolic cosine", function_type, np.arccosh, arity=1
+                "neq",
+                "Not equal to (!=)",
+                function_type,
+                Op.neq,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "asinh", "Inverse hyperbolic sine", function_type, np.arcsinh, arity=1
+                "le",
+                "Less than or equal to (<=)",
+                function_type,
+                Op.le,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "lt",
+                "Less than (>)",
+                function_type,
+                Op.lt,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "min",
+                "Minimum",
+                function_type,
+                min,  # because is variadiac, whereas np.min takes arrays as args
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "max",
+                "Maximum",
+                function_type,
+                max,  # because is variadiac, whereas np.max takes arrays as args
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "acos",
+                "Inverse cosine",
+                function_type,
+                np.arccos,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "asin",
+                "Inverse sine",
+                function_type,
+                np.arcsin,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "atan",
+                "Inverse tangent",
+                function_type,
+                np.arctan,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "ceil",
+                "Ceiling",
+                function_type,
+                np.ceil,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "cos",
+                "Cosine",
+                function_type,
+                np.cos,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "cosh",
+                "Hyperbolic cosine",
+                function_type,
+                np.cosh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "exp",
+                "Exponential",
+                function_type,
+                np.exp,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "abs",
+                "Absolute",
+                function_type,
+                np.fabs,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "fabs",
+                "Absolute",
+                function_type,
+                np.fabs,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "floor",
+                "Floor",
+                function_type,
+                np.floor,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log",
+                "Natural logarithm",
+                function_type,
+                np.log,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log10",
+                "Common logarithm",
+                function_type,
+                np.log10,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "round",
+                "Round",
+                function_type,
+                np.round,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sin",
+                "Sine",
+                function_type,
+                np.sin,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sinh",
+                "Hyperbolic sine",
+                function_type,
+                np.sinh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sqrt",
+                "Square root",
+                function_type,
+                np.sqrt,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "tan",
+                "Tangent",
+                function_type,
+                np.tan,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "tanh",
+                "Hyperbolic tangent",
+                function_type,
+                np.tanh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log1p",
+                "Natural logarithm plus one",
+                function_type,
+                np.log1p,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "acosh",
+                "Inverse hyperbolic cosine",
+                function_type,
+                np.arccosh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "asinh",
+                "Inverse hyperbolic sine",
+                function_type,
+                np.arcsinh,
+                arity=1,
+                precedence=p(0),
             ),
             Function.Element(
                 "atanh",
@@ -572,22 +637,42 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 function_type,
                 np.arctanh,
                 arity=1,
-            ),
-            Function.Element("pow", "Power", function_type, np.float_power, arity=2),
-            Function.Element(
-                "atan2", "Inverse tangent (y,x)", function_type, np.arctan2, arity=2
+                precedence=p(0),
             ),
             Function.Element(
-                "fmod", "Floating-point remainder", function_type, np.fmod, arity=2
+                "pow",
+                "Power",
+                function_type,
+                np.float_power,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "pi", "Pi constant", function_type, lambda: np.pi, arity=0
+                "atan2",
+                "Inverse tangent (y,x)",
+                function_type,
+                np.arctan2,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "fmod",
+                "Floating-point remainder",
+                function_type,
+                np.fmod,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "pi",
+                "Pi constant",
+                function_type,
+                lambda: np.pi,
+                arity=0,
+                precedence=p(0),
             ),
         ]
-
-        for f in functions:
-            f.precedence = self._precedence(0)
-            self.objects[f.name] = f
+        return functions
 
     def operators(self) -> dict[str, Function.Element]:
         """Returns a dictionary of the operators available

@@ -15,8 +15,6 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from numpy import inf, isinf, isnan, nan  # noqa
-
 from .activation import *
 from .defuzzifier import *
 from .engine import *
@@ -32,11 +30,6 @@ from .term import *
 from .types import *
 from .variable import *
 
-lib = Library()
-
-# Import examples here to avoid circular imports with fl.lib
-from . import examples  # noqa
-
-__name__ = lib.name
-__version__ = lib.version
-__doc__ = lib.summary
+__name__ = information.name
+__doc__ = information.description
+__version__ = information.version

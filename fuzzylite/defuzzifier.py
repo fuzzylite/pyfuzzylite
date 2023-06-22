@@ -31,16 +31,17 @@ __all__ = [
 
 import enum
 import warnings
+from abc import ABC, abstractmethod
 
 import numpy as np
 
-from . import nan
+from .library import nan, scalar
 from .operation import Op
 from .term import Activated, Aggregated, Constant, Function, Linear, Term
-from .types import Scalar, scalar
+from .types import Scalar
 
 
-class Defuzzifier:
+class Defuzzifier(ABC):
     """The Defuzzifier class is the abstract class for defuzzifiers.
 
     @author Juan Rada-Vilela, Ph.D.
@@ -49,25 +50,21 @@ class Defuzzifier:
     @since 4.0
     """
 
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the class of the defuzzifier
-        @return the name of the class of the defuzzifier.
-        """
-        return self.__class__.__name__
-
-    def configure(self, parameters: str) -> None:
+    def configure(  # noqa: B027 empty method in an abstract base class
+        self, parameters: str
+    ) -> None:
         """Configures the defuzzifier with the given parameters.
         @param parameters contains a list of space-separated parameter values.
         """
-        raise NotImplementedError()
+        pass
 
     def parameters(self) -> str:
         """Returns the parameters of the defuzzifier.
         @return the parameters of the defuzzifier.
         """
-        raise NotImplementedError()
+        return ""
 
+    @abstractmethod
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzifies the given fuzzy term utilizing the range `[minimum,maximum]`
         @param term is the term to defuzzify, typically an Aggregated term
@@ -104,7 +101,7 @@ class IntegralDefuzzifier(Defuzzifier):
         """Returns the FLL code for the defuzzifier
         @return FLL code for the activation method.
         """
-        return f"{self.class_name} {self.parameters()}"
+        return f"{Op.class_name(self)} {self.parameters()}"
 
     def parameters(self) -> str:
         """Returns the parameters to configure the defuzzifier
@@ -119,6 +116,7 @@ class IntegralDefuzzifier(Defuzzifier):
         if parameters:
             self.resolution = int(parameters)
 
+    @abstractmethod
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzify the term on the given range.
 
@@ -129,7 +127,7 @@ class IntegralDefuzzifier(Defuzzifier):
         Retur:
             scalar: defuzzified value.
         """
-        raise NotImplementedError()
+        pass
 
 
 class Bisector(IntegralDefuzzifier):
@@ -325,30 +323,13 @@ class WeightedDefuzzifier(Defuzzifier):
         TakagiSugeno = enum.auto()
         Tsukamoto = enum.auto()
 
-    @enum.unique
-    class Mode(enum.Enum):
-        """The Mode enum indicates the mode of the WeightedDefuzzifier.
-
-        Average: Weighted average of fuzzy terms
-        Sum: Sum of fuzzy terms
-        """
-
-        Average = enum.auto()
-        Sum = enum.auto()
-
     def __init__(
         self,
-        mode: str | WeightedDefuzzifier.Mode,
         type: str | WeightedDefuzzifier.Type = Type.Automatic,
     ) -> None:
         """Creates a WeightedDefuzzifier
         @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
         """
-        if isinstance(mode, str):
-            self.mode = WeightedDefuzzifier.Mode[mode]
-        else:
-            self.mode = mode
-
         if isinstance(type, str):
             self.type = WeightedDefuzzifier.Type[type]
         else:
@@ -356,7 +337,7 @@ class WeightedDefuzzifier(Defuzzifier):
 
     def __str__(self) -> str:
         """Gets a string representation of the defuzzifier."""
-        return f"{self.class_name} {self.parameters()}"
+        return f"{Op.class_name(self)} {self.parameters()}"
 
     def parameters(self) -> str:
         """Gets the type of weighted defuzzifier."""
@@ -392,6 +373,40 @@ class WeightedDefuzzifier(Defuzzifier):
         elif term.is_monotonic():
             return WeightedDefuzzifier.Type.Tsukamoto
         raise TypeError(f"cannot infer type of {cls.__name__} from {term}")
+
+    @abstractmethod
+    def defuzzify(
+        self,
+        term: Term,
+        minimum: float = nan,
+        maximum: float = nan,
+    ) -> Scalar:
+        r"""Computes the weighted fuzzy set represented as an
+        Aggregated Term as.
+
+        From version 6.0, the implication and aggregation operators are not
+        utilized for defuzzification.
+
+        @param term is the fuzzy set represented as an AggregatedTerm
+        @param minimum is the minimum value of the range (only used for Tsukamoto)
+        @param maximum is the maximum value of the range (only used for Tsukamoto)
+        @return the weighted sum of the given fuzzy set
+        """
+        pass
+
+
+class WeightedAverage(WeightedDefuzzifier):
+    """The WeightedAverage class is a WeightedDefuzzifier that computes the
+    weighted average of a fuzzy set represented in an Aggregated Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see WeightedAverageCustom
+    @see WeightedSum
+    @see WeightedSumCustom
+    @see WeightedDefuzzifier
+    @see Defuzzifier
+    @since 4.0
+    """
 
     def defuzzify(
         self,
@@ -436,31 +451,7 @@ class WeightedDefuzzifier(Defuzzifier):
             weights = weights + w
 
         y = weighted_sum / weights
-        if self.mode == WeightedDefuzzifier.Mode.Sum:
-            # This is done to get "invalid" output values from activated terms with zero activation degrees.
-            # Thus, returning nan values in those cases. A regular weighted sum would result in zero.
-            y = y * weights
         return y
-
-
-class WeightedAverage(WeightedDefuzzifier):
-    """The WeightedAverage class is a WeightedDefuzzifier that computes the
-    weighted average of a fuzzy set represented in an Aggregated Term.
-
-    @author Juan Rada-Vilela, Ph.D.
-    @see WeightedAverageCustom
-    @see WeightedSum
-    @see WeightedSumCustom
-    @see WeightedDefuzzifier
-    @see Defuzzifier
-    @since 4.0
-    """
-
-    def __init__(
-        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
-    ) -> None:
-        """Creates a WeightedAverage defuzzifier."""
-        super().__init__(WeightedDefuzzifier.Mode.Average, type)
 
 
 class WeightedSum(WeightedDefuzzifier):
@@ -476,8 +467,50 @@ class WeightedSum(WeightedDefuzzifier):
     @since 4.0
     """
 
-    def __init__(
-        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
-    ) -> None:
-        """Creates a WeightedSum defuzzifier."""
-        super().__init__(WeightedDefuzzifier.Mode.Sum, type)
+    def defuzzify(
+        self,
+        term: Term,
+        minimum: float = nan,
+        maximum: float = nan,
+    ) -> Scalar:
+        r"""Computes the weighted sum of the given fuzzy set represented as an
+        Aggregated Term as $y = \sum_i{w_iz_i} $,
+        where $w_i$ is the activation degree of term $i$, and $z_i
+        = \mu_i(w_i) $.
+
+        From version 6.0, the implication and aggregation operators are not
+        utilized for defuzzification.
+
+        @param term is the fuzzy set represented as an AggregatedTerm
+        @param minimum is the minimum value of the range (only used for Tsukamoto)
+        @param maximum is the maximum value of the range (only used for Tsukamoto)
+        @return the weighted sum of the given fuzzy set
+        """
+        fuzzy_output = term
+        if not isinstance(fuzzy_output, Aggregated):
+            raise ValueError(
+                f"expected an Aggregated term, but found {type(fuzzy_output)}"
+            )
+
+        this_type = self.type
+        if self.type == WeightedDefuzzifier.Type.Automatic:
+            this_type = self.infer_type(fuzzy_output)
+
+        weighted_sum = scalar(0.0 if fuzzy_output.terms else nan)
+        weights = scalar(0.0)
+        membership = (
+            Term.tsukamoto.__name__
+            if this_type == WeightedDefuzzifier.Type.Tsukamoto
+            else Term.membership.__name__
+        )
+        for activated in fuzzy_output.terms:
+            w = activated.degree
+            z = activated.term.__getattribute__(membership)(w)
+            weighted_sum = weighted_sum + w * z
+            weights = weights + w
+
+        y = weighted_sum / weights
+        # This is done to get "invalid" output values from activated terms with zero activation degrees.
+        # Thus, returning nan values in those cases. A regular weighted sum would result in zero.
+        y = y * weights
+        return y

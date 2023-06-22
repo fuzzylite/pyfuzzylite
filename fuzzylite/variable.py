@@ -24,12 +24,12 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from . import inf, isnan, nan
 from .exporter import FllExporter
+from .library import inf, isnan, nan, scalar
 from .norm import SNorm
 from .operation import Op
 from .term import Aggregated
-from .types import Scalar, scalar
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .defuzzifier import Defuzzifier
@@ -435,6 +435,7 @@ class OutputVariable(Variable):
         """
         self.fuzzy.clear()
         self.previous_value = nan
+        # TODO: use property instead?
         self._value = scalar(nan)
 
     def fuzzy_value(self) -> str:

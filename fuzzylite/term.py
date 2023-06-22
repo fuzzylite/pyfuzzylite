@@ -53,18 +53,20 @@ from typing import Any, Callable, SupportsFloat, Union
 
 import numpy as np
 
-from . import inf, isnan, nan
 from .exporter import FllExporter
+from .library import array, inf, isnan, nan, scalar, settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
-from .types import Scalar, ScalarArray, array, float_type, scalar, to_float
+from .types import Scalar, ScalarArray
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
 
+from abc import ABC, abstractmethod
+
 
 # TODO: optimise numpy expressions, maybe using indexes instead of np.where
-class Term:
+class Term(ABC):
     """The Term class is the abstract class for linguistic terms. The linguistic
     terms in this library can be divided in four groups as: `basic`,
     `extended`, `edge`, and `function`. The `basic` terms are Triangle,
@@ -108,11 +110,6 @@ class Term:
         """
         return FllExporter().term(self)
 
-    @property
-    def class_name(self) -> str:
-        """Gets the name of the class of the term."""
-        return self.__class__.__name__
-
     def parameters(self) -> str:
         """Returns the parameters to configure the term. The parameters are
         separated by spaces. If there is one additional parameter, the
@@ -134,7 +131,9 @@ class Term:
             result.append(Op.str(self.height))
         return " ".join(result)
 
-    def configure(self, parameters: str) -> None:
+    def configure(  # noqa: B027  empty method in an abstract base class
+        self, parameters: str
+    ) -> None:
         """Configures the term with the given takes_parameters. The takes_parameters are
         separated by spaces. If there is one additional parameter, the
         parameter will be considered as the height of the term; otherwise,
@@ -158,6 +157,7 @@ class Term:
             f", but got {len(values)}: '{parameters}'",
         )
 
+    @abstractmethod
     def membership(self, x: Scalar) -> Scalar:
         r"""Computes the has_membership function value at $x$
         :param x
@@ -165,7 +165,9 @@ class Term:
         """
         raise NotImplementedError()
 
-    def update_reference(self, engine: Engine | None) -> None:
+    def update_reference(  # noqa: B027  empty method in an abstract base class
+        self, engine: Engine | None
+    ) -> None:
         """Updates the references (if any) to point to the current engine (useful
         when cloning engines or creating terms within Importer objects
         :param engine: is the engine to which this term belongs to.
@@ -250,6 +252,7 @@ class Activated(Term):
         Note: nan input values may result in nan activations, which would result in nan defuzzifications,
         thus we replace nan with 0.0 to avoid activations, and sensibly replace infinity values if they were present.
         """
+        # TODO: Reconsider this.
         self._degree = np.nan_to_num(value, nan=0.0, neginf=0.0, posinf=1.0)
 
     def parameters(self) -> str:
@@ -273,11 +276,11 @@ class Activated(Term):
         """
         if not self.implication:
             raise ValueError("expected an implication operator, but none found")
-
-        return self.implication.compute(
+        y = self.implication.compute(
             np.atleast_2d(self.degree).T,
             self.term.membership(x),
-        ).squeeze()  # type:ignore
+        )
+        return y.squeeze()  # type:ignore
 
 
 class Aggregated(Term):
@@ -351,10 +354,10 @@ class Aggregated(Term):
         if self.terms and not self.aggregation:
             raise ValueError("expected an aggregation operator, but none found")
 
-        result = scalar(0.0)
+        y = scalar(0.0)
         for term in self.terms:
-            result = self.aggregation.compute(result, term.membership(x))  # type: ignore
-        return result
+            y = self.aggregation.compute(y, term.membership(x))  # type: ignore
+        return y
 
     def activation_degree(self, term: Term) -> Scalar:
         """Computes the aggregated activation degree for the given term.
@@ -366,28 +369,28 @@ class Aggregated(Term):
         @return the aggregated activation degree for the given term.
         """
         # TODO: Fix once self.terms is a dictionary
-        result = scalar(0.0)
+        y = scalar(0.0)
         for activation in self.terms:
             if activation.term == term:
                 if self.aggregation:
-                    result = self.aggregation.compute(result, activation.degree)
+                    y = self.aggregation.compute(y, activation.degree)
                 else:
-                    result += activation.degree
+                    y += activation.degree
 
-        return result
+        return y
 
     def highest_activated_term(self) -> Activated | None:
         """Iterates over the Activated terms to find the term with the maximum
         activation degree
         @return the term with the maximum activation degree.
         """
-        result = None
+        y = None
         maximum_activation = -inf
         for activated in self.terms:
             if activated.degree > maximum_activation:
                 maximum_activation = activated.degree  # type: ignore
-                result = activated
-        return result
+                y = activated
+        return y
 
     def clear(self) -> None:
         """Clears the list of activated terms."""
@@ -919,8 +922,8 @@ class Discrete(Term):
         """Creates a list of values from the given values.
         @param values is a string or a flat list of (x, y)-pairs or a dictionary of values {x: y}.
         """
-        x = array(x, dtype=float_type)
-        y = array(y, dtype=float_type)
+        x = array(x, dtype=settings.float_type)
+        y = array(y, dtype=settings.float_type)
         if x.shape != y.shape:
             raise ValueError(
                 f"expected same shape from x and y, but found x={x.shape} and y={y.shape}"
@@ -2511,11 +2514,10 @@ class Function(Term):
         @returns the formula formatted.
 
         """
-        from . import lib
         from .factory import FunctionFactory
         from .rule import Rule
 
-        factory: FunctionFactory = lib.factory_manager.function
+        factory: FunctionFactory = settings.factory_manager.function
         operators: set[str] = set(factory.operators().keys()).union({"(", ")", ","})
         operators -= {Rule.AND, Rule.OR}
 
@@ -2534,11 +2536,10 @@ class Function(Term):
         @throws fl::Exception if the formula has syntax errors.
         """
         # TODO: support for unary and binary (+,-)
-        from . import lib
         from .factory import FunctionFactory
 
         formula = cls.format_infix(formula)
-        factory: FunctionFactory = lib.factory_manager.function
+        factory: FunctionFactory = settings.factory_manager.function
 
         from collections import deque
 
@@ -2546,11 +2547,11 @@ class Function(Term):
         stack: list[str] = []
 
         for token in formula.split():
-            if lib.debugging:
-                lib.logger.debug("=" * 20)
-                lib.logger.debug(f"formula: {formula}")
-                lib.logger.debug(f"queue: {queue}")
-                lib.logger.debug(f"stack: {stack}")
+            if settings.debugging:
+                settings.logger.debug("=" * 20)
+                settings.logger.debug(f"formula: {formula}")
+                settings.logger.debug(f"queue: {queue}")
+                settings.logger.debug(f"stack: {stack}")
 
             element: Function.Element | None = (
                 factory.objects[token] if token in factory.objects else None
@@ -2609,9 +2610,9 @@ class Function(Term):
             queue.append(stack.pop())
 
         postfix = " ".join(queue)
-        if lib.debugging:
-            lib.logger.debug(f"formula={formula}")
-            lib.logger.debug(f"postfix={postfix}")
+        if settings.debugging:
+            settings.logger.debug(f"formula={formula}")
+            settings.logger.debug(f"postfix={postfix}")
         return postfix
 
     @classmethod
@@ -2622,11 +2623,9 @@ class Function(Term):
         @return a node representing a binary expression tree from the given formula
         @throws fl::Exception if the formula has syntax errors.
         """
-        from . import lib
-
         postfix = cls.infix_to_postfix(formula)
         stack: list[Function.Node] = []
-        factory = lib.factory_manager.function
+        factory = settings.factory_manager.function
 
         for token in postfix.split():
             element: Function.Element | None = (
@@ -2656,10 +2655,10 @@ class Function(Term):
         if len(stack) != 1:
             raise SyntaxError(f"invalid formula: '{formula}'")
 
-        if lib.debugging:
-            lib.logger.debug("-" * 20)
-            lib.logger.debug(f"postfix={postfix}")
-            lib.logger.debug(
+        if settings.debugging:
+            settings.logger.debug("-" * 20)
+            settings.logger.debug(f"postfix={postfix}")
+            settings.logger.debug(
                 "\n  ".join(Op.describe(node, class_hierarchy=False) for node in stack)
             )
         return stack[-1]

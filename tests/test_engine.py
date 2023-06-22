@@ -123,7 +123,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
             )
 
             np.testing.assert_allclose(
-                obtained, expected, rtol=0, atol=10 ** -(decimals - 1)
+                obtained, expected, rtol=fl.settings.rtol, atol=fl.settings.atol
             )
         return self
 

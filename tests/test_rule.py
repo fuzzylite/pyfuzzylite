@@ -61,12 +61,12 @@ class TestExpression(unittest.TestCase):
         proposition = fl.Proposition()
         proposition.variable = fl.Variable("variable")
         proposition.hedges = [fl.Very()]
-        proposition.term = fl.Term("term")
+        proposition.term = fl.Triangle("term")
 
         self.assertEqual("variable is very term", str(proposition))
 
         proposition = fl.Proposition(
-            fl.Variable("variable"), [fl.Very()], fl.Term("term")
+            fl.Variable("variable"), [fl.Very()], fl.Triangle("term")
         )
         self.assertEqual("variable is very term", str(proposition))
 
@@ -81,10 +81,10 @@ class TestExpression(unittest.TestCase):
         operator = fl.Operator()
         operator.name = "OR"
         operator.left = fl.Proposition(
-            fl.Variable("variable_a"), [fl.Very()], fl.Term("term_a")
+            fl.Variable("variable_a"), [fl.Very()], fl.Triangle("term_a")
         )
         operator.right = fl.Proposition(
-            fl.Variable("variable_b"), [fl.Very()], fl.Term("term_b")
+            fl.Variable("variable_b"), [fl.Very()], fl.Triangle("term_b")
         )
         self.assertEqual("OR", str(operator))
 
@@ -93,7 +93,7 @@ class AssertAntecedent:
     """Antecedent assert."""
 
     def __init__(self, test: unittest.TestCase, engine: fl.Engine) -> None:
-        """Construct the assert."""
+        """Construct the assertion."""
         self.test = test
         self.engine = engine
 
@@ -135,7 +135,6 @@ class AssertAntecedent:
         rules: dict[str, list[float]],
         conjunction: fl.TNorm | None = None,
         disjunction: fl.SNorm | None = None,
-        decimal_places: int = 3,
     ) -> AssertAntecedent:
         """Assert the rules have the expected activation degrees."""
         self.test.assertTrue(inputs, msg="inputs is empty")
@@ -161,8 +160,8 @@ class AssertAntecedent:
                 np.testing.assert_allclose(
                     obtained,
                     expected,
-                    atol=fl.lib.atol,
-                    rtol=fl.lib.rtol,
+                    atol=fl.settings.atol,
+                    rtol=fl.settings.rtol,
                     err_msg=f"at index {index}",
                 )
             index += 1
@@ -178,11 +177,12 @@ class TestAntecedent(unittest.TestCase):
         antecedent = fl.Antecedent()
         self.assertFalse(antecedent.is_loaded())
 
-        antecedent.expression = fl.Expression()
+        antecedent.expression = fl.Proposition()
         self.assertTrue(antecedent.is_loaded())
 
         antecedent.unload()
         self.assertFalse(antecedent.is_loaded())
+        self.assertIsNone(antecedent.expression)
 
     def test_antecedent_load_input_variable(self) -> None:
         """Test antecedents can be loaded from an engine."""
@@ -552,7 +552,6 @@ class AssertConsequent:
         activation_degree: float,
         expected: dict[fl.OutputVariable, list[fl.Activated]],
         implication: fl.TNorm | None = None,
-        decimal_places: int = 3,
     ) -> AssertConsequent:
         """Assert the modification of the consequent results in the expected activation terms of the output variables."""
         self.test.assertTrue(expected, "expected cannot be empty")
@@ -572,8 +571,8 @@ class AssertConsequent:
                 np.testing.assert_allclose(
                     obtained_activation,
                     expected_activation,
-                    atol=fl.lib.atol,
-                    rtol=fl.lib.rtol,
+                    atol=fl.settings.atol,
+                    rtol=fl.settings.rtol,
                     err_msg=f"for activated term {expected_term}",
                 )
 
@@ -980,10 +979,10 @@ class TestRuleBlock(unittest.TestCase):
                 "rb",
                 "a ruleblock",
                 rules=[fl.Rule.create("if a then z"), fl.Rule.create("if b then y")],
-                conjunction=fl.TNorm(),
-                disjunction=fl.SNorm(),
-                implication=fl.TNorm(),
-                activation=fl.Activation(),
+                conjunction=fl.AlgebraicProduct(),
+                disjunction=fl.AlgebraicSum(),
+                implication=fl.DrasticProduct(),
+                activation=fl.General(),
             ),
         ).exports_fll(
             "\n".join(
@@ -991,10 +990,10 @@ class TestRuleBlock(unittest.TestCase):
                     "RuleBlock: rb",
                     "  description: a ruleblock",
                     "  enabled: true",
-                    "  conjunction: TNorm",
-                    "  disjunction: SNorm",
-                    "  implication: TNorm",
-                    "  activation: Activation",
+                    "  conjunction: AlgebraicProduct",
+                    "  disjunction: AlgebraicSum",
+                    "  implication: DrasticProduct",
+                    "  activation: General",
                     "  rule: if a then z",
                     "  rule: if b then y",
                 ]

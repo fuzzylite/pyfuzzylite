@@ -49,9 +49,9 @@ class AssertIntegration:
             np.testing.assert_allclose(
                 obtained,
                 expected_output,
-                err_msg=f"{defuzzifier.class_name}({input}) = {obtained}, but expected {expected_output}",
-                atol=fl.lib.atol,
-                rtol=fl.lib.rtol,
+                err_msg=f"{fl.Op.class_name(defuzzifier)}({input}) = {obtained}, but expected {expected_output}",
+                atol=fl.settings.atol,
+                rtol=fl.settings.rtol,
             )
         if self.vectorize:
             self.engine.restart()
@@ -63,9 +63,9 @@ class AssertIntegration:
             np.testing.assert_allclose(
                 obtained,
                 expected_outputs,
-                err_msg=f"{defuzzifier.class_name}([{inputs}]) = {obtained}, but expected {expected_outputs}",
-                atol=fl.lib.atol,
-                rtol=fl.lib.rtol,
+                err_msg=f"{fl.Op.class_name(defuzzifier)}([{inputs}]) = {obtained}, but expected {expected_outputs}",
+                atol=fl.settings.atol,
+                rtol=fl.settings.rtol,
             )
 
 
@@ -235,3 +235,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
                 np.nan: np.nan,
             },
         )
+
+
+if __name__ == "__main__":
+    unittest.main()
