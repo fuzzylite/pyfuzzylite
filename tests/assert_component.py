@@ -14,8 +14,13 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
 from typing import Any, Generic, TypeVar
+
+import numpy as np
+from typing_extensions import Self
 
 import fuzzylite as fl
 
@@ -35,7 +40,7 @@ class BaseAssert(Generic[T]):
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
-    def exports_fll(self, fll: str) -> Any:
+    def exports_fll(self, fll: str) -> Self:
         """Asserts that the given fll is equal to the obtained fll.
         @param fll is the expected fll.
         """
@@ -43,7 +48,7 @@ class BaseAssert(Generic[T]):
         self.test.assertEqual(fll, str(self.actual))
         return self
 
-    def has_name(self, name: str) -> Any:
+    def has_name(self, name: str) -> Self:
         """Asserts that the obtained object's name is equal to the expected name.
         @param name is the expected name.
         """
@@ -54,7 +59,7 @@ class BaseAssert(Generic[T]):
         self.test.assertEqual(self.actual.name, name)  # type: ignore
         return self
 
-    def has_description(self, description: str) -> Any:
+    def has_description(self, description: str) -> Self:
         """Asserts that the obtained object's description is equal to the expected description.
         @param description is the expected description.
         """
@@ -63,4 +68,30 @@ class BaseAssert(Generic[T]):
             f"{type(self.actual)} does not have a 'description' attribute",
         )
         self.test.assertEqual(self.actual.description, description)  # type: ignore
+        return self
+
+    def when(self, **settings: Any) -> Self:
+        """Set the settings of the output variable."""
+        for key, value in settings.items():
+            if hasattr(self.actual, key):
+                setattr(self.actual, key, value)
+            else:
+                raise KeyError(f"OutputVariable has no attribute '{key}'")
+        return self
+
+    def then(self, **settings: Any) -> Self:
+        """Assert the settings of the output variable."""
+        for key, expected in settings.items():
+            self.test.assertTrue(hasattr(self.actual, key))
+            obtained = getattr(self.actual, key)
+            if isinstance(expected, (np.ndarray, float)):
+                np.testing.assert_allclose(
+                    obtained,
+                    expected,
+                    atol=fl.lib.atol,
+                    rtol=fl.lib.rtol,
+                    err_msg=f"in attribute '{key}'",
+                )
+            else:
+                self.test.assertEqual(getattr(self.actual, key), expected)
         return self

@@ -14,18 +14,23 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Engine"]
 
+import copy
 import enum
-from math import nan
-from typing import Iterable, List, Optional, Tuple, Union
+from collections.abc import Iterable
 
+import numpy as np
+
+from . import nan
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .exporter import FllExporter
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
+from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
 
 
@@ -72,9 +77,9 @@ class Engine:
         self,
         name: str = "",
         description: str = "",
-        input_variables: Optional[Iterable[InputVariable]] = None,
-        output_variables: Optional[Iterable[OutputVariable]] = None,
-        rule_blocks: Optional[Iterable[RuleBlock]] = None,
+        input_variables: Iterable[InputVariable] | None = None,
+        output_variables: Iterable[OutputVariable] | None = None,
+        rule_blocks: Iterable[RuleBlock] | None = None,
         load_rules: bool = False,
     ) -> None:
         """Creates an Engine with the parameters given.
@@ -88,9 +93,9 @@ class Engine:
         """
         self.name = name
         self.description = description
-        self.input_variables: List[InputVariable] = []
-        self.output_variables: List[OutputVariable] = []
-        self.rule_blocks: List[RuleBlock] = []
+        self.input_variables: list[InputVariable] = []
+        self.output_variables: list[OutputVariable] = []
+        self.rule_blocks: list[RuleBlock] = []
         if input_variables:
             self.input_variables.extend(input_variables)
         if output_variables:
@@ -109,12 +114,12 @@ class Engine:
 
     def configure(
         self,
-        conjunction: Optional[Union[TNorm, str]] = None,
-        disjunction: Optional[Union[SNorm, str]] = None,
-        implication: Optional[Union[TNorm, str]] = None,
-        aggregation: Optional[Union[SNorm, str]] = None,
-        defuzzifier: Optional[Union[Defuzzifier, str]] = None,
-        activation: Optional[Union[Activation, str]] = None,
+        conjunction: TNorm | str | None = None,
+        disjunction: SNorm | str | None = None,
+        implication: TNorm | str | None = None,
+        aggregation: SNorm | str | None = None,
+        defuzzifier: Defuzzifier | str | None = None,
+        activation: Activation | str | None = None,
     ) -> None:
         """Configures the engine with the given operators.
 
@@ -152,7 +157,7 @@ class Engine:
             variable.defuzzifier = defuzzifier
 
     @property
-    def variables(self) -> List[Variable]:
+    def variables(self) -> list[Variable]:
         """Returns a list that contains the input variables followed by the
         output variables in the order of insertion.
 
@@ -227,6 +232,38 @@ class Engine:
             f"rule block '{name}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
+    def input_values(self) -> ScalarArray:
+        """Returns a matrix containing the input values of the engine,
+        where columns represent variables and rows represent input values
+        @return the input values of the engine.
+        """
+        return np.atleast_2d(  # type:ignore
+            np.array([v.value for v in self.input_variables])
+        ).T
+
+    def output_values(self) -> ScalarArray:
+        """Returns a matrix containing the output values of the engine,
+        where columns represent variables and rows represent output values
+        @return the output values of the engine.
+        """
+        return np.atleast_2d(  # type:ignore
+            np.array([v.value for v in self.output_variables])
+        ).T
+
+    # @property
+    # def inputs(self) -> dict[str, Scalar]:
+    #     """Returns the input values of the engine
+    #     @return the input values of the engine.
+    #     """
+    #     return {v.name: v.value for v in self.input_variables}
+    #
+    # @property
+    # def outputs(self) -> dict[str, Scalar]:
+    #     """Returns the output values of the engine
+    #     @return the output values of the engine.
+    #     """
+    #     return {v.name: v.value for v in self.output_variables}
+
     def restart(self) -> None:
         """Restarts the engine by setting the values of the input variables to
         fl::nan and clearing the output variables
@@ -271,7 +308,7 @@ class Engine:
         if lib.debugging:
             pass
 
-    def is_ready(self) -> Tuple[bool, str]:
+    def is_ready(self) -> tuple[bool, str]:
         """Indicates whether the engine has been configured correctly and is
         ready for operation. In more advanced engines, the result of this
         method should be taken as a suggestion and not as a prerequisite to
@@ -283,7 +320,7 @@ class Engine:
         # TODO: Implement
         raise NotImplementedError()
 
-    def infer_type(self) -> Tuple["Engine.Type", str]:
+    def infer_type(self) -> tuple[Engine.Type, str]:
         """Infers the type of the engine based on its current configuration.
 
         @return a Tuple[Engine.Type, str] indicating the inferred type of the
@@ -292,3 +329,14 @@ class Engine:
         """
         # TODO: Implement
         raise NotImplementedError()
+
+    def copy(self) -> Engine:
+        # TODO: Revisit deep copies and deal with engines in Function and Linear
+        """Creates a copy of the engine, including all variables, rule blocks,
+        and rules. The copy is a deep copy, meaning that all objects are
+        duplicated such that the copy can be modified without affecting the
+        original.
+
+        @return a deep copy of the engine
+        """
+        return copy.deepcopy(self)

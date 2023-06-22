@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.1.1"
+version = "8.0.0"
 description = "a fuzzy logic control library in Python"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
@@ -21,8 +21,8 @@ include = [
     "AUTHOR",
     "CHANGELOG",
     "fuzzylite.png",
-    "LICENSE",
-    "LICENSE.FuzzyLite",
+    "LICENSE.FuzzyLite.txt",
+    "LICENSE.GPL.txt",
     "README.md",
     "THANKS",
 ]
@@ -33,7 +33,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -55,21 +55,23 @@ Documentation = "https://fuzzylite.com/documentation"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"             # Code formatting
-coverage = "^7.2.2"           # Code coverage
-mypy = "^1.1.1"               # Static analysis
-numpy = "^1.19"               # Better division by zero
+black = "^23.3.0"             # Code formatting
+coverage = "^7.2.3"           # Code coverage
+mypy = "^1.2.0"               # Static analysis
+numpy = "^1.20"               # Numeric manipulation and vectorisation
 poetry-bumpversion = "^0.3.0" # Version management
 pyhamcrest = "^2.0.4"         # Test Driven Development
-pytest = "^7.2.2"             # Test Driven Development
+pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
+ipykernel = "^6.22.0"
+pyright = "^1.1.305"
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py39"]
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
@@ -162,7 +164,7 @@ line-length = 88
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-target-version = "py37"
+target-version = "py39"
 
 [tool.ruff.mccabe]
 max-complexity = 10
@@ -170,10 +172,26 @@ max-complexity = 10
 [tool.ruff.pydocstyle]
 convention = "google"
 
+
+[tool.pyright]
+include = ["fuzzylite", "noxfile.py", "tests"]
+venv = ".venv"
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.9"
+pythonPlatform = "MacOS"
+
+
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.9"
 strict = true
 exclude = []
+incremental = true
+
+
+plugins = "numpy.typing.mypy_plugin"
 
 verbosity = 0
 show_traceback = true
@@ -185,3 +203,9 @@ dump_inference_stats = false
 # ignore warnings of fl.nan not being explicitly exported.
 module = "fuzzylite"
 implicit_reexport = true
+
+
+[[tool.mypy.overrides]]
+# ignore warnings of fl.nan not being explicitly exported.
+module = "numpy"
+ignore_missing_imports = true

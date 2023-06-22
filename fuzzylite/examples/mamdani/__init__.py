@@ -1,10 +1,20 @@
 __all__ = [
-    "matlab",
-    "octave",
     "AllTerms",
     "Laundry",
     "ObstacleAvoidance",
     "SimpleDimmer",
     "SimpleDimmerChained",
     "SimpleDimmerInverse",
+    "matlab",
+    "octave",
 ]
+from . import (
+    AllTerms,
+    Laundry,
+    ObstacleAvoidance,
+    SimpleDimmer,
+    SimpleDimmerChained,
+    SimpleDimmerInverse,
+    matlab,
+    octave,
+)

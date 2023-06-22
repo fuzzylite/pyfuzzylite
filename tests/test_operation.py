@@ -14,24 +14,266 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import math
 import unittest
+from typing import Callable
+
+import numpy.testing as npt
 
 import fuzzylite as fl
+
+
+class AssertOperator:
+    """Assert operator."""
+
+    def __init__(self, commutative: bool = True, scalable: bool = True) -> None:
+        """Construct assert operator."""
+        self.commutative = commutative
+        self.scalable = scalable
+
+    def assert_operator(
+        self,
+        operator: Callable[[fl.Scalar, fl.Scalar], fl.Scalar],
+        a: fl.Scalar,
+        b: fl.Scalar,
+        expected: fl.Scalar,
+    ) -> AssertOperator:
+        """Assert operator."""
+        obtained = operator(a, b)
+        npt.assert_equal(obtained, expected)
+        return self
+
+    def assert_that(
+        self,
+        operator: Callable[[fl.Scalar, fl.Scalar], fl.Scalar],
+        operands_result: dict[tuple[fl.Scalar, fl.Scalar], fl.Scalar],
+    ) -> AssertOperator:
+        """Assert that."""
+        for (a, b), expected in operands_result.items():
+            obtained = operator(a, b)
+            npt.assert_equal(
+                obtained,
+                expected,
+                err_msg=f"{str(operator.__qualname__)}(a={a}, b={b}) = {obtained}, but expected {expected}",
+            )
+            if self.commutative:
+                obtained = operator(b, a)
+                npt.assert_equal(
+                    obtained,
+                    expected,
+                    err_msg=f"{str(operator.__qualname__)}(b={b}, a={a}) = {obtained}, but expected {expected}",
+                )
+
+        if self.scalable:
+            values = operands_result.keys()
+            a = fl.array([a for a, _ in values])
+            b = fl.array([b for _, b in values])
+            expected = fl.array([z for z in operands_result.values()])
+            obtained = operator(a, b)
+            npt.assert_equal(
+                obtained,
+                expected,
+                err_msg=f"{str(operator.__qualname__)}(a={a}, b={b}) = {obtained}, but expected {expected}",
+            )
+            if self.commutative:
+                obtained = operator(b, a)
+                npt.assert_equal(
+                    obtained,
+                    expected,
+                    err_msg=f"{str(operator.__qualname__)}(b={b}, a={a}) = {obtained}, but expected {expected}",
+                )
+        return self
 
 
 # TODO: Complete tests.
 class TestOperation(unittest.TestCase):
     """Test operation."""
 
+    def test_operator_eq(self) -> None:
+        """Test operator eq."""
+        AssertOperator(commutative=True, scalable=True).assert_that(
+            fl.Op.eq,
+            {
+                (fl.nan, fl.nan): 1.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 0.0,
+                (fl.inf, fl.inf): 1.0,
+                (1.0, 1.0): 1.0,
+                (1.0, 0.0): 0.0,
+                (0.0, 1.0): 0.0,
+                (0.0, 0.0): 1.0,
+                (-1.0, -1.0): 1.0,
+                (-1.0, -0.0): 0.0,
+                (-0.0, -1.0): 0.0,
+                (-0.0, -0.0): 1.0,
+                (1.0 + 1e-15, 1.0): 0.0,
+                (1.0 + 1e-16, 1.0): 1.0,
+            },
+        )
+
+    def test_operator_neq(self) -> None:
+        """Test operator neq."""
+        AssertOperator(commutative=True, scalable=True).assert_that(
+            fl.Op.neq,
+            {
+                (fl.nan, fl.nan): 0.0,
+                (fl.nan, 0.0): 1.0,
+                (fl.inf, -fl.inf): 1.0,
+                (fl.inf, fl.inf): 0.0,
+                (1.0, 1.0): 0.0,
+                (1.0, 0.0): 1.0,
+                (0.0, 1.0): 1.0,
+                (0.0, 0.0): 0.0,
+                (-1.0, -1.0): 0.0,
+                (-1.0, -0.0): 1.0,
+                (-0.0, -1.0): 1.0,
+                (-0.0, -0.0): 0.0,
+                (1.0 + 1e-15, 1.0): 1.0,
+                (1.0 + 1e-16, 1.0): 0.0,
+            },
+        )
+
+    def test_operator_gt(self) -> None:
+        """Test operator gt."""
+        AssertOperator(commutative=False, scalable=True).assert_that(
+            fl.Op.gt,
+            {
+                (fl.nan, fl.nan): 0.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 1.0,
+                (fl.inf, fl.inf): 0.0,
+                (1.0, 1.0): 0.0,
+                (1.0, 0.0): 1.0,
+                (0.0, 1.0): 0.0,
+                (0.0, 0.0): 0.0,
+                (-1.0, -1.0): 0.0,
+                (-1.0, -0.0): 0.0,
+                (-0.0, -1.0): 1.0,
+                (-0.0, -0.0): 0.0,
+                (1.0 + 1e-15, 1.0): 1.0,
+                (1.0 + 1e-16, 1.0): 0.0,
+            },
+        )
+
+    def test_operator_lt(self) -> None:
+        """Test operator lt."""
+        AssertOperator(commutative=False, scalable=True).assert_that(
+            fl.Op.lt,
+            {
+                (fl.nan, fl.nan): 0.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 0.0,
+                (fl.inf, fl.inf): 0.0,
+                (1.0, 1.0): 0.0,
+                (1.0, 0.0): 0.0,
+                (0.0, 1.0): 1.0,
+                (0.0, 0.0): 0.0,
+                (-1.0, -1.0): 0.0,
+                (-1.0, -0.0): 1.0,
+                (-0.0, -1.0): 0.0,
+                (-0.0, -0.0): 0.0,
+                (1.0 + 1e-15, 1.0): 0.0,
+                (1.0 + 1e-16, 1.0): 0.0,
+            },
+        )
+
+    def test_operator_ge(self) -> None:
+        """Test operator ge."""
+        AssertOperator(commutative=False, scalable=True).assert_that(
+            fl.Op.ge,
+            {
+                (fl.nan, fl.nan): 1.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 1.0,
+                (fl.inf, fl.inf): 1.0,
+                (1.0, 1.0): 1.0,
+                (1.0, 0.0): 1.0,
+                (0.0, 1.0): 0.0,
+                (0.0, 0.0): 1.0,
+                (-1.0, -1.0): 1.0,
+                (-1.0, -0.0): 0.0,
+                (-0.0, -1.0): 1.0,
+                (-0.0, 0.0): 1.0,
+                (1.0 + 1e-15, 1.0): 1.0,
+                (1.0 + 1e-16, 1.0): 1.0,
+            },
+        )
+
+    def test_operator_le(self) -> None:
+        """Test operator le."""
+        AssertOperator(commutative=False, scalable=True).assert_that(
+            fl.Op.le,
+            {
+                (fl.nan, fl.nan): 1.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 0.0,
+                (-fl.inf, fl.inf): 1.0,
+                (-fl.inf, -fl.inf): 1.0,
+                (1.0, 1.0): 1.0,
+                (1.0, 0.0): 0.0,
+                (0.0, 1.0): 1.0,
+                (0.0, 0.0): 1.0,
+                (-1.0, -1.0): 1.0,
+                (-1.0, -0.0): 1.0,
+                (-0.0, -1.0): 0.0,
+                (-0.0, 0.0): 1.0,
+                (1.0 + 1e-15, 1.0): 0.0,
+                (1.0 + 1e-16, 1.0): 1.0,
+            },
+        )
+
+    def test_operator_and(self) -> None:
+        """Test operator and."""
+        AssertOperator(commutative=True, scalable=True).assert_that(
+            fl.Op.logical_and,
+            {
+                (fl.nan, fl.nan): 1.0,
+                (fl.nan, 0.0): 0.0,
+                (fl.inf, -fl.inf): 1.0,
+                (fl.inf, fl.inf): 1.0,
+                (1.0, 1.0): 1.0,
+                (1.0, 0.0): 0.0,
+                (0.0, 1.0): 0.0,
+                (0.0, 0.0): 0.0,
+                (-1.0, -1.0): 1.0,
+                (-1.0, -0.0): 0.0,
+                (-0.0, -1.0): 0.0,
+                (-0.0, -0.0): 0.0,
+                (1.0 + 1e-15, 1.0): 1.0,
+                (1.0 + 1e-16, 1.0): 1.0,
+            },
+        )
+
+    def test_operator_or(self) -> None:
+        """Test operator or."""
+        AssertOperator(commutative=True, scalable=True).assert_that(
+            fl.Op.logical_or,
+            {
+                (fl.nan, fl.nan): 1.0,
+                (fl.nan, 0.0): 1.0,
+                (fl.inf, -fl.inf): 1.0,
+                (fl.inf, fl.inf): 1.0,
+                (1.0, 1.0): 1.0,
+                (1.0, 0.0): 1.0,
+                (0.0, 1.0): 1.0,
+                (0.0, 0.0): 0.0,
+                (-1.0, -1.0): 1.0,
+                (-1.0, -0.0): 1.0,
+                (-0.0, -1.0): 1.0,
+                (-0.0, -0.0): 0.0,
+                (1.0 + 1e-15, 1.0): 1.0,
+                (1.0 + 1e-16, 1.0): 1.0,
+            },
+        )
+
     def test_valid_identifier(self) -> None:
         """Test what a valid identifier is."""
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
-        self.assertEqual(
-            fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "unnamed"
-        )
+        self.assertEqual(fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "_")
         self.assertEqual(fl.Op.as_identifier("abc123_.ABC"), "abc123_.ABC")
-        self.assertEqual(fl.Op.as_identifier("      "), "unnamed")
+        self.assertEqual(fl.Op.as_identifier("      "), "_")
 
     def test_str(self) -> None:
         """Test string operation uses global decimals."""

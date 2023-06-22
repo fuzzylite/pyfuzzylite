@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import glob
 import os
@@ -233,7 +234,7 @@ RuleBlock: steer_away
         """Test defuzzifiers can be imported."""
         defuzzifier = "Centroid"
         self.assertEqual(
-            defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier))
+            defuzzifier + " 1000", str(fl.FllImporter().defuzzifier(defuzzifier))
         )
         defuzzifier = "WeightedAverage TakagiSugeno"
         self.assertEqual(defuzzifier, str(fl.FllImporter().defuzzifier(defuzzifier)))

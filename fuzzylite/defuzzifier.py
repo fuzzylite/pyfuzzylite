@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Defuzzifier",
@@ -29,12 +30,14 @@ __all__ = [
 ]
 
 import enum
-import math
-from math import nan
-from typing import Optional, Union
+import warnings
 
+import numpy as np
+
+from . import nan
 from .operation import Op
-from .term import Aggregated, Constant, Function, Linear, Term
+from .term import Activated, Aggregated, Constant, Function, Linear, Term
+from .types import Scalar, scalar
 
 
 class Defuzzifier:
@@ -65,7 +68,7 @@ class Defuzzifier:
         """
         raise NotImplementedError()
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzifies the given fuzzy term utilizing the range `[minimum,maximum]`
         @param term is the term to defuzzify, typically an Aggregated term
         @param minimum is the minimum value of the range
@@ -84,9 +87,9 @@ class IntegralDefuzzifier(Defuzzifier):
     """
 
     # Default resolution for integral defuzzifiers
-    default_resolution = 100
+    default_resolution = 1000
 
-    def __init__(self, resolution: Optional[int] = None) -> None:
+    def __init__(self, resolution: int | None = None) -> None:
         """Creates an integral defuzzifier, where the resolution refers to the
         number of divisions in which the range `[minimum,maximum]` is divided
         in order to integrate the area under the curve.
@@ -116,7 +119,7 @@ class IntegralDefuzzifier(Defuzzifier):
         if parameters:
             self.resolution = int(parameters)
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Defuzzify the term on the given range.
 
         Args:
@@ -124,7 +127,7 @@ class IntegralDefuzzifier(Defuzzifier):
             minimum: the minimum range value to start defuzzification
             maximum: the maximum range value to end defuzzification
         Retur:
-            float: defuzzified value.
+            scalar: defuzzified value.
         """
         raise NotImplementedError()
 
@@ -140,9 +143,10 @@ class Bisector(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """Computes the bisector of a fuzzy set. The defuzzification process
-        integrates over the fuzzy set utilizing the boundaries given as
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
+        """Computes the bisector of a fuzzy set, that is, the x-coordinate such that
+        the area to its left is approximately equal to the area to its right.
+        The defuzzification process integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
         method (https://en.wikipedia.org/wiki/Rectangle_method).
 
@@ -151,29 +155,18 @@ class Bisector(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the bisector of the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        counter = resolution
-        left = right = 0
-        x_left, x_right = (minimum, maximum)
-        left_area = right_area = 0.0
-
-        # TODO: Improve?
-        while counter > 0:
-            counter = counter - 1
-            if left_area <= right_area:
-                x_left = minimum + (left + 0.5) * dx
-                left_area += term.membership(x_left)
-                left += 1
-            else:
-                x_right = maximum - (right + 0.5) * dx
-                right_area += term.membership(x_right)
-                right += 1
-
-        # Inverse weighted average to compensate
-        return (left_area * x_right + right_area * x_left) / (left_area + right_area)
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        area = np.nancumsum(y, axis=1)
+        # normalising the cumulative sum is not necessary, but it is convenient because it results in nan
+        # when arrays are full of nans (ie, area = 0). Otherwise, result would be minimum + (maximum-minimum)/2
+        area = np.abs((area / area[:, [-1]]) - 0.5)
+        index = area == area.min(axis=1, keepdims=True)
+        bisectors = np.where(index, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            z = np.nanmean(bisectors, axis=1).squeeze()
+            return z  # type: ignore
 
 
 class Centroid(IntegralDefuzzifier):
@@ -187,7 +180,7 @@ class Centroid(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the centroid of a fuzzy set. The defuzzification process
         integrates over the fuzzy set utilizing the boundaries given as
         parameters. The integration algorithm is the midpoint rectangle
@@ -198,17 +191,10 @@ class Centroid(IntegralDefuzzifier):
         @param maximum is the maximum value of the fuzzy set
         @return the $x$-coordinate of the centroid of the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        area = x_centroid = 0.0
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            x_centroid += y * x
-            area += y
-        return x_centroid / area
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        z = ((x * y).sum(axis=1) / y.sum(axis=1)).squeeze()
+        return z  # type: ignore
 
 
 class LargestOfMaximum(IntegralDefuzzifier):
@@ -224,7 +210,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the largest value of the maximum membership function of a
         fuzzy set. The largest value is computed by integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
@@ -236,19 +222,14 @@ class LargestOfMaximum(IntegralDefuzzifier):
         @return the largest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_largest = maximum
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.ge(y, y_max):
-                y_max = y
-                x_largest = x
-        return x_largest
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
+        lom = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            z = np.nanmax(lom, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class MeanOfMaximum(IntegralDefuzzifier):
@@ -264,7 +245,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the mean value of the maximum membership function
         of a fuzzy set. The mean value is computed while integrating
         over the fuzzy set. The integration algorithm is the midpoint
@@ -276,27 +257,14 @@ class MeanOfMaximum(IntegralDefuzzifier):
         @return the mean $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_smallest = minimum
-        x_largest = maximum
-        find_x_largest = False
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.gt(y, y_max):
-                y_max = y
-                x_smallest = x
-                x_largest = x
-                find_x_largest = True
-            elif find_x_largest and Op.eq(y, y_max):
-                x_largest = x
-            elif Op.lt(y, y_max):
-                find_x_largest = False
-        return (x_largest + x_smallest) / 2.0
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
+        mom = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            z = np.nanmean(mom, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class SmallestOfMaximum(IntegralDefuzzifier):
@@ -312,7 +280,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
     @since 4.0
     """
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
+    def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
         """Computes the smallest value of the maximum membership function in the
         fuzzy set. The smallest value is computed while integrating over the
         fuzzy set. The integration algorithm is the midpoint rectangle method
@@ -324,19 +292,14 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         @return the smallest $x$-coordinate of the maximum membership
         function value in the fuzzy set
         """
-        if not math.isfinite(minimum + maximum):
-            return nan
-        resolution = self.resolution
-        dx = (maximum - minimum) / resolution
-        y_max = -math.inf
-        x_smallest = minimum
-        for i in range(0, resolution):
-            x = minimum + (i + 0.5) * dx
-            y = term.membership(x)
-            if Op.gt(y, y_max):
-                y_max = y
-                x_smallest = x
-        return x_smallest
+        x = np.atleast_2d(Op.midpoints(minimum, maximum, self.resolution))
+        y = np.atleast_2d(term.membership(x))
+        y_max = (y > 0) & (y == y.max(axis=1, keepdims=True))
+        som = np.where(y_max, x, np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            z = np.nanmin(som, axis=1, keepdims=True).squeeze()
+            return z  # type: ignore
 
 
 class WeightedDefuzzifier(Defuzzifier):
@@ -358,19 +321,38 @@ class WeightedDefuzzifier(Defuzzifier):
         Tsukamoto: Manually set to Tsukamoto
         """
 
-        Automatic, TakagiSugeno, Tsukamoto = range(3)
+        Automatic = enum.auto()
+        TakagiSugeno = enum.auto()
+        Tsukamoto = enum.auto()
+
+    @enum.unique
+    class Mode(enum.Enum):
+        """The Mode enum indicates the mode of the WeightedDefuzzifier.
+
+        Average: Weighted average of fuzzy terms
+        Sum: Sum of fuzzy terms
+        """
+
+        Average = enum.auto()
+        Sum = enum.auto()
 
     def __init__(
-        self, type: Optional[Union[str, "WeightedDefuzzifier.Type"]] = None
+        self,
+        mode: str | WeightedDefuzzifier.Mode,
+        type: str | WeightedDefuzzifier.Type = Type.Automatic,
     ) -> None:
         """Creates a WeightedDefuzzifier
         @param type of the WeightedDefuzzifier based the terms included in the fuzzy set.
         """
-        if type is None:
-            type = WeightedDefuzzifier.Type.Automatic
-        elif isinstance(type, str):
-            type = WeightedDefuzzifier.Type[type]
-        self.type = type
+        if isinstance(mode, str):
+            self.mode = WeightedDefuzzifier.Mode[mode]
+        else:
+            self.mode = mode
+
+        if isinstance(type, str):
+            self.type = WeightedDefuzzifier.Type[type]
+        else:
+            self.type = type
 
     def __str__(self) -> str:
         """Gets a string representation of the defuzzifier."""
@@ -382,118 +364,41 @@ class WeightedDefuzzifier(Defuzzifier):
 
     def configure(self, parameters: str) -> None:
         """Configure defuzzifier based on parameters.
-
-        Args:
-        parameters: type of defuzzifier
-
+        @params parameters is type of defuzzifier.
         """
         if parameters:
             self.type = WeightedDefuzzifier.Type[parameters]
 
-    def defuzzify(self, term: Term, minimum: float, maximum: float) -> float:
-        """Not implemented."""
-        raise NotImplementedError()
-
-    def infer_type(self, term: Term) -> "WeightedDefuzzifier.Type":
-        """Infers the type of the defuzzifier based on the given term. If the
-        given term is Constant, Linear or Function, then the type is
-        TakagiSugeno; otherwise, the type is Tsukamoto.
-
+    @classmethod
+    def infer_type(cls, term: Term) -> WeightedDefuzzifier.Type:
+        """Infers the type of the defuzzifier based on the given term.
         @param term is the given term
-        @return the inferred type of the defuzzifier based on the given term
+        @return the inferred type of the defuzzifier based on the given term.
         """
-        if isinstance(term, (Constant, Linear, Function)):
-            return WeightedDefuzzifier.Type.TakagiSugeno
-        return WeightedDefuzzifier.Type.Tsukamoto
-
-
-class WeightedAverage(WeightedDefuzzifier):
-    """The WeightedAverage class is a WeightedDefuzzifier that computes the
-    weighted average of a fuzzy set represented in an Aggregated Term.
-
-    @author Juan Rada-Vilela, Ph.D.
-    @see WeightedAverageCustom
-    @see WeightedSum
-    @see WeightedSumCustom
-    @see WeightedDefuzzifier
-    @see Defuzzifier
-    @since 4.0
-    """
-
-    def defuzzify(
-        self,
-        term: Term,
-        minimum: float = nan,
-        maximum: float = nan,
-    ) -> float:
-        r"""Computes the weighted average of the given fuzzy set represented in
-        an Aggregated term as $y = \dfrac{\sum_i w_iz_i}{\sum_i w_i} $,
-        where $w_i$ is the activation degree of term $i$, and
-        $z_i = \mu_i(w_i) $.
-
-        From version 6.0, the implication and aggregation operators are not
-        utilized for defuzzification.
-
-        @param term is the fuzzy set represented as an Aggregated Term
-        @param minimum is the minimum value of the range (only used for Tsukamoto)
-        @param maximum is the maximum value of the range (only used for Tsukamoto)
-        @return the weighted average of the given fuzzy set
-        """
-        fuzzy_output = term
-        if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(
-                f"expected an Aggregated term, but found {type(fuzzy_output)}"
+        if isinstance(term, Aggregated):
+            types = {cls.infer_type(t_i) for t_i in term.terms}
+            if len(types) == 1:
+                return types.pop()
+            if len(types) == 0:
+                # cannot infer type of empty term, and won't matter anyway,
+                return WeightedDefuzzifier.Type.Automatic
+            raise TypeError(
+                f"cannot infer type of {cls.__name__}, got multiple types: {sorted(str(t) for t in types)}"
             )
-
-        if not self.type:
-            raise ValueError("expected a type of defuzzifier, but found none")
-
-        if not fuzzy_output.terms:
-            return nan
-
-        this_type = self.type
-        if self.type == WeightedDefuzzifier.Type.Automatic:
-            this_type = self.infer_type(fuzzy_output.terms[0])
-
-        weighted_sum = weights = 0.0
-        if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
-            # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.membership(w)
-                weighted_sum += w * z
-                weights += w
-        else:
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.tsukamoto(
-                    w, fuzzy_output.minimum, fuzzy_output.maximum
-                )
-                weighted_sum += w * z
-                weights += w
-
-        return weighted_sum / weights
-
-
-class WeightedSum(WeightedDefuzzifier):
-    """The WeightedSum class is a WeightedDefuzzifier that computes the
-    weighted sum of a fuzzy set represented in an Aggregated Term.
-
-    @author Juan Rada-Vilela, Ph.D.
-    @see WeightedSumCustom
-    @see WeightedAverage
-    @see WeightedAverageCustom
-    @see WeightedDefuzzifier
-    @see Defuzzifier
-    @since 4.0
-    """
+        elif isinstance(term, Activated):  # noqa: RET506 - False Positive
+            return cls.infer_type(term.term)
+        elif isinstance(term, (Constant, Linear, Function)):
+            return WeightedDefuzzifier.Type.TakagiSugeno
+        elif term.is_monotonic():
+            return WeightedDefuzzifier.Type.Tsukamoto
+        raise TypeError(f"cannot infer type of {cls.__name__} from {term}")
 
     def defuzzify(
         self,
         term: Term,
         minimum: float = nan,
         maximum: float = nan,
-    ) -> float:
+    ) -> Scalar:
         r"""Computes the weighted sum of the given fuzzy set represented as an
         Aggregated Term as $y = \sum_i{w_iz_i} $,
         where $w_i$ is the activation degree of term $i$, and $z_i
@@ -513,29 +418,66 @@ class WeightedSum(WeightedDefuzzifier):
                 f"expected an Aggregated term, but found {type(fuzzy_output)}"
             )
 
-        if not self.type:
-            raise ValueError("expected a type of defuzzifier, but found none")
-
-        if not fuzzy_output.terms:
-            return nan
-
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
-            this_type = self.infer_type(fuzzy_output.terms[0])
+            this_type = self.infer_type(fuzzy_output)
 
-        weighted_sum = 0.0
-        if this_type == WeightedDefuzzifier.Type.TakagiSugeno:
-            # Provides Takagi-Sugeno and Inverse Tsukamoto of Functions
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.membership(w)
-                weighted_sum += w * z
-        else:
-            for activated in fuzzy_output.terms:
-                w = activated.degree
-                z = activated.term.tsukamoto(
-                    w, fuzzy_output.minimum, fuzzy_output.maximum
-                )
-                weighted_sum += w * z
+        weighted_sum = scalar(0.0 if fuzzy_output.terms else nan)
+        weights = scalar(0.0)
+        membership = (
+            Term.tsukamoto.__name__
+            if this_type == WeightedDefuzzifier.Type.Tsukamoto
+            else Term.membership.__name__
+        )
+        for activated in fuzzy_output.terms:
+            w = activated.degree
+            z = activated.term.__getattribute__(membership)(w)
+            weighted_sum = weighted_sum + w * z
+            weights = weights + w
 
-        return weighted_sum
+        y = weighted_sum / weights
+        if self.mode == WeightedDefuzzifier.Mode.Sum:
+            # This is done to get "invalid" output values from activated terms with zero activation degrees.
+            # Thus, returning nan values in those cases. A regular weighted sum would result in zero.
+            y = y * weights
+        return y
+
+
+class WeightedAverage(WeightedDefuzzifier):
+    """The WeightedAverage class is a WeightedDefuzzifier that computes the
+    weighted average of a fuzzy set represented in an Aggregated Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see WeightedAverageCustom
+    @see WeightedSum
+    @see WeightedSumCustom
+    @see WeightedDefuzzifier
+    @see Defuzzifier
+    @since 4.0
+    """
+
+    def __init__(
+        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
+    ) -> None:
+        """Creates a WeightedAverage defuzzifier."""
+        super().__init__(WeightedDefuzzifier.Mode.Average, type)
+
+
+class WeightedSum(WeightedDefuzzifier):
+    """The WeightedSum class is a WeightedDefuzzifier that computes the
+    weighted sum of a fuzzy set represented in an Aggregated Term.
+
+    @author Juan Rada-Vilela, Ph.D.
+    @see WeightedSumCustom
+    @see WeightedAverage
+    @see WeightedAverageCustom
+    @see WeightedDefuzzifier
+    @see Defuzzifier
+    @since 4.0
+    """
+
+    def __init__(
+        self, type: str | WeightedDefuzzifier.Type = WeightedDefuzzifier.Type.Automatic
+    ) -> None:
+        """Creates a WeightedSum defuzzifier."""
+        super().__init__(WeightedDefuzzifier.Mode.Sum, type)

@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, development]
   pull_request:
-    branches: [main, development]
+    branches: [main, development, feature/*]
 
 jobs:
   build:
@@ -12,10 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"] #, "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.9"] #, "3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Clone repository
+        uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -35,3 +36,6 @@ jobs:
       - name: Test
         run: |
           nox -e test
+      - name: Coverage
+        uses: coverallsapp/github-action@v2
+

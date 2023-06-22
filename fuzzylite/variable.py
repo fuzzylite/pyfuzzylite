@@ -14,19 +14,22 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
 import contextlib
-import math
 import typing
-from math import inf, isnan, nan
-from typing import Iterable, List, Optional, Tuple
+from collections.abc import Iterable
 
+import numpy as np
+
+from . import inf, isnan, nan
 from .exporter import FllExporter
 from .norm import SNorm
 from .operation import Op
 from .term import Aggregated
+from .types import Scalar, scalar
 
 if typing.TYPE_CHECKING:
     from .defuzzifier import Defuzzifier
@@ -50,7 +53,7 @@ class Variable:
         minimum: float = -inf,
         maximum: float = inf,
         lock_range: bool = False,
-        terms: Optional[Iterable["Term"]] = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the variable.
         @param name is the name of the variable
@@ -69,10 +72,10 @@ class Variable:
         self.minimum = minimum
         self.maximum = maximum
         self.lock_range = lock_range
-        self.terms: List["Term"] = []
-        if terms:
+        self.terms: list[Term] = []
+        if terms:  # TODO: replace instead of extend
             self.terms.extend(terms)
-        self._value = nan
+        self._value = scalar(nan)
 
     def __str__(self) -> str:
         """Gets a string representation of the variable in the FuzzyLite Language
@@ -82,7 +85,7 @@ class Variable:
         """
         return FllExporter().variable(self)
 
-    def term(self, name: str) -> "Term":
+    def term(self, name: str) -> Term:
         """Gets the term by the name.
         @param name is the name of the term
         @return the term of the given name.
@@ -102,7 +105,7 @@ class Variable:
         return self.maximum - self.minimum
 
     @property
-    def range(self) -> Tuple[float, float]:
+    def range(self) -> tuple[float, float]:
         """Gets the range of the variable
         @return tuple of (minimum, maximum).
 
@@ -110,7 +113,7 @@ class Variable:
         return self.minimum, self.maximum
 
     @range.setter
-    def range(self, min_max: Tuple[float, float]) -> None:
+    def range(self, min_max: tuple[float, float]) -> None:
         """Sets the range of the variable
         @param min_max is the range of the variable (minimum, maximum).
 
@@ -118,7 +121,7 @@ class Variable:
         self.minimum, self.maximum = min_max
 
     @property
-    def value(self) -> float:
+    def value(self) -> Scalar:
         """Gets the value of the variable
         @return the input value of an InputVariable, or the output value of
         an OutputVariable.
@@ -126,36 +129,37 @@ class Variable:
         return self._value
 
     @value.setter
-    def value(self, value: float) -> None:
+    def value(self, value: Scalar) -> None:
         """Sets the value of the variable
         @param value is the input value of an InputVariable, or the output
         value of an OutputVariable.
         """
-        self._value = (
-            Op.bound(value, self.minimum, self.maximum) if self.lock_range else value
-        )
+        if self.lock_range:
+            self._value = np.clip(value, self.minimum, self.maximum)
+        else:
+            self._value = value
 
-    def fuzzify(self, x: float) -> str:
+    def fuzzify(self, x: Scalar) -> str:
         r"""Evaluates the membership function of value $x$ for each
         term $i$, resulting in a fuzzy value in the form
         $\tilde{x}=\sum_i{\mu_i(x)/i}$
         @param x is the value to fuzzify
         @return the fuzzy value expressed as $\sum_i{\mu_i(x)/i}$.
         """
-        result: List[str] = []
+        result: list[str] = []
         for term in self.terms:
-            fx = nan
+            fx = scalar(nan)
             with contextlib.suppress(ValueError):
                 fx = term.membership(x)
             if not result:
                 result.append(f"{Op.str(fx)}/{term.name}")
             else:
-                pm = "+" if Op.ge(fx, 0.0) or isnan(fx) else "-"
+                pm = "+" if fx >= 0.0 or isnan(fx) else "-"
                 result.append(f" {pm} {Op.str(fx)}/{term.name}")
 
         return "".join(result)
 
-    def highest_membership(self, x: float) -> Tuple[float, Optional["Term"]]:
+    def highest_membership(self, x: Scalar) -> tuple[Scalar, Term | None]:
         r"""Gets the term which has the highest membership function value for
         $x$.
         @param x is the value of interest
@@ -163,9 +167,9 @@ class Variable:
         function value will be stored
         @return the term $i$ which maximimizes $\mu_i(x)$.
         """
-        result: Tuple[float, Optional["Term"]] = (0.0, None)
+        result: tuple[Scalar, Term | None] = (0.0, None)
         for term in self.terms:
-            y = nan
+            y = scalar(nan)
             with contextlib.suppress(ValueError):
                 y = term.membership(x)
             if y > result[0]:
@@ -191,7 +195,7 @@ class InputVariable(Variable):
         minimum: float = -inf,
         maximum: float = inf,
         lock_range: bool = False,
-        terms: Optional[Iterable["Term"]] = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the input variable.
         @param name is the name of the variable
@@ -293,9 +297,9 @@ class OutputVariable(Variable):
         lock_range: bool = False,
         lock_previous: bool = False,
         default_value: float = nan,
-        aggregation: Optional[SNorm] = None,
-        defuzzifier: Optional["Defuzzifier"] = None,
-        terms: Optional[Iterable["Term"]] = None,
+        aggregation: SNorm | None = None,
+        defuzzifier: Defuzzifier | None = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Create the output variable.
         @param name is the name of the variable
@@ -330,7 +334,7 @@ class OutputVariable(Variable):
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
         self.default_value = default_value
-        self.previous_value = nan
+        self.previous_value: float = nan
 
     def __str__(self) -> str:
         """Gets a string representation of the variable in the FuzzyLite Language
@@ -349,7 +353,6 @@ class OutputVariable(Variable):
     def name(self, value: str) -> None:
         """Sets the name of the output variable
         @param value is the name of the output variable.
-
         """
         self.fuzzy.name = value
 
@@ -362,7 +365,6 @@ class OutputVariable(Variable):
     def minimum(self, value: float) -> None:
         """Sets the minimum value of the range of the output variable
         @param value is the minimum value of the output variable.
-
         """
         self.fuzzy.minimum = value
 
@@ -379,18 +381,16 @@ class OutputVariable(Variable):
         self.fuzzy.maximum = value
 
     @property
-    def aggregation(self) -> Optional[SNorm]:
+    def aggregation(self) -> SNorm | None:
         """Gets the aggregation operator
         @return the aggregation operator.
-
         """
         return self.fuzzy.aggregation
 
     @aggregation.setter
-    def aggregation(self, value: SNorm) -> None:
+    def aggregation(self, value: SNorm | None) -> None:
         """Sets the aggregation operator
-        @param aggregation is the aggregation.
-
+        @param value is the aggregation.
         """
         self.fuzzy.aggregation = value
 
@@ -400,45 +400,34 @@ class OutputVariable(Variable):
         """
         if not self.enabled:
             return
-        if math.isfinite(self.value):
-            self.previous_value = self.value
 
-        result = nan
-        exception = None
-        is_valid = bool(self.fuzzy.terms)
-        if is_valid:
-            # Checks whether the variable can be defuzzified without exceptions.
-            # If it cannot be defuzzified, be that due to a missing defuzzifier
-            # or aggregation operator, the expected behaviour is to leave the
-            # variable in a state that reflects an invalid defuzzification,
-            # that is, apply logic of default values and previous values.
-            is_valid = False
-            if self.defuzzifier:
-                try:
-                    result = self.defuzzifier.defuzzify(
-                        self.fuzzy, self.minimum, self.maximum
-                    )
-                    is_valid = True
-                except ValueError as ex:
-                    exception = ex
-            else:
-                exception = ValueError(
-                    f"expected a defuzzifier in output variable {self.name}, "
-                    "but found none"
-                )
+        if not self.defuzzifier:
+            raise ValueError(
+                f"expected a defuzzifier in output variable '{self.name}', "
+                "but found None"
+            )
+        # value at t+1
+        value = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)
 
-        if not is_valid:
-            # if a previous defuzzification was successfully performed and
-            # and the output value is supposed not to change when the output is empty
-            if self.lock_previous and not isnan(self.previous_value):
-                result = self.previous_value
-            else:
-                result = self.default_value
+        # previous value is the last element of the value at t
+        self.previous_value = np.take(self.value, -1).astype(float)
 
-        self.value = result
+        # Locking previous values
+        if self.lock_previous:
+            with np.nditer(value, op_flags=[["readwrite"]]) as iterator:
+                previous_value = self.previous_value
+                for value_i in iterator:
+                    if np.isnan(value_i):
+                        value_i[...] = previous_value  # type:ignore
+                    else:
+                        previous_value = value_i  # type: ignore
 
-        if exception:
-            raise exception
+        # Applying default values
+        if not np.isnan(self.default_value):
+            value[np.isnan(value)] = self.default_value  # type: ignore
+
+        # Committing the value
+        self.value = value
 
     def clear(self) -> None:
         r"""Clears the output variable by setting $\tilde{y}=\{\}$,
@@ -446,11 +435,12 @@ class OutputVariable(Variable):
         """
         self.fuzzy.clear()
         self.previous_value = nan
-        self._value = nan
+        self._value = scalar(nan)
 
     def fuzzy_value(self) -> str:
         r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
-        result: List[str] = []
+        # TODO: fix for vectorisation
+        result: list[str] = []
         for term in self.terms:
             degree = self.fuzzy.activation_degree(term)
 
@@ -458,6 +448,6 @@ class OutputVariable(Variable):
                 result.append(f"{Op.str(degree)}/{term.name}")
             else:
                 result.append(
-                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(math.fabs(degree))}/{term.name}"
+                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(np.fabs(degree))}/{term.name}"
                 )
         return "".join(result)

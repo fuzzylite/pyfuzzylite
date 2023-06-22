@@ -14,6 +14,8 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import io
 import os
 import random
@@ -21,8 +23,9 @@ import string
 import tempfile
 import unittest
 from pathlib import Path
-from typing import List
 from unittest.mock import MagicMock
+
+import numpy as np
 
 import fuzzylite as fl
 from fuzzylite.examples.mamdani import SimpleDimmer
@@ -298,7 +301,7 @@ RuleBlock: rb
             fl.FllExporter().to_string(defuzzifier),
             fl.FllExporter().defuzzifier(defuzzifier),
         )
-        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 100")
+        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 1000")
 
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
@@ -387,7 +390,7 @@ engine.input_variables = [
         minimum=0,
         maximum=1,
         lock_range=False,
-        terms=[fl.Triangle("A", nan, nan, nan)]
+        terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
     )
 ]
 engine.output_variables = [
@@ -401,7 +404,7 @@ engine.output_variables = [
         aggregation=None,
         defuzzifier=None,
         lock_previous=False,
-        terms=[fl.Triangle("A", nan, nan, nan)]
+        terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
     )
 ]
 engine.rule_blocks = [
@@ -441,7 +444,7 @@ fl.InputVariable(
     minimum=0,
     maximum=1,
     lock_range=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
+    terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
 )""",
         )
         iv.terms.append(fl.Triangle("Z"))
@@ -456,8 +459,8 @@ fl.InputVariable(
     maximum=1,
     lock_range=False,
     terms=[
-        fl.Triangle("A", nan, nan, nan),
-        fl.Triangle("Z", nan, nan, nan)
+        fl.Triangle("A", fl.nan, fl.nan, fl.nan),
+        fl.Triangle("Z", fl.nan, fl.nan, fl.nan)
     ]
 )""",
         )
@@ -487,7 +490,7 @@ fl.OutputVariable(
     aggregation=None,
     defuzzifier=None,
     lock_previous=False,
-    terms=[fl.Triangle("A", nan, nan, nan)]
+    terms=[fl.Triangle("A", fl.nan, fl.nan, fl.nan)]
 )""",
         )
         ov.terms.append(fl.Triangle("Z"))
@@ -505,8 +508,8 @@ fl.OutputVariable(
     defuzzifier=None,
     lock_previous=False,
     terms=[
-        fl.Triangle("A", nan, nan, nan),
-        fl.Triangle("Z", nan, nan, nan)
+        fl.Triangle("A", fl.nan, fl.nan, fl.nan),
+        fl.Triangle("Z", fl.nan, fl.nan, fl.nan)
     ]
 )""",
         )
@@ -568,8 +571,8 @@ fl.RuleBlock(
             fl.PythonExporter().to_string(term), fl.PythonExporter().term(term)
         )
         self.assertEqual(
+            'fl.Discrete.create("B", {0.000: 0.000, 0.500: 1.000, 1.000: 0.000})',
             fl.PythonExporter().term(term),
-            'fl.Discrete("B", [0.000, 0.000, 0.500, 1.000, 1.000, 0.000])',
         )
 
         term = fl.Function("C", "x + 1")
@@ -627,7 +630,7 @@ fl.RuleBlock(
             fl.PythonExporter().defuzzifier(defuzzifier),
         )
         self.assertEqual(
-            fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(100)"
+            fl.PythonExporter().defuzzifier(defuzzifier), "fl.Centroid(1000)"
         )
 
         defuzzifier = fl.WeightedAverage()
@@ -676,44 +679,56 @@ class TestFldExporter(unittest.TestCase):
         """Test writing lines."""
         # Empty write
         writer = io.StringIO()
-        fl.FldExporter().write(fl.Engine(), writer, [], set())
-        self.assertEqual("\n", writer.getvalue())
+        fl.FldExporter().write(fl.Engine(), writer, fl.array([]))
+        self.assertEqual("", writer.getvalue())
 
         # Not enough values
-        with self.assertRaisesRegex(ValueError, "not enough input values"):
+        with self.assertRaises(ValueError) as error:
             fl.FldExporter().write(
-                fl.Engine(input_variables=[fl.InputVariable()]), writer, [], set()
+                fl.Engine(input_variables=[fl.InputVariable()]), writer, fl.array([])
             )
+        self.assertEqual(
+            "expected 1 input values (one per input variable), but got 0 instead",
+            str(error.exception),
+        )
 
         # input and output values
         writer = io.StringIO()
         engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
-        fl.FldExporter(input_values=True, output_values=True).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=True, output_values=True, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.250 0.750\n", writer.getvalue())
 
         # input values only
         writer = io.StringIO()
-        fl.FldExporter(input_values=True, output_values=False).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=True, output_values=False, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.250\n", writer.getvalue())
 
         # output values only
         writer = io.StringIO()
-        fl.FldExporter(input_values=False, output_values=True).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=False, output_values=True, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
         self.assertEqual("0.750\n", writer.getvalue())
 
         # no values
         writer = io.StringIO()
         engine.process = MagicMock()  # type: ignore
-        fl.FldExporter(input_values=False, output_values=False).write(
-            engine, writer, [0.25], set(engine.input_variables)
+        fl.FldExporter(input_values=False, output_values=False, headers=False).write(
+            engine,
+            writer,
+            fl.array([0.25]),
         )
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
         engine.process.assert_called_once()
 
         # active variables
@@ -723,8 +738,8 @@ class TestFldExporter(unittest.TestCase):
         test_variable.value = 0.0
         engine.input_variables.append(test_variable)
 
-        fl.FldExporter().write(engine, writer, [fl.inf, fl.inf], {test_variable})
-        self.assertEqual("0.250 inf 0.750\n", writer.getvalue())
+        fl.FldExporter(headers=False).write(engine, writer, np.array([fl.inf, fl.inf]))
+        self.assertEqual("inf inf nan\n", writer.getvalue())
 
     def test_write_from_reader_empty_engine_empty(self) -> None:
         """Test exporting an empty engine."""
@@ -732,7 +747,7 @@ class TestFldExporter(unittest.TestCase):
 
         writer = io.StringIO()
         fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
 
         writer = io.StringIO()
         fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
@@ -746,12 +761,12 @@ class TestFldExporter(unittest.TestCase):
         )
 
         writer = io.StringIO()
-        fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("Input Output\n", writer.getvalue())
-
-        writer = io.StringIO()
-        fl.FldExporter(headers=False).write_from_reader(engine, writer, io.StringIO())
-        self.assertEqual("", writer.getvalue())
+        with self.assertRaises(ValueError) as error:
+            fl.FldExporter().write_from_reader(engine, writer, io.StringIO())
+        self.assertEqual(
+            "expected 1 input values (one per input variable), but got 0 instead",
+            str(error.exception),
+        )
 
     def test_write_from_reader_empty_or_commented(self) -> None:
         """Test exporter ignores comments."""
@@ -761,7 +776,7 @@ class TestFldExporter(unittest.TestCase):
             """
         writer = io.StringIO()
         fl.FldExporter().write_from_reader(fl.Engine(), writer, io.StringIO(reader))
-        self.assertEqual("\n", writer.getvalue())
+        self.assertEqual("", writer.getvalue())
 
     def test_write_from_reader(self) -> None:
         """Test exporter can read an FLD and export it again."""
@@ -1146,12 +1161,7 @@ class TestExporters(unittest.TestCase):
         import pathlib
 
         fl.lib.configure_logging(logging.INFO)
-
         fl.lib.decimals = 3
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
 
         path = "/tmp/source/"
         examples = pathlib.Path(path)
@@ -1168,11 +1178,6 @@ class TestExporters(unittest.TestCase):
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
-
         examples = "/tmp/source/takagi_sugeno/"
         TestExporters.export(examples + "/approximation.fll")
 
@@ -1183,18 +1188,13 @@ class TestExporters(unittest.TestCase):
         import pathlib
         import time
 
-        import numpy as np
-
-        np.seterr(divide="ignore", invalid="ignore")
-        fl.lib.floating_point_type = np.float64  # type: ignore
-
         path = pathlib.Path(file_path)
         if path.suffix == ".fll":
             with open(path) as file:
                 import_fll = file.read()
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
-            package: List[str] = []
+            package: list[str] = []
             for parent in path.parents:
                 package.append(parent.name)
                 if parent.name == "fuzzylite":

@@ -14,13 +14,15 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-
-import logging
-from typing import Optional, SupportsFloat, Type, Union
-
-from .factory import FactoryManager
+from __future__ import annotations
 
 __all__ = ["Library"]
+
+import logging
+
+import numpy as np
+
+from .factory import FactoryManager
 
 
 class Library:
@@ -31,29 +33,24 @@ class Library:
 
     def __init__(
         self,
-        decimals: int,
-        abs_tolerance: float,
-        floating_point_type: Type[float] = float,
-        factory_manager: Optional["FactoryManager"] = None,
+        decimals: int = 3,
+        factory_manager: FactoryManager | None = None,
+        logger: logging.Logger | None = None,
+        atol: float = 1e-03,  # TODO: like numpy? Or relative to number of decimals?
+        rtol: float = 0,  # TODO: like numpy? Or relative to number of decimals?
     ) -> None:
         """Creates an instance of the library.
         @param decimals is the number of decimals utilized when formatting scalar values
-        @param abs_tolerance is the minimum difference at which two scalar values are considered equivalent
         @param floating_point_type is the type of floating point (default is float, but numpy.float_ can also be used)
         @param factory_manager is the central manager of fuzzylite object factories
         @param logger is the logger of fuzzylite.
         """
         self.decimals = decimals
-        self.abs_tolerance: float = abs_tolerance
-        self.floating_point_type = floating_point_type
-        self.factory_manager = factory_manager if factory_manager else FactoryManager()
-        self.logger = logging.getLogger("fuzzylite")
-
-    def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        return self.floating_point_type(value)
+        self.factory_manager = factory_manager or FactoryManager()
+        self.logger = logger or logging.getLogger("fuzzylite")
+        self.atol = atol
+        self.rtol = rtol
+        np.seterr(invalid="ignore", divide="ignore")
 
     def configure_logging(self, level: int, reset: bool = True) -> None:
         """Configure the logging service.
@@ -85,13 +82,13 @@ class Library:
     @property
     def version(self) -> str:
         """Return the version of the `fuzzylite` library."""
-        __version__ = "7.1.1"
+        __version__ = "8.0.0"
         return __version__
 
     @property
     def license(self) -> str:
         """Return the license of the `fuzzylite` library."""
-        return "GNU Affero General Public License v3"
+        return "FuzzyLite License"
 
     @property
     def description(self) -> str:
@@ -149,11 +146,9 @@ Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL htt
 
 ##  License of the FuzzyLite Libraries
 
-The FuzzyLite Libraries, namely **`fuzzylite 6.0`** and **`jfuzzylite 6.0`**,
-are licensed under the [**GNU General Public License (GPL)
-3.0**](https://www.gnu.org/licenses/gpl.html), and **`pyfuzzylite 7.0`** is released under the [
-**GNU Affero General Public License v3**](https://www.gnu.org/licenses/agpl.html). The FuzzyLite
-Libraries are also offered under a **paid license for commercial purposes**. If you are using
+The FuzzyLite Libraries, namely **`fuzzylite`**, **`jfuzzylite`**, and **`pyfuzzylite`**
+are licensed under the [**GNU General Public License (GPL) 3.0**](https://www.gnu.org/licenses/gpl.html).
+The FuzzyLite Libraries are also offered under a **paid license for commercial purposes**. If you are using
 them under a free license, please consider purchasing a license of **QtFuzzyLite** to support
 the development of the libraries. If you want a commercial license of `fuzzylite`, `jfuzzylite`,
 or `pyfuzzylite`, please contact [sales@fuzzylite.com](mailto:sales@fuzzylite.com).
@@ -217,6 +212,6 @@ In addition, you can easily:
 * Utilize the entire library across multiple threads as it is thread-safe.
 
 * Download the sources, documentation, and binaries for the major platforms in
-  the [**Downloads**](www.fuzzylite.com/downloads) tab.\
+  the [**Downloads**](https://fuzzylite.com/downloads) tab.\
 """
         return result

@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Hedge",
@@ -27,9 +28,12 @@ __all__ = [
     "HedgeFunction",
 ]
 
-import math
 import typing
 from typing import Callable
+
+import numpy as np
+
+from .types import Scalar, scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
@@ -55,7 +59,7 @@ class Hedge:
         """
         return self.__class__.__name__.lower()
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return the hedge of $x$.
@@ -77,12 +81,14 @@ class Any(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the given value
         @param x is irrelevant
         @return `1.0`.
         """
-        return 1.0
+        x = scalar(x)
+        y = np.full_like(x, 1.0)
+        return y
 
 
 class Extremely(Hedge):
@@ -95,7 +101,7 @@ class Extremely(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $
@@ -104,7 +110,9 @@ class Extremely(Hedge):
         1-2(1-x)^2 & \mbox{otherwise} \cr
         \end{cases}$.
         """
-        return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
+        x = scalar(x)
+        y = np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)
+        return y
 
 
 class Not(Hedge):
@@ -117,12 +125,14 @@ class Not(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $1-x$.
         """
-        return 1.0 - x
+        x = scalar(x)
+        y = 1 - x
+        return y
 
 
 class Seldom(Hedge):
@@ -135,7 +145,7 @@ class Seldom(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $
@@ -145,7 +155,9 @@ class Seldom(Hedge):
         \end{cases}
         $.
         """
-        return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
+        x = scalar(x)
+        y = np.where(x <= 0.5, np.sqrt(0.5 * x), 1 - np.sqrt(0.5 * (1 - x)))
+        return y
 
 
 class Somewhat(Hedge):
@@ -158,12 +170,14 @@ class Somewhat(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         r"""Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $\sqrt{x}$.
         """
-        return math.sqrt(x)
+        x = scalar(x)
+        y = np.sqrt(x)
+        return y
 
 
 class Very(Hedge):
@@ -176,12 +190,14 @@ class Very(Hedge):
     @since 4.0
     """
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value
         @return $x^2$.
         """
-        return x * x
+        x = scalar(x)
+        y = x**2
+        return y
 
 
 class HedgeLambda(Hedge):
@@ -198,7 +214,7 @@ class HedgeLambda(Hedge):
     @since 7.0
     """
 
-    def __init__(self, name: str, function: Callable[[float], float]) -> None:
+    def __init__(self, name: str, function: Callable[[Scalar], Scalar]) -> None:
         """Create the hedge.
         @param name is the name of the hedge
         @param function is the lambda function.
@@ -211,7 +227,7 @@ class HedgeLambda(Hedge):
         """Gets the name of the hedge."""
         return self._name
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$ utilizing
         the HedgeFunction::function
         @param x is a membership function value
@@ -235,7 +251,7 @@ class HedgeFunction(Hedge):
     @since 6.0
     """
 
-    def __init__(self, function: "Function") -> None:
+    def __init__(self, function: Function) -> None:
         """Create the hedge.
         @param function is the function.
         """
@@ -246,7 +262,7 @@ class HedgeFunction(Hedge):
         """Gets the name of the function."""
         return self.function.name
 
-    def hedge(self, x: float) -> float:
+    def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$ utilizing
         the HedgeFunction::function
         @param x is a membership function value

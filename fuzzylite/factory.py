@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "ConstructionFactory",
@@ -29,8 +30,10 @@ __all__ = [
 ]
 
 import copy
-import math
-from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
+from collections.abc import Iterator
+from typing import Callable, Generic, TypeVar
+
+import numpy as np
 
 from .activation import (
     Activation,
@@ -76,6 +79,7 @@ from .norm import (
 from .operation import Op
 from .rule import Rule
 from .term import (
+    Arc,
     Bell,
     Binary,
     Concave,
@@ -89,6 +93,7 @@ from .term import (
     PiShape,
     Ramp,
     Rectangle,
+    SemiEllipse,
     Sigmoid,
     SigmoidDifference,
     SigmoidProduct,
@@ -114,7 +119,7 @@ class ConstructionFactory(Generic[T]):
 
     def __init__(self) -> None:
         """Create the construction factory."""
-        self.constructors: Dict[str, Callable[[], T]] = {}
+        self.constructors: dict[str, Callable[[], T]] = {}
 
     def __iter__(self) -> Iterator[str]:
         """Gets the iterator of constructors."""
@@ -149,10 +154,10 @@ class CloningFactory(Generic[T]):
 
     def __init__(self) -> None:
         """Create cloning factory."""
-        self.objects: Dict[str, T] = {}
+        self.objects: dict[str, T] = {}
 
     def __iter__(self) -> Iterator[str]:
-        """Get iterator iterator of objects."""
+        """Get iterator of objects."""
         return self.objects.__iter__()
 
     @property
@@ -324,6 +329,7 @@ class TermFactory(ConstructionFactory[Term]):
         self.constructors = {
             term().class_name: term
             for term in [
+                Arc,
                 Bell,
                 Binary,
                 Concave,
@@ -337,6 +343,7 @@ class TermFactory(ConstructionFactory[Term]):
                 PiShape,
                 Ramp,
                 Rectangle,
+                SemiEllipse,
                 Sigmoid,
                 SigmoidDifference,
                 SigmoidProduct,
@@ -373,8 +380,6 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return maximum - importance * step
 
     def _register_operators(self) -> None:
-        import operator
-
         operator_type = Function.Element.Type.Operator
         p: Callable[[int], int] = self._precedence
         operators = [
@@ -383,7 +388,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "!",
                 "Logical NOT",
                 operator_type,
-                operator.not_,
+                np.logical_not,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -392,7 +397,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "~",
                 "Negate",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -402,7 +407,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "^",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -411,7 +416,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "**",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -420,7 +425,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".-",
                 "Unary minus",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -429,7 +434,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".+",
                 "Unary plus",
                 operator_type,
-                operator.pos,
+                np.positive,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -439,7 +444,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "*",
                 "Multiplication",
                 operator_type,
-                operator.mul,
+                np.multiply,
                 arity=2,
                 precedence=p(2),
             ),
@@ -447,22 +452,32 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "/",
                 "Division",
                 operator_type,
-                operator.truediv,
+                np.true_divide,
                 arity=2,
                 precedence=p(2),
             ),
             Function.Element(
-                "%", "Modulo", operator_type, operator.mod, arity=2, precedence=p(2)
+                "%",
+                "Modulo",
+                operator_type,
+                np.remainder,
+                arity=2,
+                precedence=p(2),
             ),
             # Fourth order: Addition, Subtraction
             Function.Element(
-                "+", "Addition", operator_type, operator.add, arity=2, precedence=p(3)
+                "+",
+                "Addition",
+                operator_type,
+                np.add,
+                arity=2,
+                precedence=p(3),
             ),
             Function.Element(
                 "-",
                 "Subtraction",
                 operator_type,
-                operator.sub,
+                np.subtract,
                 arity=2,
                 precedence=p(3),
             ),
@@ -471,7 +486,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.AND,
                 "Logical AND",
                 operator_type,
-                Op.logical_and,
+                np.logical_and,
                 arity=2,
                 precedence=p(4),
             ),
@@ -480,7 +495,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.OR,
                 "Logical OR",
                 operator_type,
-                Op.logical_or,
+                np.logical_or,
                 arity=2,
                 precedence=p(5),
             ),
@@ -504,67 +519,77 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "le", "Less than or equal to (<=)", function_type, Op.le, arity=2
             ),
             Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
-            Function.Element("min", "Minimum", function_type, min, arity=2),
-            Function.Element("max", "Maximum", function_type, max, arity=2),
             Function.Element(
-                "acos", "Inverse cosine", function_type, math.acos, arity=1
+                "min", "Minimum", function_type, min, arity=2
+            ),  # because is variadiac, whereas np.min takes arrays as args
+            Function.Element(
+                "max", "Maximum", function_type, max, arity=2
+            ),  # because is variadiac, whereas np.max takes arrays as args
+            Function.Element(
+                "acos", "Inverse cosine", function_type, np.arccos, arity=1
             ),
-            Function.Element("asin", "Inverse sine", function_type, math.asin, arity=1),
+            Function.Element("asin", "Inverse sine", function_type, np.arcsin, arity=1),
             Function.Element(
-                "atan", "Inverse tangent", function_type, math.atan, arity=1
+                "atan", "Inverse tangent", function_type, np.arctan, arity=1
             ),
-            Function.Element("ceil", "Ceiling", function_type, math.ceil, arity=1),
-            Function.Element("cos", "Cosine", function_type, math.cos, arity=1),
+            Function.Element("ceil", "Ceiling", function_type, np.ceil, arity=1),
+            Function.Element("cos", "Cosine", function_type, np.cos, arity=1),
             Function.Element(
-                "cosh", "Hyperbolic cosine", function_type, math.cosh, arity=1
+                "cosh", "Hyperbolic cosine", function_type, np.cosh, arity=1
             ),
-            Function.Element("exp", "Exponential", function_type, math.exp, arity=1),
-            Function.Element("abs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("fabs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("floor", "Floor", function_type, math.floor, arity=1),
+            Function.Element("exp", "Exponential", function_type, np.exp, arity=1),
+            Function.Element("abs", "Absolute", function_type, np.fabs, arity=1),
+            Function.Element("fabs", "Absolute", function_type, np.fabs, arity=1),
+            Function.Element("floor", "Floor", function_type, np.floor, arity=1),
             Function.Element(
-                "log", "Natural logarithm", function_type, math.log, arity=1
-            ),
-            Function.Element(
-                "log10", "Common logarithm", function_type, math.log10, arity=1
-            ),
-            Function.Element("round", "Round", function_type, round, arity=1),
-            Function.Element("sin", "Sine", function_type, math.sin, arity=1),
-            Function.Element(
-                "sinh", "Hyperbolic sine", function_type, math.sinh, arity=1
-            ),
-            Function.Element("sqrt", "Square root", function_type, math.sqrt, arity=1),
-            Function.Element("tan", "Tangent", function_type, math.tan, arity=1),
-            Function.Element(
-                "tanh", "Hyperbolic tangent", function_type, math.tanh, arity=1
+                "log", "Natural logarithm", function_type, np.log, arity=1
             ),
             Function.Element(
-                "log1p", "Natural logarithm plus one", function_type, math.log1p, 1
+                "log10", "Common logarithm", function_type, np.log10, arity=1
+            ),
+            Function.Element("round", "Round", function_type, np.round, arity=1),
+            Function.Element("sin", "Sine", function_type, np.sin, arity=1),
+            Function.Element(
+                "sinh", "Hyperbolic sine", function_type, np.sinh, arity=1
+            ),
+            Function.Element("sqrt", "Square root", function_type, np.sqrt, arity=1),
+            Function.Element("tan", "Tangent", function_type, np.tan, arity=1),
+            Function.Element(
+                "tanh", "Hyperbolic tangent", function_type, np.tanh, arity=1
             ),
             Function.Element(
-                "acosh", "Inverse hyperbolic cosine", function_type, math.acosh, 1
+                "log1p", "Natural logarithm plus one", function_type, np.log1p, arity=1
             ),
             Function.Element(
-                "asinh", "Inverse hyperbolic sine", function_type, math.asinh, 1
+                "acosh", "Inverse hyperbolic cosine", function_type, np.arccosh, arity=1
             ),
             Function.Element(
-                "atanh", "Inverse hyperbolic tangent", function_type, math.atanh, 1
-            ),
-            Function.Element("pow", "Power", function_type, math.pow, arity=2),
-            Function.Element(
-                "atan2", "Inverse tangent (y,x)", function_type, math.atan2, arity=2
+                "asinh", "Inverse hyperbolic sine", function_type, np.arcsinh, arity=1
             ),
             Function.Element(
-                "fmod", "Floating-point remainder", function_type, math.fmod, arity=2
+                "atanh",
+                "Inverse hyperbolic tangent",
+                function_type,
+                np.arctanh,
+                arity=1,
             ),
-            Function.Element("pi", "Pi constant", function_type, Op.pi, arity=0),
+            Function.Element("pow", "Power", function_type, np.float_power, arity=2),
+            Function.Element(
+                "atan2", "Inverse tangent (y,x)", function_type, np.arctan2, arity=2
+            ),
+            Function.Element(
+                "fmod", "Floating-point remainder", function_type, np.fmod, arity=2
+            ),
+            Function.Element(
+                "pi", "Pi constant", function_type, lambda: np.pi, arity=0
+            ),
         ]
 
         for f in functions:
             f.precedence = self._precedence(0)
             self.objects[f.name] = f
 
-    def operators(self) -> Dict[str, Function.Element]:
+    def operators(self) -> dict[str, Function.Element]:
         """Returns a dictionary of the operators available
         @return a dictionary of the operators available.
         """
@@ -575,7 +600,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
         }
         return result
 
-    def functions(self) -> Dict[str, Function.Element]:
+    def functions(self) -> dict[str, Function.Element]:
         """Returns a dictionary of the functions available
         @return a dictionary of the functions available.
         """
@@ -605,13 +630,13 @@ class FactoryManager:
 
     def __init__(
         self,
-        tnorm: Optional[TNormFactory] = None,
-        snorm: Optional[SNormFactory] = None,
-        activation: Optional[ActivationFactory] = None,
-        defuzzifier: Optional[DefuzzifierFactory] = None,
-        term: Optional[TermFactory] = None,
-        hedge: Optional[HedgeFactory] = None,
-        function: Optional[FunctionFactory] = None,
+        tnorm: TNormFactory | None = None,
+        snorm: SNormFactory | None = None,
+        activation: ActivationFactory | None = None,
+        defuzzifier: DefuzzifierFactory | None = None,
+        term: TermFactory | None = None,
+        hedge: HedgeFactory | None = None,
+        function: FunctionFactory | None = None,
     ) -> None:
         """Creates a factory manager with the given factories (or default factories if none supplied)
         @param tnorm is the factory of TNorm%s

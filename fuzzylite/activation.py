@@ -14,6 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Activation",
@@ -28,10 +29,14 @@ __all__ = [
 
 import enum
 import heapq
-from typing import Callable, Dict, List, Tuple, Union
+import operator
+from typing import Callable
+
+import numpy as np
 
 from .operation import Op
 from .rule import Rule, RuleBlock
+from .types import Array, Scalar, scalar, to_float
 
 
 class Activation:
@@ -77,6 +82,18 @@ class Activation:
         """Configures the activation method with the given parameters.
         @param parameters contains a list of space-separated parameter values.
         """
+        pass
+
+    def assert_is_float(self, activation_degree: Scalar) -> None:
+        """Asserts that the activation degree is not a vector.
+        @param activation_degree is the activation degree to assert.
+        """
+        elements = np.float_(activation_degree).size
+        if elements > 1:
+            raise TypeError(
+                "expected activation degree to be a single scalar, "
+                f"but got {elements} elements in '{activation_degree}'"
+            )
 
     def __str__(self) -> str:
         """Returns the FLL code for the activation method
@@ -139,10 +156,9 @@ class First(Activation):
 
     def parameters(self) -> str:
         """Returns the number of rules and the threshold of the activation method
-        @return "rules threshold"
-        TODO: convert to f-string.
+        @return "rules threshold".
         """
-        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
+        return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the given number of rules and
@@ -152,7 +168,7 @@ class First(Activation):
         if parameters:
             rules, threshold = parameters.split()
             self.rules = int(rules)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the first $n$ rules whose activation degrees are greater than or
@@ -171,9 +187,10 @@ class First(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if (
                     activated < self.rules
-                    and Op.gt(activation_degree, 0.0)
+                    and activation_degree > 0.0
                     and activation_degree >= self.threshold
                 ):
                     rule.trigger(implication)
@@ -206,7 +223,7 @@ class Last(Activation):
         """Returns the number of rules and the threshold of the activation method
         @return "rules threshold".
         """
-        return " ".join([Op.str(self.rules), Op.str(self.threshold)])
+        return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the given number of rules and
@@ -216,7 +233,7 @@ class Last(Activation):
         if parameters:
             rules, threshold = parameters.split()
             self.rules = int(rules)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the last $n$ rules whose activation degrees are greater
@@ -235,9 +252,10 @@ class Last(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if (
                     activated < self.rules
-                    and Op.gt(activation_degree, 0.0)
+                    and activation_degree > 0.0
                     and activation_degree >= self.threshold
                 ):
                     rule.trigger(implication)
@@ -284,13 +302,14 @@ class Highest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Tuple[float, int]] = []
+        activate: list[tuple[Scalar, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                self.assert_is_float(activation_degree)
+                if activation_degree > 0.0:
                     heapq.heappush(activate, (-activation_degree, index))
 
         activated = 0
@@ -340,13 +359,14 @@ class Lowest(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Tuple[float, int]] = []
+        activate: list[tuple[Scalar, int]] = []
 
         for index, rule in enumerate(rule_block.rules):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                self.assert_is_float(activation_degree)
+                if activation_degree > 0.0:
                     heapq.heappush(activate, (activation_degree, index))
 
         activated = 0
@@ -378,14 +398,15 @@ class Proportional(Activation):
         disjunction = rule_block.disjunction
         implication = rule_block.implication
 
-        activate: List[Rule] = []
-        sum_degrees = 0.0
+        activate: list[Rule] = []
+        sum_degrees = scalar(0.0)
         for rule in rule_block.rules:
             rule.deactivate()
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                if Op.gt(activation_degree, 0.0):
+                self.assert_is_float(activation_degree)
+                if activation_degree > 0.0:
                     activate.append(rule)
                     sum_degrees += activation_degree
 
@@ -426,23 +447,26 @@ class Threshold(Activation):
         # $a > \theta$
         GreaterThan = ">"
 
-        __operator__: Dict[str, Callable[[float, float], bool]] = {
-            LessThan: Op.lt,
-            LessThanOrEqualTo: Op.le,
-            EqualTo: Op.eq,
-            NotEqualTo: Op.neq,
-            GreaterThanOrEqualTo: Op.ge,
-            GreaterThan: Op.gt,
+        __operator__: dict[
+            str,
+            Callable[[Scalar, Scalar], bool | Array[np.bool_]],
+        ] = {  # pyright: ignore
+            LessThan: operator.lt,
+            LessThanOrEqualTo: operator.le,
+            EqualTo: operator.eq,
+            NotEqualTo: operator.ne,
+            GreaterThanOrEqualTo: operator.ge,
+            GreaterThan: operator.gt,
         }
 
         @property
-        def operator(self) -> Callable[[float, float], bool]:
+        def operator(self) -> Callable[[Scalar, Scalar], bool | Array[np.bool_]]:
             """Gets the function reference for the operator."""
             return Threshold.Comparator.__operator__[self.value]
 
     def __init__(
         self,
-        comparator: Union[Comparator, str] = Comparator.GreaterThanOrEqualTo,
+        comparator: Comparator | str = Comparator.GreaterThan,
         threshold: float = 0.0,
     ) -> None:
         """Creates a Threshold activation method
@@ -456,10 +480,9 @@ class Threshold(Activation):
 
     def parameters(self) -> str:
         """Returns the comparator followed by the threshold.
-        @return comparator and threshold
-        TODO: convert to f-string.
+        @return comparator and threshold.
         """
-        return " ".join([self.comparator.value, Op.str(self.threshold)])
+        return f"{self.comparator.value} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
         """Configures the activation method with the comparator and the
@@ -469,7 +492,7 @@ class Threshold(Activation):
         if parameters:
             comparator, threshold = parameters.split()
             self.comparator = Threshold.Comparator(comparator)
-            self.threshold = Op.scalar(threshold)
+            self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the rules whose activation degrees satisfy the comparison
@@ -485,5 +508,6 @@ class Threshold(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
+                self.assert_is_float(activation_degree)
                 if self.comparator.operator(activation_degree, self.threshold):
                     rule.trigger(implication)
