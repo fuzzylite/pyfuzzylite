@@ -268,6 +268,7 @@ class TestFactory(unittest.TestCase):
             ["Bell", "Gaussian", "ZShape"]
         ).contains(["Star", "Cube", "Sphere"], False).constructs_exactly(
             {
+                "Arc": fl.Arc,
                 "Bell": fl.Bell,
                 "Binary": fl.Binary,
                 "Concave": fl.Concave,
@@ -281,6 +282,7 @@ class TestFactory(unittest.TestCase):
                 "PiShape": fl.PiShape,
                 "Ramp": fl.Ramp,
                 "Rectangle": fl.Rectangle,
+                "SemiEllipse": fl.SemiEllipse,
                 "Sigmoid": fl.Sigmoid,
                 "SigmoidDifference": fl.SigmoidDifference,
                 "SigmoidProduct": fl.SigmoidProduct,
