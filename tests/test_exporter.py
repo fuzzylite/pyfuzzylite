@@ -31,14 +31,6 @@ import fuzzylite as fl
 from fuzzylite.examples.mamdani import SimpleDimmer
 
 
-class BaseExporter(fl.Exporter):
-    """Base exporter for testing."""
-
-    def to_string(self, instance: object) -> str:
-        """Content for testing."""
-        return "BaseExporter.to_string(self, instance)"
-
-
 class TestExporter(unittest.TestCase):
     """Test exporters."""
 
@@ -48,6 +40,14 @@ class TestExporter(unittest.TestCase):
 
     def test_to_file(self) -> None:
         """Test the exporter saves to file."""
+
+        class BaseExporter(fl.Exporter):
+            """Base exporter for testing."""
+
+            def to_string(self, instance: object) -> str:
+                """Content for testing."""
+                return "BaseExporter.to_string(self, instance)"
+
         exporter = BaseExporter()
         path = tempfile.mkstemp(text=True)[1]
 

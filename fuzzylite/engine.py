@@ -49,30 +49,27 @@ class Engine:
     class Type(enum.Enum):
         """Determine type of engine."""
 
-        # TODO: change to enum.auto()
-        (
-            # /**Unknown: When output variables have no defuzzifiers*/
-            Unknown,
-            # /**Mamdani: When the output variables have IntegralDefuzzifier%s*/
-            Mamdani,
-            # /**Larsen: When Mamdani and AlgebraicProduct is the implication operator
-            # of the rule blocks */
-            Larsen,
-            # /**TakagiSugeno: When output variables have WeightedDefuzzifier%s of type
-            # TakagiSugeno and the output variables have Constant, Linear, or
-            # Function terms*/
-            TakagiSugeno,
-            # /**Tsukamoto: When output variables have WeightedDefuzzifier%s of type
-            # Tsukamoto and the output variables only have monotonic terms
-            # (Concave, Ramp, Sigmoid, SShape, and ZShape)*/
-            Tsukamoto,
-            # /**InverseTsukamoto: When output variables have WeightedDefuzzifier%s of type
-            # TakagiSugeno and the output variables do not only have Constant,
-            # Linear or Function terms*/
-            InverseTsukamoto,
-            # /**Hybrid: When output variables have different defuzzifiers*/
-            Hybrid,
-        ) = range(7)
+        # /**Unknown: When output variables have no defuzzifiers*/
+        Unknown = enum.auto()
+        # /**Mamdani: When the output variables have IntegralDefuzzifier%s*/
+        Mamdani = enum.auto()
+        # /**Larsen: When Mamdani and AlgebraicProduct is the implication operator
+        # of the rule blocks */
+        Larsen = enum.auto()
+        # /**TakagiSugeno: When output variables have WeightedDefuzzifier%s of type
+        # TakagiSugeno and the output variables have Constant, Linear, or
+        # Function terms*/
+        TakagiSugeno = enum.auto()
+        # /**Tsukamoto: When output variables have WeightedDefuzzifier%s of type
+        # Tsukamoto and the output variables only have monotonic terms
+        # (Concave, Ramp, Sigmoid, SShape, and ZShape)*/
+        Tsukamoto = enum.auto()
+        # /**InverseTsukamoto: When output variables have WeightedDefuzzifier%s of type
+        # TakagiSugeno and the output variables do not only have Constant,
+        # Linear or Function terms*/
+        InverseTsukamoto = enum.auto()
+        # /**Hybrid: When output variables have different defuzzifiers*/
+        Hybrid = enum.auto()
 
     def __init__(
         self,
