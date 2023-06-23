@@ -720,7 +720,7 @@ class TestOutputVariable(unittest.TestCase):
 
         # When the fuzzy output is not empty
         mock_defuzzifier = fl.Centroid()
-        mock_defuzzifier.defuzzify = mock_defuzzify  # type: ignore
+        mock_defuzzifier.defuzzify = MagicMock(side_effect=mock_defuzzify)  # type: ignore
         # And locking the previous value is not enabled
         # And default value is nan
         OutputVariableAssert(self, self.output_variable()).when(

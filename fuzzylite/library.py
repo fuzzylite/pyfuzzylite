@@ -32,16 +32,15 @@ import logging
 import typing
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import overload
+from typing import Any, Final, overload
 
 import numpy as np
 from numpy import inf, isinf, isnan, nan
 
-if typing.TYPE_CHECKING:
-    from typing import Any, Final
+from .types import Array, Scalar, ScalarArray
 
+if typing.TYPE_CHECKING:
     from .factory import FactoryManager
-    from .types import Array, Scalar, ScalarArray
 
 np.seterr(invalid="ignore", divide="ignore")
 
@@ -116,14 +115,9 @@ class Settings:
         return self.logger.level == logging.DEBUG
 
     @debugging.setter
-    def debugging(self, value: bool | int) -> None:
+    def debugging(self, value: bool) -> None:
         """Set the library debugging mode."""
-        if isinstance(value, bool):
-            self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
-        elif isinstance(value, int):
-            self.logger.setLevel(value)
-        else:
-            raise TypeError(f"Expected bool or int, got {type(value)}")
+        self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
 
 
 settings: Final[Settings] = Settings()

@@ -185,7 +185,7 @@ class HedgeFactory(ConstructionFactory[Hedge]):
         """Create the factory."""
         from . import hedge
 
-        hedges = {Op.class_name(h).lower(): h for h in self.import_from(hedge, Hedge)}
+        hedges = {h().name: h for h in self.import_from(hedge, Hedge)}
         super().__init__(constructors=hedges)
 
 
@@ -441,7 +441,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
             ),
             Function.Element(
                 "lt",
-                "Less than (>)",
+                "Less than (<)",
                 function_type,
                 Op.lt,
                 arity=2,

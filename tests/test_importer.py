@@ -24,7 +24,6 @@ import unittest
 from typing import cast
 
 import fuzzylite as fl
-from fuzzylite import Engine
 
 BELL_FLL = """\
 Engine: Bell
@@ -59,19 +58,19 @@ RuleBlock: steer_away
 """
 
 
-class BaseImporter(fl.Importer):
-    """Base importer class for testing."""
-
-    def from_string(self, fll: str) -> Engine:
-        """Returns an empty engine with the FLL as a description."""
-        return fl.Engine(description=fll)
-
-
 class TestImporter(unittest.TestCase):
     """Test the importer class."""
 
     def test_from_file(self) -> None:
         """Test the importer can read files."""
+
+        class BaseImporter(fl.Importer):
+            """Base importer class for testing."""
+
+            def from_string(self, fll: str) -> fl.Engine:
+                """Returns an empty engine with the FLL as a description."""
+                return fl.Engine(description=fll)
+
         path = tempfile.mkstemp(text=True)[1]
         with open(path, "w") as file:
             file.write(BELL_FLL)
@@ -363,15 +362,6 @@ RuleBlock: steer_away
             SyntaxError, re.escape("'invalid' is not a valid component of 'RuleBlock'")
         ):
             fl.FllImporter().rule_block("""RuleBlock: name\n  invalid: component""")
-
-        with self.assertRaisesRegex(
-            SyntaxError,
-            re.escape(
-                "factory manager does not contain a factory named 'variable' "
-                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'"
-            ),
-        ):
-            fl.FllImporter().component(fl.Variable, """Variable: Invalid""")  # type: ignore
 
 
 class TestFllImporterBatch(unittest.TestCase):

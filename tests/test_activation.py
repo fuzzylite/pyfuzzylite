@@ -116,23 +116,20 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
         return self
 
 
-class BaseActivation(fl.Activation):
-    """Base Activation."""
-
-    def activate(self, rule_block: RuleBlock) -> None:
-        """Do nothing."""
-        pass
-
-
 class TestActivation(unittest.TestCase):
     """Tests the base activation class."""
 
-    def test_parameters(self) -> None:
-        """Asserts parameters are empty."""
-        self.assertEqual("", BaseActivation().parameters())
+    def test_base_activation(self) -> None:
+        """Tests the base activation class."""
 
-    def test_str(self) -> None:
-        """Asserts the base exporting to string is correct."""
+        class BaseActivation(fl.Activation):
+            """Base Activation."""
+
+            def activate(self, rule_block: RuleBlock) -> None:
+                """Do nothing."""
+                pass
+
+        self.assertEqual("", BaseActivation().parameters())
         self.assertEqual("BaseActivation", str(BaseActivation()))
 
         activation = BaseActivation()

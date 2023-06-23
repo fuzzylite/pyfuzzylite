@@ -124,14 +124,6 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
 
-class BaseTerm(fl.Term):
-    """Base term for testing."""
-
-    def membership(self, x: Scalar) -> Scalar:
-        """Returns nan for testing."""
-        return np.full_like(x, nan)
-
-
 class TestTerm(unittest.TestCase):
     """Test terms."""
 
@@ -141,6 +133,14 @@ class TestTerm(unittest.TestCase):
 
     def test_term(self) -> None:
         """Test the base term."""
+
+        class BaseTerm(fl.Term):
+            """Base term for testing."""
+
+            def membership(self, x: Scalar) -> Scalar:
+                """Returns nan for testing."""
+                return np.full_like(x, nan)
+
         self.assertEqual(BaseTerm().name, "")
         self.assertEqual(BaseTerm("X").name, "X")
         self.assertEqual(BaseTerm("X").height, 1.0)
@@ -165,6 +165,22 @@ class TestTerm(unittest.TestCase):
             0.6: nan,
             0.8: nan,
             1.0: nan,
+        }
+        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
+        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
+
+        discrete_base = BaseTerm().discretize(-1, 1, 10, midpoints=True)
+        xy = {
+            -0.9: nan,
+            -0.7: nan,
+            -0.5: nan,
+            -0.3: nan,
+            -0.1: nan,
+            0.1: nan,
+            0.3: nan,
+            0.5: nan,
+            0.7: nan,
+            0.9: nan,
         }
         np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
         np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
