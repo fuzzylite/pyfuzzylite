@@ -38,12 +38,9 @@ Please, download it and check it out for free at [fuzzylite.com/downloads](https
 
 ### <a name="introduction">Introduction</a>
 
+**The FuzzyLite Libraries for Fuzzy Logic Control** refer to [`fuzzylite`](https://github.com/fuzzylite/fuzzylite/) (C++), [`pyfuzzylite`](https://github.com/fuzzylite/pyfuzzylite/) (Python), and [`jfuzzylite`](https://github.com/fuzzylite/jfuzzylite/) (Java). 
 
-`fuzzylite` is a free and open-source fuzzy logic control library programmed in C++ for multiple platforms (e.g., Windows, Linux, Mac, iOS). [`jfuzzylite`](https://github.com/fuzzylite/jfuzzylite/) is the equivalent library for Java and Android platforms. [`pyfuzzylite`](https://github.com/fuzzylite/pyfuzzylite/) is the equivalent library for Python. Together, they are **The FuzzyLite Libraries for Fuzzy Logic Control**.
-
-
-
- The **goal** of the FuzzyLite Libraries is to **easily** design and **efficiently** operate fuzzy logic controllers following an **object-oriented** programming model **without** relying on external libraries.
+ The **goal** of the FuzzyLite Libraries is to **easily** design and **efficiently** operate fuzzy logic controllers following an **object-oriented** programming model with minimal dependency on external libraries.
 
 
 #### Reference
@@ -76,9 +73,9 @@ All contributions are welcome, provided they follow the following guidelines:
 
 **(6) Controllers**: Mamdani, Takagi-Sugeno, Larsen, Tsukamoto, Inverse Tsukamoto, Hybrids
 
-**(21) Linguistic terms**:  (4) *Basic*: triangle, trapezoid, rectangle, discrete.
+**(23) Linguistic terms**:  (5) *Basic*: triangle, trapezoid, rectangle, discrete, semi-ellipse.
 (9) *Extended*: bell, cosine, gaussian, gaussian product, pi-shape, sigmoid difference, sigmoid product, spike.
-(5) *Edges*: binary, concave, ramp, sigmoid, s-shape, z-shape.
+(6) *Edges*: arc, binary, concave, ramp, sigmoid, s-shape, z-shape.
 (3) *Functions*: constant, linear, function.
 
 **(7) Activation methods**:  general, proportional, threshold, first, last, lowest, highest.
