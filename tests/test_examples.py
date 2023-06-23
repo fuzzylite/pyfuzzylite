@@ -130,3 +130,7 @@ fuzzylite.examples.tsukamoto.tsukamoto
             # if an example is incorrect, an exception will be thrown below
             engine = importlib.import_module(module).engine
             logger.info(str(engine))
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -30,16 +30,18 @@ __all__ = [
 import enum
 import heapq
 import operator
+from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
 
+from .library import scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
-from .types import Array, Scalar, scalar, to_float
+from .types import Array, Scalar
 
 
-class Activation:
+class Activation(ABC):
     """The Activation class is the abstract class for RuleBlock activation
     methods. An activation method implements the criteria to activate the
     rules within a given rule block. An activation method needs to process
@@ -56,15 +58,7 @@ class Activation:
     @since 6.0
     """
 
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the activation method, which is also utilized to
-        register the activation method in the ActivationFactory.
-        @return the name of the activation method
-        @see ActivationFactory.
-        """
-        return self.__class__.__name__
-
+    @abstractmethod
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the rule block
         @param rule_block is the rule block to activate.
@@ -78,7 +72,9 @@ class Activation:
         """
         return ""
 
-    def configure(self, parameters: str) -> None:
+    def configure(  # noqa: B027  empty method in an abstract base class
+        self, parameters: str
+    ) -> None:
         """Configures the activation method with the given parameters.
         @param parameters contains a list of space-separated parameter values.
         """
@@ -99,7 +95,7 @@ class Activation:
         """Returns the FLL code for the activation method
         @return FLL code for the activation method.
         """
-        result = self.class_name
+        result = Op.class_name(self)
         parameters = self.parameters()
         if parameters:
             result += f" {parameters}"

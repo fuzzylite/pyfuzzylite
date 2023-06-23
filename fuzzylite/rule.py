@@ -27,14 +27,15 @@ __all__ = [
 ]
 
 import typing
+from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from . import nan
 from .exporter import FllExporter
 from .hedge import Any
+from .library import array, nan, scalar, settings
 from .norm import SNorm, TNorm
 from .operation import Op
-from .types import Scalar, array, scalar
+from .types import Scalar
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:
@@ -45,7 +46,7 @@ if typing.TYPE_CHECKING:
     from .variable import Variable
 
 
-class Expression:
+class Expression(ABC):
     """The Expression class is the base class to build an expression tree.
     @author Juan Rada-Vilela, Ph.D.
     @see Antecedent
@@ -54,7 +55,10 @@ class Expression:
     @since 4.0.
     """
 
-    pass
+    @abstractmethod
+    def __init__(self) -> None:
+        """Create the expression."""
+        pass
 
 
 class Proposition(Expression):
@@ -270,7 +274,6 @@ class Antecedent:
         """
         from collections import deque
 
-        from . import lib
         from .term import Function
 
         self.unload()
@@ -278,8 +281,8 @@ class Antecedent:
             raise SyntaxError("expected the antecedent of a rule, but found none")
 
         postfix = Function().infix_to_postfix(self.text)
-        if lib.debugging:
-            lib.logger.debug(f"antecedent={self.text}\npostfix={postfix}")
+        if settings.debugging:
+            settings.logger.debug(f"antecedent={self.text}\npostfix={postfix}")
 
         # Build a proposition tree from the antecedent of a fuzzy rule. The rules are:
         # (1) After a variable comes 'is',
@@ -303,17 +306,17 @@ class Antecedent:
                     proposition = Proposition(variable)
                     stack.append(proposition)
                     state = s_is
-                    lib.logger.debug(f"token '{token}' is a variable")
+                    settings.logger.debug(f"token '{token}' is a variable")
                     continue
 
             if state & s_is:
                 if Rule.IS == token:
                     state = s_hedge | s_term
-                    lib.logger.debug(f"token '{token}' is a keyword")
+                    settings.logger.debug(f"token '{token}' is a keyword")
                     continue
 
             if state & s_hedge:
-                factory = lib.factory_manager.hedge
+                factory = settings.factory_manager.hedge
                 if token in factory:
                     hedge = factory.construct(token)
                     proposition.hedges.append(hedge)  # type: ignore
@@ -321,7 +324,7 @@ class Antecedent:
                         state = s_variable | s_and_or
                     else:
                         state = s_hedge | s_term
-                    lib.logger.debug(f"token '{token} is hedge")
+                    settings.logger.debug(f"token '{token} is hedge")
                     continue
 
             if state & s_term:
@@ -330,7 +333,7 @@ class Antecedent:
                 if term:
                     proposition.term = term  # type: ignore
                     state = s_variable | s_and_or
-                    lib.logger.debug(f"token '{token} is term")
+                    settings.logger.debug(f"token '{token} is term")
                     continue
 
             if state & s_and_or:
@@ -345,7 +348,9 @@ class Antecedent:
                     operator.left = stack.pop()
                     stack.append(operator)
                     state = s_variable | s_and_or
-                    lib.logger.debug(f"token '{token} is logical operator '{operator}'")
+                    settings.logger.debug(
+                        f"token '{token} is logical operator '{operator}'"
+                    )
                     continue
 
             # if reached this point, there was an error in the current state
@@ -538,14 +543,12 @@ class Consequent:
         @param consequent is the consequent of the rule in text
         @param engine is the engine from which the rules are part of.
         """
-        from . import lib
-
         self.unload()
         if not self.text:
             raise SyntaxError("expected the consequent of a rule, but found none")
 
-        if lib.debugging:
-            lib.logger.debug(f"consequent={self.text}")
+        if settings.debugging:
+            settings.logger.debug(f"consequent={self.text}")
 
         # Extracts the list of propositions from the consequent
         #  The rules are:
@@ -577,7 +580,7 @@ class Consequent:
                 continue
 
             if state & s_hedge:
-                factory = lib.factory_manager.hedge
+                factory = settings.factory_manager.hedge
                 if token in factory:
                     hedge = factory.construct(token)
                     proposition.hedges.append(hedge)  # type: ignore
@@ -668,7 +671,7 @@ class Rule:
         self.enabled: bool = True
         self.weight: float = 1.0
         self.activation_degree = scalar(0.0)
-        self.triggered = array([False])
+        self.triggered = array(False)
         self.antecedent: Antecedent = Antecedent()
         self.consequent: Consequent = Consequent()
 
@@ -682,8 +685,7 @@ class Rule:
         @return the text of the rule.
         """
         result = [Rule.IF, self.antecedent.text, Rule.THEN, self.consequent.text]
-        # TODO: update to consider fl.lib.atol
-        if not Op.eq(self.weight, 1.0):
+        if not Op.is_close(self.weight, 1.0):
             result.extend([Rule.WITH, Op.str(self.weight)])
         return " ".join(result)
 
@@ -705,7 +707,7 @@ class Rule:
 
         antecedent: list[str] = []
         consequent: list[str] = []
-        weight: float = 1.0
+        weight = 1.0
 
         s_begin, s_if, s_then, s_with, s_end = range(5)
         state = s_begin

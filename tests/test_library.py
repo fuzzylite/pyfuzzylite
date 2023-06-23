@@ -30,8 +30,6 @@ class TestLibrary(unittest.TestCase):
 __builtins__ __cached__ __doc__ __file__ __loader__
 __name__ __package__ __path__ __spec__ __version__
 
-inf isinf isnan lib nan
-
 activation Activation First General Highest Last Lowest Proportional Threshold
 
 defuzzifier Bisector Centroid Defuzzifier IntegralDefuzzifier LargestOfMaximum MeanOfMaximum
@@ -51,7 +49,7 @@ NilpotentMinimum Norm NormFunction NormLambda NormalizedSum Not Seldom Somewhat 
 
 importer FllImporter Importer
 
-library Library
+library information settings array to_float scalar inf isinf isnan nan
 
 norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
 EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum
@@ -64,7 +62,7 @@ term Activated Aggregated Arc Bell Binary Concave Constant Cosine Discrete Funct
 GaussianProduct Linear PiShape Ramp Rectangle SShape SemiEllipse Sigmoid SigmoidDifference SigmoidProduct
 Spike Term Trapezoid Triangle ZShape
 
-types Array Float Scalar ScalarArray array float_type to_float scalar
+types Array Scalar ScalarArray
 
 variable InputVariable OutputVariable Variable
 """
@@ -75,7 +73,7 @@ variable InputVariable OutputVariable Variable
         __version__ = "8.0.0"
         self.assertEqual(fuzzylite.__name__, "pyfuzzylite")
         self.assertEqual(fuzzylite.__version__, __version__)
-        self.assertEqual(fuzzylite.__doc__, fuzzylite.lib.summary)
+        self.assertEqual(fuzzylite.__doc__, fuzzylite.information.description)
 
 
 if __name__ == "__main__":

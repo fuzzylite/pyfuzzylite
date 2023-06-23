@@ -18,22 +18,22 @@ from __future__ import annotations
 
 __all__ = ["Importer", "FllImporter"]
 
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import overload
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .engine import Engine
-from .factory import ConstructionFactory
+from .library import settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .term import Term
-from .types import to_float
 from .variable import InputVariable, OutputVariable
 
 
-class Importer:
+class Importer(ABC):
     """The Importer class is the abstract class for importers to configure an
     Engine and its components from different text formats.
     @todo declare methods to import specific components
@@ -42,13 +42,7 @@ class Importer:
     @since 4.0.
     """
 
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the importer
-        @return the name of the importer.
-        """
-        return self.__class__.__name__
-
+    @abstractmethod
     def from_string(self, fll: str) -> Engine:
         """Imports the engine from the given text
         @param text is the string representation of the engine to import from
@@ -254,15 +248,13 @@ class FllImporter(Importer):
         @param engine is the reference engine for the term
         @returns the term.
         """
-        from . import lib
-
         values = self.extract_value(fll, "term").split(maxsplit=2)
         if len(values) < 2:
             raise SyntaxError(
                 f"expected format 'term: name Term [parameters]', but got '{fll}'"
             )
 
-        term = lib.factory_manager.term.construct(values[1])
+        term = settings.factory_manager.term.construct(values[1])
         term.name = Op.as_identifier(values[0])
         term.update_reference(engine)
         if len(values) > 2:
@@ -282,34 +274,48 @@ class FllImporter(Importer):
         @param fll is the T-Norm in the FuzzyLite Language
         @returns the T-Norm.
         """
-        return self.component(TNorm, fll)
+        if not fll or fll == "none":
+            return None
+        return settings.factory_manager.tnorm.construct(fll)
 
     def snorm(self, fll: str) -> SNorm | None:
         """Creates a S-Norm from the FuzzyLite Language.
         @param fll is the S-Norm in the FuzzyLite Language
         @returns the S-Norm.
         """
-        return self.component(SNorm, fll)
+        if not fll or fll == "none":
+            return None
+        return settings.factory_manager.snorm.construct(fll)
 
     def activation(self, fll: str) -> Activation | None:
         """Creates an activation method from the FuzzyLite Language.
         @param fll is the activation method in the FuzzyLite Language
         @returns the activation method.
         """
+        if not fll or fll == "none":
+            return None
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
-        return self.component(Activation, name, parameters)
+        result = settings.factory_manager.activation.construct(name)
+        if parameters:
+            result.configure(parameters)
+        return result
 
     def defuzzifier(self, fll: str) -> Defuzzifier | None:
         """Creates a defuzzifier from the FuzzyLite Language.
         @param fll is the defuzzifier in the FuzzyLite Language
         @returns the defuzzifier.
         """
+        if not fll or fll == "none":
+            return None
         values = fll.split(maxsplit=1)
         name = values[0]
         parameters = values[1] if len(values) > 1 else None
-        return self.component(Defuzzifier, name, parameters)
+        result = settings.factory_manager.defuzzifier.construct(name)
+        if parameters:
+            result.configure(parameters)
+        return result
 
     @overload
     def component(
@@ -347,26 +353,19 @@ class FllImporter(Importer):
         @param parameters is the component parameters in the FuzzyLite Language
         @returns the component or None.
         """
-        from . import lib
-
-        fll = Op.strip_comments(fll)
-        if not fll or fll == "none":
-            return None
-
-        factory_attr = cls.__name__.lower()
-        if not hasattr(lib.factory_manager, factory_attr):
+        if issubclass(cls, Activation):
+            return self.activation(fll)
+        if issubclass(cls, Defuzzifier):
+            return self.defuzzifier(fll)
+        if issubclass(cls, SNorm):
+            return self.snorm(fll)
+        if issubclass(cls, TNorm):
+            return self.tnorm(fll)
+        else:
             raise SyntaxError(
-                f"factory manager does not contain a factory named '{factory_attr}' "
-                f"to construct objects of type '{cls}'"
+                "factory manager does not contain a factory named 'variable' "
+                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'"
             )
-
-        factory: ConstructionFactory[
-            Activation | Defuzzifier | SNorm | TNorm
-        ] = getattr(lib.factory_manager, factory_attr)
-        result = factory.construct(fll)
-        if parameters and isinstance(result, (Activation, Defuzzifier)):
-            result.configure(parameters)
-        return result
 
     def range(self, fll: str) -> tuple[float, float]:
         """Gets the range from a value in the FuzzyLite Language."""

@@ -554,21 +554,21 @@ class TestOutputVariable(unittest.TestCase):
         # When the defuzzifier raises an exception
         #   and there are terms to defuzzify
         # then nothing changes on defuzzify
-        defuzzifier = fl.Defuzzifier()
-        defuzzifier.defuzzify = MagicMock(  # type: ignore
-            side_effect=ValueError("mocking exception during defuzzification")
+        defuzzifier_exception = fl.Centroid()
+        defuzzifier_exception.defuzzify = MagicMock(  # type: ignore
+            side_effect=ValueError("exception during defuzzification")
         )
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
             name="Output",
-            defuzzifier=defuzzifier,
+            defuzzifier=defuzzifier_exception,
             value=1.0,
             previous_value=fl.nan,
             default_value=0.123,
         ).when_fuzzy_output(is_empty=False).then_fuzzy_value_is(
             "1.000/low + 1.000/medium + 1.000/high"
         ).defuzzify(
-            raises=ValueError("mocking exception during defuzzification")
+            raises=ValueError("exception during defuzzification")
         ).then(
             value=1.0,
             previous_value=fl.nan,
@@ -613,21 +613,21 @@ class TestOutputVariable(unittest.TestCase):
         # When the defuzzifier raises an exception
         #   and there are terms to defuzzify
         # then nothing changes on defuzzify
-        defuzzifier = fl.Defuzzifier()
-        defuzzifier.defuzzify = MagicMock(  # type: ignore
-            side_effect=ValueError("mocking exception during defuzzification")
+        defuzzifier_exception = fl.Centroid()
+        defuzzifier_exception.defuzzify = MagicMock(  # type: ignore
+            side_effect=ValueError("exception during defuzzification")
         )
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
             name="Output",
-            defuzzifier=defuzzifier,
+            defuzzifier=defuzzifier_exception,
             value=fl.array([1.0, 2.0, 3.0]),
             previous_value=fl.nan,
             default_value=0.123,
         ).when_fuzzy_output(is_empty=False).then_fuzzy_value_is(
             "1.000/low + 1.000/medium + 1.000/high"
         ).defuzzify(
-            raises=ValueError("mocking exception during defuzzification")
+            raises=ValueError("exception during defuzzification")
         ).then(
             value=fl.array([1.0, 2.0, 3.0]),
             previous_value=fl.nan,
@@ -713,18 +713,19 @@ class TestOutputVariable(unittest.TestCase):
             previous_value=4.0,
         )
 
-        # When the fuzzy output is not empty
-        def mock_defuzzify(*args: Any, **kwargs: Any) -> fl.Scalar:
+        def mock_defuzzify(*_: Any, **__: Any) -> fl.Scalar:
             return fl.array(
                 [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
             )
 
-        defuzzifier.defuzzify = MagicMock(side_effect=mock_defuzzify)  # type: ignore
+        # When the fuzzy output is not empty
+        mock_defuzzifier = fl.Centroid()
+        mock_defuzzifier.defuzzify = mock_defuzzify  # type: ignore
         # And locking the previous value is not enabled
         # And default value is nan
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
-            defuzzifier=defuzzifier,
+            defuzzifier=mock_defuzzifier,
             lock_previous=False,
             value=fl.array([1.0, 2.0, 3.0]),
             previous_value=fl.nan,
@@ -740,7 +741,7 @@ class TestOutputVariable(unittest.TestCase):
         # And default value is not nan
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
-            defuzzifier=defuzzifier,
+            defuzzifier=mock_defuzzifier,
             lock_previous=False,
             value=fl.array([1.0, 2.0, 3.0]),
             previous_value=fl.nan,
@@ -755,7 +756,7 @@ class TestOutputVariable(unittest.TestCase):
         # And default value is nan
         OutputVariableAssert(self, self.output_variable()).when(
             enabled=True,
-            defuzzifier=defuzzifier,
+            defuzzifier=mock_defuzzifier,
             lock_previous=True,
             value=fl.array([1.0, 2.0, fl.nan]),
             previous_value=fl.nan,

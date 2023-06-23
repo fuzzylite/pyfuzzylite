@@ -22,9 +22,9 @@ import re
 import tempfile
 import unittest
 from typing import cast
-from unittest.mock import MagicMock
 
 import fuzzylite as fl
+from fuzzylite import Engine
 
 BELL_FLL = """\
 Engine: Bell
@@ -59,30 +59,24 @@ RuleBlock: steer_away
 """
 
 
+class BaseImporter(fl.Importer):
+    """Base importer class for testing."""
+
+    def from_string(self, fll: str) -> Engine:
+        """Returns an empty engine with the FLL as a description."""
+        return fl.Engine(description=fll)
+
+
 class TestImporter(unittest.TestCase):
     """Test the importer class."""
 
-    def test_class_name(self) -> None:
-        """Test the base class name."""
-        self.assertEqual(fl.Importer().class_name, "Importer")
-
-    def test_to_string(self) -> None:
-        """Test the base class importer from string is not implemented."""
-        with self.assertRaises(NotImplementedError):
-            fl.Importer().from_string("")
-
     def test_from_file(self) -> None:
         """Test the importer can read files."""
-        importer = fl.Importer()
-        importer.from_string = MagicMock(  # type: ignore
-            side_effect=lambda string: fl.Engine(description=string)
-        )
-
         path = tempfile.mkstemp(text=True)[1]
         with open(path, "w") as file:
             file.write(BELL_FLL)
 
-        engine = importer.from_file(path)
+        engine = BaseImporter().from_file(path)
 
         self.assertEqual(BELL_FLL, engine.description)
 
@@ -389,10 +383,10 @@ class TestFllImporterBatch(unittest.TestCase):
         self.maxDiff = None  # show all differences
         importer = fl.FllImporter()
         exporter = fl.FllExporter()
-        fl.lib.decimals = 9
+        fl.settings.decimals = 9
         import logging
 
-        fl.lib.logger.setLevel(logging.INFO)
+        fl.settings.logger.setLevel(logging.INFO)
         import fuzzylite.examples.terms
 
         terms = next(iter(fuzzylite.examples.terms.__path__))
@@ -400,13 +394,13 @@ class TestFllImporterBatch(unittest.TestCase):
         for fll_file in glob.iglob(terms + "/*.fll", recursive=True):
             counter += 1
             with open(fll_file) as file:
-                fl.lib.logger.info(fll_file)
+                fl.settings.logger.info(fll_file)
                 fll_from_string = file.read()
                 engine = importer.from_string(fll_from_string)
                 export_fll = exporter.to_string(engine)
                 self.assertEqual(fll_from_string, export_fll)
         self.assertEqual(20, counter)
-        fl.lib.decimals = 3
+        fl.settings.decimals = 3
 
 
 if __name__ == "__main__":

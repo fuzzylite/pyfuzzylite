@@ -22,6 +22,7 @@ from unittest.mock import MagicMock
 import numpy as np
 
 import fuzzylite as fl
+from fuzzylite import RuleBlock
 from tests.assert_component import BaseAssert
 
 
@@ -109,35 +110,34 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
                 activation,
                 obtained[rule_text(rule_id)],
                 err_msg=f"in rule'{rule_id}' when rules={rules}",
-                atol=fl.lib.atol,
-                rtol=fl.lib.rtol,
+                atol=fl.settings.atol,
+                rtol=fl.settings.rtol,
             )
         return self
+
+
+class BaseActivation(fl.Activation):
+    """Base Activation."""
+
+    def activate(self, rule_block: RuleBlock) -> None:
+        """Do nothing."""
+        pass
 
 
 class TestActivation(unittest.TestCase):
     """Tests the base activation class."""
 
-    def test_class_name(self) -> None:
-        """Asserts the class name is correct."""
-        self.assertEqual("Activation", fl.Activation().class_name)
-
-    def test_activation(self) -> None:
-        """Asserts that activate method is not implemented."""
-        with self.assertRaises(NotImplementedError):
-            fl.Activation().activate(fl.RuleBlock())
-
     def test_parameters(self) -> None:
         """Asserts parameters are empty."""
-        self.assertEqual("", fl.Activation().parameters())
+        self.assertEqual("", BaseActivation().parameters())
 
     def test_str(self) -> None:
         """Asserts the base exporting to string is correct."""
-        self.assertEqual("Activation", str(fl.Activation()))
+        self.assertEqual("BaseActivation", str(BaseActivation()))
 
-        activation = fl.Activation()
+        activation = BaseActivation()
         activation.parameters = MagicMock(return_value="param1 param2")  # type: ignore
-        self.assertEqual("Activation param1 param2", str(activation))
+        self.assertEqual("BaseActivation param1 param2", str(activation))
 
     def test_general_activation(self) -> None:
         """Asserts the general activation is correct."""

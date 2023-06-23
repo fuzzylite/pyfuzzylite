@@ -31,6 +31,14 @@ import fuzzylite as fl
 from fuzzylite.examples.mamdani import SimpleDimmer
 
 
+class BaseExporter(fl.Exporter):
+    """Base exporter for testing."""
+
+    def to_string(self, instance: object) -> str:
+        """Content for testing."""
+        return "BaseExporter.to_string(self, instance)"
+
+
 class TestExporter(unittest.TestCase):
     """Test exporters."""
 
@@ -38,25 +46,15 @@ class TestExporter(unittest.TestCase):
         """Display the entire diff in tests."""
         self.maxDiff = None
 
-    def test_class_name(self) -> None:
-        """Tests the base name."""
-        self.assertEqual(fl.Exporter().class_name, "Exporter")
-
-    def test_to_string(self) -> None:
-        """Test the base method."""
-        with self.assertRaises(NotImplementedError):
-            fl.Exporter().to_string(None)
-
     def test_to_file(self) -> None:
         """Test the exporter saves to file."""
-        exporter = fl.Exporter()
-        exporter.to_string = MagicMock(return_value="MagicMock Test")  # type: ignore
+        exporter = BaseExporter()
         path = tempfile.mkstemp(text=True)[1]
 
         exporter.to_file(path, object())
 
         with open(path) as exported:
-            self.assertEqual("MagicMock Test", exported.read())
+            self.assertEqual("BaseExporter.to_string(self, instance)", exported.read())
 
         os.remove(path)
 
@@ -1160,8 +1158,8 @@ class TestExporters(unittest.TestCase):
         import logging
         import pathlib
 
-        fl.lib.configure_logging(logging.INFO)
-        fl.lib.decimals = 3
+        fl.settings.logger.setLevel(logging.INFO)
+        fl.settings.decimals = 3
 
         path = "/tmp/source/"
         examples = pathlib.Path(path)
@@ -1173,7 +1171,7 @@ class TestExporters(unittest.TestCase):
         for t in threads:
             print(t.result())
 
-        self.assertEqual(fl.lib.decimals, 3)
+        self.assertEqual(fl.settings.decimals, 3)
 
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
@@ -1211,10 +1209,10 @@ class TestExporters(unittest.TestCase):
             start = time.time()
             target_path = Path("/tmp/fl/") / path.parent.parent.stem / path.parent.stem
             target_path.mkdir(parents=True, exist_ok=True)
-            fl.lib.decimals = 3
-            fl.lib.logger.info(str(path) + f" -> {exporter.class_name}")
+            fl.settings.decimals = 3
+            fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
-                fl.lib.decimals = 9
+                fl.settings.decimals = 9
                 exporter.to_file_from_scope(
                     target_path / (file_name + ".fld"), engine, 1024
                 )
@@ -1225,8 +1223,8 @@ class TestExporters(unittest.TestCase):
             elif isinstance(exporter, fl.PythonExporter):
                 exporter.to_file(target_path / (file_name + ".py"), engine)
 
-            fl.lib.logger.info(
-                str(path) + f" -> {exporter.class_name}\t{time.time() - start}"
+            fl.settings.logger.info(
+                str(path) + f" -> {fl.Op.class_name(exporter)}\t{time.time() - start}"
             )
 
 

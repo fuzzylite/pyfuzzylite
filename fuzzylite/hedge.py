@@ -27,19 +27,20 @@ __all__ = [
     "HedgeLambda",
     "HedgeFunction",
 ]
-
 import typing
+from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
 
-from .types import Scalar, scalar
+from .library import scalar
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
 
 
-class Hedge:
+class Hedge(ABC):
     """The Hedge class is the abstract class for hedges. Hedges are utilized
     within the Antecedent and Consequent of a Rule in order to modify the
     membership function of a linguistic Term.
@@ -59,6 +60,7 @@ class Hedge:
         """
         return self.__class__.__name__.lower()
 
+    @abstractmethod
     def hedge(self, x: Scalar) -> Scalar:
         """Computes the hedge for the membership function value $x$
         @param x is a membership function value

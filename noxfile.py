@@ -17,7 +17,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 
 import nox
 
-nox.options.sessions = ["check", "freeze", "lint", "test"]
+nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
 
 
 @nox.session(python=False)

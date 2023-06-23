@@ -24,10 +24,10 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from . import nan
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .exporter import FllExporter
+from .library import nan, settings
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
 from .types import ScalarArray
@@ -49,6 +49,7 @@ class Engine:
     class Type(enum.Enum):
         """Determine type of engine."""
 
+        # TODO: change to enum.auto()
         (
             # /**Unknown: When output variables have no defuzzifiers*/
             Unknown,
@@ -130,9 +131,7 @@ class Engine:
         @param defuzzifier is a defuzzifier registered in the DefuzzifierFactory
         @param activation is an activation method registered in the ActivationFactory
         """
-        from . import lib
-
-        factory = lib.factory_manager
+        factory = settings.factory_manager
         if isinstance(conjunction, str):
             conjunction = factory.tnorm.construct(conjunction)
         if isinstance(disjunction, str):
@@ -284,13 +283,11 @@ class Engine:
         @see RuleBlock::activate()
         @see OutputVariable::defuzzify().
         """
-        from . import lib
-
         # Clear output values
         for variable in self.output_variables:
             variable.fuzzy.clear()
 
-        if lib.debugging:
+        if settings.debugging:
             pass
 
         # Activate rule blocks
@@ -298,14 +295,14 @@ class Engine:
             if block.enabled:
                 block.activate()
 
-        if lib.debugging:
+        if settings.debugging:
             pass
 
         # Defuzzify output variables
         for variable in self.output_variables:
             variable.defuzzify()
 
-        if lib.debugging:
+        if settings.debugging:
             pass
 
     def is_ready(self) -> tuple[bool, str]:

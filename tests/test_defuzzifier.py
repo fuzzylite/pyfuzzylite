@@ -52,9 +52,9 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
             np.testing.assert_allclose(
                 obtained,
                 expected,
-                atol=fl.lib.atol,
-                rtol=fl.lib.rtol,
-                err_msg=f"{self.actual.class_name}({term}) = {obtained}, but expected {expected}",
+                atol=fl.settings.atol,
+                rtol=fl.settings.rtol,
+                err_msg=f"{fl.Op.class_name(self.actual)}({term}) = {obtained}, but expected {expected}",
             )
         if vectorized:
 
@@ -75,8 +75,8 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
             np.testing.assert_allclose(
                 obtained_vector,
                 expected_vector,
-                atol=fl.lib.atol,
-                rtol=fl.lib.rtol,
+                atol=fl.settings.atol,
+                rtol=fl.settings.rtol,
             )
         return self
 
@@ -91,25 +91,6 @@ class NanTerm(fl.Term):
 
 class TestDefuzzifier(unittest.TestCase):
     """Tests the defuzzifiers."""
-
-    def test_defuzzifier(self) -> None:
-        """Test the base class methods."""
-        with self.assertRaises(NotImplementedError):
-            fl.Defuzzifier().configure("")
-        with self.assertRaises(NotImplementedError):
-            fl.Defuzzifier().parameters()
-        with self.assertRaises(NotImplementedError):
-            fl.Defuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
-
-    def test_integral_defuzzifier(self) -> None:
-        """Test integral defuzzifier default values and methods."""
-        DefuzzifierAssert(self, fl.IntegralDefuzzifier()).exports_fll(
-            "IntegralDefuzzifier 1000"
-        ).has_parameters("1000").configured_as("300").exports_fll(
-            "IntegralDefuzzifier 300"
-        )
-        with self.assertRaises(NotImplementedError):
-            fl.IntegralDefuzzifier().defuzzify(fl.Term(), fl.nan, fl.nan)
 
     def test_bisector(self) -> None:
         """Test the bisector defuzzifier."""
@@ -442,28 +423,21 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_weighted_defuzzifier(self) -> None:
         """Test the weighted defuzzifier and its methods."""
+
+        class BaseWeightedDefuzzifier(fl.WeightedDefuzzifier):
+            def defuzzify(
+                self, term: fl.Term, minimum: float = fl.nan, maximum: float = fl.nan
+            ) -> Scalar:
+                return fl.nan
+
         self.assertEqual(
-            fl.WeightedDefuzzifier(None).type,  # type: ignore
-            fl.WeightedDefuzzifier.Type.Automatic,
+            {BaseWeightedDefuzzifier().type},
+            {fl.WeightedDefuzzifier.Type.Automatic},
         )
 
-        defuzzifier = fl.WeightedDefuzzifier(None)  # type: ignore
+        defuzzifier = BaseWeightedDefuzzifier()
         defuzzifier.configure("TakagiSugeno")
         self.assertEqual(defuzzifier.type, fl.WeightedDefuzzifier.Type.TakagiSugeno)
-
-        defuzzifier.type = None  # type: ignore
-        defuzzifier.configure("")
-        self.assertEqual(defuzzifier.type, None)
-
-        with self.assertRaises(KeyError):
-            defuzzifier.configure("ABC")
-
-        with self.assertRaises(ValueError) as value_error:
-            defuzzifier.defuzzify(fl.Term(), fl.nan, fl.nan)
-        self.assertEqual(
-            "expected an Aggregated term, but found <class 'fuzzylite.term.Term'>",
-            str(value_error.exception),
-        )
 
         self.assertEqual(
             defuzzifier.infer_type(fl.Constant()),
@@ -472,8 +446,8 @@ class TestDefuzzifier(unittest.TestCase):
         with self.assertRaises(TypeError) as type_error:
             defuzzifier.infer_type(fl.Triangle())
         self.assertEqual(
+            "cannot infer type of BaseWeightedDefuzzifier from term: _ Triangle nan nan nan",
             str(type_error.exception),
-            "cannot infer type of WeightedDefuzzifier from term: _ Triangle nan nan nan",
         )
 
     def test_infer_type(self) -> None:
@@ -743,8 +717,10 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_all_defuzzifiers_return_nan_when_empty_output(self) -> None:
         """Test that all defuzzifiers return NaN when the output is empty."""
-        self.assertTrue(bool(fl.lib.factory_manager.defuzzifier.constructors))
-        for defuzzifier in fl.lib.factory_manager.defuzzifier.constructors.values():
+        self.assertTrue(bool(fl.settings.factory_manager.defuzzifier.constructors))
+        for (
+            defuzzifier
+        ) in fl.settings.factory_manager.defuzzifier.constructors.values():
             expected = np.nan
             obtained = defuzzifier().defuzzify(fl.Aggregated(), -1, 1)
             np.testing.assert_equal(expected, obtained)
