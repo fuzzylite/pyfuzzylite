@@ -19,20 +19,16 @@ from __future__ import annotations
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
 import contextlib
-import typing
 from collections.abc import Iterable
 
 import numpy as np
 
+from .defuzzifier import Defuzzifier
 from .library import inf, nan, representation, scalar
 from .norm import SNorm
 from .operation import Op
-from .term import Aggregated
-
-if typing.TYPE_CHECKING:
-    from .defuzzifier import Defuzzifier
-    from .term import Term
-    from .types import Scalar
+from .term import Aggregated, Term
+from .types import Scalar
 
 
 class Variable:

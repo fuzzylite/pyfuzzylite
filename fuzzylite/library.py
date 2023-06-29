@@ -44,9 +44,10 @@ from typing import Any, Callable, Final, overload
 import numpy as np
 from numpy import inf, nan
 
+from .types import Array, Scalar, ScalarArray
+
 if typing.TYPE_CHECKING:
     from .factory import FactoryManager
-    from .types import Array, Scalar, ScalarArray
 
 np.seterr(invalid="ignore", divide="ignore")
 

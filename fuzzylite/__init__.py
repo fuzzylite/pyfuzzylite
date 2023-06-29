@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+from . import examples  # noqa
 from .activation import *
 from .defuzzifier import *
 from .engine import *

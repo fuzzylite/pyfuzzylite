@@ -30,7 +30,6 @@ __all__ = [
 ]
 
 import enum
-import typing
 import warnings
 from abc import ABC, abstractmethod
 
@@ -39,9 +38,7 @@ import numpy as np
 from .library import nan, representation, scalar
 from .operation import Op
 from .term import Activated, Aggregated, Constant, Function, Linear, Term
-
-if typing.TYPE_CHECKING:
-    from .types import Scalar
+from .types import Scalar
 
 
 class Defuzzifier(ABC):

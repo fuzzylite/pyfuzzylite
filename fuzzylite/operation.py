@@ -23,16 +23,13 @@ __all__ = [
 
 import builtins
 import inspect
-import typing
 from collections.abc import Sequence
 from typing import Any, Callable
 
 import numpy as np
 
 from .library import scalar, settings
-
-if typing.TYPE_CHECKING:
-    from .types import Array, Scalar, ScalarArray
+from .types import Array, Scalar, ScalarArray
 
 
 class Operation:

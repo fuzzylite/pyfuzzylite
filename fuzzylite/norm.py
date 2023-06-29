@@ -49,10 +49,10 @@ import numpy as np
 
 from .library import representation, scalar
 from .operation import Op
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
-    from .types import Scalar
 
 
 class Norm(ABC):

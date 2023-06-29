@@ -27,17 +27,15 @@ __all__ = [
     "HedgeLambda",
     "HedgeFunction",
 ]
-import typing
+
 from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
 
 from .library import representation, scalar
-
-if typing.TYPE_CHECKING:
-    from .term import Function
-    from .types import Scalar
+from .term import Function
+from .types import Scalar
 
 
 class Hedge(ABC):

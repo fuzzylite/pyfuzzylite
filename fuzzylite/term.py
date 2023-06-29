@@ -58,10 +58,10 @@ from .exporter import FllExporter
 from .library import array, inf, nan, representation, scalar, settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
+from .types import Scalar, ScalarArray
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
-    from .types import Scalar, ScalarArray
 
 
 class Term(ABC):

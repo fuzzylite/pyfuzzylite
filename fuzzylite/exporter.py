@@ -29,6 +29,7 @@ import numpy as np
 
 from .library import representation, settings, to_float
 from .operation import Op
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -37,7 +38,6 @@ if typing.TYPE_CHECKING:
     from .norm import Norm
     from .rule import Rule, RuleBlock
     from .term import Term
-    from .types import Scalar
     from .variable import InputVariable, OutputVariable, Variable
 
 

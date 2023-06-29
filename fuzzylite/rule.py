@@ -35,6 +35,7 @@ from .hedge import Any
 from .library import array, nan, representation, scalar, settings
 from .norm import SNorm, TNorm
 from .operation import Op
+from .types import Scalar
 from .variable import InputVariable, OutputVariable
 
 if typing.TYPE_CHECKING:
@@ -42,7 +43,6 @@ if typing.TYPE_CHECKING:
     from .engine import Engine
     from .hedge import Hedge
     from .term import Term
-    from .types import Scalar
     from .variable import Variable
 
 

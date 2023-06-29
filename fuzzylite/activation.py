@@ -30,19 +30,15 @@ __all__ = [
 import enum
 import heapq
 import operator
-import typing
 from abc import ABC, abstractmethod
+from typing import Callable
 
 import numpy as np
 
 from .library import representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
-
-if typing.TYPE_CHECKING:
-    from typing import Callable
-
-    from .types import Array, Scalar
+from .types import Array, Scalar
 
 
 class Activation(ABC):

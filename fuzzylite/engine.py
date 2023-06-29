@@ -20,7 +20,6 @@ __all__ = ["Engine"]
 
 import copy
 import enum
-import typing
 from collections.abc import Iterable
 
 import numpy as np
@@ -31,10 +30,8 @@ from .library import nan, representation, settings
 from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import RuleBlock
+from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
-
-if typing.TYPE_CHECKING:
-    from .types import ScalarArray
 
 
 class Engine:
