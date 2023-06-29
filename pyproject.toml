@@ -63,7 +63,6 @@ black = "^23.3.0"             # Code formatting
 coverage = "^7.2.3"           # Code coverage
 mypy = "^1.2.0"               # Static analysis
 poetry-bumpversion = "^0.3.0" # Version management
-pyhamcrest = "^2.0.4"         # Test Driven Development
 pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
@@ -174,23 +173,19 @@ convention = "google"
 
 
 [tool.pyright]
-include = ["fuzzylite", "noxfile.py", "tests"]
+include = ["fuzzylite/", "noxfile.py", "tests/"]
+pythonVersion = "3.9"
+# strict =  ["fuzzylite/", "noxfile.py", "tests/"] # This is too strict, but useful at times
 venv = ".venv"
 
 reportMissingImports = true
 reportMissingTypeStubs = false
-
-pythonVersion = "3.9"
-
 
 [tool.mypy]
 python_version = "3.9"
 strict = true
 exclude = []
 incremental = true
-
-
-#plugins = "numpy.typing.mypy_plugin"
 
 verbosity = 0
 show_traceback = true
@@ -199,20 +194,6 @@ dump_type_stats = false
 dump_inference_stats = false
 
 [[tool.mypy.overrides]]
-# ignore warnings of fl.nan not being explicitly exported.
-module = "fuzzylite"
-implicit_reexport = true
-
-
-[[tool.mypy.overrides]]
-# ignore warnings of fl.nan not being explicitly exported.
-module = "numpy"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "fuzzylite.importer"
-disable_error_code = ["type-abstract"]
-
-[[tool.mypy.overrides]]
+# ignore errors of abstract types used in factories
 module = "fuzzylite.factory"
 disable_error_code = ["type-abstract"]

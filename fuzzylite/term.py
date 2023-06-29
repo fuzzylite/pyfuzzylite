@@ -48,24 +48,22 @@ __all__ = [
 import enum
 import re
 import typing
+from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
 from typing import Any, Callable, SupportsFloat, Union
 
 import numpy as np
 
 from .exporter import FllExporter
-from .library import array, inf, isnan, nan, scalar, settings, to_float
+from .library import array, inf, nan, representation, scalar, settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
-from .types import Scalar, ScalarArray
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
+    from .types import Scalar, ScalarArray
 
-from abc import ABC, abstractmethod
 
-
-# TODO: optimise numpy expressions, maybe using indexes instead of np.where
 class Term(ABC):
     """The Term class is the abstract class for linguistic terms. The linguistic
     terms in this library can be divided in four groups as: `basic`,
@@ -108,7 +106,14 @@ class Term(ABC):
         :return the representation of the term in FuzzyLite Language
         @see FllExporter.
         """
-        return FllExporter().term(self)
+        return Op.to_fll(self)
+
+    def __repr__(self) -> str:
+        """Returns the representation of the term in the FuzzyLite Language
+        :return the representation of the term in FuzzyLite Language
+        @see FllExporter.
+        """
+        return representation.as_constructor(self)
 
     def parameters(self) -> str:
         """Returns the parameters to configure the term. The parameters are
@@ -282,6 +287,15 @@ class Activated(Term):
         )
         return y.squeeze()  # type:ignore
 
+    def __repr__(self) -> str:
+        """Return the representation of the term."""
+        fields = {
+            "term": self.term,
+            "degree": self.degree,
+            "implication": self.implication,
+        }
+        return representation.as_constructor(self, fields)
+
 
 class Aggregated(Term):
     """The Aggregated class is a special Term that stores a fuzzy set with the
@@ -318,10 +332,7 @@ class Aggregated(Term):
         self.minimum = minimum
         self.maximum = maximum
         self.aggregation = aggregation
-        # TODO: convert list of terms to dictionary
-        self.terms: list[Activated] = []
-        if terms:
-            self.terms.extend(terms)
+        self.terms = list(terms) if terms else []
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -395,6 +406,12 @@ class Aggregated(Term):
     def clear(self) -> None:
         """Clears the list of activated terms."""
         self.terms.clear()
+
+    def __repr__(self) -> str:
+        """Return the representation of the term."""
+        fields = vars(self).copy()
+        fields.pop("height")
+        return representation.as_constructor(self, fields)
 
 
 class Arc(Term):
@@ -693,6 +710,12 @@ class Constant(Term):
         super().__init__(name)
         self.value = value
 
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        fields = vars(self).copy()
+        fields.pop("height")
+        return representation.as_constructor(self, fields)
+
     def membership(self, x: Scalar) -> Scalar:
         """Computes the membership function evaluated at $x$
         @param x is irrelevant
@@ -827,8 +850,6 @@ class Discrete(Term):
               $y_{\min}$ and $y_{\max}$is are the membership functions
                    of $\mu(x_{\min})$ and $\mu(x_{\max})$ (respectively).
         """
-        if self.values is None:
-            raise ValueError("expected xy coordinates to be set, but it is None")
         if self.values.size == 0:
             raise ValueError("expected xy to contain coordinate pairs, but it is empty")
         if self.values.ndim != 2:
@@ -1113,7 +1134,14 @@ class Linear(Term):
         self.coefficients = coefficients or []
         self.engine = engine
 
-    def membership(self, _: Scalar) -> Scalar:
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        fields = vars(self).copy()
+        fields.pop("height")
+        fields["engine"] = Ellipsis
+        return representation.as_constructor(self, fields)
+
+    def membership(self, x: Scalar) -> Scalar:
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
         where $v_i$ is the value of the input variable $i$ registered
         in the Linear::getEngine()
@@ -1865,7 +1893,7 @@ class Trapezoid(Term):
         self.top_left = top_left
         self.top_right = top_right
         self.bottom_right = bottom_right
-        if isnan(top_right) and isnan(bottom_right):
+        if Op.isnan(top_right) and Op.isnan(bottom_right):
             self.bottom_right = top_left
             range_ = self.bottom_right - self.bottom_left
             self.top_left = self.bottom_left + range_ * 1.0 / 5.0
@@ -1967,7 +1995,7 @@ class Triangle(Term):
         self.left = left
         self.top = top
         self.right = right
-        if isnan(right):
+        if Op.isnan(right):
             self.top = 0.5 * (left + top)
             self.right = top
 
@@ -2277,8 +2305,6 @@ class Function(Term):
             """
             result = scalar(nan)
             if self.element:
-                if self.element.method is None:
-                    raise ValueError("expected a method reference, but found none")
                 arity = self.element.arity
                 if arity == 0:
                     result = self.element.method()
@@ -2319,7 +2345,7 @@ class Function(Term):
             if not node:
                 return self.prefix(self)
 
-            if not isnan(node.constant):
+            if not Op.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
@@ -2342,7 +2368,7 @@ class Function(Term):
             if not node:
                 return self.infix(self)
 
-            if not isnan(node.constant):
+            if not Op.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
@@ -2375,7 +2401,7 @@ class Function(Term):
             if not node:
                 return self.postfix(self)
 
-            if not isnan(node.constant):
+            if not Op.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
@@ -2407,11 +2433,18 @@ class Function(Term):
         self.root: Function.Node | None = None
         self.formula = formula
         self.engine = engine
-        self.variables: dict[str, Scalar] = {}
-        if variables:
-            self.variables.update(variables)
+        self.variables: dict[str, Scalar] = variables.copy() if variables else {}
         if load:
             self.load()
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        fields = {
+            "name": self.name,
+            "formula": self.formula,
+            "engine": ...,
+        }
+        return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:
         """Returns the parameters of the term as `formula`

@@ -27,9 +27,8 @@ from typing import IO, Any
 
 import numpy as np
 
-from .library import isinf, isnan, settings, to_float
+from .library import representation, settings, to_float
 from .operation import Op
-from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .activation import Activation
@@ -38,6 +37,7 @@ if typing.TYPE_CHECKING:
     from .norm import Norm
     from .rule import Rule, RuleBlock
     from .term import Term
+    from .types import Scalar
     from .variable import InputVariable, OutputVariable, Variable
 
 
@@ -51,6 +51,14 @@ class Exporter(ABC):
     @see Importer
     @since 4.0
     """
+
+    def __str__(self) -> str:
+        """Returns a string representation of the object in the FuzzyLite Language."""
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
     @abstractmethod
     def to_string(self, instance: object) -> str:
@@ -403,9 +411,9 @@ class PythonExporter(Exporter):
         if isinstance(x, str):
             return f'"{x}"'
         if isinstance(x, float):
-            if isinf(x):
+            if Op.isinf(x):
                 return ("" if x > 0 else "-") + "fl.inf"
-            if isnan(x):
+            if Op.isnan(x):
                 return "fl.nan"
             return Op.str(x)
         if isinstance(x, bool):

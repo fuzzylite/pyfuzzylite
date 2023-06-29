@@ -47,11 +47,12 @@ from typing import Callable
 
 import numpy as np
 
-from .library import scalar
-from .types import Scalar
+from .library import representation, scalar
+from .operation import Op
 
 if typing.TYPE_CHECKING:
     from .term import Function
+    from .types import Scalar
 
 
 class Norm(ABC):
@@ -66,9 +67,11 @@ class Norm(ABC):
 
     def __str__(self) -> str:
         """Gets a string representation in the FuzzyLite Language."""
-        from .exporter import FllExporter
+        return Op.to_fll(self)
 
-        return FllExporter().norm(self)
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
     @abstractmethod
     def compute(self, a: Scalar, b: Scalar) -> Scalar:

@@ -21,6 +21,7 @@ import unittest
 import numpy as np
 
 import fuzzylite as fl
+import fuzzylite.examples.mamdani.SimpleDimmer
 from tests.assert_component import BaseAssert
 
 
@@ -340,6 +341,19 @@ class TestEngine(unittest.TestCase):
         names = ["X", "Y", "Z"]
         for i, iv in enumerate(flc.output_variables):
             self.assertEqual(iv.name, names[i])
+
+    def test_repr(self) -> None:
+        """Tests repr."""
+        code = fl.repr(fuzzylite.examples.mamdani.SimpleDimmer.engine)
+        engine = eval(code)
+        engine.input_variables[0].value = 1 / 3
+        engine.process()
+        np.testing.assert_allclose(
+            engine.output_variables[0].value,
+            0.659,
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
+        )
 
 
 if __name__ == "__main__":

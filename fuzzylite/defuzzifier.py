@@ -30,15 +30,18 @@ __all__ = [
 ]
 
 import enum
+import typing
 import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
 
-from .library import nan, scalar
+from .library import nan, representation, scalar
 from .operation import Op
 from .term import Activated, Aggregated, Constant, Function, Linear, Term
-from .types import Scalar
+
+if typing.TYPE_CHECKING:
+    from .types import Scalar
 
 
 class Defuzzifier(ABC):
@@ -49,6 +52,14 @@ class Defuzzifier(ABC):
     @see WeightedDefuzzifier
     @since 4.0
     """
+
+    def __str__(self) -> str:
+        """Returns a string representation of the object in the FuzzyLite Language."""
+        return Op.to_fll(self)
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
     def configure(  # noqa: B027 empty method in an abstract base class
         self, parameters: str
@@ -96,12 +107,6 @@ class IntegralDefuzzifier(Defuzzifier):
         self.resolution = (
             resolution if resolution else IntegralDefuzzifier.default_resolution
         )
-
-    def __str__(self) -> str:
-        """Returns the FLL code for the defuzzifier
-        @return FLL code for the activation method.
-        """
-        return f"{Op.class_name(self)} {self.parameters()}"
 
     def parameters(self) -> str:
         """Returns the parameters to configure the defuzzifier
@@ -335,10 +340,6 @@ class WeightedDefuzzifier(Defuzzifier):
         else:
             self.type = type
 
-    def __str__(self) -> str:
-        """Gets a string representation of the defuzzifier."""
-        return f"{Op.class_name(self)} {self.parameters()}"
-
     def parameters(self) -> str:
         """Gets the type of weighted defuzzifier."""
         return self.type.name
@@ -450,7 +451,7 @@ class WeightedAverage(WeightedDefuzzifier):
             weighted_sum = weighted_sum + w * z
             weights = weights + w
 
-        y = weighted_sum / weights
+        y = (weighted_sum / weights).squeeze()  # type: ignore
         return y
 
 
@@ -512,5 +513,5 @@ class WeightedSum(WeightedDefuzzifier):
         y = weighted_sum / weights
         # This is done to get "invalid" output values from activated terms with zero activation degrees.
         # Thus, returning nan values in those cases. A regular weighted sum would result in zero.
-        y = y * weights
+        y = (y * weights).squeeze()  # type: ignore
         return y

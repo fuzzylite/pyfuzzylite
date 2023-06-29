@@ -149,6 +149,10 @@ class AssertAntecedent:
                     variable.value = values[index]  # type: ignore
                 elif isinstance(variable, fl.OutputVariable):
                     variable.fuzzy.terms = values[index]  # type: ignore
+                else:
+                    raise TypeError(
+                        f"expected an InputVariable or OutputVariable, but got {type(variable)}"
+                    )
 
             for text, values in rules.items():
                 antecedent = fl.Antecedent(text)

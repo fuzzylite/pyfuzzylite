@@ -30,15 +30,19 @@ __all__ = [
 import enum
 import heapq
 import operator
+import typing
 from abc import ABC, abstractmethod
-from typing import Callable
 
 import numpy as np
 
-from .library import scalar, to_float
+from .library import representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
-from .types import Array, Scalar
+
+if typing.TYPE_CHECKING:
+    from typing import Callable
+
+    from .types import Array, Scalar
 
 
 class Activation(ABC):
@@ -98,8 +102,12 @@ class Activation(ABC):
         result = Op.class_name(self)
         parameters = self.parameters()
         if parameters:
-            result += f" {parameters}"
+            result += " " + parameters
         return result
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
 
 class General(Activation):

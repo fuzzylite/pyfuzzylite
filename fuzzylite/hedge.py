@@ -33,11 +33,11 @@ from typing import Callable
 
 import numpy as np
 
-from .library import scalar
-from .types import Scalar
+from .library import representation, scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
+    from .types import Scalar
 
 
 class Hedge(ABC):
@@ -67,6 +67,14 @@ class Hedge(ABC):
         @return the hedge of $x$.
         """
         raise NotImplementedError()
+
+    def __str__(self) -> str:
+        """Returns a string representation of the object in the FuzzyLite Language."""
+        return self.__class__.__name__.lower()
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
 
 class Any(Hedge):

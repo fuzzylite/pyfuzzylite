@@ -25,7 +25,7 @@ from typing import overload
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .engine import Engine
-from .library import settings, to_float
+from .library import representation, settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule, RuleBlock
@@ -41,6 +41,14 @@ class Importer(ABC):
     @see Exporter
     @since 4.0.
     """
+
+    def __str__(self) -> str:
+        """Returns a string representation of the object in the FuzzyLite Language."""
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
 
     @abstractmethod
     def from_string(self, fll: str) -> Engine:
@@ -254,8 +262,9 @@ class FllImporter(Importer):
                 f"expected format 'term: name Term [parameters]', but got '{fll}'"
             )
 
-        term = settings.factory_manager.term.construct(values[1])
-        term.name = Op.as_identifier(values[0])
+        term = settings.factory_manager.term.construct(
+            values[1], name=Op.as_identifier(values[0])
+        )
         term.update_reference(engine)
         if len(values) > 2:
             term.configure(values[2])

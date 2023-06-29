@@ -128,6 +128,7 @@ class TestFllExporter(unittest.TestCase):
                     rules=[fl.Rule.create("if a then z")],
                 )
             ],
+            load_rules=False,
         )
         self.assertEqual(
             fl.FllExporter().to_string(engine), fl.FllExporter().engine(engine)
@@ -367,6 +368,7 @@ engine.rule_blocks = []
                     rules=[fl.Rule.create("if a then z")],
                 )
             ],
+            load_rules=False,
         )
         self.assertEqual(
             fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine)
