@@ -92,7 +92,7 @@ class Engine:
         self.description = description
         self.input_variables = list(input_variables) if input_variables else []
         self.output_variables = list(output_variables) if output_variables else []
-        self.rule_blocks: list[RuleBlock] = list(rule_blocks) if rule_blocks else []
+        self.rule_blocks = list(rule_blocks) if rule_blocks else []
         if load_rules:
             for rb in self.rule_blocks:
                 rb.load_rules(self)

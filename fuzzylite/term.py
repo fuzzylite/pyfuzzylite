@@ -2426,7 +2426,7 @@ class Function(Term):
         """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("root")
-        fields.pop("engine")
+        fields["engine"] = Ellipsis
         return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:

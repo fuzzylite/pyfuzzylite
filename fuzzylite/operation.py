@@ -16,10 +16,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
-__all__ = [
-    "Operation",
-    "Op",
-]
+__all__ = ["Operation", "Op"]
 
 import builtins
 import inspect
@@ -326,9 +323,9 @@ class Operation:
     @staticmethod
     def to_fll(x: Any, /) -> str:
         """Returns a string representation of the given value."""
-        from .library import to_fll
+        from .library import representation
 
-        return to_fll(x)
+        return representation.fll.to_string(x)
 
     @staticmethod
     def str(x: Any, /, delimiter: str = " ") -> str:

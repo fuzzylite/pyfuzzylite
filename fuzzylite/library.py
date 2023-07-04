@@ -24,7 +24,6 @@ __all__ = [
     "repr",
     "representation",
     "Representation",
-    "to_fll",
     "scalar",
     "to_float",
     "array",
@@ -310,4 +309,3 @@ class Representation(reprlib.Repr):
 
 representation: Final[Representation] = Representation()
 repr: Final[Callable[[Any], str]] = representation.repr
-to_fll: Final[Callable[[Any], str]] = representation.fll.to_string

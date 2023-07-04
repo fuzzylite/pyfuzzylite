@@ -52,8 +52,7 @@ NilpotentMinimum Norm NormFunction NormLambda NormalizedSum Not Seldom Somewhat 
 
 importer FllImporter Importer
 
-library Information Representation Settings information representation repr settings
-array to_fll to_float scalar inf nan
+library Information Representation Settings information representation repr settings array to_float scalar inf nan
 
 norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
 EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum

@@ -9,11 +9,15 @@
 - All enum values are automatically assigned with enum.auto(), instead of manual assignments
 - New: Arc and SemiEllipse terms.
 - Using `from __future__ import annotations` in every file to use better type annotations
+- Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
+- Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
 - Many more tests and better structures for tests
+
 
 ## __init__.py
 - Changed: fl.inf, fl.nan, fl.isnan, fl.isinf now map to their numpy equivalents
-- Removed: fl.inf, fl.nan, fl.isnan, fl.isinf, moved to library.py
+- Changed: fl.isnan and fl.isinf moved to Op (use now: fl.Op.isnan, fl.Op.isinf)
+- Changed: fl.inf and fl.nan moved to library.py
 - Removed: fl.lib. See library.py for settings
 
 ## activation.py
@@ -33,6 +37,7 @@
 ## engine.py
 - New: Engine.input_values() and Engine.output_values() produce 2D matrices with their respective values
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
+- Changed: Engine constructor by default loads the rules on construction (ie, `load_rules=True`)
 
 ## exporter.py
 - Changed: Exporter is abstract
@@ -42,6 +47,7 @@
 ## factory.py
 - New: Arc and SemiEllipse added to TermFactory
 - New: ConstructionFactory.import_from automatically imports all the classes from the given fuzzylite module
+- New: ConstructionFactory.construct takes variadic parameters to configure the constructor
 - Changed: ConstructionFactory takes an optional dictionary of constructors
 - Changed: CloningFactory takes an optional dictionary of objects
 - Changed: FunctionFactory: Operators and Functions now mostly map to their equivalent methods in numpy, but preserving their names
@@ -58,7 +64,11 @@
 - New: Settings.float_type for the type of floats across the library is now np.float64, instead of the previous Python float
 - New: Settings.debugging is a property to get and set the debugging for logging purposes
 - New: Settings.rtol for relative tolerance across the library is 0.0
+- New: Settings.context to change settings within a specific context (eg, `with settings.context(decimals=10): ...`)
 - New: Information class that contains information about the library, and an `information` final instance to access the information
+- New: Representation class to represent objects as constructors in Python
+- New: fl.library.repr is a shortcut to use the representation class
+- New: Representation class contains a FuzzyLite Language Exporter
 - Changed: Settings.atol for absolute tolerance across the library is now 1e-03, instead of the previous abs_tolerance=1e-05
 
 ## norm.py
@@ -77,7 +87,6 @@
 - Removed: `pi` method.
 - Removed: `slots` parameter in `describe` method.
 - Removed: `scalar` method, moved to `library.py`
-
 
 ## rule.py
 - Changed: Expression is abstract
@@ -103,14 +112,14 @@
 - Removed: Discrete.Pair
 - Removed: Discrete.pairs_from, Discrete.values_from, Discrete.dict_from, Discrete.list_from
 
-
-
 ## new: types.py
 - New: fl.Scalar type to support float and numpy arrays
 - New: fl.ScalarArray type to support numpy arrays of floats
 - New: fl.Array (mapping to np.NDArray) to support numpy arrays of any type
 
 ## variable.py
+- New: constructor argument `value` in Variable, InputVariable, and OutputVariable (default: nan)
+- New: constructor argument `previous_value` in OutputVariable (default: nan)
 - Changed: OutputVariable.defuzzify is simpler and works with vectorized operations
 
 ## noxfile.py
@@ -121,21 +130,4 @@
 ## pyproject.py
 - New: numpy as a dependency
 - New: pyright configuration
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- Removed: pyhamcrest dependency for tests
