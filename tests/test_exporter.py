@@ -305,7 +305,7 @@ RuleBlock: rb
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
         with self.assertRaisesRegex(
-            ValueError, r"expected a fuzzylite object, but found 'object'"
+            TypeError, r"expected a fuzzylite object, but got <class 'object'>"
         ):
             fl.FllExporter().to_string(object())
 

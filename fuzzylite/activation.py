@@ -58,6 +58,16 @@ class Activation(ABC):
     @since 6.0
     """
 
+    def __str__(self) -> str:
+        """Returns the FLL code for the activation method
+        @return FLL code for the activation method.
+        """
+        return representation.fll.activation(self)
+
+    def __repr__(self) -> str:
+        """Return the canonical string representation of the object."""
+        return representation.as_constructor(self)
+
     @abstractmethod
     def activate(self, rule_block: RuleBlock) -> None:
         """Activates the rule block
@@ -90,20 +100,6 @@ class Activation(ABC):
                 "expected activation degree to be a single scalar, "
                 f"but got {elements} elements in '{activation_degree}'"
             )
-
-    def __str__(self) -> str:
-        """Returns the FLL code for the activation method
-        @return FLL code for the activation method.
-        """
-        result = Op.class_name(self)
-        parameters = self.parameters()
-        if parameters:
-            result += " " + parameters
-        return result
-
-    def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
-        return representation.as_constructor(self)
 
 
 class General(Activation):

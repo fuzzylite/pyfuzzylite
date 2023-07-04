@@ -30,7 +30,6 @@ import typing
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from .exporter import FllExporter
 from .hedge import Any
 from .library import array, nan, representation, scalar, settings
 from .norm import SNorm, TNorm
@@ -696,7 +695,7 @@ class Rule:
 
     def __str__(self) -> str:
         """Gets a string representation of the rule in the FuzzyLite Language."""
-        return FllExporter().rule(self)
+        return representation.fll.rule(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""
@@ -895,7 +894,7 @@ class RuleBlock:
         @return a string representation of the rule block in the  FuzzyLite
         Language.
         """
-        return Op.to_fll(self)
+        return representation.fll.rule_block(self)
 
     def __repr__(self) -> str:
         """Returns a string representation of the object in the FuzzyLite Language."""

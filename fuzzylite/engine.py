@@ -28,7 +28,6 @@ from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .library import nan, representation, settings
 from .norm import SNorm, TNorm
-from .operation import Op
 from .rule import RuleBlock
 from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
@@ -102,7 +101,7 @@ class Engine:
         """Returns the FLL code for the engine
         @return the FLL code for the engine.
         """
-        return Op.to_fll(self)
+        return representation.fll.engine(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""

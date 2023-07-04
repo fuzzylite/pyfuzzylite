@@ -23,7 +23,6 @@ __all__ = [
 
 import builtins
 import inspect
-from collections.abc import Sequence
 from typing import Any, Callable
 
 import numpy as np
@@ -327,9 +326,9 @@ class Operation:
     @staticmethod
     def to_fll(x: Any, /) -> str:
         """Returns a string representation of the given value."""
-        from .exporter import FllExporter
+        from .library import to_fll
 
-        return FllExporter().to_string(x)
+        return to_fll(x)
 
     @staticmethod
     def str(x: Any, /, delimiter: str = " ") -> str:
@@ -340,7 +339,7 @@ class Operation:
         """
         if isinstance(x, (float, np.floating)):
             return f"{x:.{settings.decimals}f}"
-        if isinstance(x, (np.ndarray, Sequence)):
+        if isinstance(x, (np.ndarray, list)):
             return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
         return builtins.str(x)
 

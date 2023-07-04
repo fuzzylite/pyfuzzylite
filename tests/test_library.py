@@ -52,8 +52,8 @@ NilpotentMinimum Norm NormFunction NormLambda NormalizedSum Not Seldom Somewhat 
 
 importer FllImporter Importer
 
-library Information Representation Settings information
-representation repr settings array to_float scalar inf nan
+library Information Representation Settings information representation repr settings
+array to_fll to_float scalar inf nan
 
 norm AlgebraicProduct AlgebraicSum BoundedDifference BoundedSum DrasticProduct DrasticSum
 EinsteinProduct EinsteinSum HamacherProduct HamacherSum SNorm TNorm UnboundedSum
@@ -69,13 +69,16 @@ SigmoidProduct Spike Term Trapezoid Triangle ZShape
 types Array Scalar ScalarArray
 
 variable InputVariable OutputVariable Variable
+
+__getattr__
 """
-        self.assertSetEqual(set(expected.split()), set(dir(fl)))
+        # TODO: remove __getattr__
+        self.assertSetEqual(set(expected.split()), set(vars(fl)))
 
     def test_library_vars(self) -> None:
         """Test the library variables."""
         __version__ = "8.0.0"
-        self.assertEqual(fl.__name__, "pyfuzzylite")
+        self.assertEqual(fl.__name__, "fuzzylite")
         self.assertEqual(fl.__version__, __version__)
         self.assertEqual(fl.__doc__, fl.information.description)
 

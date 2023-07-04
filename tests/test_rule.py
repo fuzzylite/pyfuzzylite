@@ -967,7 +967,7 @@ class TestRuleBlock(unittest.TestCase):
         RuleBlockAssert(self, fl.RuleBlock()).exports_fll(
             "\n".join(
                 [
-                    "RuleBlock: ",
+                    "RuleBlock:",
                     "  enabled: true",
                     "  conjunction: none",
                     "  disjunction: none",

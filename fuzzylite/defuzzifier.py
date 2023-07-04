@@ -52,7 +52,7 @@ class Defuzzifier(ABC):
 
     def __str__(self) -> str:
         """Returns a string representation of the object in the FuzzyLite Language."""
-        return Op.to_fll(self)
+        return representation.fll.defuzzifier(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""

@@ -27,7 +27,7 @@ from typing import IO, Any
 
 import numpy as np
 
-from .library import representation, settings, to_float
+from .library import settings, to_float
 from .operation import Op
 from .types import Scalar
 
@@ -44,12 +44,9 @@ if typing.TYPE_CHECKING:
 class Exporter(ABC):
     """The Exporter class is the abstract class for exporters to translate an
     Engine into different formats.
-
-    @todo declare methods for exporting other components (e.g., Variable)
-
     @author Juan Rada-Vilela, Ph.D.
     @see Importer
-    @since 4.0
+    @since 4.0.
     """
 
     def __str__(self) -> str:
@@ -58,6 +55,8 @@ class Exporter(ABC):
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""
+        from .library import representation
+
         return representation.as_constructor(self)
 
     @abstractmethod
@@ -100,202 +99,193 @@ class FllExporter(Exporter):
         self.indent = indent
         self.separator = separator
 
-    def to_string(self, instance: object) -> str:
+    def format(self, key: str | None, value: Any) -> str:
+        """Formats the arguments to produce a valid FLL from them."""
+        result = []
+        if key:
+            result.append(f"{key}:")
+        if value == "":
+            pass
+        elif value is None:
+            result.append("none")
+        elif isinstance(value, bool):
+            result.append(str(value).lower())
+        elif isinstance(value, float):
+            result.append(Op.str(value))
+        elif isinstance(value, (tuple, list, set)):
+            for v_i in value:
+                f_value = self.format(key=None, value=v_i)
+                if f_value:
+                    result.append(f_value)
+        else:
+            result.append(str(value))
+        return " ".join(result)
+
+    def to_string(self, obj: Any, /) -> str:
         """Returns a string representation of the FuzzyLite component
-        @param instance is the FuzzyLite component
+        @param obj is the FuzzyLite component
         @return a string representation of the FuzzyLite component.
         """
-        from .engine import Engine
-
-        if isinstance(instance, Engine):
-            return self.engine(instance)
-
-        from .variable import InputVariable, OutputVariable, Variable
-
-        if isinstance(instance, InputVariable):
-            return self.input_variable(instance)
-        if isinstance(instance, OutputVariable):
-            return self.output_variable(instance)
-        if isinstance(instance, Variable):
-            return self.variable(instance)
-
-        from .term import Term
-
-        if isinstance(instance, Term):
-            return self.term(instance)
-
-        from .defuzzifier import Defuzzifier
-
-        if isinstance(instance, Defuzzifier):
-            return self.defuzzifier(instance)
-
-        from .rule import Rule, RuleBlock
-
-        if isinstance(instance, RuleBlock):
-            return self.rule_block(instance)
-        if isinstance(instance, Rule):
-            return self.rule(instance)
-
-        from .norm import Norm
-
-        if isinstance(instance, Norm):
-            return self.norm(instance)
-
-        from .activation import Activation
-
-        if isinstance(instance, Activation):
-            return self.activation(instance)
-
-        raise ValueError(
-            f"expected a fuzzylite object, but found '{type(instance).__name__}'"
+        from . import (
+            Activation,
+            Defuzzifier,
+            Engine,
+            InputVariable,
+            Norm,
+            OutputVariable,
+            Rule,
+            RuleBlock,
+            Term,
+            Variable,
         )
 
-    def engine(self, engine: Engine) -> str:
+        if isinstance(obj, Engine):
+            return self.engine(obj)
+
+        if isinstance(obj, InputVariable):
+            return self.input_variable(obj)
+        if isinstance(obj, OutputVariable):
+            return self.output_variable(obj)
+        if isinstance(obj, Variable):
+            return self.variable(obj)
+
+        if isinstance(obj, Term):
+            return self.term(obj)
+
+        if isinstance(obj, Activation):
+            return self.activation(obj)
+        if isinstance(obj, Defuzzifier):
+            return self.defuzzifier(obj)
+        if isinstance(obj, Norm):
+            return self.norm(obj)
+
+        if isinstance(obj, RuleBlock):
+            return self.rule_block(obj)
+        if isinstance(obj, Rule):
+            return self.rule(obj)
+
+        raise TypeError(f"expected a fuzzylite object, but got {type(obj)}")
+
+    def engine(self, engine: Engine, /) -> str:
         """Returns a string representation of the engine
         @param engine is the engine
         @return a string representation of the engine.
         """
-        result = [f"Engine: {engine.name}"]
+        result = [self.format(Op.class_name(engine), engine.name)]
         if engine.description:
-            result += [f"{self.indent}description: {engine.description}"]
-        for input_variable in engine.input_variables:
-            result += [self.input_variable(input_variable)]
-        for output_variable in engine.output_variables:
-            result += [self.output_variable(output_variable)]
-        for rule_block in engine.rule_blocks:
-            result += [self.rule_block(rule_block)]
+            result += [self.indent + self.format("description", engine.description)]
+        result += [self.input_variable(iv) for iv in engine.input_variables]
+        result += [self.output_variable(ov) for ov in engine.output_variables]
+        result += [self.rule_block(rb) for rb in engine.rule_blocks]
         result += [""]
         return self.separator.join(result)
 
-    def variable(self, v: Variable) -> str:
+    def variable(self, variable: Variable, /, terms: bool = True) -> str:
         """Returns a string representation of the variable
-        @param v is the variable
+        @param variable is the variable
         @return a string representation of the variable.
-
-        TODO: rename v to variable
         """
-        result = [f"Variable: {v.name}"]
-        if v.description:
-            result += [f"{self.indent}description: {v.description}"]
+        result = [self.format(Op.class_name(variable), variable.name)]
+        if variable.description:
+            result += [self.indent + self.format("description", variable.description)]
         result += [
-            f"{self.indent}enabled: {str(v.enabled).lower()}",
-            f"{self.indent}range: {' '.join([Op.str(v.minimum), Op.str(v.maximum)])}",
-            f"{self.indent}lock-range: {str(v.lock_range).lower()}",
+            self.indent + self.format("enabled", variable.enabled),
+            self.indent + self.format("range", (variable.minimum, variable.maximum)),
+            self.indent + self.format("lock-range", variable.lock_range),
         ]
-        if v.terms:
-            result += [f"{self.indent}{self.term(term)}" for term in v.terms]
+        if terms and variable.terms:
+            result += [(self.indent + self.term(term)) for term in variable.terms]
         return self.separator.join(result)
 
-    def input_variable(self, iv: InputVariable) -> str:
+    def input_variable(self, variable: InputVariable, /) -> str:
         """Returns a string representation of the input variable
-        @param iv is the input variable
+        @param variable is the input variable
         @return a string representation of the input variable.
-
-        TODO: rename iv to input_variable
         """
-        result = [f"InputVariable: {iv.name}"]
-        if iv.description:
-            result += [f"{self.indent}description: {iv.description}"]
-        result += [
-            f"{self.indent}enabled: {str(iv.enabled).lower()}",
-            f"{self.indent}range: {' '.join([Op.str(iv.minimum), Op.str(iv.maximum)])}",
-            f"{self.indent}lock-range: {str(iv.lock_range).lower()}",
-        ]
-        if iv.terms:
-            result += [f"{self.indent}{self.term(term)}" for term in iv.terms]
-        return self.separator.join(result)
+        return self.variable(variable)
 
-    def output_variable(self, ov: OutputVariable) -> str:
+    def output_variable(self, variable: OutputVariable, /) -> str:
         """Returns a string representation of the output variable
-        @param ov is the variable
+        @param variable is the variable
         @return a string representation of the output variable.
-
-        TODO: rename ov to output_variable
         """
-        result = [f"OutputVariable: {ov.name}"]
-        if ov.description:
-            result += [f"{self.indent}description: {ov.description}"]
+        result = [self.variable(variable, terms=False)]
         result += [
-            f"{self.indent}enabled: {str(ov.enabled).lower()}",
-            f"{self.indent}range: {' '.join([Op.str(ov.minimum), Op.str(ov.maximum)])}",
-            f"{self.indent}lock-range: {str(ov.lock_range).lower()}",
-            f"{self.indent}aggregation: {self.norm(ov.aggregation)}",
-            f"{self.indent}defuzzifier: {self.defuzzifier(ov.defuzzifier)}",
-            f"{self.indent}default: {Op.str(ov.default_value)}",
-            f"{self.indent}lock-previous: {str(ov.lock_previous).lower()}",
+            self.indent + self.format("aggregation", self.norm(variable.aggregation)),
+            self.indent
+            + self.format("defuzzifier", self.defuzzifier(variable.defuzzifier)),
+            self.indent + self.format("default", variable.default_value),
+            self.indent + self.format("lock-previous", variable.lock_previous),
         ]
-        if ov.terms:
-            result += [f"{self.indent}{self.term(term)}" for term in ov.terms]
+        if variable.terms:
+            result += [(self.indent + self.term(term)) for term in variable.terms]
         return self.separator.join(result)
 
-    def rule_block(self, rb: RuleBlock) -> str:
+    def rule_block(self, rule_block: RuleBlock, /) -> str:
         """Returns a string representation of the rule block
-        @param rb is the rule block
+        @param rule_block is the rule block
         @return a string representation of the rule block.
-
-        TODO: rename rb to rule_block
         """
-        result = [f"RuleBlock: {rb.name}"]
-        if rb.description:
-            result += [f"{self.indent}description: {rb.description}"]
+        result = [self.format(Op.class_name(rule_block), rule_block.name)]
+        if rule_block.description:
+            result += [self.indent + self.format("description", rule_block.description)]
         result += [
-            f"{self.indent}enabled: {str(rb.enabled).lower()}",
-            f"{self.indent}conjunction: {self.norm(rb.conjunction)}",
-            f"{self.indent}disjunction: {self.norm(rb.disjunction)}",
-            f"{self.indent}implication: {self.norm(rb.implication)}",
-            f"{self.indent}activation: {self.activation(rb.activation)}",
+            self.indent + self.format("enabled", rule_block.enabled),
+            self.indent + self.format("conjunction", self.norm(rule_block.conjunction)),
+            self.indent + self.format("disjunction", self.norm(rule_block.disjunction)),
+            self.indent + self.format("implication", self.norm(rule_block.implication)),
+            self.indent
+            + self.format("activation", self.activation(rule_block.activation)),
         ]
-        if rb.rules:
-            result += [f"{self.indent}{self.rule(rule)}" for rule in rb.rules]
+        if rule_block.rules:
+            result += [self.indent + self.rule(rule) for rule in rule_block.rules]
         return self.separator.join(result)
 
-    def term(self, term: Term) -> str:
+    def term(self, term: Term, /) -> str:
         """Returns a string representation of the linguistic term
         @param term is the linguistic term
         @return a string representation of the linguistic term.
         """
-        result = ["term:", Op.as_identifier(term.name), Op.class_name(term)]
-        parameters = term.parameters()
-        if parameters:
-            result += [parameters]
-        return " ".join(result)
+        return self.format(
+            "term",
+            (Op.as_identifier(term.name), Op.class_name(term), term.parameters()),
+        )
 
-    def norm(self, norm: Norm | None) -> str:
+    def norm(self, norm: Norm | None, /) -> str:
         """Returns a string representation of the norm
         @param norm is the norm
         @return a string representation of the norm.
         """
         return Op.class_name(norm) if norm else "none"
 
-    def activation(self, activation: Activation | None) -> str:
+    def activation(self, activation: Activation | None, /) -> str:
         """Returns a string representation of the activation method
         @param activation is the activation method
         @return a string representation of the activation method.
         """
-        return Op.class_name(activation) if activation else "none"
+        if not activation:
+            return "none"
+        return self.format(
+            key=None, value=(Op.class_name(activation), activation.parameters())
+        )
 
-    def defuzzifier(self, defuzzifier: Defuzzifier | None) -> str:
+    def defuzzifier(self, defuzzifier: Defuzzifier | None, /) -> str:
         """Returns a string representation of the defuzzifier
         @param defuzzifier is the defuzzifier
         @return a string representation of the defuzzifier.
         """
         if not defuzzifier:
             return "none"
-        from .defuzzifier import IntegralDefuzzifier, WeightedDefuzzifier
+        return self.format(
+            key=None, value=(Op.class_name(defuzzifier), defuzzifier.parameters())
+        )
 
-        result = [Op.class_name(defuzzifier)]
-        if isinstance(defuzzifier, IntegralDefuzzifier):
-            result += [str(defuzzifier.resolution)]
-        elif isinstance(defuzzifier, WeightedDefuzzifier):
-            result += [defuzzifier.type.name]
-        return " ".join(result)
-
-    def rule(self, rule: Rule) -> str:
+    def rule(self, rule: Rule, /) -> str:
         """Returns a string representation of the rule
         @param rule is the rule
         @return a string representation of the rule.
         """
-        return f"rule: {rule.text}"
+        return self.format("rule", rule.text)
 
 
 class PythonExporter(Exporter):

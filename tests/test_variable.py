@@ -303,7 +303,7 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
 
     def exports_fll(self, fll: str) -> Self:
         """Assert exporting the output variable results in the expected FLL."""
-        self.test.assertEqual(fl.FllExporter().output_variable(self.actual), fll)
+        self.test.assertEqual(fll, fl.FllExporter().output_variable(self.actual))
         return self
 
     def activated_values(

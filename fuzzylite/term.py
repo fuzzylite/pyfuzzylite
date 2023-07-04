@@ -106,7 +106,7 @@ class Term(ABC):
         :return the representation of the term in FuzzyLite Language
         @see FllExporter.
         """
-        return Op.to_fll(self)
+        return representation.fll.term(self)
 
     def __repr__(self) -> str:
         """Returns the representation of the term in the FuzzyLite Language
@@ -132,7 +132,7 @@ class Term(ABC):
         result: list[str] = []
         if args:
             result.extend(map(Op.str, args))
-        if self.height and self.height != 1.0:
+        if not Op.is_close(self.height, 1.0):
             result.append(Op.str(self.height))
         return " ".join(result)
 
@@ -246,6 +246,15 @@ class Activated(Term):
         self.degree = degree
         self.implication = implication
 
+    def __repr__(self) -> str:
+        """Return the representation of the term."""
+        fields = {
+            "term": self.term,
+            "degree": self.degree,
+            "implication": self.implication,
+        }
+        return representation.as_constructor(self, fields)
+
     @property
     def degree(self) -> Scalar:
         """Gets the activation degree of the term."""
@@ -266,9 +275,7 @@ class Activated(Term):
         """
         name = self.term.name if self.term else "none"
         if self.implication:
-            result = (
-                f"{FllExporter().norm(self.implication)}({Op.str(self.degree)},{name})"
-            )
+            result = f"{self.implication}({Op.str(self.degree)},{name})"
         else:
             result = f"({Op.str(self.degree)}*{name})"
         return result
@@ -286,15 +293,6 @@ class Activated(Term):
             self.term.membership(x),
         )
         return y.squeeze()  # type:ignore
-
-    def __repr__(self) -> str:
-        """Return the representation of the term."""
-        fields = {
-            "term": self.term,
-            "degree": self.degree,
-            "implication": self.implication,
-        }
-        return representation.as_constructor(self, fields)
 
 
 class Aggregated(Term):
@@ -333,6 +331,12 @@ class Aggregated(Term):
         self.maximum = maximum
         self.aggregation = aggregation
         self.terms = list(terms) if terms else []
+
+    def __repr__(self) -> str:
+        """Return the representation of the term."""
+        fields = vars(self).copy()
+        fields.pop("height")
+        return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:
         """Returns the parameters of the term
@@ -406,12 +410,6 @@ class Aggregated(Term):
     def clear(self) -> None:
         """Clears the list of activated terms."""
         self.terms.clear()
-
-    def __repr__(self) -> str:
-        """Return the representation of the term."""
-        fields = vars(self).copy()
-        fields.pop("height")
-        return representation.as_constructor(self, fields)
 
 
 class Arc(Term):
@@ -2190,6 +2188,10 @@ class Function(Term):
             Operator = enum.auto()
             Function = enum.auto()
 
+            def __repr__(self) -> str:
+                """Returns the representation of the type as Python code (eg, Type.Operator)."""
+                return str(self)
+
         def __init__(
             self,
             name: str,
@@ -2221,20 +2223,11 @@ class Function(Term):
             self.precedence = precedence
             self.associativity = associativity
 
-        def __str__(self) -> str:
+        def __repr__(self) -> str:
             """Returns a description of the element and its members
             @return a description of the element and its members.
             """
-            result = [
-                f"name='{self.name}'",
-                f"description='{self.description}'",
-                f"element_type='{str(self.type)}'",
-                f"method='{str(self.method)}'",
-                f"arity={self.arity}",
-                f"precedence={self.precedence}",
-                f"associativity={self.associativity}",
-            ]
-            return f"{self.__class__.__name__}: {', '.join(result)}"
+            return representation.as_constructor(self)
 
         def is_function(self) -> bool:
             """Indicates whether the element is a Type::Function
@@ -2276,9 +2269,9 @@ class Function(Term):
             self.right = right
             self.left = left
 
-        def __str__(self) -> str:
+        def __repr__(self) -> str:
             """Gets a representation of the node in postfix notation."""
-            return self.postfix()
+            return representation.as_constructor(self)
 
         def value(self) -> str:
             """Gets the value in the following priority order:

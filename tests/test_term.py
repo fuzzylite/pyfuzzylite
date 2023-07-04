@@ -2361,10 +2361,10 @@ class TestFunction(unittest.TestCase):
             associativity=-1,
         )
         self.assertEqual(
+            "fl.Element(name='function', description='math function()', "
+            "type=Type.Function, method=<built-in function any>, arity=0, "
+            "precedence=0, associativity=-1)",
             str(element),
-            "Element: name='function', description='math function()', "
-            "element_type='Type.Function', method='<built-in function any>', arity=0, "
-            "precedence=0, associativity=-1",
         )
 
         element = fl.Function.Element(
@@ -2377,11 +2377,11 @@ class TestFunction(unittest.TestCase):
             1,
         )
         self.assertEqual(
+            "fl.Element(name='operator', description='math operator', "
+            "type=Type.Operator, "
+            "method=<built-in function add>, arity=2, "
+            "precedence=10, associativity=1)",
             str(element),
-            "Element: name='operator', description='math operator', "
-            "element_type='Type.Operator', "
-            "method='<built-in function add>', arity=2, "
-            "precedence=10, associativity=1",
         )
 
         self.assertEqual(str(element), str(copy.deepcopy(element)))

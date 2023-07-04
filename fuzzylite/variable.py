@@ -77,7 +77,7 @@ class Variable:
         Language
         @see FllExporter.
         """
-        return Op.to_fll(self)
+        return representation.fll.variable(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""
@@ -218,6 +218,15 @@ class InputVariable(Variable):
             value=value,
         )
 
+    def __str__(self) -> str:
+        """Returns the representation of the variable in the FuzzyLite
+        Language
+        @return a string representation of the variable in the FuzzyLite
+        Language
+        @see FllExporter.
+        """
+        return representation.fll.input_variable(self)
+
     def fuzzy_value(self) -> str:
         r"""Evaluates the membership function of the current input value $x$
         for each term $i$, resulting in a fuzzy input value in the form
@@ -333,6 +342,14 @@ class OutputVariable(Variable):
         self.lock_previous = lock_previous
         self.default_value = default_value
         self.previous_value = previous_value
+
+    def __str__(self) -> str:
+        """Gets a string representation of the variable in the FuzzyLite Language
+        @return a string representation of the variable in the FuzzyLite
+        Language
+        @see FllExporter.
+        """
+        return representation.fll.output_variable(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""

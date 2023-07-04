@@ -15,7 +15,6 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-from . import examples  # noqa
 from .activation import *
 from .defuzzifier import *
 from .engine import *
@@ -30,6 +29,16 @@ from .rule import *
 from .term import *
 from .types import *
 from .variable import *
+
+
+def __getattr__(name: str) -> object:
+    # temporal, to avoid recursion with examples instantiating Engines.
+    if name == "examples":
+        import fuzzylite.examples as examples
+
+        return examples
+    raise ModuleNotFoundError(f"module {__name__} has no attribute {name}")
+
 
 __name__ = information.name
 __doc__ = information.description

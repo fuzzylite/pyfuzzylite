@@ -24,6 +24,7 @@ __all__ = [
     "repr",
     "representation",
     "Representation",
+    "to_fll",
     "scalar",
     "to_float",
     "array",
@@ -203,7 +204,7 @@ settings: Final[Settings] = Settings()
 class Information:
     """Information about the library."""
 
-    name: str = "pyfuzzylite"
+    name: str = "fuzzylite"
     description: str = "a fuzzy logic control library in Python"
     license: str = "FuzzyLite License"
     author: str = "Juan Rada-Vilela, Ph.D."
@@ -238,6 +239,9 @@ class Representation(reprlib.Repr):
         for variable, value in limits.items():
             setattr(self, variable, value * increase_factor)
         self.maxlevel = 10  # except for recursion level
+        from .exporter import FllExporter
+
+        self.fll: Final[FllExporter] = FllExporter()
 
     def package_of(self, x: Any, /) -> str:
         """Returns the qualified class name of the given object.
@@ -302,3 +306,4 @@ class Representation(reprlib.Repr):
 
 representation: Final[Representation] = Representation()
 repr: Final[Callable[[Any], str]] = representation.repr
+to_fll: Final[Callable[[Any], str]] = representation.fll.to_string

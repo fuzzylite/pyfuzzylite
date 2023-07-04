@@ -48,7 +48,6 @@ from typing import Callable
 import numpy as np
 
 from .library import representation, scalar
-from .operation import Op
 from .types import Scalar
 
 if typing.TYPE_CHECKING:
@@ -67,7 +66,7 @@ class Norm(ABC):
 
     def __str__(self) -> str:
         """Gets a string representation in the FuzzyLite Language."""
-        return Op.to_fll(self)
+        return representation.fll.norm(self)
 
     def __repr__(self) -> str:
         """Return the canonical string representation of the object."""
