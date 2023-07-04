@@ -25,6 +25,7 @@ from typing import Callable, NoReturn
 
 import numpy as np
 from numpy import inf, nan
+from typing_extensions import Self
 
 import fuzzylite as fl
 from fuzzylite import Scalar
@@ -34,13 +35,13 @@ from tests.assert_component import BaseAssert
 class TermAssert(BaseAssert[fl.Term]):
     """Term assert."""
 
-    def has_name(self, name: str, height: float = 1.0) -> TermAssert:
+    def has_name(self, name: str, height: float = 1.0) -> Self:
         """Assert the term has the expected name and height."""
         self.test.assertEqual(self.actual.name, name)
         self.test.assertEqual(self.actual.height, height)
         return self
 
-    def takes_parameters(self, parameters: int) -> TermAssert:
+    def takes_parameters(self, parameters: int) -> Self:
         """Assert the term takes the number of parameters for configuration."""
         with self.test.assertRaises(ValueError) as error:
             self.actual.__class__().configure("")
@@ -52,26 +53,35 @@ class TermAssert(BaseAssert[fl.Term]):
             },
         )
 
+        too_many_parameters = " ".join(str(x + 1) for x in range(parameters + 2))
+        with self.test.assertRaises(ValueError) as error:
+            self.actual.__class__().configure(too_many_parameters)
+        self.test.assertIn(
+            str(error.exception),
+            {
+                f"expected {parameters} parameters, but got {parameters + 2}: '{too_many_parameters}'",
+                f"expected {parameters} parameters (or {parameters + 1} including height), but got {parameters + 2}: '{too_many_parameters}'",
+            },
+        )
+
         return self
 
-    def is_monotonic(self, monotonic: bool = True) -> TermAssert:
+    def is_monotonic(self, monotonic: bool = True) -> Self:
         """Assert the term is monotonic."""
         self.test.assertEqual(monotonic, self.actual.is_monotonic())
         return self
 
-    def is_not_monotonic(self) -> TermAssert:
+    def is_not_monotonic(self) -> Self:
         """Assert the term is not monotonic."""
         self.test.assertEqual(False, self.actual.is_monotonic())
         return self
 
-    def configured_as(self, parameters: str) -> TermAssert:
+    def configured_as(self, parameters: str) -> Self:
         """Configure the term with the parameters."""
         self.actual.configure(parameters)
         return self
 
-    def has_memberships(
-        self, x_mf: dict[float, float], height: float = 1.0
-    ) -> TermAssert:
+    def has_memberships(self, x_mf: dict[float, float], height: float = 1.0) -> Self:
         """Assert the term's membership function produces $f(x{_keys}) = mf_{values}$."""
         inputs = fl.scalar([x for x in x_mf])  # don't care
         expected = height * fl.scalar([mf for mf in x_mf.values()])
@@ -93,14 +103,14 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def membership_fails(
         self, x: float, exception: type[Exception], message: str
-    ) -> TermAssert:
+    ) -> Self:
         """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaises(exception) as error:
             self.actual.membership(x)
         self.test.assertEqual(str(error.exception), message, msg=f"when x={x:.3f}")
         return self
 
-    def has_tsukamotos(self, x_mf: dict[float, float]) -> TermAssert:
+    def has_tsukamotos(self, x_mf: dict[float, float]) -> Self:
         """Assert the term computes all Tsukamoto values correctly."""
         self.test.assertEqual(True, self.actual.is_monotonic())
         expected = fl.scalar([mf for mf in x_mf.values()])
@@ -118,7 +128,7 @@ class TermAssert(BaseAssert[fl.Term]):
         func: Callable[..., None],
         args: Sequence[str] = (),
         **keywords: dict[str, object],
-    ) -> TermAssert:
+    ) -> Self:
         """Applies function on the term with the arguments and keywords as parameters."""
         func(self.actual, *args, **keywords)
         return self
@@ -141,16 +151,18 @@ class TestTerm(unittest.TestCase):
                 """Returns nan for testing."""
                 return np.full_like(x, nan)
 
-        self.assertEqual(BaseTerm().name, "")
-        self.assertEqual(BaseTerm("X").name, "X")
-        self.assertEqual(BaseTerm("X").height, 1.0)
-        self.assertEqual(BaseTerm("X", 0.5).height, 0.5)
-
-        self.assertEqual(str(BaseTerm("xxx", 0.5)), "term: xxx BaseTerm 0.500")
-        self.assertEqual(BaseTerm().is_monotonic(), False)
-
-        # does nothing, for test coverage
-        BaseTerm().update_reference(None)
+        (
+            TermAssert(self, BaseTerm("x", 0.5))
+            .has_name("x", height=0.5)
+            .repr_is("BaseTerm(name='x', height=0.5)", with_alias="*", validate=False)
+            .repr_is(
+                "tests.test_term.BaseTerm(name='x', height=0.5)",
+                with_alias="",
+                validate=False,
+            )
+            .exports_fll("term: x BaseTerm 0.500")
+            .is_not_monotonic()
+        )
 
         discrete_base = BaseTerm().discretize(-1, 1, 10, midpoints=False)
         xy = {
@@ -194,6 +206,9 @@ class TestTerm(unittest.TestCase):
                 1.0,
                 fl.AlgebraicProduct(),
             ),
+        ).repr_is(
+            "fl.Activated(term=fl.Triangle(name='triangle', height=1.0, left=-0.4, top=0.0, right=0.4), "
+            "degree=1.0, implication=fl.AlgebraicProduct())"
         ).exports_fll(
             "term: _ Activated AlgebraicProduct(1.000,triangle)"
         ).is_not_monotonic().has_memberships(
@@ -259,6 +274,13 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, aggregated).exports_fll(
             "term: fuzzy_output Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]"
+        ).repr_is(
+            "fl.Aggregated(name='fuzzy_output', minimum=-1.0, maximum=1.0, "
+            "aggregation=fl.Maximum(), terms=[fl.Activated(term=fl.Triangle(name='LOW', "
+            "height=1.0, left=-1.0, top=-0.5, right=0.0), degree=0.6, "
+            "implication=fl.Minimum()), fl.Activated(term=fl.Triangle(name='MEDIUM', "
+            "height=1.0, left=-0.5, top=0.0, right=0.5), degree=0.4, "
+            "implication=fl.Minimum())])"
         ).is_not_monotonic().has_memberships(
             {
                 -0.5: 0.6,
@@ -299,8 +321,8 @@ class TestTerm(unittest.TestCase):
 
     def test_arc(self) -> None:
         """Test the concave term."""
-        TermAssert(self, fl.Arc("arc")).exports_fll(
-            "term: arc Arc nan nan"
+        TermAssert(self, fl.Arc("arc")).exports_fll("term: arc Arc nan nan").repr_is(
+            "fl.Arc(name='arc', height=1.0, start=fl.nan, end=fl.nan)"
         ).takes_parameters(2).is_monotonic().configured_as("-.50 .50").exports_fll(
             "term: arc Arc -0.500 0.500"
         ).has_memberships(
@@ -338,6 +360,8 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Arc("arc")).configured_as(".50 -.50").exports_fll(
             "term: arc Arc 0.500 -0.500"
+        ).repr_is(
+            "fl.Arc(name='arc', height=1.0, start=0.5, end=-0.5)"
         ).has_memberships(
             {
                 -1.0: 1.0,
@@ -447,7 +471,11 @@ class TestTerm(unittest.TestCase):
         """Test the bell term."""
         TermAssert(self, fl.Bell("bell")).exports_fll(
             "term: bell Bell nan nan nan"
-        ).takes_parameters(3).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.Bell(name='bell', height=1.0, center=fl.nan, width=fl.nan, slope=fl.nan)"
+        ).takes_parameters(
+            3
+        ).is_not_monotonic().configured_as(
             "0 0.25 3.0"
         ).exports_fll(
             "term: bell Bell 0.000 0.250 3.000"
@@ -470,6 +498,8 @@ class TestTerm(unittest.TestCase):
             "0 0.25 3.0 0.5"
         ).exports_fll(
             "term: bell Bell 0.000 0.250 3.000 0.500"
+        ).repr_is(
+            "fl.Bell(name='bell', height=0.5, center=0.0, width=0.25, slope=3.0)"
         ).has_memberships(
             {
                 -0.5: 0.015384615384615385,
@@ -492,7 +522,13 @@ class TestTerm(unittest.TestCase):
         """Test the binary term."""
         TermAssert(self, fl.Binary("binary")).exports_fll(
             "term: binary Binary nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("0 inf").exports_fll(
+        ).repr_is(
+            "fl.Binary(name='binary', height=1.0, start=fl.nan, direction=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "0 inf"
+        ).exports_fll(
             "term: binary Binary 0.000 inf"
         ).has_memberships(
             {
@@ -512,6 +548,8 @@ class TestTerm(unittest.TestCase):
         )
         TermAssert(self, fl.Binary("binary")).configured_as("0 -inf 0.5").exports_fll(
             "term: binary Binary 0.000 -inf 0.500"
+        ).repr_is(
+            "fl.Binary(name='binary', height=0.5, start=0.0, direction=-fl.inf)"
         ).has_memberships(
             {
                 -0.5: 0.5,
@@ -533,7 +571,13 @@ class TestTerm(unittest.TestCase):
         """Test the concave term."""
         TermAssert(self, fl.Concave("concave")).exports_fll(
             "term: concave Concave nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("0.00 0.50").exports_fll(
+        ).repr_is(
+            "fl.Concave(name='concave', height=1.0, inflection=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_monotonic().configured_as(
+            "0.00 0.50"
+        ).exports_fll(
             "term: concave Concave 0.000 0.500"
         ).has_memberships(
             {
@@ -597,7 +641,11 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Concave("concave")).configured_as(
             "0.00 -0.500 0.5"
-        ).exports_fll("term: concave Concave 0.000 -0.500 0.500").has_memberships(
+        ).repr_is(
+            "fl.Concave(name='concave', height=0.5, inflection=0.0, end=-0.5)"
+        ).exports_fll(
+            "term: concave Concave 0.000 -0.500 0.500"
+        ).has_memberships(
             {
                 -0.5: 0.5,
                 -0.4: 0.416,
@@ -634,8 +682,14 @@ class TestTerm(unittest.TestCase):
         """Test the constant term."""
         TermAssert(self, fl.Constant("constant")).exports_fll(
             "term: constant Constant nan"
-        ).takes_parameters(1).is_not_monotonic().configured_as("0.5").exports_fll(
+        ).repr_is("fl.Constant(name='constant', value=fl.nan)").takes_parameters(
+            1
+        ).is_not_monotonic().configured_as(
+            "0.5"
+        ).exports_fll(
             "term: constant Constant 0.500"
+        ).repr_is(
+            "fl.Constant(name='constant', value=0.5)"
         ).has_memberships(
             {
                 -0.5: 0.5,
@@ -653,6 +707,8 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "-0.500"
+        ).repr_is(
+            "fl.Constant(name='constant', value=-0.5)"
         ).exports_fll(
             "term: constant Constant -0.500"
         ).has_memberships(
@@ -676,8 +732,16 @@ class TestTerm(unittest.TestCase):
         """Test the cosine term."""
         TermAssert(self, fl.Cosine("cosine")).exports_fll(
             "term: cosine Cosine nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("0.0 1").exports_fll(
+        ).repr_is(
+            "fl.Cosine(name='cosine', height=1.0, center=fl.nan, width=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "0.0 1"
+        ).exports_fll(
             "term: cosine Cosine 0.000 1.000"
+        ).repr_is(
+            "fl.Cosine(name='cosine', height=1.0, center=0.0, width=1.0)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -697,6 +761,8 @@ class TestTerm(unittest.TestCase):
             "0.0 1.0 0.5"
         ).exports_fll(
             "term: cosine Cosine 0.000 1.000 0.500"
+        ).repr_is(
+            "fl.Cosine(name='cosine', height=0.5, center=0.0, width=1.0)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -727,6 +793,10 @@ class TestTerm(unittest.TestCase):
         ).exports_fll(
             "term: discrete Discrete "
             "0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000"
+        ).repr_is(
+            "fl.Discrete(name='discrete', height=1.0, values=fl.array([fl.array([0.0, "
+            "1.0]), fl.array([2.0, 3.0]), fl.array([4.0, 5.0]), fl.array([6.0, 7.0]), "
+            "fl.array([8.0, 9.0])]))"
         ).configured_as(
             "0 1 8 9 4 5 2 3 6 7 0.5"
         ).apply(
@@ -734,6 +804,10 @@ class TestTerm(unittest.TestCase):
         ).exports_fll(
             "term: discrete Discrete "
             "0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000 8.000 9.000 0.500"
+        ).repr_is(
+            "fl.Discrete(name='discrete', height=0.5, values=fl.array([fl.array([0.0, "
+            "1.0]), fl.array([2.0, 3.0]), fl.array([4.0, 5.0]), fl.array([6.0, 7.0]), "
+            "fl.array([8.0, 9.0])]))"
         ).configured_as(
             " -0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000"
         ).exports_fll(
@@ -866,8 +940,17 @@ class TestTerm(unittest.TestCase):
         """Test the gaussian term."""
         TermAssert(self, fl.Gaussian("gaussian")).exports_fll(
             "term: gaussian Gaussian nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("0.0 0.25").exports_fll(
+        ).repr_is(
+            "fl.Gaussian(name='gaussian', height=1.0, mean=fl.nan, "
+            "standard_deviation=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "0.0 0.25"
+        ).exports_fll(
             "term: gaussian Gaussian 0.000 0.250"
+        ).repr_is(
+            "fl.Gaussian(name='gaussian', height=1.0, mean=0.0, standard_deviation=0.25)"
         ).has_memberships(
             {
                 -0.5: 0.1353352832366127,
@@ -885,6 +968,8 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "0.0 0.25 0.5"
+        ).repr_is(
+            "fl.Gaussian(name='gaussian', height=0.5, mean=0.0, standard_deviation=0.25)"
         ).exports_fll(
             "term: gaussian Gaussian 0.000 0.250 0.500"
         ).has_memberships(
@@ -909,8 +994,16 @@ class TestTerm(unittest.TestCase):
         """Test the gaussian product term."""
         TermAssert(self, fl.GaussianProduct("gaussian_product")).exports_fll(
             "term: gaussian_product GaussianProduct nan nan nan nan"
-        ).takes_parameters(4).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.GaussianProduct(name='gaussian_product', height=1.0, mean_a=fl.nan, "
+            "standard_deviation_a=fl.nan, mean_b=fl.nan, standard_deviation_b=fl.nan)"
+        ).takes_parameters(
+            4
+        ).is_not_monotonic().configured_as(
             "0.0 0.25 0.1 0.5"
+        ).repr_is(
+            "fl.GaussianProduct(name='gaussian_product', height=1.0, mean_a=0.0, "
+            "standard_deviation_a=0.25, mean_b=0.1, standard_deviation_b=0.5)"
         ).exports_fll(
             "term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500"
         ).has_memberships(
@@ -932,6 +1025,9 @@ class TestTerm(unittest.TestCase):
             "0.0 0.25 0.1 0.5 0.5"
         ).exports_fll(
             "term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500 0.500"
+        ).repr_is(
+            "fl.GaussianProduct(name='gaussian_product', height=0.5, mean_a=0.0, "
+            "standard_deviation_a=0.25, mean_b=0.1, standard_deviation_b=0.5)"
         ).has_memberships(
             {
                 -0.5: 0.1353352832366127,
@@ -973,10 +1069,12 @@ class TestTerm(unittest.TestCase):
         linear.update_reference(engine)
         self.assertEqual(linear.engine, engine)
 
-        TermAssert(self, linear).exports_fll(
-            "term: linear Linear 1.000 2.000"
+        TermAssert(self, linear).exports_fll("term: linear Linear 1.000 2.000").repr_is(
+            "fl.Linear(name='linear', coefficients=[1.0, 2.0], engine=...)"
         ).is_not_monotonic().configured_as("1.0 2.0 3").exports_fll(
             "term: linear Linear 1.000 2.000 3.000"
+        ).repr_is(
+            "fl.Linear(name='linear', coefficients=[1.0, 2.0, 3.0], engine=...)"
         ).has_memberships(
             {
                 -0.5: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
@@ -1024,10 +1122,18 @@ class TestTerm(unittest.TestCase):
         """Test the pi-shape term."""
         TermAssert(self, fl.PiShape("pi_shape")).exports_fll(
             "term: pi_shape PiShape nan nan nan nan"
-        ).takes_parameters(4).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.PiShape(name='pi_shape', height=1.0, bottom_left=fl.nan, top_left=fl.nan, "
+            "top_right=fl.nan, bottom_right=fl.nan)"
+        ).takes_parameters(
+            4
+        ).is_not_monotonic().configured_as(
             "-.9 -.1 .1 1"
         ).exports_fll(
             "term: pi_shape PiShape -0.900 -0.100 0.100 1.000"
+        ).repr_is(
+            "fl.PiShape(name='pi_shape', height=1.0, bottom_left=-0.9, top_left=-0.1, "
+            "top_right=0.1, bottom_right=1.0)"
         ).has_memberships(
             {
                 -0.5: 0.5,
@@ -1048,6 +1154,9 @@ class TestTerm(unittest.TestCase):
             "-.9 -.1 .1 1 .5"
         ).exports_fll(
             "term: pi_shape PiShape -0.900 -0.100 0.100 1.000 0.500"
+        ).repr_is(
+            "fl.PiShape(name='pi_shape', height=0.5, bottom_left=-0.9, top_left=-0.1, "
+            "top_right=0.1, bottom_right=1.0)"
         ).has_memberships(
             {
                 -0.5: 0.5,
@@ -1071,7 +1180,11 @@ class TestTerm(unittest.TestCase):
         """Test the ramp term."""
         TermAssert(self, fl.Ramp("ramp")).exports_fll(
             "term: ramp Ramp nan nan"
-        ).takes_parameters(2).is_monotonic()
+        ).repr_is(
+            "fl.Ramp(name='ramp', height=1.0, start=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_monotonic()
 
         TermAssert(self, fl.Ramp("ramp")).configured_as("0 0").exports_fll(
             "term: ramp Ramp 0.000 0.000"
@@ -1103,6 +1216,8 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Ramp("ramp")).configured_as("-0.250 0.750").exports_fll(
             "term: ramp Ramp -0.250 0.750"
+        ).repr_is(
+            "fl.Ramp(name='ramp', height=1.0, start=-0.25, end=0.75)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1169,6 +1284,8 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Ramp("ramp")).configured_as("0.250 -0.750 0.5").exports_fll(
             "term: ramp Ramp 0.250 -0.750 0.500"
+        ).repr_is(
+            "fl.Ramp(name='ramp', height=0.5, start=0.25, end=-0.75)"
         ).has_memberships(
             {
                 -0.5: 0.750,
@@ -1207,8 +1324,16 @@ class TestTerm(unittest.TestCase):
         """Test the rectangle term."""
         TermAssert(self, fl.Rectangle("rectangle")).exports_fll(
             "term: rectangle Rectangle nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("-0.4 0.4").exports_fll(
+        ).repr_is(
+            "fl.Rectangle(name='rectangle', height=1.0, start=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "-0.4 0.4"
+        ).exports_fll(
             "term: rectangle Rectangle -0.400 0.400"
+        ).repr_is(
+            "fl.Rectangle(name='rectangle', height=1.0, start=-0.4, end=0.4)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1228,6 +1353,8 @@ class TestTerm(unittest.TestCase):
             "-0.4 0.4 0.5"
         ).exports_fll(
             "term: rectangle Rectangle -0.400 0.400 0.500"
+        ).repr_is(
+            "fl.Rectangle(name='rectangle', height=0.5, start=-0.4, end=0.4)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1250,8 +1377,16 @@ class TestTerm(unittest.TestCase):
         """Test the spike term."""
         TermAssert(self, fl.SemiEllipse("semiellipse")).exports_fll(
             "term: semiellipse SemiEllipse nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("-0.5 0.5").exports_fll(
+        ).repr_is(
+            "fl.SemiEllipse(name='semiellipse', height=1.0, start=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "-0.5 0.5"
+        ).exports_fll(
             "term: semiellipse SemiEllipse -0.500 0.500"
+        ).repr_is(
+            "fl.SemiEllipse(name='semiellipse', height=1.0, start=-0.5, end=0.5)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1288,8 +1423,8 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.SemiEllipse("semiellipse")).configured_as(
             "-0.5 0.5 0.5"
-        ).exports_fll(
-            "term: semiellipse SemiEllipse -0.500 0.500 0.500"
+        ).exports_fll("term: semiellipse SemiEllipse -0.500 0.500 0.500").repr_is(
+            "fl.SemiEllipse(name='semiellipse', height=0.5, start=-0.5, end=0.5)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1312,8 +1447,16 @@ class TestTerm(unittest.TestCase):
         """Test the sigmoid term."""
         TermAssert(self, fl.Sigmoid("sigmoid")).exports_fll(
             "term: sigmoid Sigmoid nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("0 10").exports_fll(
+        ).repr_is(
+            "fl.Sigmoid(name='sigmoid', height=1.0, inflection=fl.nan, slope=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_monotonic().configured_as(
+            "0 10"
+        ).exports_fll(
             "term: sigmoid Sigmoid 0.000 10.000"
+        ).repr_is(
+            "fl.Sigmoid(name='sigmoid', height=1.0, inflection=0.0, slope=10.0)"
         ).has_memberships(
             {
                 -0.5: 0.007,
@@ -1380,6 +1523,8 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Sigmoid("sigmoid")).configured_as("0 10 .5").exports_fll(
             "term: sigmoid Sigmoid 0.000 10.000 0.500"
+        ).repr_is(
+            "fl.Sigmoid(name='sigmoid', height=0.5, inflection=0.0, slope=10.0)"
         ).has_memberships(
             {
                 -0.5: 0.007,
@@ -1418,10 +1563,18 @@ class TestTerm(unittest.TestCase):
         """Test the sigmoid difference term."""
         TermAssert(self, fl.SigmoidDifference("sigmoid_difference")).exports_fll(
             "term: sigmoid_difference SigmoidDifference nan nan nan nan"
-        ).takes_parameters(4).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.SigmoidDifference(name='sigmoid_difference', height=1.0, left=fl.nan, "
+            "rising=fl.nan, falling=fl.nan, right=fl.nan)"
+        ).takes_parameters(
+            4
+        ).is_not_monotonic().configured_as(
             "-0.25 25.00 50.00 0.25"
         ).exports_fll(
             "term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250"
+        ).repr_is(
+            "fl.SigmoidDifference(name='sigmoid_difference', height=1.0, left=-0.25, "
+            "rising=25.0, falling=50.0, right=0.25)"
         ).has_memberships(
             {
                 -0.5: 0.0019267346633274238,
@@ -1439,6 +1592,9 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "-0.25 25.00 50.00 0.25 0.5"
+        ).repr_is(
+            "fl.SigmoidDifference(name='sigmoid_difference', height=0.5, left=-0.25, "
+            "rising=25.0, falling=50.0, right=0.25)"
         ).exports_fll(
             "term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500"
         ).has_memberships(
@@ -1463,10 +1619,18 @@ class TestTerm(unittest.TestCase):
         """Test the sigmoid product term."""
         TermAssert(self, fl.SigmoidProduct("sigmoid_product")).exports_fll(
             "term: sigmoid_product SigmoidProduct nan nan nan nan"
-        ).takes_parameters(4).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.SigmoidProduct(name='sigmoid_product', height=1.0, left=fl.nan, "
+            "rising=fl.nan, falling=fl.nan, right=fl.nan)"
+        ).takes_parameters(
+            4
+        ).is_not_monotonic().configured_as(
             "-0.250 20.000 -20.000 0.250"
         ).exports_fll(
             "term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250"
+        ).repr_is(
+            "fl.SigmoidProduct(name='sigmoid_product', height=1.0, left=-0.25, "
+            "rising=20.0, falling=-20.0, right=0.25)"
         ).has_memberships(
             {
                 -0.5: 0.006692848876926853,
@@ -1484,6 +1648,9 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "-0.250 20.000 -20.000 0.250 0.5"
+        ).repr_is(
+            "fl.SigmoidProduct(name='sigmoid_product', height=0.5, left=-0.25, "
+            "rising=20.0, falling=-20.0, right=0.25)"
         ).exports_fll(
             "term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250 0.500"
         ).has_memberships(
@@ -1508,8 +1675,16 @@ class TestTerm(unittest.TestCase):
         """Test the spike term."""
         TermAssert(self, fl.Spike("spike")).exports_fll(
             "term: spike Spike nan nan"
-        ).takes_parameters(2).is_not_monotonic().configured_as("0 1.0").exports_fll(
+        ).repr_is(
+            "fl.Spike(name='spike', height=1.0, center=fl.nan, width=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_not_monotonic().configured_as(
+            "0 1.0"
+        ).exports_fll(
             "term: spike Spike 0.000 1.000"
+        ).repr_is(
+            "fl.Spike(name='spike', height=1.0, center=0.0, width=1.0)"
         ).has_memberships(
             {
                 -0.5: 0.006737946999085467,
@@ -1527,6 +1702,8 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "0 1.0 .5"
+        ).repr_is(
+            "fl.Spike(name='spike', height=0.5, center=0.0, width=1.0)"
         ).exports_fll(
             "term: spike Spike 0.000 1.000 0.500"
         ).has_memberships(
@@ -1551,8 +1728,16 @@ class TestTerm(unittest.TestCase):
         """Test the s-shape term."""
         TermAssert(self, fl.SShape("s_shape")).exports_fll(
             "term: s_shape SShape nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("-0.5 0.5").exports_fll(
+        ).repr_is(
+            "fl.SShape(name='s_shape', height=1.0, start=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_monotonic().configured_as(
+            "-0.5 0.5"
+        ).exports_fll(
             "term: s_shape SShape -0.500 0.500"
+        ).repr_is(
+            "fl.SShape(name='s_shape', height=1.0, start=-0.5, end=0.5)"
         ).has_memberships(
             {
                 -0.5: 0.0,
@@ -1584,8 +1769,8 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        TermAssert(self, fl.SShape("s_shape")).configured_as(
-            "-0.5 0.5 0.5"
+        TermAssert(self, fl.SShape("s_shape")).configured_as("-0.5 0.5 0.5").repr_is(
+            "fl.SShape(name='s_shape', height=0.5, start=-0.5, end=0.5)"
         ).exports_fll("term: s_shape SShape -0.500 0.500 0.500").has_memberships(
             {
                 -0.5: 0.0,
@@ -1624,11 +1809,19 @@ class TestTerm(unittest.TestCase):
         """Test the trapezoid term."""
         TermAssert(self, fl.Trapezoid("trapezoid", 0.0, 1.0)).exports_fll(
             "term: trapezoid Trapezoid 0.000 0.200 0.800 1.000"
+        ).repr_is(
+            "fl.Trapezoid(name='trapezoid', height=1.0, bottom_left=0.0, top_left=0.2, "
+            "top_right=0.8, bottom_right=1.0)"
         )
 
         TermAssert(self, fl.Trapezoid("trapezoid")).exports_fll(
             "term: trapezoid Trapezoid nan nan nan nan"
-        ).takes_parameters(4).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.Trapezoid(name='trapezoid', height=1.0, bottom_left=fl.nan, "
+            "top_left=fl.nan, top_right=fl.nan, bottom_right=fl.nan)"
+        ).takes_parameters(
+            4
+        ).is_not_monotonic().configured_as(
             "-0.400 -0.100 0.100 0.400"
         ).exports_fll(
             "term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400"
@@ -1651,6 +1844,9 @@ class TestTerm(unittest.TestCase):
             "-0.400 -0.100 0.100 0.400 .5"
         ).exports_fll(
             "term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400 0.500"
+        ).repr_is(
+            "fl.Trapezoid(name='trapezoid', height=0.5, bottom_left=-0.4, top_left=-0.1, "
+            "top_right=0.1, bottom_right=0.4)"
         ).has_memberships(
             {
                 -0.5: 0.000,
@@ -1750,11 +1946,18 @@ class TestTerm(unittest.TestCase):
         """Test the triangle term."""
         TermAssert(self, fl.Triangle("triangle", 0.0, 1.0)).exports_fll(
             "term: triangle Triangle 0.000 0.500 1.000"
+        ).repr_is(
+            "fl.Triangle(name='triangle', height=1.0, left=0.0, top=0.5, right=1.0)"
         )
 
         TermAssert(self, fl.Triangle("triangle")).exports_fll(
             "term: triangle Triangle nan nan nan"
-        ).takes_parameters(3).is_not_monotonic().configured_as(
+        ).repr_is(
+            "fl.Triangle(name='triangle', height=1.0, left=fl.nan, top=fl.nan, "
+            "right=fl.nan)"
+        ).takes_parameters(
+            3
+        ).is_not_monotonic().configured_as(
             "-0.400 0.000 0.400"
         ).exports_fll(
             "term: triangle Triangle -0.400 0.000 0.400"
@@ -1775,6 +1978,8 @@ class TestTerm(unittest.TestCase):
             }
         ).configured_as(
             "-0.400 0.000 0.400 .5"
+        ).repr_is(
+            "fl.Triangle(name='triangle', height=0.5, left=-0.4, top=0.0, right=0.4)"
         ).exports_fll(
             "term: triangle Triangle -0.400 0.000 0.400 0.500"
         ).has_memberships(
@@ -1895,8 +2100,16 @@ class TestTerm(unittest.TestCase):
         """Test the z-shape term."""
         TermAssert(self, fl.ZShape("z_shape")).exports_fll(
             "term: z_shape ZShape nan nan"
-        ).takes_parameters(2).is_monotonic().configured_as("-0.5 0.5").exports_fll(
+        ).repr_is(
+            "fl.ZShape(name='z_shape', height=1.0, start=fl.nan, end=fl.nan)"
+        ).takes_parameters(
+            2
+        ).is_monotonic().configured_as(
+            "-0.5 0.5"
+        ).exports_fll(
             "term: z_shape ZShape -0.500 0.500"
+        ).repr_is(
+            "fl.ZShape(name='z_shape', height=1.0, start=-0.5, end=0.5)"
         ).has_memberships(
             {
                 -0.5: 1.0,
@@ -1928,8 +2141,8 @@ class TestTerm(unittest.TestCase):
             }
         )
 
-        TermAssert(self, fl.ZShape("z_shape")).configured_as(
-            "-0.5 0.5 0.5"
+        TermAssert(self, fl.ZShape("z_shape")).configured_as("-0.5 0.5 0.5").repr_is(
+            "fl.ZShape(name='z_shape', height=0.5, start=-0.5, end=0.5)"
         ).exports_fll("term: z_shape ZShape -0.500 0.500 0.500").has_memberships(
             {
                 -0.5: 1.0,
@@ -2133,7 +2346,7 @@ class TestFunction(unittest.TestCase):
             0.0,
             ValueError,
             "expected a map of variables containing the value for 'i_A', "
-            "but the map contains: {'i_B': array(nan), 'o_B': array(nan), 'x': 0.0}",
+            "but the map contains: {'i_B': nan, 'o_B': nan, 'x': 0.0}",
         )
 
     def test_element(self) -> None:
@@ -2148,10 +2361,10 @@ class TestFunction(unittest.TestCase):
             associativity=-1,
         )
         self.assertEqual(
+            "fl.Element(name='function', description='math function()', "
+            "type=Type.Function, method=<built-in function any>, arity=0, "
+            "precedence=0, associativity=-1)",
             str(element),
-            "Element: name='function', description='math function()', "
-            "element_type='Type.Function', method='<built-in function any>', arity=0, "
-            "precedence=0, associativity=-1",
         )
 
         element = fl.Function.Element(
@@ -2164,11 +2377,11 @@ class TestFunction(unittest.TestCase):
             1,
         )
         self.assertEqual(
+            "fl.Element(name='operator', description='math operator', "
+            "type=Type.Operator, "
+            "method=<built-in function add>, arity=2, "
+            "precedence=10, associativity=1)",
             str(element),
-            "Element: name='operator', description='math operator', "
-            "element_type='Type.Operator', "
-            "method='<built-in function add>', arity=2, "
-            "precedence=10, associativity=1",
         )
 
         self.assertEqual(str(element), str(copy.deepcopy(element)))
@@ -2176,14 +2389,6 @@ class TestFunction(unittest.TestCase):
     def test_node_evaluation(self) -> None:
         """Test the function node evaluation."""
         type_function = fl.Function.Element.Type.Function
-        FunctionNodeAssert(
-            self,
-            fl.Function.Node(
-                element=fl.Function.Element(
-                    "undefined", "undefined method", type_function, None  # type: ignore
-                )
-            ),
-        ).fails_to_evaluate(ValueError, "expected a method reference, but found none")
 
         functions = fl.FunctionFactory()
         node_pow = fl.Function.Node(

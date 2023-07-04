@@ -35,7 +35,7 @@ from typing import Callable
 
 import numpy as np
 
-from .library import scalar, to_float
+from .library import representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .types import Array, Scalar
@@ -57,6 +57,14 @@ class Activation(ABC):
     @see ActivationFactory
     @since 6.0
     """
+
+    def __str__(self) -> str:
+        """@return activation in the FuzzyLite Language."""
+        return representation.fll.activation(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the activation."""
+        return representation.as_constructor(self)
 
     @abstractmethod
     def activate(self, rule_block: RuleBlock) -> None:
@@ -90,16 +98,6 @@ class Activation(ABC):
                 "expected activation degree to be a single scalar, "
                 f"but got {elements} elements in '{activation_degree}'"
             )
-
-    def __str__(self) -> str:
-        """Returns the FLL code for the activation method
-        @return FLL code for the activation method.
-        """
-        result = Op.class_name(self)
-        parameters = self.parameters()
-        if parameters:
-            result += f" {parameters}"
-        return result
 
 
 class General(Activation):

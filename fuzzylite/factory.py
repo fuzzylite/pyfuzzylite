@@ -33,13 +33,14 @@ import copy
 import inspect
 from collections.abc import Iterator
 from types import ModuleType
-from typing import Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 import numpy as np
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .hedge import Hedge
+from .library import representation
 from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule
@@ -65,6 +66,14 @@ class ConstructionFactory(Generic[T]):
         """Gets the iterator of constructors."""
         return self.constructors.__iter__()
 
+    def __str__(self) -> str:
+        """@return class name of the factory."""
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the factory."""
+        return representation.as_constructor(self)
+
     def import_from(self, module: ModuleType, cls: type[T]) -> list[type[T]]:
         """Imports constructors from a module.
         @param module is the module from which constructors are imported
@@ -86,14 +95,14 @@ class ConstructionFactory(Generic[T]):
         ]
         return constructors
 
-    def construct(self, key: str) -> T:
+    def construct(self, key: str, **kwargs: Any) -> T:
         """Creates an object by executing the constructor associated to the given key
         @param key is the unique name by which constructors are registered
         @return an object by executing the constructor associated to the given key
         @throws ValueError if the key is not in the registered constructors.
         """
         if key in self.constructors:
-            return self.constructors[key]()
+            return self.constructors[key](**kwargs)
         raise ValueError(f"constructor of '{key}' not found in {Op.class_name(self)}")
 
 
@@ -113,6 +122,14 @@ class CloningFactory(Generic[T]):
     def __iter__(self) -> Iterator[str]:
         """Get iterator of objects."""
         return self.objects.__iter__()
+
+    def __str__(self) -> str:
+        """@return class name of the factory."""
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the factory."""
+        return representation.as_constructor(self)
 
     def copy(self, key: str) -> T:
         """Creates a deep copy of the registered object
@@ -165,10 +182,6 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
             Op.class_name(d): d for d in self.import_from(defuzzifier, Defuzzifier)
         }
         super().__init__(constructors=defuzzifiers)
-
-    # TODO: Implement?
-    # def construct(self, key: str, parameter: Union[int, str]):
-    #     raise NotImplementedError()
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):

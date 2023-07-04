@@ -128,6 +128,7 @@ class TestFllExporter(unittest.TestCase):
                     rules=[fl.Rule.create("if a then z")],
                 )
             ],
+            load_rules=False,
         )
         self.assertEqual(
             fl.FllExporter().to_string(engine), fl.FllExporter().engine(engine)
@@ -304,7 +305,7 @@ RuleBlock: rb
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
         with self.assertRaisesRegex(
-            ValueError, r"expected a fuzzylite object, but found 'object'"
+            TypeError, r"expected a fuzzylite object, but got <class 'object'>"
         ):
             fl.FllExporter().to_string(object())
 
@@ -367,6 +368,7 @@ engine.rule_blocks = []
                     rules=[fl.Rule.create("if a then z")],
                 )
             ],
+            load_rules=False,
         )
         self.assertEqual(
             fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine)

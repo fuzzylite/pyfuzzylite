@@ -26,8 +26,7 @@ import numpy as np
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
-from .exporter import FllExporter
-from .library import nan, settings
+from .library import nan, representation, settings
 from .norm import SNorm, TNorm
 from .rule import RuleBlock
 from .types import ScalarArray
@@ -78,7 +77,7 @@ class Engine:
         input_variables: Iterable[InputVariable] | None = None,
         output_variables: Iterable[OutputVariable] | None = None,
         rule_blocks: Iterable[RuleBlock] | None = None,
-        load_rules: bool = False,
+        load_rules: bool = True,
     ) -> None:
         """Creates an Engine with the parameters given.
 
@@ -91,24 +90,20 @@ class Engine:
         """
         self.name = name
         self.description = description
-        self.input_variables: list[InputVariable] = []
-        self.output_variables: list[OutputVariable] = []
-        self.rule_blocks: list[RuleBlock] = []
-        if input_variables:
-            self.input_variables.extend(input_variables)
-        if output_variables:
-            self.output_variables.extend(output_variables)
-        if rule_blocks:
-            self.rule_blocks.extend(rule_blocks)
+        self.input_variables = list(input_variables) if input_variables else []
+        self.output_variables = list(output_variables) if output_variables else []
+        self.rule_blocks = list(rule_blocks) if rule_blocks else []
         if load_rules:
             for rb in self.rule_blocks:
                 rb.load_rules(self)
 
     def __str__(self) -> str:
-        """Returns the FLL code for the engine
-        @return the FLL code for the engine.
-        """
-        return FllExporter().engine(self)
+        """@return engine in the FuzzyLite Language."""
+        return representation.fll.engine(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the engine."""
+        return representation.as_constructor(self)
 
     def configure(
         self,
@@ -153,14 +148,14 @@ class Engine:
             variable.defuzzifier = defuzzifier
 
     @property
-    def variables(self) -> list[Variable]:
+    def variables(self) -> list[InputVariable | OutputVariable]:
         """Returns a list that contains the input variables followed by the
         output variables in the order of insertion.
 
         @return a list that contains the input variables followed by the
         output variables in the order of insertion
         """
-        return [*self.input_variables, *self.output_variables]
+        return self.input_variables + self.output_variables
 
     def variable(self, name: str) -> Variable:
         """Gets the first variable of the given name after iterating the input

@@ -30,9 +30,8 @@ import typing
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from .exporter import FllExporter
 from .hedge import Any
-from .library import array, nan, scalar, settings
+from .library import array, nan, representation, scalar, settings
 from .norm import SNorm, TNorm
 from .operation import Op
 from .types import Scalar
@@ -89,9 +88,7 @@ class Proposition(Expression):
         self.term = term
 
     def __str__(self) -> str:
-        """Returns a string representation of the proposition
-        @return a string representation of the proposition.
-        """
+        """@return textual representation of the proposition."""
         result = []
 
         if self.variable:
@@ -136,9 +133,7 @@ class Operator(Expression):
         self.left = left
 
     def __str__(self) -> str:
-        """Returns the name of the operator
-        @return the name of the operator.
-        """
+        """@return name of the operator."""
         return self.name
 
 
@@ -163,8 +158,14 @@ class Antecedent:
         self.expression: Expression | None = None
 
     def __str__(self) -> str:
-        """Return the text of the antecedent."""
+        """@return the text of the antecedent."""
         return self.text
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the antecedent."""
+        fields = vars(self).copy()
+        fields.pop("expression")
+        return representation.as_constructor(self, fields)
 
     def is_loaded(self) -> bool:
         """Indicates whether the antecedent is loaded
@@ -280,7 +281,7 @@ class Antecedent:
         if not self.text:
             raise SyntaxError("expected the antecedent of a rule, but found none")
 
-        postfix = Function().infix_to_postfix(self.text)
+        postfix = Function.infix_to_postfix(self.text)
         if settings.debugging:
             settings.logger.debug(f"antecedent={self.text}\npostfix={postfix}")
 
@@ -483,8 +484,14 @@ class Consequent:
         self.conclusions: list[Proposition] = []
 
     def __str__(self) -> str:
-        """Return the text of the consequent."""
+        """@return the text of the consequent."""
         return self.text
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the consequent."""
+        fields = vars(self).copy()
+        fields.pop("conclusions")
+        return representation.as_constructor(self, fields)
 
     def is_loaded(self) -> bool:
         """Indicates whether the consequent is loaded
@@ -666,18 +673,31 @@ class Rule:
     OR = "or"
     WITH = "with"
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        enabled: bool = True,
+        weight: float = 1.0,
+        activation_degree: Scalar = 0.0,
+        antecedent: Antecedent | None = None,
+        consequent: Consequent | None = None,
+    ) -> None:
         """Create the rule."""
-        self.enabled: bool = True
-        self.weight: float = 1.0
-        self.activation_degree = scalar(0.0)
+        self.enabled = enabled
+        self.weight = weight
+        self.activation_degree = activation_degree
         self.triggered = array(False)
-        self.antecedent: Antecedent = Antecedent()
-        self.consequent: Consequent = Consequent()
+        self.antecedent = antecedent or Antecedent()
+        self.consequent = consequent or Consequent()
 
     def __str__(self) -> str:
-        """Gets a string representation of the rule in the FuzzyLite Language."""
-        return FllExporter().rule(self)
+        """@return rule in the FuzzyLite Language."""
+        return representation.fll.rule(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the rule."""
+        fields = vars(self).copy()
+        fields.pop("triggered")
+        return representation.as_constructor(self, fields)
 
     @property
     def text(self) -> str:
@@ -862,17 +882,15 @@ class RuleBlock:
         self.disjunction = disjunction
         self.implication = implication
         self.activation = activation
-        self.rules: list[Rule] = []
-        if rules:
-            self.rules.extend(rules)
+        self.rules = list(rules) if rules else []
 
     def __str__(self) -> str:
-        """Returns a string representation of the rule block in the FuzzyLite
-        Language
-        @return a string representation of the rule block in the  FuzzyLite
-        Language.
-        """
-        return FllExporter().rule_block(self)
+        """@return rule block in the FuzzyLite Language."""
+        return representation.fll.rule_block(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the rule block."""
+        return representation.as_constructor(self)
 
     def activate(self) -> None:
         """Activates the rule block."""

@@ -14,7 +14,7 @@ files = [
 [[package]]
 name = "asttokens"
 version = "2.2.1"
-description = "Annotate AST trees with source code positions"
+description = "Annotate AST trees wi th source code positions"
 optional = false
 python-versions = "*"
 files = [

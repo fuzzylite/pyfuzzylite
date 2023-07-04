@@ -18,8 +18,8 @@ from __future__ import annotations
 
 __all__ = ["Operation", "Op"]
 
+import builtins
 import inspect
-from collections.abc import Sequence
 from typing import Any, Callable
 
 import numpy as np
@@ -35,6 +35,9 @@ class Operation:
     @author Juan Rada-Vilela, Ph.D.
     @since 4.0.
     """
+
+    isinf = np.isinf
+    isnan = np.isnan
 
     @staticmethod
     def eq(
@@ -232,8 +235,8 @@ class Operation:
         key_values = {}
         if instance:
             if variables and hasattr(instance, "__dict__") and instance.__dict__:
-                for variable in instance.__dict__:
-                    key_values[variable] = str(getattr(instance, variable))
+                for variable, value in vars(instance).items():
+                    key_values[variable] = str(value)
 
             if class_hierarchy:
                 key_values["__hierarchy__"] = ", ".join(
@@ -245,7 +248,7 @@ class Operation:
         return f"{Op.class_name(instance)}[{sorted_dict}]"
 
     @staticmethod
-    def strip_comments(fll: str, delimiter: str = "#") -> str:
+    def strip_comments(fll: str, /, delimiter: str = "#") -> str:
         """Removes the comments from the text.
         @param fll is the text to strip comments from
         @param delimiter is the start delimiter to denote a comment.
@@ -302,18 +305,30 @@ class Operation:
         return incremented
 
     @staticmethod
-    def class_name(x: Any, /) -> str:
+    def class_name(x: Any, /, qualname: bool = False) -> str:
         """Returns the class name of the given object.
         @param x is the object
         @return the class name of the given object.
         """
-        if inspect.isclass(x):
-            return str(x.__name__)
-        return str(x.__class__.__name__)
+        package = ""
+        if qualname:
+            from .library import representation
 
-    # Last method of class such that it does not replace builtins.str
+            package = representation.package_of(x)
+
+        if inspect.isclass(x):
+            return f"{package}{x.__name__}"
+        return f"{package}{x.__class__.__name__}"
+
     @staticmethod
-    def str(x: Any) -> str:
+    def to_fll(x: Any, /) -> str:
+        """Returns a string representation of the given value."""
+        from .library import representation
+
+        return representation.fll.to_string(x)
+
+    @staticmethod
+    def str(x: Any, /, delimiter: str = " ") -> str:
         """Returns a string representation of the given value
         @param x is the value
         @param decimals is the number of decimals to display
@@ -321,9 +336,9 @@ class Operation:
         """
         if isinstance(x, (float, np.floating)):
             return f"{x:.{settings.decimals}f}"
-        if isinstance(x, (np.ndarray, Sequence)):
-            return " ".join([Op.str(x_i) for x_i in np.atleast_1d(x)])
-        return str(x)
+        if isinstance(x, (np.ndarray, list)):
+            return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
+        return builtins.str(x)
 
 
 Op = Operation

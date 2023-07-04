@@ -40,11 +40,32 @@ class BaseAssert(Generic[T]):
         self.actual = actual
         self.test.maxDiff = None  # show all differences
 
+    def repr_is(
+        self,
+        representation: str,
+        /,
+        with_alias: str | None = None,
+        validate: bool = True,
+    ) -> Self:
+        """Asserts that the obtained object's representation is equal to the expected representation."""
+
+        def run_test() -> None:
+            self.test.assertEqual(representation, repr(self.actual))
+            if validate:
+                self.test.assertEqual(repr(eval(representation)), repr(self.actual))
+
+        if with_alias is None:
+            run_test()
+        else:
+            with fl.settings.context(alias=with_alias):
+                run_test()
+        return self
+
     def exports_fll(self, fll: str) -> Self:
         """Asserts that the given fll is equal to the obtained fll.
         @param fll is the expected fll.
         """
-        self.test.assertEqual(fll, fl.FllExporter().to_string(self.actual))
+        self.test.assertEqual(fll, fl.Op.to_fll(self.actual))
         self.test.assertEqual(fll, str(self.actual))
         return self
 

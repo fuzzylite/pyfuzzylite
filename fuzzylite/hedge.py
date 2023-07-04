@@ -27,17 +27,15 @@ __all__ = [
     "HedgeLambda",
     "HedgeFunction",
 ]
-import typing
+
 from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
 
-from .library import scalar
+from .library import representation, scalar
+from .term import Function
 from .types import Scalar
-
-if typing.TYPE_CHECKING:
-    from .term import Function
 
 
 class Hedge(ABC):
@@ -53,11 +51,17 @@ class Hedge(ABC):
     @since 4.0
     """
 
+    def __str__(self) -> str:
+        """@return name of the hedge."""
+        return self.__class__.__name__.lower()
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the hedge."""
+        return representation.as_constructor(self)
+
     @property
     def name(self) -> str:
-        """Returns the name of the hedge
-        @return the name of the hedge.
-        """
+        """@return the name of the hedge."""
         return self.__class__.__name__.lower()
 
     @abstractmethod

@@ -19,21 +19,16 @@ from __future__ import annotations
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
 import contextlib
-import typing
 from collections.abc import Iterable
 
 import numpy as np
 
-from .exporter import FllExporter
-from .library import inf, isnan, nan, scalar
+from .defuzzifier import Defuzzifier
+from .library import inf, nan, representation, scalar
 from .norm import SNorm
 from .operation import Op
-from .term import Aggregated
+from .term import Aggregated, Term
 from .types import Scalar
-
-if typing.TYPE_CHECKING:
-    from .defuzzifier import Defuzzifier
-    from .term import Term
 
 
 class Variable:
@@ -54,6 +49,7 @@ class Variable:
         maximum: float = inf,
         lock_range: bool = False,
         terms: Iterable[Term] | None = None,
+        value: Scalar = nan,
     ) -> None:
         """Create the variable.
         @param name is the name of the variable
@@ -72,18 +68,18 @@ class Variable:
         self.minimum = minimum
         self.maximum = maximum
         self.lock_range = lock_range
-        self.terms: list[Term] = []
-        if terms:  # TODO: replace instead of extend
-            self.terms.extend(terms)
-        self._value = scalar(nan)
+        self.terms = list(terms) if terms else []
+        self.value = value
 
     def __str__(self) -> str:
-        """Gets a string representation of the variable in the FuzzyLite Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
-        return FllExporter().variable(self)
+        """@return variable in the FuzzyLite Language."""
+        return representation.fll.variable(self)
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the variable."""
+        fields = vars(self).copy()
+        fields["value"] = fields.pop("_value")
+        return representation.as_constructor(self, fields)
 
     def term(self, name: str) -> Term:
         """Gets the term by the name.
@@ -134,10 +130,9 @@ class Variable:
         @param value is the input value of an InputVariable, or the output
         value of an OutputVariable.
         """
-        if self.lock_range:
-            self._value = np.clip(value, self.minimum, self.maximum)
-        else:
-            self._value = value
+        self._value = (
+            np.clip(value, self.minimum, self.maximum) if self.lock_range else value
+        )
 
     def fuzzify(self, x: Scalar) -> str:
         r"""Evaluates the membership function of value $x$ for each
@@ -154,7 +149,7 @@ class Variable:
             if not result:
                 result.append(f"{Op.str(fx)}/{term.name}")
             else:
-                pm = "+" if fx >= 0.0 or isnan(fx) else "-"
+                pm = "+" if fx >= 0.0 or Op.isnan(fx) else "-"
                 result.append(f" {pm} {Op.str(fx)}/{term.name}")
 
         return "".join(result)
@@ -196,6 +191,7 @@ class InputVariable(Variable):
         maximum: float = inf,
         lock_range: bool = False,
         terms: Iterable[Term] | None = None,
+        value: Scalar = nan,
     ) -> None:
         """Create the input variable.
         @param name is the name of the variable
@@ -215,15 +211,12 @@ class InputVariable(Variable):
             maximum=maximum,
             lock_range=lock_range,
             terms=terms,
+            value=value,
         )
 
     def __str__(self) -> str:
-        """Gets a string representation of the variable in the FuzzyLite Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
-        return FllExporter().input_variable(self)
+        """@return variable in the FuzzyLite Language."""
+        return representation.fll.input_variable(self)
 
     def fuzzy_value(self) -> str:
         r"""Evaluates the membership function of the current input value $x$
@@ -297,9 +290,11 @@ class OutputVariable(Variable):
         lock_range: bool = False,
         lock_previous: bool = False,
         default_value: float = nan,
+        previous_value: float = nan,
         aggregation: SNorm | None = None,
         defuzzifier: Defuzzifier | None = None,
         terms: Iterable[Term] | None = None,
+        value: Scalar = nan,
     ) -> None:
         """Create the output variable.
         @param name is the name of the variable
@@ -319,7 +314,9 @@ class OutputVariable(Variable):
         # name, minimum, and maximum are properties in this class, replacing the inherited members
         # to point to the Aggregated object named fuzzy. Thus, first we need to set up the fuzzy
         # object such that initializing the parent object will use the respective replacements.
-        self.fuzzy = Aggregated(aggregation=aggregation)
+        self.fuzzy = Aggregated(
+            name=name, minimum=minimum, maximum=maximum, aggregation=aggregation
+        )
         # initialize parent members
         super().__init__(
             name=name,
@@ -329,32 +326,27 @@ class OutputVariable(Variable):
             maximum=maximum,
             lock_range=lock_range,
             terms=terms,
+            value=value,
         )
         # set values of output variable
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
         self.default_value = default_value
-        self.previous_value: float = nan
+        self.previous_value = previous_value
 
     def __str__(self) -> str:
-        """Gets a string representation of the variable in the FuzzyLite Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
-        return FllExporter().output_variable(self)
+        """@return variable in the FuzzyLite Language."""
+        return representation.fll.output_variable(self)
 
-    @property
-    def name(self) -> str:
-        """Gets the name of the output variable."""
-        return self.fuzzy.name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        """Sets the name of the output variable
-        @param value is the name of the output variable.
-        """
-        self.fuzzy.name = value
+    def __repr__(self) -> str:
+        """@return Python code to construct the variable."""
+        fields = vars(self).copy()
+        fields.pop("fuzzy")
+        fields["minimum"] = self.minimum
+        fields["maximum"] = self.maximum
+        fields["aggregation"] = self.aggregation
+        fields["value"] = fields.pop("_value")
+        return representation.as_constructor(self, fields)
 
     @property
     def minimum(self) -> float:
@@ -435,8 +427,7 @@ class OutputVariable(Variable):
         """
         self.fuzzy.clear()
         self.previous_value = nan
-        # TODO: use property instead?
-        self._value = scalar(nan)
+        self.value = nan
 
     def fuzzy_value(self) -> str:
         r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
@@ -449,6 +440,6 @@ class OutputVariable(Variable):
                 result.append(f"{Op.str(degree)}/{term.name}")
             else:
                 result.append(
-                    f" {'+' if isnan(degree) or degree >= 0 else '-'} {Op.str(np.fabs(degree))}/{term.name}"
+                    f" {'+' if Op.isnan(degree) or degree >= 0 else '-'} {Op.str(np.fabs(degree))}/{term.name}"
                 )
         return "".join(result)

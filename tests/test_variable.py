@@ -23,6 +23,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
+from typing_extensions import Self
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -31,7 +32,7 @@ from tests.assert_component import BaseAssert
 class VariableAssert(BaseAssert[fl.Variable]):
     """Variable assert."""
 
-    def fuzzy_values(self, fuzzification: dict[float, str]) -> VariableAssert:
+    def fuzzy_values(self, fuzzification: dict[float, str]) -> Self:
         """Test the fuzzification of the given keys result in their expected values."""
         for x in fuzzification:
             self.test.assertEqual(
@@ -41,7 +42,7 @@ class VariableAssert(BaseAssert[fl.Variable]):
 
     def highest_memberships(
         self, x_mf: dict[float, tuple[float, fl.Term | None]]
-    ) -> VariableAssert:
+    ) -> Self:
         """Test the highest memberships for the given keys result in the expected activation values and terms."""
         for x in x_mf:
             self.test.assertEqual(
@@ -178,12 +179,12 @@ class TestVariable(unittest.TestCase):
 class InputVariableAssert(BaseAssert[fl.InputVariable]):
     """Input variable assert."""
 
-    def exports_fll(self, fll: str) -> InputVariableAssert:
+    def exports_fll(self, fll: str) -> Self:
         """Asserts exporting the input variable to FLL yields the expected FLL."""
         self.test.assertEqual(fl.FllExporter().input_variable(self.actual), fll)
         return self
 
-    def fuzzy_values(self, fuzzification: dict[float, str]) -> InputVariableAssert:
+    def fuzzy_values(self, fuzzification: dict[float, str]) -> Self:
         """Assert the fuzzification of the given keys result in their expected fuzzy values."""
         for x in fuzzification:
             self.actual.value = x
@@ -267,14 +268,14 @@ class TestInputVariable(unittest.TestCase):
 class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
     """Output variable assert."""
 
-    def clear(self) -> OutputVariableAssert:
+    def clear(self) -> Self:
         """Clear the output variable."""
         self.actual.clear()
         return self
 
     def when_fuzzy_output(
         self, *, is_empty: bool, implication: fl.TNorm | None = None
-    ) -> OutputVariableAssert:
+    ) -> Self:
         """Set the output variable to the given terms."""
         if is_empty:
             self.actual.fuzzy.terms = []
@@ -285,7 +286,7 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
             ]
         return self
 
-    def defuzzify(self, raises: Exception | None = None) -> OutputVariableAssert:
+    def defuzzify(self, raises: Exception | None = None) -> Self:
         """Defuzzify the output variable."""
         if raises:
             with self.test.assertRaises(type(raises)) as error:
@@ -295,19 +296,19 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
             self.actual.defuzzify()
         return self
 
-    def then_fuzzy_value_is(self, value: str | list[str]) -> OutputVariableAssert:
+    def then_fuzzy_value_is(self, value: str | list[str]) -> Self:
         """Assert the fuzzy value of the output variable."""
         self.test.assertEqual(self.actual.fuzzy_value(), value)
         return self
 
-    def exports_fll(self, fll: str) -> OutputVariableAssert:
+    def exports_fll(self, fll: str) -> Self:
         """Assert exporting the output variable results in the expected FLL."""
-        self.test.assertEqual(fl.FllExporter().output_variable(self.actual), fll)
+        self.test.assertEqual(fll, fl.FllExporter().output_variable(self.actual))
         return self
 
     def activated_values(
         self, fuzzification: dict[Sequence[fl.Activated], str]
-    ) -> OutputVariableAssert:
+    ) -> Self:
         """Assert the list of activated terms results in the expected fuzzy value."""
         for x in fuzzification:
             self.actual.fuzzy.terms.clear()
