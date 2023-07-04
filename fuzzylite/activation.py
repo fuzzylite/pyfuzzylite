@@ -59,13 +59,11 @@ class Activation(ABC):
     """
 
     def __str__(self) -> str:
-        """Returns the FLL code for the activation method
-        @return FLL code for the activation method.
-        """
+        """@return activation in the FuzzyLite Language."""
         return representation.fll.activation(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the activation."""
         return representation.as_constructor(self)
 
     @abstractmethod

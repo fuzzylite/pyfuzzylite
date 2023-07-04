@@ -67,11 +67,11 @@ class ConstructionFactory(Generic[T]):
         return self.constructors.__iter__()
 
     def __str__(self) -> str:
-        """Returns a string representation of the object in the FuzzyLite Language."""
+        """@return class name of the factory."""
         return Op.class_name(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the factory."""
         return representation.as_constructor(self)
 
     def import_from(self, module: ModuleType, cls: type[T]) -> list[type[T]]:
@@ -124,11 +124,11 @@ class CloningFactory(Generic[T]):
         return self.objects.__iter__()
 
     def __str__(self) -> str:
-        """Returns a string representation of the object in the FuzzyLite Language."""
+        """@return class name of the factory."""
         return Op.class_name(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the factory."""
         return representation.as_constructor(self)
 
     def copy(self, key: str) -> T:

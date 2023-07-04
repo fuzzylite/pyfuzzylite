@@ -51,11 +51,17 @@ class Hedge(ABC):
     @since 4.0
     """
 
+    def __str__(self) -> str:
+        """@return name of the hedge."""
+        return self.__class__.__name__.lower()
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the hedge."""
+        return representation.as_constructor(self)
+
     @property
     def name(self) -> str:
-        """Returns the name of the hedge
-        @return the name of the hedge.
-        """
+        """@return the name of the hedge."""
         return self.__class__.__name__.lower()
 
     @abstractmethod
@@ -65,14 +71,6 @@ class Hedge(ABC):
         @return the hedge of $x$.
         """
         raise NotImplementedError()
-
-    def __str__(self) -> str:
-        """Returns a string representation of the object in the FuzzyLite Language."""
-        return self.__class__.__name__.lower()
-
-    def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
-        return representation.as_constructor(self)
 
 
 class Any(Hedge):

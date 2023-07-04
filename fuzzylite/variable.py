@@ -72,15 +72,11 @@ class Variable:
         self.value = value
 
     def __str__(self) -> str:
-        """Gets a string representation of the variable in the FuzzyLite Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
+        """@return variable in the FuzzyLite Language."""
         return representation.fll.variable(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the variable."""
         fields = vars(self).copy()
         fields["value"] = fields.pop("_value")
         return representation.as_constructor(self, fields)
@@ -219,12 +215,7 @@ class InputVariable(Variable):
         )
 
     def __str__(self) -> str:
-        """Returns the representation of the variable in the FuzzyLite
-        Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
+        """@return variable in the FuzzyLite Language."""
         return representation.fll.input_variable(self)
 
     def fuzzy_value(self) -> str:
@@ -344,15 +335,11 @@ class OutputVariable(Variable):
         self.previous_value = previous_value
 
     def __str__(self) -> str:
-        """Gets a string representation of the variable in the FuzzyLite Language
-        @return a string representation of the variable in the FuzzyLite
-        Language
-        @see FllExporter.
-        """
+        """@return variable in the FuzzyLite Language."""
         return representation.fll.output_variable(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the variable."""
         fields = vars(self).copy()
         fields.pop("fuzzy")
         fields["minimum"] = self.minimum

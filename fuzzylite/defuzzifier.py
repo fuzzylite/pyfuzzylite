@@ -51,11 +51,11 @@ class Defuzzifier(ABC):
     """
 
     def __str__(self) -> str:
-        """Returns a string representation of the object in the FuzzyLite Language."""
+        """@return defuzzifier in the FuzzyLite Language."""
         return representation.fll.defuzzifier(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the defuzzifier."""
         return representation.as_constructor(self)
 
     def configure(  # noqa: B027 empty method in an abstract base class

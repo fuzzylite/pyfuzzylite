@@ -126,6 +126,12 @@ class Settings:
         self.logger = logger or logging.getLogger("fuzzylite")
         self._factory_manager = factory_manager
 
+    def __repr__(self) -> str:
+        """@return Python code to construct the settings."""
+        fields = vars(self).copy()
+        fields["factory_manager"] = fields.pop("_factory_manager")
+        return representation.as_constructor(self, fields)
+
     @property
     def factory_manager(self) -> FactoryManager:
         """Get the factory manager."""
@@ -141,11 +147,15 @@ class Settings:
         """Set the factory manager."""
         self._factory_manager = value
 
-    def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
-        fields = vars(self).copy()
-        fields["factory_manager"] = fields.pop("_factory_manager")
-        return representation.as_constructor(self, fields)
+    @property
+    def debugging(self) -> bool:
+        """Whether the library is in debug mode."""
+        return self.logger.level == logging.DEBUG
+
+    @debugging.setter
+    def debugging(self, value: bool) -> None:
+        """Set the library debugging mode."""
+        self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
 
     @contextmanager
     def context(
@@ -186,16 +196,6 @@ class Settings:
             for key, value in context_settings.items():
                 setattr(self, key, rollback_settings[key])
 
-    @property
-    def debugging(self) -> bool:
-        """Whether the library is in debug mode."""
-        return self.logger.level == logging.DEBUG
-
-    @debugging.setter
-    def debugging(self, value: bool) -> None:
-        """Set the library debugging mode."""
-        self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
-
 
 settings: Final[Settings] = Settings()
 
@@ -213,7 +213,7 @@ class Information:
     website: str = "https://fuzzylite.com/"
 
     def __repr__(self) -> str:
-        """Returns a string representation of the object in the FuzzyLite Language."""
+        """@return Python code to construct the information."""
         fields = vars(self).copy()
         fields["version"] = self.version
         return representation.as_constructor(self, fields)
@@ -242,6 +242,10 @@ class Representation(reprlib.Repr):
         from .exporter import FllExporter
 
         self.fll: Final[FllExporter] = FllExporter()
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the representation."""
+        return representation.as_constructor(self)
 
     def package_of(self, x: Any, /) -> str:
         """Returns the qualified class name of the given object.

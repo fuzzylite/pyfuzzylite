@@ -102,17 +102,11 @@ class Term(ABC):
         self.height = height
 
     def __str__(self) -> str:
-        """Returns the representation of the term in the FuzzyLite Language
-        :return the representation of the term in FuzzyLite Language
-        @see FllExporter.
-        """
+        """@return term in the FuzzyLite Language."""
         return representation.fll.term(self)
 
     def __repr__(self) -> str:
-        """Returns the representation of the term in the FuzzyLite Language
-        :return the representation of the term in FuzzyLite Language
-        @see FllExporter.
-        """
+        """@return Python code to construct the term."""
         return representation.as_constructor(self)
 
     def parameters(self) -> str:
@@ -247,7 +241,7 @@ class Activated(Term):
         self.implication = implication
 
     def __repr__(self) -> str:
-        """Return the representation of the term."""
+        """@return Python code to construct the term."""
         fields = {
             "term": self.term,
             "degree": self.degree,
@@ -333,7 +327,7 @@ class Aggregated(Term):
         self.terms = list(terms) if terms else []
 
     def __repr__(self) -> str:
-        """Return the representation of the term."""
+        """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("height")
         return representation.as_constructor(self, fields)
@@ -709,7 +703,7 @@ class Constant(Term):
         self.value = value
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("height")
         return representation.as_constructor(self, fields)
@@ -1133,7 +1127,7 @@ class Linear(Term):
         self.engine = engine
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("height")
         fields["engine"] = Ellipsis
@@ -2189,7 +2183,7 @@ class Function(Term):
             Function = enum.auto()
 
             def __repr__(self) -> str:
-                """Returns the representation of the type as Python code (eg, Type.Operator)."""
+                """@return Python code to construct the type."""
                 return str(self)
 
         def __init__(
@@ -2224,9 +2218,7 @@ class Function(Term):
             self.associativity = associativity
 
         def __repr__(self) -> str:
-            """Returns a description of the element and its members
-            @return a description of the element and its members.
-            """
+            """@return Python code to construct the element."""
             return representation.as_constructor(self)
 
         def is_function(self) -> bool:
@@ -2270,7 +2262,7 @@ class Function(Term):
             self.left = left
 
         def __repr__(self) -> str:
-            """Gets a representation of the node in postfix notation."""
+            """@return Python code to construct the node."""
             return representation.as_constructor(self)
 
         def value(self) -> str:
@@ -2431,12 +2423,10 @@ class Function(Term):
             self.load()
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
-        fields = {
-            "name": self.name,
-            "formula": self.formula,
-            "engine": ...,
-        }
+        """@return Python code to construct the term."""
+        fields = vars(self).copy()
+        fields.pop("root")
+        fields.pop("engine")
         return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:

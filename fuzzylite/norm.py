@@ -65,11 +65,11 @@ class Norm(ABC):
     """
 
     def __str__(self) -> str:
-        """Gets a string representation in the FuzzyLite Language."""
+        """@return norm in the FuzzyLite Language."""
         return representation.fll.norm(self)
 
     def __repr__(self) -> str:
-        """Return the canonical string representation of the object."""
+        """@return Python code to construct the norm."""
         return representation.as_constructor(self)
 
     @abstractmethod
