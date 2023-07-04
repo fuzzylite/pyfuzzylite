@@ -15,6 +15,7 @@
 
 
 ## __init__.py
+- Changed: library `__name__` is now `fuzzylite`, it was incorrectly `pyfuzzylite` before but such a package does not exist
 - Changed: fl.inf, fl.nan, fl.isnan, fl.isinf now map to their numpy equivalents
 - Changed: fl.isnan and fl.isinf moved to Op (use now: fl.Op.isnan, fl.Op.isinf)
 - Changed: fl.inf and fl.nan moved to library.py
