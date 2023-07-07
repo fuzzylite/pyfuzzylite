@@ -1,18 +1,18 @@
 # Version 8.0.0
-- Dual license: GNU GPL and paid proprietary license for commercial purposes
-- Requires Python >=3.9
-- Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
-- Arguments that can be float and numpy arrays are now of type fl.Scalar (see fuzzylite/types.py)
-- Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
-- fl.scalar now converts any argument to a numpy array, instead of a float
-- fl.array maps to np.array
-- Op.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
-- All enum values are automatically assigned with enum.auto(), instead of manual assignments
+- New: Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
+- New: Arguments that can be [float | numpy arrays] are now of type fl.Scalar (see fuzzylite/types.py)
+- New: Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
+- New: fl.scalar converts any argument to a numpy array
+- New: fl.array maps to np.array
+- New: fl.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
 - New: Arc and SemiEllipse terms.
 - Using `from __future__ import annotations` in every file to use better type annotations
-- Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
-- Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
-- Many more tests and better structures for tests
+- Changed: Dual license: GNU GPL and paid proprietary license for commercial purposes
+- Changed: Requires Python >=3.9
+- Changed: All enum values are automatically assigned with enum.auto(), instead of manual assignments
+- Changed: Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
+- Changed: Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
+- Changed: Many more tests and better structures for tests
 
 
 ## __init__.py

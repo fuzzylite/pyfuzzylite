@@ -181,7 +181,7 @@ class Engine:
             f"variable '{name}' not found in {[v.name for v in self.variables]}"
         )
 
-    def input_variable(self, x: str | int, /) -> InputVariable:
+    def input_variable(self, name_or_index: str | int, /) -> InputVariable:
         """Gets the input variable of the given name after iterating the input
         variables. The cost of this method is O(n), where n is the number of
         input variables in the engine. For performance, please get the
@@ -190,17 +190,17 @@ class Engine:
         @return input variable of the given name
         @throws ValueError if there is no variable with the given name.
         """
-        if isinstance(x, int):
-            return self.input_variables[x]
+        if isinstance(name_or_index, int):
+            return self.input_variables[name_or_index]
         for variable in self.input_variables:
-            if variable.name == x:
+            if variable.name == name_or_index:
                 return variable
         raise ValueError(
-            f"input variable '{x}' not found in "
+            f"input variable '{name_or_index}' not found in "
             f"{[v.name for v in self.input_variables]}"
         )
 
-    def output_variable(self, x: str | int, /) -> OutputVariable:
+    def output_variable(self, name_or_index: str | int, /) -> OutputVariable:
         """Gets the output variable of the given name after iterating the output
         variables. The cost of this method is O(n), where n is the number of
         output variables in the engine. For performance, please get the
@@ -209,17 +209,17 @@ class Engine:
         @return output variable of the given name
         @throws ValueError if there is no variable with the given name.
         """
-        if isinstance(x, int):
-            return self.output_variables[x]
+        if isinstance(name_or_index, int):
+            return self.output_variables[name_or_index]
         for variable in self.output_variables:
-            if variable.name == x:
+            if variable.name == name_or_index:
                 return variable
         raise ValueError(
-            f"output variable '{x}' not found in "
+            f"output variable '{name_or_index}' not found in "
             f"{[v.name for v in self.output_variables]}"
         )
 
-    def rule_block(self, x: str | int, /) -> RuleBlock:
+    def rule_block(self, name_or_index: str | int, /) -> RuleBlock:
         """Gets the rule block of the given name after iterating the rule blocks.
         The cost of this method is O(n), where n is the number of
         rule blocks in the engine. For performance, please get the rule blocks
@@ -228,13 +228,13 @@ class Engine:
         @return rule block of the given name
         @throws ValueError if there is no block with the given name.
         """
-        if isinstance(x, int):
-            return self.rule_blocks[x]
+        if isinstance(name_or_index, int):
+            return self.rule_blocks[name_or_index]
         for block in self.rule_blocks:
-            if block.name == x:
+            if block.name == name_or_index:
                 return block
         raise ValueError(
-            f"rule block '{x}' not found in {[r.name for r in self.rule_blocks]}"
+            f"rule block '{name_or_index}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
     @property
