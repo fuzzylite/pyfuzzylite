@@ -228,7 +228,7 @@ class LargestOfMaximum(IntegralDefuzzifier):
         lom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            z = np.nanmax(lom, axis=1, keepdims=True).squeeze()
+            z = np.nanmax(lom, axis=1).squeeze()
             return z  # type: ignore
 
 
@@ -263,7 +263,7 @@ class MeanOfMaximum(IntegralDefuzzifier):
         mom = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            z = np.nanmean(mom, axis=1, keepdims=True).squeeze()
+            z = np.nanmean(mom, axis=1).squeeze()
             return z  # type: ignore
 
 
@@ -298,7 +298,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
         som = np.where(y_max, x, np.nan)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            z = np.nanmin(som, axis=1, keepdims=True).squeeze()
+            z = np.nanmin(som, axis=1).squeeze()
             return z  # type: ignore
 
 
@@ -324,6 +324,10 @@ class WeightedDefuzzifier(Defuzzifier):
         Automatic = enum.auto()
         TakagiSugeno = enum.auto()
         Tsukamoto = enum.auto()
+
+        def __repr__(self) -> str:
+            """@return Python code to construct the type."""
+            return f"'{self.name}'"
 
     def __init__(
         self,

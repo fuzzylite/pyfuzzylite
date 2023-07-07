@@ -861,9 +861,9 @@ class FldExporter(Exporter):
 
         values: list[Any] = []
         if self.input_values:
-            values.append(engine.input_values())
+            values.append(engine.input_values)
         if self.output_values:
-            values.append(engine.output_values())
+            values.append(engine.output_values)
         if not values:
             # TODO: Fix this. It's a hack to use hstack without blowing up.
             values = [[]]

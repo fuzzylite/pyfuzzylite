@@ -1130,7 +1130,7 @@ class Linear(Term):
         """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("height")
-        fields["engine"] = Ellipsis
+        fields.pop("engine")
         return representation.as_constructor(self, fields)
 
     def membership(self, x: Scalar) -> Scalar:
@@ -1148,7 +1148,8 @@ class Linear(Term):
             len(self.engine.input_variables) + 1,
         }:
             raise ValueError(
-                f"expected {len(self.engine.input_variables)} (+1) coefficients (one for each input variable plus an optional constant), "
+                f"expected {len(self.engine.input_variables)} (+1) coefficients "
+                "(one for each input variable plus an optional constant), "
                 f"but found {len(self.coefficients)} coefficients: {self.coefficients}"
             )
         coefficients = scalar([self.coefficients[: len(self.engine.input_variables)]])
@@ -1157,8 +1158,8 @@ class Linear(Term):
             if len(self.coefficients) > len(self.engine.input_variables)
             else 0.0
         )
-        inputs = np.array([iv.value for iv in self.engine.input_variables], ndmin=2).T
-        y = (coefficients * inputs).sum(axis=1) + constant
+        inputs = self.engine.input_values
+        y = (coefficients * inputs).sum(axis=1, keepdims=False) + constant
         return y  # type:ignore
 
     def configure(self, parameters: str) -> None:
@@ -2184,13 +2185,13 @@ class Function(Term):
 
             def __repr__(self) -> str:
                 """@return Python code to construct the type."""
-                return str(self)
+                return f"'{self.name}'"
 
         def __init__(
             self,
             name: str,
             description: str,
-            type: Function.Element.Type,
+            type: Function.Element.Type | str,
             method: Callable[..., Scalar],
             arity: int = 0,
             precedence: int = 0,
@@ -2211,7 +2212,11 @@ class Function(Term):
             """
             self.name = name
             self.description = description
-            self.type = type
+            self.type = (
+                type
+                if isinstance(type, Function.Element.Type)
+                else Function.Element.Type[type]
+            )
             self.method = method
             self.arity = arity
             self.precedence = precedence
@@ -2425,8 +2430,11 @@ class Function(Term):
     def __repr__(self) -> str:
         """@return Python code to construct the term."""
         fields = vars(self).copy()
+        if not self.variables:
+            fields.pop("variables")
+        fields.pop("height")
         fields.pop("root")
-        fields["engine"] = Ellipsis
+        fields.pop("engine")
         return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:

@@ -150,6 +150,74 @@ __getattr__
             self.assertEqual(fl.settings.factory_manager, test_factory_manager)
         self.assertEqual(fl.settings.factory_manager, default_factory_manager)
 
+    def test_repr_with_takagi_sugeno(self) -> None:
+        """Tests the repr with terms referencing engines."""
+        from fuzzylite.examples.takagi_sugeno import SimpleDimmer
+
+        engine = SimpleDimmer.engine
+        engine.input_variables[0].value = 1 / 3
+        engine.process()
+        self.assertEqual(2 / 3, engine.output_variables[0].value)
+        engine.restart()
+
+        engine = eval(repr(SimpleDimmer.engine))
+        engine.input_variables[0].value = 1 / 3
+        engine.process()
+        self.assertEqual(2 / 3, engine.output_variables[0].value)
+
+    def test_numpy_arrays(self) -> None:
+        """Tests of numpy arrays."""
+        x = fl.array(
+            [
+                [1, 2],
+                [-1, -2],
+            ]
+        )
+        rows = ...
+        column = 0
+        np.testing.assert_allclose([1, -1], x[rows, column])
+        np.testing.assert_allclose([2, -2], x[rows, column + 1])
+        np.testing.assert_allclose([3, -3], x.sum(axis=1))
+        np.testing.assert_allclose([0, 0], x.sum(axis=0))
+        np.testing.assert_allclose([3, -3], x.sum(axis=-1))
+
+    def test_repr_with_takagi_sugeno_referencing_engines(self) -> None:
+        """Tests the repr with terms referencing engines."""
+        from fuzzylite.examples.takagi_sugeno.octave import linear_tip_calculator
+
+        engine = linear_tip_calculator.engine
+        engine.input_values = fl.array(
+            [
+                [1, 2],
+                [4, 6],
+                [8, 10],
+            ]
+        )
+        np.testing.assert_allclose([1, 4, 8], engine.input_variable(0).value)
+        np.testing.assert_allclose([2, 6, 10], engine.input_variable(1).value)
+        engine.process()
+        np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
+
+        engine = eval(repr(linear_tip_calculator.engine))
+        engine.input_values = fl.array(
+            [
+                [1, 2],
+                [4, 6],
+                [8, 10],
+            ]
+        )
+        np.testing.assert_allclose([1, 4, 8], engine.input_variable(0).value)
+        np.testing.assert_allclose([2, 6, 10], engine.input_variable(1).value)
+        engine.process()
+        np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
+
+        engine = eval(repr(linear_tip_calculator.engine))
+        engine.input_values = fl.array([1, 2])
+        np.testing.assert_allclose(1, engine.input_variable(0).value)
+        np.testing.assert_allclose(2, engine.input_variable(1).value)
+        engine.process()
+        np.testing.assert_allclose(engine.output_values, 10)
+
 
 if __name__ == "__main__":
     unittest.main()

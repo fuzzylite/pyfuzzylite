@@ -4,7 +4,8 @@
 - Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
 - Arguments that can be float and numpy arrays are now of type fl.Scalar (see fuzzylite/types.py)
 - Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
-- Op.scalar now converts any argument to a numpy array, instead of a float
+- fl.scalar now converts any argument to a numpy array, instead of a float
+- fl.array maps to np.array
 - Op.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
 - All enum values are automatically assigned with enum.auto(), instead of manual assignments
 - New: Arc and SemiEllipse terms.
@@ -36,9 +37,13 @@
 - Removed: Defuzzifier.class_name, use now Op.class_name when needed
 
 ## engine.py
-- New: Engine.input_values() and Engine.output_values() produce 2D matrices with their respective values
+- New: Properties Engine.input_values and Engine.output_values produce 2D matrices with their respective values
+- New: Property setter Engine.input_values provides shortcuts to setting input variable values
+- New: constructor parameter `update_reference:bool=False` to automatically update the reference of all terms in variables
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
-- Changed: Engine constructor by default loads the rules on construction (ie, `load_rules=True`)
+- Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
+
+
 
 ## exporter.py
 - Changed: Exporter is abstract
