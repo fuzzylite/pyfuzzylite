@@ -72,7 +72,7 @@ def install_upgrade(session: nox.Session) -> None:
 @nox.session(python=False)
 def freeze(session: nox.Session) -> None:
     """Print all the versions of dependencies."""
-    session.run(*"pip freeze".split(), external=True)
+    session.run(*"poetry show".split(), external=True)
 
 
 @nox.session(python=False)

@@ -1,17 +1,18 @@
 # Version 8.0.0
-- Dual license: GNU GPL and paid proprietary license for commercial purposes
-- Requires Python >=3.9
-- Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
-- Arguments that can be float and numpy arrays are now of type fl.Scalar (see fuzzylite/types.py)
-- Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
-- Op.scalar now converts any argument to a numpy array, instead of a float
-- Op.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
-- All enum values are automatically assigned with enum.auto(), instead of manual assignments
+- New: Engines can operate more efficiently using vectorization by means of numpy arrays (floats operation still supported)
+- New: Arguments that can be [float | numpy arrays] are now of type fl.Scalar (see fuzzylite/types.py)
+- New: Arguments that can only be arrays of floats are now fl.ScalarArray (see fuzzylite/types.py)
+- New: fl.scalar converts any argument to a numpy array
+- New: fl.array maps to np.array
+- New: fl.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
 - New: Arc and SemiEllipse terms.
 - Using `from __future__ import annotations` in every file to use better type annotations
-- Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
-- Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
-- Many more tests and better structures for tests
+- Changed: Dual license: GNU GPL and paid proprietary license for commercial purposes
+- Changed: Requires Python >=3.9
+- Changed: All enum values are automatically assigned with enum.auto(), instead of manual assignments
+- Changed: Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
+- Changed: Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
+- Changed: Many more tests and better structures for tests
 
 
 ## __init__.py
@@ -36,9 +37,13 @@
 - Removed: Defuzzifier.class_name, use now Op.class_name when needed
 
 ## engine.py
-- New: Engine.input_values() and Engine.output_values() produce 2D matrices with their respective values
+- New: Properties Engine.input_values and Engine.output_values produce 2D matrices with their respective values
+- New: Property setter Engine.input_values provides shortcuts to setting input variable values
+- New: constructor parameter `update_reference:bool=False` to automatically update the reference of all terms in variables
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
-- Changed: Engine constructor by default loads the rules on construction (ie, `load_rules=True`)
+- Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
+
+
 
 ## exporter.py
 - Changed: Exporter is abstract

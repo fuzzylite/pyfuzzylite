@@ -77,18 +77,16 @@ def scalar(x: Any, /) -> Scalar:
     ...
 
 
-def scalar(x: Sequence[Any] | Array[Any] | Any, /) -> ScalarArray | Scalar:
+def scalar(
+    x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any
+) -> ScalarArray | Scalar:
     """Convert the values into a floating point value  defined by the library
     @param x is the value to convert.
     """
-    return np.asarray(x, dtype=settings.float_type)
+    return np.asarray(x, dtype=settings.float_type, **kwargs)
 
 
-def array(x: Any, /, **kwargs: Any) -> Array[Any]:
-    """Convert the value into a floating point defined by the library
-    @param x is the value to convert.
-    """
-    return np.asarray(x, **kwargs)
+array = np.array
 
 
 class Settings:

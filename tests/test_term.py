@@ -83,10 +83,14 @@ class TermAssert(BaseAssert[fl.Term]):
 
     def has_memberships(self, x_mf: dict[float, float], height: float = 1.0) -> Self:
         """Assert the term's membership function produces $f(x{_keys}) = mf_{values}$."""
-        inputs = fl.scalar([x for x in x_mf])  # don't care
+        inputs = fl.scalar([x for x in x_mf])
         expected = height * fl.scalar([mf for mf in x_mf.values()])
         if isinstance(self.actual, fl.Linear):
             self.test.assertIsNotNone(self.actual.engine)
+            # membership function of linear terms do not depend on parameter inputs,
+            # instead it depends on the input values of the variables.
+            # here we extend each input value to match the length of the inputs
+            # so the obtained membership has the same shape as the expected values
             for input_variable in self.actual.engine.input_variables:  # type: ignore
                 input_variable.value = np.full_like(
                     inputs, np.atleast_1d(input_variable.value)[0]
@@ -1070,11 +1074,11 @@ class TestTerm(unittest.TestCase):
         self.assertEqual(linear.engine, engine)
 
         TermAssert(self, linear).exports_fll("term: linear Linear 1.000 2.000").repr_is(
-            "fl.Linear(name='linear', coefficients=[1.0, 2.0], engine=...)"
+            "fl.Linear(name='linear', coefficients=[1.0, 2.0])"
         ).is_not_monotonic().configured_as("1.0 2.0 3").exports_fll(
             "term: linear Linear 1.000 2.000 3.000"
         ).repr_is(
-            "fl.Linear(name='linear', coefficients=[1.0, 2.0, 3.0], engine=...)"
+            "fl.Linear(name='linear', coefficients=[1.0, 2.0, 3.0])"
         ).has_memberships(
             {
                 -0.5: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
@@ -2265,8 +2269,14 @@ class TestFunction(unittest.TestCase):
 
         TermAssert(self, fl.Function("function", "", variables={"y": 1.5})).exports_fll(
             "term: function Function"
-        ).configured_as("2*x**3 +2*y - 3").exports_fll(
+        ).repr_is(
+            "fl.Function(name='function', formula='', variables={'y': 1.5})"
+        ).configured_as(
+            "2*x**3 +2*y - 3"
+        ).exports_fll(
             "term: function Function 2*x**3 +2*y - 3"
+        ).repr_is(
+            "fl.Function(name='function', formula='2*x**3 +2*y - 3', variables={'y': 1.5})"
         ).has_memberships(
             {
                 -0.5: -0.25,
@@ -2298,9 +2308,9 @@ class TestFunction(unittest.TestCase):
 
         function_a = fl.Function.create("f", "2*i_A + o_A + x", engine_a)
         assert_that = TermAssert(self, function_a)
-        assert_that.exports_fll("term: f Function 2*i_A + o_A + x").has_memberships(
-            {0.0: nan}
-        )
+        assert_that.exports_fll("term: f Function 2*i_A + o_A + x").repr_is(
+            "fl.Function(name='f', formula='2*i_A + o_A + x')"
+        ).has_memberships({0.0: nan})
         input_a.value = 3.0
         output_a.value = 1.0
         assert_that.has_memberships(
@@ -2362,7 +2372,7 @@ class TestFunction(unittest.TestCase):
         )
         self.assertEqual(
             "fl.Element(name='function', description='math function()', "
-            "type=Type.Function, method=<built-in function any>, arity=0, "
+            "type='Function', method=<built-in function any>, arity=0, "
             "precedence=0, associativity=-1)",
             str(element),
         )
@@ -2378,7 +2388,7 @@ class TestFunction(unittest.TestCase):
         )
         self.assertEqual(
             "fl.Element(name='operator', description='math operator', "
-            "type=Type.Operator, "
+            "type='Operator', "
             "method=<built-in function add>, arity=2, "
             "precedence=10, associativity=1)",
             str(element),

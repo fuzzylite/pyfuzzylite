@@ -77,7 +77,8 @@ class Engine:
         input_variables: Iterable[InputVariable] | None = None,
         output_variables: Iterable[OutputVariable] | None = None,
         rule_blocks: Iterable[RuleBlock] | None = None,
-        load_rules: bool = True,
+        load_rules: bool = False,
+        update_reference: bool = False,
     ) -> None:
         """Creates an Engine with the parameters given.
 
@@ -96,6 +97,10 @@ class Engine:
         if load_rules:
             for rb in self.rule_blocks:
                 rb.load_rules(self)
+        if update_reference:
+            for variable in self.variables:
+                for term in variable.terms:
+                    term.update_reference(self)
 
     def __str__(self) -> str:
         """@return engine in the FuzzyLite Language."""
@@ -103,7 +108,10 @@ class Engine:
 
     def __repr__(self) -> str:
         """@return Python code to construct the engine."""
-        return representation.as_constructor(self)
+        fields = vars(self).copy()
+        fields["load_rules"] = True
+        fields["update_reference"] = True
+        return representation.as_constructor(self, fields)
 
     def configure(
         self,
@@ -173,7 +181,7 @@ class Engine:
             f"variable '{name}' not found in {[v.name for v in self.variables]}"
         )
 
-    def input_variable(self, name: str) -> InputVariable:
+    def input_variable(self, name_or_index: str | int, /) -> InputVariable:
         """Gets the input variable of the given name after iterating the input
         variables. The cost of this method is O(n), where n is the number of
         input variables in the engine. For performance, please get the
@@ -182,15 +190,17 @@ class Engine:
         @return input variable of the given name
         @throws ValueError if there is no variable with the given name.
         """
+        if isinstance(name_or_index, int):
+            return self.input_variables[name_or_index]
         for variable in self.input_variables:
-            if variable.name == name:
+            if variable.name == name_or_index:
                 return variable
         raise ValueError(
-            f"input variable '{name}' not found in "
+            f"input variable '{name_or_index}' not found in "
             f"{[v.name for v in self.input_variables]}"
         )
 
-    def output_variable(self, name: str) -> OutputVariable:
+    def output_variable(self, name_or_index: str | int, /) -> OutputVariable:
         """Gets the output variable of the given name after iterating the output
         variables. The cost of this method is O(n), where n is the number of
         output variables in the engine. For performance, please get the
@@ -199,15 +209,17 @@ class Engine:
         @return output variable of the given name
         @throws ValueError if there is no variable with the given name.
         """
+        if isinstance(name_or_index, int):
+            return self.output_variables[name_or_index]
         for variable in self.output_variables:
-            if variable.name == name:
+            if variable.name == name_or_index:
                 return variable
         raise ValueError(
-            f"output variable '{name}' not found in "
+            f"output variable '{name_or_index}' not found in "
             f"{[v.name for v in self.output_variables]}"
         )
 
-    def rule_block(self, name: str) -> RuleBlock:
+    def rule_block(self, name_or_index: str | int, /) -> RuleBlock:
         """Gets the rule block of the given name after iterating the rule blocks.
         The cost of this method is O(n), where n is the number of
         rule blocks in the engine. For performance, please get the rule blocks
@@ -216,13 +228,16 @@ class Engine:
         @return rule block of the given name
         @throws ValueError if there is no block with the given name.
         """
+        if isinstance(name_or_index, int):
+            return self.rule_blocks[name_or_index]
         for block in self.rule_blocks:
-            if block.name == name:
+            if block.name == name_or_index:
                 return block
         raise ValueError(
-            f"rule block '{name}' not found in {[r.name for r in self.rule_blocks]}"
+            f"rule block '{name_or_index}' not found in {[r.name for r in self.rule_blocks]}"
         )
 
+    @property
     def input_values(self) -> ScalarArray:
         """Returns a matrix containing the input values of the engine,
         where columns represent variables and rows represent input values
@@ -232,6 +247,38 @@ class Engine:
             np.array([v.value for v in self.input_variables])
         ).T
 
+    @input_values.setter
+    def input_values(self, values: ScalarArray) -> None:
+        """Sets the input values of the engine
+        @param values the input values of the engine.
+        """
+        if not self.input_variables:
+            raise RuntimeError(
+                "can't set input values to an engine without input variables"
+            )
+        if values.ndim == 0:
+            # all variables set their value to the same
+            values = np.full((1, len(self.input_variables)), fill_value=values.item())
+        elif values.ndim == 1:
+            values = np.atleast_2d(values)
+            if len(self.input_variables) == 1:
+                values = values.T
+        elif values.ndim == 2:
+            pass
+        else:
+            raise ValueError(
+                "expected a 0d-array (single value), 1d-array (vector), or 2d-array (matrix), "
+                f"but got a {values.ndim}d-array: {values}"
+            )
+        if values.shape[1] != len(self.input_variables):
+            raise ValueError(
+                f"expected a value with {len(self.input_variables)} columns (one for each input variable), "
+                f"but got {values.shape[1]} columns: {values}"
+            )
+        for i, v in enumerate(self.input_variables):
+            v.value = values[:, i]
+
+    @property
     def output_values(self) -> ScalarArray:
         """Returns a matrix containing the output values of the engine,
         where columns represent variables and rows represent output values
@@ -240,20 +287,6 @@ class Engine:
         return np.atleast_2d(  # type:ignore
             np.array([v.value for v in self.output_variables])
         ).T
-
-    # @property
-    # def inputs(self) -> dict[str, Scalar]:
-    #     """Returns the input values of the engine
-    #     @return the input values of the engine.
-    #     """
-    #     return {v.name: v.value for v in self.input_variables}
-    #
-    # @property
-    # def outputs(self) -> dict[str, Scalar]:
-    #     """Returns the output values of the engine
-    #     @return the output values of the engine.
-    #     """
-    #     return {v.name: v.value for v in self.output_variables}
 
     def restart(self) -> None:
         """Restarts the engine by setting the values of the input variables to

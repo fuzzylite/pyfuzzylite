@@ -19,6 +19,7 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+from typing_extensions import Self
 
 import fuzzylite as fl
 import fuzzylite.examples.mamdani.SimpleDimmer
@@ -95,6 +96,28 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
+    def when_input_values(
+        self, x: fl.ScalarArray, /, raises: Exception | None = None
+    ) -> Self:
+        """Sets the input values of the engine."""
+        if raises:
+            with self.test.assertRaises(type(raises)) as error:
+                self.actual.input_values = x
+            self.test.assertEqual(str(error.exception), str(raises))
+        else:
+            self.actual.input_values = x
+        return self
+
+    def then_input_variables(self, x: dict[int | str, fl.Scalar]) -> Self:
+        """Sets the input variable of the engine."""
+        for key, value in x.items():
+            np.testing.assert_allclose(value, self.actual.input_variable(key).value)
+
+        expected = np.atleast_2d([np.atleast_1d(value) for value in x.values()]).T
+        obtained = self.actual.input_values
+        np.testing.assert_allclose(expected, obtained)
+        return self
+
     def evaluate_fld(self, fld: str, decimals: int) -> EngineAssert:
         """Asserts the engine produces the expected fld."""
         for line, evaluation in enumerate(fld.split("\n")):
@@ -118,8 +141,8 @@ class EngineAssert(BaseAssert[fl.Engine]):
 
             obtained = np.hstack(
                 (
-                    self.actual.input_values().flatten(),
-                    self.actual.output_values().flatten(),
+                    self.actual.input_values.flatten(),
+                    self.actual.output_values.flatten(),
                 )
             )
 
@@ -341,6 +364,65 @@ class TestEngine(unittest.TestCase):
         names = ["X", "Y", "Z"]
         for i, iv in enumerate(flc.output_variables):
             self.assertEqual(iv.name, names[i])
+
+    def test_input_values_setter(self) -> None:
+        """Tests the setter of input values through the engine."""
+        EngineAssert(
+            self, fl.Engine("1 input", input_variables=[fl.InputVariable("A")])
+        ).when_input_values(fl.array(1.0)).then_input_variables(
+            {"A": 1.0}
+        ).when_input_values(
+            fl.array([1, 2, 3, 4])
+        ).then_input_variables(
+            {"A": fl.array([1, 2, 3, 4])}
+        )
+
+        # Two inputs
+        e2 = EngineAssert(
+            self,
+            fl.Engine(
+                "2 inputs",
+                input_variables=[fl.InputVariable("A"), fl.InputVariable("B")],
+            ),
+        )
+        ## Single value
+        e2.when_input_values(fl.array(1.0)).then_input_variables({"A": 1.0, "B": 1.0})
+        ## 1D array
+        e2.when_input_values(fl.array([1, -1])).then_input_variables(
+            {"A": 1.0, "B": -1.0}
+        )
+        ## 2D array
+        e2.when_input_values(
+            fl.array(
+                [
+                    [1, -1],
+                    [2, -2],
+                    [3, -3],
+                ]
+            )
+        ).then_input_variables({"A": fl.array([1, 2, 3]), "B": fl.array([-1, -2, -3])})
+
+        ## Errors:
+        EngineAssert(self, fl.Engine()).when_input_values(
+            fl.array(1.0),
+            raises=RuntimeError(
+                "can't set input values to an engine without input variables"
+            ),
+        )
+        e2.when_input_values(
+            fl.array([[[1.0]]]),
+            raises=ValueError(
+                "expected a 0d-array (single value), 1d-array (vector), or 2d-array (matrix), "
+                "but got a 3d-array: [[[1.]]]"
+            ),
+        )
+        e2.when_input_values(
+            fl.array([[1.0, 2.0, 3.0]]),
+            raises=ValueError(
+                "expected a value with 2 columns (one for each input variable), "
+                "but got 3 columns: [[1. 2. 3.]]"
+            ),
+        )
 
     def test_repr(self) -> None:
         """Tests repr."""
