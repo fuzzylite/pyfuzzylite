@@ -56,7 +56,7 @@ import numpy as np
 
 from .exporter import FllExporter
 from .library import array, inf, nan, representation, scalar, settings, to_float
-from .norm import SNorm, TNorm
+from .norm import SNorm, TNorm, UnboundedSum
 from .operation import Op
 from .types import Scalar, ScalarArray
 
@@ -368,38 +368,48 @@ class Aggregated(Term):
             y = self.aggregation.compute(y, term.membership(x))  # type: ignore
         return y
 
+    def grouped_terms(self) -> list[Activated]:
+        """@return list of Activated terms grouped by term and aggregated their degrees with the Aggregation operator
+        (or UnboundedSum, if none).
+
+        Used by `WeightedDefuzzifier`s to aggregate multiple activations of the same term before defuzzification
+        """
+        aggregation = self.aggregation or UnboundedSum()
+        groups: dict[str, Activated] = {}
+        for activated in self.terms:
+            if activated.term.name not in groups:
+                groups[activated.term.name] = Activated(
+                    activated.term, activated.degree, implication=None
+                )
+                continue
+            aggregated_term = groups[activated.term.name]
+            aggregated_term.degree = aggregation.compute(
+                aggregated_term.degree, activated.degree
+            )
+        return list(groups.values())
+
     def activation_degree(self, term: Term) -> Scalar:
         """Computes the aggregated activation degree for the given term.
-        If the same term is present multiple times, the aggregation operator
-        is utilized to sum the activation degrees of the term. If the
-        aggregation operator is fl::null, a regular sum is performed.
+
         @param term is the term for which to compute the aggregated
         activation degree
         @return the aggregated activation degree for the given term.
         """
-        # TODO: Fix once self.terms is a dictionary
-        y = scalar(0.0)
-        for activation in self.terms:
-            if activation.term == term:
-                if self.aggregation:
-                    y = self.aggregation.compute(y, activation.degree)
-                else:
-                    y += activation.degree
-
-        return y
+        for activated in self.grouped_terms():
+            if activated.term == term:
+                return activated.degree
+        return scalar(0.0)
 
     def highest_activated_term(self) -> Activated | None:
-        """Iterates over the Activated terms to find the term with the maximum
-        activation degree
-        @return the term with the maximum activation degree.
+        """Find the term with the maximum activation degree from the list of grouped activated terms.
+
+        @return the term with the maximum grouped activation degree.
         """
-        y = None
-        maximum_activation = -inf
-        for activated in self.terms:
-            if activated.degree > maximum_activation:
-                maximum_activation = activated.degree  # type: ignore
-                y = activated
-        return y
+        highest: Activated | None = None
+        for activated in self.grouped_terms():
+            if highest is None or activated.degree > highest.degree:
+                highest = activated
+        return highest
 
     def clear(self) -> None:
         """Clears the list of activated terms."""

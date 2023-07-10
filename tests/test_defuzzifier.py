@@ -548,32 +548,80 @@ class TestDefuzzifier(unittest.TestCase):
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", 2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 2.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 0.5),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", 2.0), 0.5),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 2.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", -1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", -1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 0.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", -3.0), 0.5),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", -3.0), 0.5),
                     ]
                 ): -1.0,
+            },
+            vectorized=False,
+        )
+
+    def test_weighted_average_grouped(self) -> None:
+        """Test the weighted average defuzzifier in the presence of multiple activations of the same term."""
+        DefuzzifierAssert(self, fl.WeightedAverage("TakagiSugeno")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 0.5),
+                        fl.Activated(fl.Constant("A", 1.0), 0.5),
+                        fl.Activated(fl.Constant("B", 2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
+                    ]
+                ): 2.0,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", 2.0), 0.25),
+                        fl.Activated(fl.Constant("B", 2.0), 0.25),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
+                    ]
+                ): 2.0,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", -1.0), 1.0),
+                        fl.Activated(fl.Constant("A", -1.0), 1.0),
+                        fl.Activated(fl.Constant("A", -1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
+                    ],
+                    aggregation=fl.Maximum(),
+                ): 0.0,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", -3.0), 0.5),
+                        fl.Activated(fl.Constant("C", -3.0), 0.5),
+                    ],
+                    aggregation=fl.AlgebraicSum(),
+                ): (
+                    (1 * 1 + 1 * -2 + (0.5 + 0.5 - (0.25)) * -3)
+                    / (1 + 1 + (0.5 + 0.5 - 0.25))
+                ),
             },
             vectorized=False,
         )
@@ -607,32 +655,73 @@ class TestDefuzzifier(unittest.TestCase):
                 fl.Aggregated(): fl.nan,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", 2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 6.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", 2.0), 0.5),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", 2.0), 0.5),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 5.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", -1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", 3.0), 1.0),
+                        fl.Activated(fl.Constant("A", -1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", 3.0), 1.0),
                     ]
                 ): 0.0,
                 fl.Aggregated(
                     terms=[
-                        fl.Activated(fl.Constant("", 1.0), 1.0),
-                        fl.Activated(fl.Constant("", -2.0), 1.0),
-                        fl.Activated(fl.Constant("", -3.0), 0.5),
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("B", -2.0), 1.0),
+                        fl.Activated(fl.Constant("C", -3.0), 0.5),
                     ]
                 ): -2.5,
+            },
+            vectorized=False,
+        )
+
+    def test_weighted_sum_grouped(self) -> None:
+        """Test the weighted sum defuzzifier in the presence of multiple activations of the same term."""
+        DefuzzifierAssert(self, fl.WeightedSum("TakagiSugeno")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(): fl.nan,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 0.0),
+                        fl.Activated(fl.Constant("A", 1.0), 0.3),
+                        fl.Activated(fl.Constant("A", 1.0), 0.6),
+                    ]
+                ): (0.9 * 1.0),
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 1.0),
+                        fl.Activated(fl.Constant("A", 1.0), 0.3),
+                        fl.Activated(fl.Constant("A", 1.0), 0.6),
+                    ]
+                ): (1.9 * 1.0),
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 0.0),
+                        fl.Activated(fl.Constant("A", 1.0), 0.3),
+                        fl.Activated(fl.Constant("A", 1.0), 0.6),
+                    ],
+                    aggregation=fl.Maximum(),
+                ): (0.6 * 1.0),
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Constant("A", 1.0), 0.0),
+                        fl.Activated(fl.Constant("A", 1.0), 0.3),
+                        fl.Activated(fl.Constant("A", 1.0), 0.6),
+                    ],
+                    aggregation=fl.AlgebraicSum(),
+                ): (0.72 * 1.0),
             },
             vectorized=False,
         )
@@ -671,6 +760,41 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
                         fl.Activated(fl.SShape("c", 0.700, 1.000), 0.015),
                     ]
+                ): 0.311,
+            },
+            vectorized=False,
+        )
+
+    def test_weighted_sum_tsukamoto_grouped(self) -> None:
+        """Test the Tsukamoto defuzzifier in the presence of multiple activations of the same term."""
+        DefuzzifierAssert(self, fl.WeightedSum("Tsukamoto")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.0075),
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.0075),
+                        fl.Activated(fl.Ramp("b", 0.6, 0.4), 1.0),
+                        fl.Activated(fl.Ramp("c", 0.7, 1.0), 0.015),
+                    ]
+                ): 0.410,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Concave("a", 0.24, 0.25), 0.015),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 0.5),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 0.5),
+                        fl.Activated(fl.Concave("c", 0.9, 1.0), 0.015),
+                    ]
+                ): 0.310,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.SShape("a", 0.000, 0.250), 0.015),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.SShape("c", 0.700, 1.000), 0.015),
+                    ],
+                    aggregation=fl.Maximum(),
                 ): 0.311,
             },
             vectorized=False,
@@ -715,12 +839,46 @@ class TestDefuzzifier(unittest.TestCase):
             vectorized=False,
         )
 
+    def test_weighted_average_tsukamoto_grouped(self) -> None:
+        """Test the Tsukamoto defuzzifier in the presence of multiple activations of the same term."""
+        DefuzzifierAssert(self, fl.WeightedAverage("Tsukamoto")).defuzzifies(
+            -fl.inf,
+            fl.inf,
+            {
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.0075),
+                        fl.Activated(fl.Ramp("a", 0, 0.25), 0.0075),
+                        fl.Activated(fl.Ramp("b", 0.6, 0.4), 1.0),
+                        fl.Activated(fl.Ramp("c", 0.7, 1.0), 0.015),
+                    ]
+                ): 0.398,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.Concave("a", 0.24, 0.25), 0.015),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 0.5),
+                        fl.Activated(fl.Concave("b", 0.5, 0.4), 0.5),
+                        fl.Activated(fl.Concave("c", 0.9, 1.0), 0.015),
+                    ]
+                ): 0.301,
+                fl.Aggregated(
+                    terms=[
+                        fl.Activated(fl.SShape("a", 0.000, 0.250), 0.015),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.ZShape("b", 0.300, 0.600), 1.0),
+                        fl.Activated(fl.SShape("c", 0.700, 1.000), 0.015),
+                    ],
+                    aggregation=fl.Maximum(),
+                ): 0.302,
+            },
+            vectorized=False,
+        )
+
     def test_all_defuzzifiers_return_nan_when_empty_output(self) -> None:
         """Test that all defuzzifiers return NaN when the output is empty."""
         self.assertTrue(bool(fl.settings.factory_manager.defuzzifier.constructors))
-        for (
-            defuzzifier
-        ) in fl.settings.factory_manager.defuzzifier.constructors.values():
+        defuzzifiers = fl.settings.factory_manager.defuzzifier.constructors.values()
+        for defuzzifier in defuzzifiers:
             expected = np.nan
             obtained = defuzzifier().defuzzify(fl.Aggregated(), -1, 1)
             np.testing.assert_equal(expected, obtained)

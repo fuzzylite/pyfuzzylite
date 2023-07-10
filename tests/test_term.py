@@ -294,7 +294,7 @@ class TestTerm(unittest.TestCase):
                 0.0: 0.4,
                 0.1: 0.4,
                 0.25: 0.4,
-                0.4: 0.19999999999999996,
+                0.4: 0.2,
                 0.5: 0.0,
                 nan: nan,
                 inf: 0.0,
@@ -307,9 +307,39 @@ class TestTerm(unittest.TestCase):
 
         self.assertEqual(aggregated.highest_activated_term().term, low)  # type: ignore
 
+        self.assertEqual(
+            (
+                "[fl.Activated(term=fl.Triangle(name='LOW', height=1.0, left=-1.0, top=-0.5, right=0.0), "
+                "degree=0.6, implication=None), "
+                "fl.Activated(term=fl.Triangle(name='MEDIUM', height=1.0, left=-0.5, top=0.0, right=0.5), "
+                "degree=0.4, implication=None)]"
+            ),
+            repr(aggregated.grouped_terms()),
+        )
+
         aggregated.terms.append(fl.Activated(low, 0.4))
+        # no change to grouped_terms because of fl.Maximum is 0.6
+        self.assertEqual(
+            (
+                "[fl.Activated(term=fl.Triangle(name='LOW', height=1.0, left=-1.0, top=-0.5, right=0.0), "
+                "degree=0.6, implication=None), "
+                "fl.Activated(term=fl.Triangle(name='MEDIUM', height=1.0, left=-0.5, top=0.0, right=0.5), "
+                "degree=0.4, implication=None)]"
+            ),
+            repr(aggregated.grouped_terms()),
+        )
+
         aggregated.aggregation = fl.UnboundedSum()
         self.assertEqual(aggregated.activation_degree(low), 0.6 + 0.4)
+        self.assertEqual(
+            (
+                "[fl.Activated(term=fl.Triangle(name='LOW', height=1.0, left=-1.0, top=-0.5, right=0.0), "
+                "degree=1.0, implication=None), "
+                "fl.Activated(term=fl.Triangle(name='MEDIUM', height=1.0, left=-0.5, top=0.0, right=0.5), "
+                "degree=0.4, implication=None)]"
+            ),
+            repr(aggregated.grouped_terms()),
+        )
 
         aggregated.aggregation = None
         TermAssert(self, aggregated).exports_fll(

@@ -386,12 +386,12 @@ class WeightedDefuzzifier(Defuzzifier):
         r"""Computes the weighted fuzzy set represented as an
         Aggregated Term as.
 
-        From version 6.0, the implication and aggregation operators are not
-        utilized for defuzzification.
+        In versions 6 and 7, the implication and aggregation operators are not
+        used for defuzzification.
+
+        From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
         @param term is the fuzzy set represented as an AggregatedTerm
-        @param minimum is the minimum value of the range (only used for Tsukamoto)
-        @param maximum is the maximum value of the range (only used for Tsukamoto)
         @return the weighted sum of the given fuzzy set
         """
         pass
@@ -421,12 +421,12 @@ class WeightedAverage(WeightedDefuzzifier):
         where $w_i$ is the activation degree of term $i$, and $z_i
         = \mu_i(w_i) $.
 
-        From version 6.0, the implication and aggregation operators are not
-        utilized for defuzzification.
+        In versions 6 and 7, the implication and aggregation operators are not
+        used for defuzzification.
+
+        From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
         @param term is the fuzzy set represented as an AggregatedTerm
-        @param minimum is the minimum value of the range (only used for Tsukamoto)
-        @param maximum is the maximum value of the range (only used for Tsukamoto)
         @return the weighted sum of the given fuzzy set
         """
         fuzzy_output = term
@@ -446,7 +446,7 @@ class WeightedAverage(WeightedDefuzzifier):
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
             else Term.membership.__name__
         )
-        for activated in fuzzy_output.terms:
+        for activated in fuzzy_output.grouped_terms():
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
             weighted_sum = weighted_sum + w * z
@@ -480,12 +480,12 @@ class WeightedSum(WeightedDefuzzifier):
         where $w_i$ is the activation degree of term $i$, and $z_i
         = \mu_i(w_i) $.
 
-        From version 6.0, the implication and aggregation operators are not
-        utilized for defuzzification.
+        In versions 6 and 7, the implication and aggregation operators are not
+        used for defuzzification.
+
+        From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
         @param term is the fuzzy set represented as an AggregatedTerm
-        @param minimum is the minimum value of the range (only used for Tsukamoto)
-        @param maximum is the maximum value of the range (only used for Tsukamoto)
         @return the weighted sum of the given fuzzy set
         """
         fuzzy_output = term
@@ -505,7 +505,7 @@ class WeightedSum(WeightedDefuzzifier):
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
             else Term.membership.__name__
         )
-        for activated in fuzzy_output.terms:
+        for activated in fuzzy_output.grouped_terms():
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
             weighted_sum = weighted_sum + w * z
