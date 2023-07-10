@@ -437,6 +437,63 @@ class TestEngine(unittest.TestCase):
             rtol=fl.settings.rtol,
         )
 
+    def test_takagi_sugeno_aggregation_operator(self) -> None:
+        """Test to understand why we are aggregating same terms before defuzzifying."""
+        fll = """\
+Engine: problem1
+InputVariable: in1
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: term Ramp 0.000 1.000
+InputVariable: in2
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: term Ramp 0.000 1.000
+InputVariable: in3
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: term Ramp 0.000 1.000
+OutputVariable: output
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: BoundedSum
+  defuzzifier: WeightedAverage Automatic
+  default: nan
+  lock-previous: false
+  term: negative Constant -1.000
+  term: positive Constant 1.000
+RuleBlock:
+  enabled: true
+  conjunction: none
+  disjunction: none
+  implication: none
+  activation: General
+  rule: if in1 is term then output is positive
+  rule: if in2 is term then output is negative
+  rule: if in3 is term then output is positive
+"""
+        engine = fl.FllImporter().from_string(fll)
+        engine.input_values = fl.array([0.75, 1.0, 0.75])
+        engine.process()
+        self.assertEqual(
+            "1.000/negative + 1.000/positive", engine.output_variable(0).fuzzy_value()
+        )
+        # new behaviour
+        np.testing.assert_allclose(
+            0,
+            engine.output_variable(0).value,
+            rtol=fl.settings.rtol,
+            atol=fl.settings.atol,
+        )
+        # old behaviour:
+        engine.output_variable(0).aggregation = fl.UnboundedSum()
+        engine.process()
+        np.testing.assert_allclose(0.2, engine.output_variable(0).value)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -38,7 +38,10 @@ class NormAssert(BaseAssert[fl.Norm]):
         return self
 
     def evaluates(
-        self, abz: dict[tuple[float, float], float], commutative: bool = True
+        self,
+        abz: dict[tuple[float, float], float],
+        commutative: bool = True,
+        associative: bool = True,
     ) -> NormAssert:
         """Assert the norm produces the expected values."""
         for ab, z in abz.items():
@@ -49,12 +52,39 @@ class NormAssert(BaseAssert[fl.Norm]):
                     self.actual.compute(*reversed(ab)),
                     f"when ({tuple(reversed(ab))})",
                 )
+            if associative:
+                a: fl.Scalar = ab[0]
+                b: fl.Scalar = ab[1]
+                c: fl.Scalar = sum(ab) / 2
+                abc = self.actual.compute(self.actual.compute(a, b), c)
+                bca = self.actual.compute(self.actual.compute(b, c), a)
+                cab = self.actual.compute(self.actual.compute(c, a), b)
+                np.testing.assert_allclose(
+                    abc, bca, atol=fl.settings.atol, rtol=fl.settings.rtol
+                )
+                np.testing.assert_allclose(
+                    bca, cab, atol=fl.settings.atol, rtol=fl.settings.rtol
+                )
         # Test as numpy array
-        a = np.asarray([a[0] for a in abz])
-        b = np.asarray([a[1] for a in abz])
-        expected = np.asarray([z for z in abz.values()])
+        a = fl.array([x[0] for x in abz])
+        b = fl.array([x[1] for x in abz])
+        expected = fl.array([z for z in abz.values()])
         obtained = self.actual.compute(a, b)
         np.testing.assert_equal(expected, obtained)
+        if commutative:
+            obtained = self.actual.compute(b, a)
+            np.testing.assert_equal(expected, obtained)
+        if associative:
+            c = (a + b) / 2
+            abc = self.actual.compute(self.actual.compute(a, b), c)
+            bca = self.actual.compute(self.actual.compute(b, c), a)
+            cab = self.actual.compute(self.actual.compute(c, a), b)
+            np.testing.assert_allclose(
+                abc, bca, rtol=fl.settings.rtol, atol=fl.settings.atol
+            )
+            np.testing.assert_allclose(
+                bca, cab, rtol=fl.settings.rtol, atol=fl.settings.atol
+            )
         return self
 
 

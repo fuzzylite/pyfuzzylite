@@ -13,6 +13,7 @@
 - Changed: Almost all classes redefine __repr__ to return constructors in Python using the new library.Representation class
 - Changed: Almost all classes redefine __str__ to return the equivalent FuzzyLite Language (if available)
 - Changed: Many more tests and better structures for tests
+- Changed: Aggregation operator is now used in TakagiSugeno/Tsukamoto engines on activations of the same term
 
 
 ## __init__.py
@@ -34,6 +35,7 @@
 - Changed: Integral defuzzifiers use 1000 steps instead of 100
 - Changed: Algorithms to compute BiSector, Centroid, MeanOfMaximum, and WeightedAverage are simplified
 - Changed: values of WeightedDefuzzifier.Type are enum.auto() instead of manual assignments
+- Changed: `WeightedDefuzzifier`s to compute weighted sum|average on `Aggregated.grouped_terms()` instead of all terms (see Aggregated term)
 - Removed: Defuzzifier.class_name, use now Op.class_name when needed
 
 ## engine.py
@@ -42,8 +44,6 @@
 - New: constructor parameter `update_reference:bool=False` to automatically update the reference of all terms in variables
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
 - Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
-
-
 
 ## exporter.py
 - Changed: Exporter is abstract
@@ -105,6 +105,7 @@
 - New: `_parse` method to parse configuration parameters
 - New: Discrete.to_list, Discrete.to_dict, Discrete.to_xy
 - New: Discrete.create to create a Discrete term from a list, dict or pairs
+- New: `Aggregated.group_terms()` groups multiple activations of the same term and aggregates them using the aggregation operator.
 - Changed: Term is abstract
 - Changed: All terms are vectorized, ie, membership and tsukamoto functions return fl.Scalar
 - Changed: All equations are simplified and use numpy
