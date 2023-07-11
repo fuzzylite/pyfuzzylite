@@ -98,7 +98,7 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
             return f"if {rule_id.upper()} is {rule_id.lower()} then {rule_id.upper()} is {rule_id.lower()}"
 
         expected = {
-            rule_text(rule_id): np.array(activation)
+            rule_text(rule_id): fl.array(activation)
             for rule_id, activation in rules.items()
         }
         obtained = {rule.text: rule.activation_degree for rule in self.actual.rules}
@@ -177,11 +177,11 @@ class TestActivation(unittest.TestCase):
         expected_c = [True, False] * 4
 
         ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=np.array(expected_a, dtype=np.float_)
+            rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
         ).given(
-            rule="b", activation_degree=np.array(expected_b, dtype=np.float_)
+            rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
         ).given(
-            rule="c", activation_degree=np.array(expected_c, dtype=np.float_)
+            rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
         ).activate(
             fl.General()
         ).then_triggers(
@@ -198,11 +198,11 @@ class TestActivation(unittest.TestCase):
         ]
         for activation in unsupported_activations:
             ActivationAssert(self, fl.RuleBlock()).given(
-                rule="a", activation_degree=np.array(expected_a, dtype=np.float_)
+                rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
             ).given(
-                rule="b", activation_degree=np.array(expected_b, dtype=np.float_)
+                rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
             ).given(
-                rule="c", activation_degree=np.array(expected_c, dtype=np.float_)
+                rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
             ).activate_fails(
                 activation
             )

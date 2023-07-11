@@ -910,7 +910,7 @@ class TestTerm(unittest.TestCase):
         """Test the discrete term creation."""
         x = fl.array([0, 2, 4, 6])
         y = fl.array([1, 3, 5, 7])
-        xy_list = np.array([x, y]).T.flatten().tolist()
+        xy_list = fl.array([x, y]).T.flatten().tolist()
 
         TermAssert(self, fl.Discrete.create("str", fl.Op.str(xy_list))).exports_fll(
             "term: str Discrete 0.000 1.000 2.000 3.000 4.000 5.000 6.000 7.000"
@@ -967,7 +967,7 @@ class TestTerm(unittest.TestCase):
             next(it)
 
         np.testing.assert_equal(
-            fl.Discrete.to_xy([], []), np.array([], ndmin=2).reshape((-1, 2))
+            fl.Discrete.to_xy([], []), fl.array([], ndmin=2).reshape((-1, 2))
         )
 
     def test_gaussian(self) -> None:

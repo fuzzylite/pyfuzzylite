@@ -66,7 +66,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
                 def membership(self, x: Scalar) -> Scalar:
                     return np.vstack([term.membership(x) for term in self.terms])
 
-            expected_vector = np.atleast_1d(np.array([x for x in terms.values()]))
+            expected_vector = np.atleast_1d(fl.array([x for x in terms.values()]))
             obtained_vector = np.atleast_1d(
                 self.actual.defuzzify(
                     StackTerm(terms=list(terms.keys())), minimum, maximum

@@ -55,8 +55,8 @@ class AssertIntegration:
             )
         if self.vectorize:
             self.engine.restart()
-            inputs = np.array([x for x in input_expected])
-            expected_outputs = np.array([x for x in input_expected.values()])
+            inputs = fl.array([x for x in input_expected])
+            expected_outputs = fl.array([x for x in input_expected.values()])
             self.engine.input_variables[0].value = inputs
             self.engine.process()
             obtained = self.engine.output_variables[0].value
