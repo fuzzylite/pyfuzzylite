@@ -300,9 +300,10 @@ class PythonExporter(Exporter):
     @since 7.0
     """
 
-    def __init__(self, formatted: bool = True) -> None:
+    def __init__(self, formatted: bool = True, encapsulated: bool = False) -> None:
         """@param formatted: whether to attempt to format the code using `black` if it is installed."""
         self.formatted = formatted
+        self.encapsulated = encapsulated
 
     def format(self, code: str) -> str:
         """Try to format the code using the `black` formatter if it is installed, otherwise returns the code as is.
@@ -324,22 +325,22 @@ class PythonExporter(Exporter):
     def to_string(self, instance: Any, /) -> str:
         """@return Python code to construct the given instance."""
         code = repr(instance)
-        if self.formatted:
-            code = self.format(code)
-        return code
+        if self.encapsulated:
+            from .library import representation
 
-    def engine(self, engine: Engine, /, encapsulate: bool = False) -> str:
-        """@return Python code to construct the engine."""
-        code = repr(engine)
-        if encapsulate:
             code = f"""\
-import fuzzylite as fl
+{representation.import_statement()}
 
-def engine() -> fl.Engine:
-    return {code}"""
+def create() -> {Op.class_name(instance, qualname=True)}:
+    return {code}
+"""
         if self.formatted:
             code = self.format(code)
         return code
+
+    def engine(self, engine: Engine, /) -> str:
+        """@return Python code to construct the engine."""
+        return self.to_string(engine)
 
     def input_variable(self, input_variable: InputVariable, /) -> str:
         """@return Python code to construct the variable."""

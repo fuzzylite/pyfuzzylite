@@ -327,34 +327,100 @@ class TestPythonExporter(unittest.TestCase):
     ) -> None:
         """Assert helper to compare the Python code of the instance against what is expected, plus other tests."""
         exporter = fl.PythonExporter()
-        code = exporter.to_string(instance)
-        self.assertEqual(expected, code)
-        if isinstance(instance, fl.Engine):
+        obtained = exporter.to_string(instance)
+        self.assertEqual(expected, obtained)
+
+        def expected_encapsulated(return_type: str, code: str) -> str:
+            import black
+
+            return black.format_str(
+                f"""\
+import fuzzylite as fl
+
+
+def create() -> {return_type}:
+    return {code}
+    """,
+                mode=black.Mode(),  # type: ignore
+            )
+
+        obtained_encapsulated = fl.PythonExporter(encapsulated=True).to_string(instance)
+        if instance is None:
+            self.assertEqual(
+                expected_encapsulated(return_type="NoneType", code=expected),
+                obtained_encapsulated,
+            )
+        elif isinstance(instance, fl.Engine):
             self.assertEqual(expected, exporter.engine(instance))
+            self.assertEqual(
+                expected_encapsulated(return_type="fl.Engine", code=expected),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.InputVariable):
             self.assertEqual(expected, exporter.input_variable(instance))
+            self.assertEqual(
+                expected_encapsulated(return_type="fl.InputVariable", code=expected),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.OutputVariable):
             self.assertEqual(expected, exporter.output_variable(instance))
+            self.assertEqual(
+                expected_encapsulated(return_type="fl.OutputVariable", code=expected),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.RuleBlock):
             self.assertEqual(expected, exporter.rule_block(instance))
+            self.assertEqual(
+                expected_encapsulated(return_type="fl.RuleBlock", code=expected),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.Term):
             self.assertEqual(expected, exporter.term(instance))
+            self.assertEqual(
+                expected_encapsulated(
+                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                ),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.Rule):
             self.assertEqual(expected, exporter.rule(instance))
+            self.assertEqual(
+                expected_encapsulated(return_type="fl.Rule", code=expected),
+                obtained_encapsulated,
+            )
         elif isinstance(instance, fl.Norm):
             self.assertEqual(expected, exporter.norm(instance))
+            self.assertEqual(
+                expected_encapsulated(
+                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                ),
+                obtained_encapsulated,
+            )
             self.assertEqual("None", exporter.norm(None))
         elif isinstance(instance, fl.Activation):
             self.assertEqual(expected, exporter.activation(instance))
+            self.assertEqual(
+                expected_encapsulated(
+                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                ),
+                obtained_encapsulated,
+            )
             self.assertEqual("None", exporter.activation(None))
         elif isinstance(instance, fl.Defuzzifier):
             self.assertEqual(expected, exporter.defuzzifier(instance))
+            self.assertEqual(
+                expected_encapsulated(
+                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                ),
+                obtained_encapsulated,
+            )
             self.assertEqual("None", exporter.defuzzifier(None))
         else:
             raise NotImplementedError()
 
     def test_invalid_export(self) -> None:
-        fl.settings.logger.error = MagicMock()
+        """Tests invalid exports: non-fuzzylite objects and missing black library when formatting."""
+        fl.settings.logger.error = MagicMock()  # type: ignore
 
         # Test repr on a non-fuzzylite object
         obj_repr = fl.PythonExporter().format("<object object at 0x10f5f4e50>")
@@ -366,9 +432,8 @@ class TestPythonExporter(unittest.TestCase):
         # Test `black` module not installed
         import sys
 
-        black = sys.modules["black"]
+        black = sys.modules.pop("black")
         try:
-            sys.modules["black"] = None
             none_formatted = fl.PythonExporter().format("None")
             self.assertEqual("None", none_formatted)
             fl.settings.logger.error.assert_called_with(
@@ -376,6 +441,10 @@ class TestPythonExporter(unittest.TestCase):
             )
         finally:
             sys.modules["black"] = black
+
+    def test_none_export(self) -> None:
+        """Tests export of None values, like in Norm, Activation, or Defuzzifier."""
+        self.assert_that(None, "None\n")
 
     def test_empty_engine(self) -> None:
         """Test an empty engine is exported."""
@@ -394,24 +463,25 @@ fl.Engine(
 )
 """,
         )
-        self.assertEqual(
-            fl.PythonExporter().engine(engine, encapsulate=True),
-            """\
-import fuzzylite as fl
 
-
-def engine() -> fl.Engine:
-    return fl.Engine(
-        name="engine",
-        description="an engine",
-        input_variables=[],
-        output_variables=[],
-        rule_blocks=[],
-        load_rules=True,
-        update_reference=True,
-    )
-""",
-        )
+    #         self.assertEqual(
+    #             fl.PythonExporter().engine(engine),
+    #             """\
+    # import fuzzylite as fl
+    #
+    #
+    # def engine() -> fl.Engine:
+    #     return fl.Engine(
+    #         name="engine",
+    #         description="an engine",
+    #         input_variables=[],
+    #         output_variables=[],
+    #         rule_blocks=[],
+    #         load_rules=True,
+    #         update_reference=True,
+    #     )
+    # """,
+    #         )
 
     def test_engine(self) -> None:
         """Test a basic engine is exported."""
@@ -1138,15 +1208,16 @@ Ambient Power
 class TestExporters(unittest.TestCase):
     """Test exporters for every example."""
 
-    @unittest.skip("Re-enable after test coverage improved independently")
+    # @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         """Test every FLL example can be exported."""
         import concurrent.futures
+
         from fuzzylite import examples
 
         with fl.settings.context(decimals=3):
             files = [
-                str(example) for example in Path(examples.__path__[0]).rglob("*.fll")
+                str(example) for example in Path(*examples.__path__).rglob("*.fll")
             ]
             print(files)
             with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -1175,27 +1246,33 @@ class TestExporters(unittest.TestCase):
         import time
 
         path = pathlib.Path(file_path)
+        package: list[str] = []
+        for parent in path.parents:
+            package.append(parent.name)
+            if parent.name == "fuzzylite":
+                break
+        package.reverse()
+
         if path.suffix == ".fll":
             with open(path) as file:
                 import_fll = file.read()
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
-            package: list[str] = []
-            for parent in path.parents:
-                package.append(parent.name)
-                if parent.name == "fuzzylite":
-                    break
-            module = ".".join(reversed(package)) + f".{path.stem}"
+            module = ".".join(package) + f".{path.stem}"
             engine = importlib.import_module(module).engine
         else:
             raise Exception(f"unknown importer of files like {path}")
 
-        exporters = [fl.FllExporter(), fl.PythonExporter(), fl.FldExporter()]
+        exporters = [
+            fl.FllExporter(),
+            fl.PythonExporter(encapsulated=True),
+            fl.FldExporter(),
+        ]
 
         file_name = path.stem
         for exporter in exporters:
             start = time.time()
-            target_path = Path("/tmp/fl/") / path.parent.parent.stem / path.parent.stem
+            target_path = Path("/tmp/fl/") / "/".join(package)
             target_path.mkdir(parents=True, exist_ok=True)
             fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):

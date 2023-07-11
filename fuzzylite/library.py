@@ -265,6 +265,15 @@ class Representation(reprlib.Repr):
             package += "."
         return package
 
+    def import_statement(self) -> str:
+        """@return fuzzylite import statement based on the alias in the settings."""
+        if not settings.alias:
+            return "import fuzzylite"
+        elif settings.alias == "*":
+            return "from fuzzylite import *"
+        else:
+            return f"import fuzzylite as {settings.alias}"
+
     def as_constructor(self, x: Any, /, fields: dict[str, Any] | None = None) -> str:
         """Returns the constructor of the given object.
         @param x is the object
