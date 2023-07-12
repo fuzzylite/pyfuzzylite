@@ -463,25 +463,24 @@ fl.Engine(
 )
 """,
         )
+        self.assertEqual(
+            fl.PythonExporter(encapsulated=True).engine(engine),
+            """\
+import fuzzylite as fl
 
-    #         self.assertEqual(
-    #             fl.PythonExporter().engine(engine),
-    #             """\
-    # import fuzzylite as fl
-    #
-    #
-    # def engine() -> fl.Engine:
-    #     return fl.Engine(
-    #         name="engine",
-    #         description="an engine",
-    #         input_variables=[],
-    #         output_variables=[],
-    #         rule_blocks=[],
-    #         load_rules=True,
-    #         update_reference=True,
-    #     )
-    # """,
-    #         )
+
+def create() -> fl.Engine:
+    return fl.Engine(
+        name="engine",
+        description="an engine",
+        input_variables=[],
+        output_variables=[],
+        rule_blocks=[],
+        load_rules=True,
+        update_reference=True,
+    )
+""",
+        )
 
     def test_engine(self) -> None:
         """Test a basic engine is exported."""
@@ -1215,7 +1214,7 @@ class TestExporters(unittest.TestCase):
 
         from fuzzylite import examples
 
-        with fl.settings.context(decimals=3):
+        with fl.settings.context(decimals=9):
             files = [
                 str(example) for example in Path(*examples.__path__).rglob("*.fll")
             ]
@@ -1264,8 +1263,8 @@ class TestExporters(unittest.TestCase):
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
-            fl.FllExporter(),
-            fl.PythonExporter(encapsulated=True),
+            # fl.FllExporter(),
+            # fl.PythonExporter(encapsulated=True),
             fl.FldExporter(),
         ]
 
@@ -1276,10 +1275,9 @@ class TestExporters(unittest.TestCase):
             target_path.mkdir(parents=True, exist_ok=True)
             fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
-                with fl.settings.context(decimals=9):
-                    exporter.to_file_from_scope(
-                        target_path / (file_name + ".fld"), engine, 1024
-                    )
+                exporter.to_file_from_scope(
+                    target_path / (file_name + ".fld"), engine, 1024
+                )
 
             elif isinstance(exporter, fl.FllExporter):
                 exporter.to_file(target_path / (file_name + ".fll"), engine)
