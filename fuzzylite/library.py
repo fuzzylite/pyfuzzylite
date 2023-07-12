@@ -35,6 +35,7 @@ import builtins
 import inspect
 import logging
 import reprlib
+import threading
 import typing
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
@@ -178,7 +179,7 @@ class Settings:
         context_settings = {
             key: value
             for key, value in locals().items()
-            if key != "self" and value is not None
+            if not (key == "self" or value is None)
         }
         if "factory_manager" in context_settings:
             context_settings["_factory_manager"] = context_settings.pop(
