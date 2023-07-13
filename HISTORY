@@ -41,11 +41,14 @@
 ## engine.py
 - New: Properties Engine.input_values and Engine.output_values produce 2D matrices with their respective values
 - New: Property setter Engine.input_values provides shortcuts to setting input variable values
-- New: constructor parameter `update_reference:bool=False` to automatically update the reference of all terms in variables
+- New: constructor parameter `load:bool=True` to automatically update the reference of all terms in variables and load the rules
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
 - Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
 
 ## exporter.py
+- New: PythonExporter exports engine in a single-statement constructor
+- New: Examples in Python are wrapped in `create() -> fl.Engine` to avoid instantiation on loading library
+- Changed: Examples in Python are converted to single-statement constructor
 - Changed: Exporter is abstract
 - Changed: Discrete term exported as `Discrete.create(name: str, values: dict[float, float])`
 - Removed: Exporter.class_name, use now Op.class_name when needed
