@@ -105,6 +105,13 @@ class IntegralDefuzzifier(Defuzzifier):
             resolution if resolution else IntegralDefuzzifier.default_resolution
         )
 
+    def __repr__(self) -> str:
+        """@return Python code to construct the defuzzifier."""
+        fields = vars(self).copy()
+        if self.resolution == IntegralDefuzzifier.default_resolution:
+            fields.pop("resolution")
+        return representation.as_constructor(self, fields)
+
     def parameters(self) -> str:
         """Returns the parameters to configure the defuzzifier
         @return the parameters to configure the defuzzifier.
@@ -340,6 +347,13 @@ class WeightedDefuzzifier(Defuzzifier):
             self.type = WeightedDefuzzifier.Type[type]
         else:
             self.type = type
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the defuzzifier."""
+        fields = vars(self).copy()
+        if self.type == WeightedDefuzzifier.Type.Automatic:
+            fields.pop("type")
+        return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:
         """Gets the type of weighted defuzzifier."""

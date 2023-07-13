@@ -35,7 +35,6 @@ import builtins
 import inspect
 import logging
 import reprlib
-import threading
 import typing
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
@@ -275,7 +274,14 @@ class Representation(reprlib.Repr):
         else:
             return f"import fuzzylite as {settings.alias}"
 
-    def as_constructor(self, x: Any, /, fields: dict[str, Any] | None = None) -> str:
+    def as_constructor(
+        self,
+        x: Any,
+        /,
+        fields: dict[str, Any] | None = None,
+        *,
+        positional: bool = False,
+    ) -> str:
         """Returns the constructor of the given object.
         @param x is the object
         @return the constructor of the given object.
@@ -283,8 +289,31 @@ class Representation(reprlib.Repr):
         if fields is None:
             fields = vars(x) or {}
         arguments = []
-        for key, value in fields.items():
-            arguments.append(f"{key}={self.repr(value)}")
+        if x.__class__.__init__ == object.__init__:
+            # there is no constructor in fuzzylite class hierarchy
+            constructor = []
+        else:
+            constructor = list(
+                inspect.signature(x.__class__.__init__).parameters.values()
+            )
+        for parameter in constructor:
+            if parameter.name == "self":
+                continue
+            if parameter.name in fields:
+                value = self.repr(fields[parameter.name])
+                argument = ("" if positional else f"{parameter.name}=") + value
+                arguments.append(argument)
+            else:
+                if parameter.default != parameter.empty:
+                    # if argument is not given for the parameter and the parameter has a default value,
+                    # we can ignore it, but next parameter values need to use keywords.
+                    positional = False
+                else:
+                    # if the parameter does not have a default value, then the constructor will not be valid code.
+                    raise ValueError(
+                        f"expected argument for parameter `{parameter.name}` in constructor of {x.__class__.__name__}, "
+                        f"but it was missing from the fields context: {fields}"
+                    )
         return f"{self.package_of(x)}{x.__class__.__name__}({', '.join(arguments)})"
 
     def repr_float(self, obj: float | np.floating[Any], level: int) -> Any:

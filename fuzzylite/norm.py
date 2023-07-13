@@ -48,6 +48,7 @@ from typing import Callable
 import numpy as np
 
 from .library import representation, scalar
+from .operation import Op
 from .types import Scalar
 
 if typing.TYPE_CHECKING:
@@ -495,6 +496,10 @@ class NormLambda(TNorm, SNorm):
         """
         self.function = function
 
+    def __repr__(self) -> str:
+        """@return Python code to construct the norm."""
+        return f"{Op.class_name(self,qualname=True)}(lambda a, b: ...)"
+
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the Norm utilizing the given lambda, which automatically assigns the values
         of $a$ and $b$.
@@ -527,6 +532,10 @@ class NormFunction(TNorm, SNorm):
 
         """
         self.function = function
+
+    def __repr__(self) -> str:
+        """@return Python code to construct the norm."""
+        return representation.as_constructor(self, positional=True)
 
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
         """Computes the Norm utilizing the given function, which automatically assigns the values

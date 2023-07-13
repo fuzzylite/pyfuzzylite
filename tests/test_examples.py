@@ -32,7 +32,7 @@ class TestExamples(unittest.TestCase):
         from fuzzylite import examples  # noqa
         from fuzzylite.examples import hybrid, mamdani, takagi_sugeno  # noqa
         from fuzzylite.examples.mamdani import SimpleDimmer  # noqa
-        from fuzzylite.examples.mamdani.SimpleDimmer import engine  # noqa
+        from fuzzylite.examples.mamdani.SimpleDimmer import create  # noqa
 
     def test_absolute_imports(self) -> None:
         """Tests the examples can be imported with absolute imports."""
@@ -40,13 +40,13 @@ class TestExamples(unittest.TestCase):
         import fuzzylite.examples  # noqa
         import fuzzylite.examples.mamdani  # noqa
         import fuzzylite.examples.mamdani.SimpleDimmer  # noqa
-        from fuzzylite.examples.mamdani.SimpleDimmer import engine  # noqa
+        from fuzzylite.examples.mamdani.SimpleDimmer import create  # noqa
 
     def test_examples(self) -> None:
         """Test all the examples are included and can be imported."""
         import fuzzylite.examples
 
-        examples = pathlib.Path(next(iter(fuzzylite.examples.__path__)))
+        examples = pathlib.Path(*fuzzylite.examples.__path__)
         self.assertTrue(examples.exists() and examples.is_dir())
 
         expected = set(
@@ -89,6 +89,7 @@ fuzzylite.examples.takagi_sugeno.octave.cubic_approximator
 fuzzylite.examples.takagi_sugeno.octave.heart_disease_risk
 fuzzylite.examples.takagi_sugeno.octave.linear_tip_calculator
 fuzzylite.examples.takagi_sugeno.octave.sugeno_tip_calculator
+fuzzylite.examples.terms.Arc
 fuzzylite.examples.terms.Bell
 fuzzylite.examples.terms.Binary
 fuzzylite.examples.terms.Concave
@@ -102,6 +103,7 @@ fuzzylite.examples.terms.Linear
 fuzzylite.examples.terms.PiShape
 fuzzylite.examples.terms.Ramp
 fuzzylite.examples.terms.Rectangle
+fuzzylite.examples.terms.SemiEllipse
 fuzzylite.examples.terms.Sigmoid
 fuzzylite.examples.terms.SigmoidDifference
 fuzzylite.examples.terms.SigmoidProduct
@@ -128,7 +130,7 @@ fuzzylite.examples.tsukamoto.tsukamoto
         for module in obtained:
             logger.info(f"Importing: {module}")
             # if an example is incorrect, an exception will be thrown below
-            engine = importlib.import_module(module).engine
+            engine = importlib.import_module(module).create()
             logger.info(str(engine))
 
 

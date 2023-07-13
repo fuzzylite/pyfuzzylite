@@ -317,9 +317,8 @@ class PythonExporter(Exporter):
             settings.logger.error(
                 "expected `black` module to be installed, but could not be found"
             )
-        except ValueError as error:  # black.parsing.InvalidInput
-            settings.logger.error(str(error))
-            return code
+        except ValueError:  # black.parsing.InvalidInput
+            raise
         return code
 
     def to_string(self, instance: Any, /) -> str:
@@ -519,10 +518,9 @@ class FldExporter(Exporter):
             row = []
             for index, variable in enumerate(engine.input_variables):
                 if variable in active_variables:
-                    row.append(
-                        variable.minimum
-                        + sample_values[index] * variable.drange / max(1.0, resolution)
-                    )
+                    dx = variable.drange / max(1.0, resolution)
+                    value = variable.minimum + sample_values[index] * dx
+                    row.append(value)
                 else:
                     row.append(np.take(variable.value, -1).astype(float))
             input_values.append(row)

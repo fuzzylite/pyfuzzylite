@@ -68,10 +68,7 @@ SigmoidProduct Spike Term Trapezoid Triangle ZShape
 types Array Scalar ScalarArray
 
 variable InputVariable OutputVariable Variable
-
-__getattr__
 """
-        # TODO: remove __getattr__
         self.assertSetEqual(set(expected.split()), set(vars(fl)))
 
     def test_library_vars(self) -> None:
@@ -111,31 +108,31 @@ __getattr__
         # alias
         self.assertEqual("fl", fl.settings.alias)
         alias_test = fl.Constant("c", fl.nan)
-        self.assertEqual("fl.Constant(name='c', value=fl.nan)", repr(alias_test))
+        self.assertEqual("fl.Constant('c', fl.nan)", repr(alias_test))
 
         with fl.settings.context(alias=""):
             self.assertEqual("", fl.settings.alias)
             self.assertEqual(
-                "fuzzylite.term.Constant(name='c', value=fuzzylite.library.nan)",
+                "fuzzylite.term.Constant('c', fuzzylite.library.nan)",
                 repr(alias_test),
             )
 
         with fl.settings.context(alias="*"):
             self.assertEqual("*", fl.settings.alias)
             self.assertEqual(
-                "Constant(name='c', value=nan)",
+                "Constant('c', nan)",
                 repr(alias_test),
             )
 
         with fl.settings.context(alias="fuzzylite"):
             self.assertEqual("fuzzylite", fl.settings.alias)
             self.assertEqual(
-                "fuzzylite.Constant(name='c', value=fuzzylite.nan)",
+                "fuzzylite.Constant('c', fuzzylite.nan)",
                 repr(alias_test),
             )
 
         self.assertEqual("fl", fl.settings.alias)
-        self.assertEqual("fl.Constant(name='c', value=fl.nan)", repr(alias_test))
+        self.assertEqual("fl.Constant('c', fl.nan)", repr(alias_test))
 
         # logger
         self.assertEqual(fl.settings.logger, logging.getLogger("fuzzylite"))
@@ -154,13 +151,13 @@ __getattr__
         """Tests the repr with terms referencing engines."""
         from fuzzylite.examples.takagi_sugeno import SimpleDimmer
 
-        engine = SimpleDimmer.engine
+        engine = SimpleDimmer.create()
         engine.input_variables[0].value = 1 / 3
         engine.process()
         self.assertEqual(2 / 3, engine.output_variables[0].value)
         engine.restart()
 
-        engine = eval(repr(SimpleDimmer.engine))
+        engine = eval(repr(SimpleDimmer.create()))
         engine.input_variables[0].value = 1 / 3
         engine.process()
         self.assertEqual(2 / 3, engine.output_variables[0].value)
@@ -185,7 +182,7 @@ __getattr__
         """Tests the repr with terms referencing engines."""
         from fuzzylite.examples.takagi_sugeno.octave import linear_tip_calculator
 
-        engine = linear_tip_calculator.engine
+        engine = linear_tip_calculator.create()
         engine.input_values = fl.array(
             [
                 [1, 2],
@@ -198,7 +195,7 @@ __getattr__
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 
-        engine = eval(repr(linear_tip_calculator.engine))
+        engine = eval(repr(linear_tip_calculator.create()))
         engine.input_values = fl.array(
             [
                 [1, 2],
@@ -211,7 +208,7 @@ __getattr__
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 
-        engine = eval(repr(linear_tip_calculator.engine))
+        engine = eval(repr(linear_tip_calculator.create()))
         engine.input_values = fl.array([1, 2])
         np.testing.assert_allclose(1, engine.input_variable(0).value)
         np.testing.assert_allclose(2, engine.input_variable(1).value)

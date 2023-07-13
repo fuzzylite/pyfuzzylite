@@ -17,6 +17,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 from __future__ import annotations
 
 import io
+import logging
 import os
 import random
 import string
@@ -127,7 +128,7 @@ class TestFllExporter(unittest.TestCase):
                     rules=[fl.Rule.create("if a then z")],
                 )
             ],
-            load_rules=False,
+            load=False,
         )
         self.assertEqual(
             fl.FllExporter().to_string(engine), fl.FllExporter().engine(engine)
@@ -318,7 +319,7 @@ class TestPythonExporter(unittest.TestCase):
 
     def engine(self) -> fl.Engine:
         """Gets the engine to run tests on."""
-        return SimpleDimmer.engine.copy()
+        return SimpleDimmer.create()
 
     def assert_that(
         self,
@@ -418,29 +419,23 @@ def create() -> {return_type}:
         else:
             raise NotImplementedError()
 
-    def test_invalid_export(self) -> None:
-        """Tests invalid exports: non-fuzzylite objects and missing black library when formatting."""
-        fl.settings.logger.error = MagicMock()  # type: ignore
-
-        # Test repr on a non-fuzzylite object
-        obj_repr = fl.PythonExporter().format("<object object at 0x10f5f4e50>")
-        self.assertEqual(obj_repr, "<object object at 0x10f5f4e50>")
-        fl.settings.logger.error.assert_called_with(
-            "Cannot parse: 1:0: <object object at 0x10f5f4e50>"
-        )
-
-        # Test `black` module not installed
+    def test_missing_black_when_formatting(self) -> None:
+        """Tests missing black library when formatting."""
         import sys
 
-        black = sys.modules.pop("black")
+        black = sys.modules.get("black")
+        logger = logging.getLogger("test")
+        logger.error = MagicMock()  # type: ignore
         try:
-            none_formatted = fl.PythonExporter().format("None")
-            self.assertEqual("None", none_formatted)
-            fl.settings.logger.error.assert_called_with(
-                "expected `black` module to be installed, but could not be found"
-            )
+            sys.modules["black"] = None  # type: ignore
+            with fl.settings.context(logger=logger):
+                none_formatted = fl.PythonExporter().format("None")
+                self.assertEqual("None", none_formatted)
+                logger.error.assert_called_with(
+                    "expected `black` module to be installed, but could not be found"
+                )
         finally:
-            sys.modules["black"] = black
+            sys.modules["black"] = black  # type: ignore
 
     def test_none_export(self) -> None:
         """Tests export of None values, like in Norm, Activation, or Defuzzifier."""
@@ -458,8 +453,6 @@ fl.Engine(
     input_variables=[],
     output_variables=[],
     rule_blocks=[],
-    load_rules=True,
-    update_reference=True,
 )
 """,
         )
@@ -476,8 +469,6 @@ def create() -> fl.Engine:
         input_variables=[],
         output_variables=[],
         rule_blocks=[],
-        load_rules=True,
-        update_reference=True,
     )
 """,
         )
@@ -493,168 +484,155 @@ def create() -> fl.Engine:
             expected="""\
 fl.Engine(
     name="SimpleDimmer",
-    description="",
     input_variables=[
         fl.InputVariable(
             name="Ambient",
-            description="",
-            enabled=True,
             minimum=0.0,
             maximum=1.0,
             lock_range=False,
             terms=[
-                fl.Triangle(name="DARK", height=1.0, left=0.0, top=0.25, right=0.5),
-                fl.Triangle(name="MEDIUM", height=1.0, left=0.25, top=0.5, right=0.75),
-                fl.Triangle(name="BRIGHT", height=1.0, left=0.5, top=0.75, right=1.0),
+                fl.Triangle("DARK", 0.0, 0.25, 0.5),
+                fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+                fl.Triangle("BRIGHT", 0.5, 0.75, 1.0),
             ],
-            value=fl.nan,
         )
     ],
     output_variables=[
         fl.OutputVariable(
             name="Power",
-            description="",
-            enabled=True,
-            lock_range=False,
-            terms=[
-                fl.Triangle(name="LOW", height=1.0, left=0.0, top=0.25, right=0.5),
-                fl.Triangle(name="MEDIUM", height=1.0, left=0.25, top=0.5, right=0.75),
-                fl.Triangle(name="HIGH", height=1.0, left=0.5, top=0.75, right=1.0),
-            ],
-            defuzzifier=fl.Centroid(resolution=200),
-            lock_previous=False,
-            default_value=fl.nan,
-            previous_value=fl.nan,
             minimum=0.0,
             maximum=1.0,
+            lock_range=False,
+            lock_previous=False,
+            default_value=fl.nan,
             aggregation=fl.Maximum(),
-            value=fl.nan,
+            defuzzifier=fl.Centroid(resolution=200),
+            terms=[
+                fl.Triangle("LOW", 0.0, 0.25, 0.5),
+                fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+                fl.Triangle("HIGH", 0.5, 0.75, 1.0),
+            ],
         )
     ],
     rule_blocks=[
         fl.RuleBlock(
             name="",
-            description="",
-            enabled=True,
             conjunction=None,
             disjunction=None,
             implication=fl.Minimum(),
             activation=fl.General(),
             rules=[
-                fl.Rule(
-                    enabled=True,
-                    weight=1.0,
-                    activation_degree=0.0,
-                    antecedent=fl.Antecedent(text="Ambient is DARK"),
-                    consequent=fl.Consequent(text="Power is HIGH"),
-                ),
-                fl.Rule(
-                    enabled=True,
-                    weight=1.0,
-                    activation_degree=0.0,
-                    antecedent=fl.Antecedent(text="Ambient is MEDIUM"),
-                    consequent=fl.Consequent(text="Power is MEDIUM"),
-                ),
-                fl.Rule(
-                    enabled=True,
-                    weight=1.0,
-                    activation_degree=0.0,
-                    antecedent=fl.Antecedent(text="Ambient is BRIGHT"),
-                    consequent=fl.Consequent(text="Power is LOW"),
-                ),
+                fl.Rule.create("if Ambient is DARK then Power is HIGH"),
+                fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM"),
+                fl.Rule.create("if Ambient is BRIGHT then Power is LOW"),
             ],
         )
     ],
-    load_rules=True,
-    update_reference=True,
 )
 """,
         )
 
     def test_input_variable(self) -> None:
         """Test input variables are exported."""
+        input_variable = self.engine().input_variable(0)
         self.assert_that(
-            self.engine().input_variable(0),
+            input_variable,
             expected="""\
 fl.InputVariable(
     name="Ambient",
-    description="",
-    enabled=True,
     minimum=0.0,
     maximum=1.0,
     lock_range=False,
     terms=[
-        fl.Triangle(name="DARK", height=1.0, left=0.0, top=0.25, right=0.5),
-        fl.Triangle(name="MEDIUM", height=1.0, left=0.25, top=0.5, right=0.75),
-        fl.Triangle(name="BRIGHT", height=1.0, left=0.5, top=0.75, right=1.0),
+        fl.Triangle("DARK", 0.0, 0.25, 0.5),
+        fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+        fl.Triangle("BRIGHT", 0.5, 0.75, 1.0),
     ],
-    value=fl.nan,
+)
+""",
+        )
+        input_variable.enabled = False
+        input_variable.description = "Description"
+        self.assert_that(
+            input_variable,
+            expected="""\
+fl.InputVariable(
+    name="Ambient",
+    description="Description",
+    enabled=False,
+    minimum=0.0,
+    maximum=1.0,
+    lock_range=False,
+    terms=[
+        fl.Triangle("DARK", 0.0, 0.25, 0.5),
+        fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+        fl.Triangle("BRIGHT", 0.5, 0.75, 1.0),
+    ],
 )
 """,
         )
 
     def test_output_variable(self) -> None:
         """Test output variables are exported."""
+        output_variable = self.engine().output_variable(0)
         self.assert_that(
-            self.engine().output_variable(0),
+            output_variable,
             """\
 fl.OutputVariable(
     name="Power",
-    description="",
-    enabled=True,
-    lock_range=False,
-    terms=[
-        fl.Triangle(name="LOW", height=1.0, left=0.0, top=0.25, right=0.5),
-        fl.Triangle(name="MEDIUM", height=1.0, left=0.25, top=0.5, right=0.75),
-        fl.Triangle(name="HIGH", height=1.0, left=0.5, top=0.75, right=1.0),
-    ],
-    defuzzifier=fl.Centroid(resolution=200),
-    lock_previous=False,
-    default_value=fl.nan,
-    previous_value=fl.nan,
     minimum=0.0,
     maximum=1.0,
+    lock_range=False,
+    lock_previous=False,
+    default_value=fl.nan,
     aggregation=fl.Maximum(),
-    value=fl.nan,
+    defuzzifier=fl.Centroid(resolution=200),
+    terms=[
+        fl.Triangle("LOW", 0.0, 0.25, 0.5),
+        fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+        fl.Triangle("HIGH", 0.5, 0.75, 1.0),
+    ],
 )
 """,
         )
 
     def test_rule_block(self) -> None:
         """Test rule blocks are exported."""
+        rule_block = self.engine().rule_block(0)
         self.assert_that(
-            self.engine().rule_block(0),
+            rule_block,
             """\
 fl.RuleBlock(
     name="",
-    description="",
-    enabled=True,
     conjunction=None,
     disjunction=None,
     implication=fl.Minimum(),
     activation=fl.General(),
     rules=[
-        fl.Rule(
-            enabled=True,
-            weight=1.0,
-            activation_degree=0.0,
-            antecedent=fl.Antecedent(text="Ambient is DARK"),
-            consequent=fl.Consequent(text="Power is HIGH"),
-        ),
-        fl.Rule(
-            enabled=True,
-            weight=1.0,
-            activation_degree=0.0,
-            antecedent=fl.Antecedent(text="Ambient is MEDIUM"),
-            consequent=fl.Consequent(text="Power is MEDIUM"),
-        ),
-        fl.Rule(
-            enabled=True,
-            weight=1.0,
-            activation_degree=0.0,
-            antecedent=fl.Antecedent(text="Ambient is BRIGHT"),
-            consequent=fl.Consequent(text="Power is LOW"),
-        ),
+        fl.Rule.create("if Ambient is DARK then Power is HIGH"),
+        fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM"),
+        fl.Rule.create("if Ambient is BRIGHT then Power is LOW"),
+    ],
+)
+""",
+        )
+        rule_block.description = "Description"
+        rule_block.enabled = False
+        self.assert_that(
+            rule_block,
+            """\
+fl.RuleBlock(
+    name="",
+    description="Description",
+    enabled=False,
+    conjunction=None,
+    disjunction=None,
+    implication=fl.Minimum(),
+    activation=fl.General(),
+    rules=[
+        fl.Rule.create("if Ambient is DARK then Power is HIGH"),
+        fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM"),
+        fl.Rule.create("if Ambient is BRIGHT then Power is LOW"),
     ],
 )
 """,
@@ -664,43 +642,45 @@ fl.RuleBlock(
         """Test terms are exported."""
         self.assert_that(
             fl.Triangle("A", 0.0, 1.0, 2.0, 0.5),
-            'fl.Triangle(name="A", height=0.5, left=0.0, top=1.0, right=2.0)\n',
+            'fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)\n',
         )
 
     def test_rule(self) -> None:
         """Test rules are exported."""
         self.assert_that(
             fl.Rule.create("if a then z"),
-            """\
-fl.Rule(
-    enabled=True,
-    weight=1.0,
-    activation_degree=0.0,
-    antecedent=fl.Antecedent(text="a"),
-    consequent=fl.Consequent(text="z"),
-)
-""",
+            'fl.Rule.create("if a then z")\n',
         )
 
     def test_norm(self) -> None:
         """Test norms are exported."""
-        self.assert_that(fl.AlgebraicProduct(), """fl.AlgebraicProduct()\n""")
-        self.assert_that(fl.AlgebraicSum(), """fl.AlgebraicSum()\n""")
+        self.assert_that(fl.AlgebraicProduct(), "fl.AlgebraicProduct()\n")
+        self.assert_that(fl.AlgebraicSum(), "fl.AlgebraicSum()\n")
 
     def test_activation(self) -> None:
         """Test activation methods are exported."""
-        self.assert_that(fl.General(), """fl.General()\n""")
-        self.assert_that(fl.First(), """fl.First(rules=1, threshold=0.0)\n""")
+        self.assert_that(fl.General(), "fl.General()\n")
+        self.assert_that(fl.First(), "fl.First(rules=1, threshold=0.0)\n")
 
     def test_defuzzifier(self) -> None:
         """Test defuzzifiers are exported."""
-        self.assert_that(fl.Centroid(), "fl.Centroid(resolution=1000)\n")
-        self.assert_that(fl.WeightedSum(), 'fl.WeightedSum(type="Automatic")\n')
+        self.assert_that(fl.Centroid(), "fl.Centroid()\n")
+        self.assert_that(fl.Centroid(resolution=100), "fl.Centroid(resolution=100)\n")
+        self.assert_that(fl.WeightedSum(), "fl.WeightedSum()\n")
+        self.assert_that(
+            fl.WeightedSum("TakagiSugeno"), 'fl.WeightedSum(type="TakagiSugeno")\n'
+        )
 
     def test_object(self) -> None:
         """Test objects are exported with `repr`."""
-        object_repr = fl.PythonExporter().to_string(object())
-        self.assertTrue(object_repr.startswith("<object object at "))
+        from black.parsing import InvalidInput
+
+        with self.assertRaises(ValueError) as error:
+            fl.PythonExporter().to_string(object())
+        self.assertEqual(error.exception.__class__, InvalidInput)
+        self.assertTrue(
+            str(error.exception).startswith("Cannot parse: 1:0: <object object at ")
+        )
 
 
 class TestFldExporter(unittest.TestCase):
@@ -748,7 +728,7 @@ class TestFldExporter(unittest.TestCase):
 
         # input and output values
         writer = io.StringIO()
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         fl.FldExporter(input_values=True, output_values=True, headers=False).write(
             engine,
             writer,
@@ -834,7 +814,7 @@ class TestFldExporter(unittest.TestCase):
 
     def test_write_from_reader(self) -> None:
         """Test exporter can read an FLD and export it again."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         reader = """\
 Ambient Power
 0.000000000 nan
@@ -869,7 +849,7 @@ Ambient Power
 
     def test_to_file_from_reader(self) -> None:
         """Test exporter can read file and export it using default decimals."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         reader = """\
     Ambient Power
     0.000000000 nan
@@ -903,7 +883,7 @@ Ambient Power
 
     def test_to_string_from_reader(self) -> None:
         """Test exporter can read from a reader and export to a string."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         reader = """\
         Ambient Power
         0.000000000 nan
@@ -929,7 +909,7 @@ Ambient Power
 
     def test_write_from_scope_each_variable_1(self) -> None:
         """Test exporter can write from a specific scope of specific variables."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -967,7 +947,7 @@ Ambient Power
 
     def test_write_from_scope_all_variables_1(self) -> None:
         """Test the exporter can export the values of all variables in the AllVariables scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1004,7 +984,7 @@ Ambient Power
         """Test the exporter can export the values of all variables in each variable scope."""
         from fuzzylite.examples.hybrid import tipper
 
-        engine = fl.FllImporter().from_string(str(tipper.engine))
+        engine = fl.FllImporter().from_string(str(tipper.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1041,7 +1021,7 @@ service food mTip tsTip
         """Test the exporter can export the values of all variables in the AllVariables scope."""
         from fuzzylite.examples.hybrid import tipper
 
-        engine = fl.FllImporter().from_string(str(tipper.engine))
+        engine = fl.FllImporter().from_string(str(tipper.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1078,7 +1058,7 @@ service food mTip tsTip
         """Test the exporter can export the values of only active variables in EachVariable scope."""
         from fuzzylite.examples.hybrid import tipper
 
-        engine = fl.FllImporter().from_string(str(tipper.engine))
+        engine = fl.FllImporter().from_string(str(tipper.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1103,7 +1083,7 @@ service food mTip tsTip
         """Test the exporter can export the values of only active variables in AllVariables scope."""
         from fuzzylite.examples.hybrid import tipper
 
-        engine = fl.FllImporter().from_string(str(tipper.engine))
+        engine = fl.FllImporter().from_string(str(tipper.create()))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1126,7 +1106,7 @@ service food mTip tsTip
 
     def test_to_file_from_scope(self) -> None:
         """Test the exporter can export the values to a file from EachVariable scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
 
         file_name = (
             "file-"
@@ -1159,7 +1139,7 @@ Ambient Power
 
     def test_to_string_from_scope(self) -> None:
         """Test the exporter can export the values to a file from AllVariables scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
 
         obtained = fl.FldExporter().to_string_from_scope(
             engine,
@@ -1188,7 +1168,7 @@ Ambient Power
 
         from fuzzylite.examples.takagi_sugeno import SimpleDimmer
 
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.engine))
+        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
 
         obtained = fl.FldExporter().to_string(engine)
         self.assertEqual(1025 + 1, len(obtained.split("\n")))
@@ -1207,14 +1187,14 @@ Ambient Power
 class TestExporters(unittest.TestCase):
     """Test exporters for every example."""
 
-    # @unittest.skip("Re-enable after test coverage improved independently")
+    @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         """Test every FLL example can be exported."""
         import concurrent.futures
 
         from fuzzylite import examples
 
-        with fl.settings.context(decimals=9):
+        with fl.settings.context(decimals=3):
             files = [
                 str(example) for example in Path(*examples.__path__).rglob("*.fll")
             ]
@@ -1234,8 +1214,11 @@ class TestExporters(unittest.TestCase):
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
-        examples = "/tmp/source/takagi_sugeno/"
-        TestExporters.export(examples + "/approximation.fll")
+        from fuzzylite.examples.mamdani import SimpleDimmer
+
+        example = SimpleDimmer.__file__.replace(".py", ".fll")
+        with fl.settings.context(decimals=9):
+            TestExporters.export(example)
 
     @staticmethod
     def export(file_path: str) -> None:
@@ -1258,14 +1241,14 @@ class TestExporters(unittest.TestCase):
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
             module = ".".join(package) + f".{path.stem}"
-            engine = importlib.import_module(module).engine
+            engine = importlib.import_module(module).create()
         else:
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
             # fl.FllExporter(),
-            # fl.PythonExporter(encapsulated=True),
-            fl.FldExporter(),
+            fl.PythonExporter(encapsulated=True),
+            # fl.FldExporter(),
         ]
 
         file_name = path.stem

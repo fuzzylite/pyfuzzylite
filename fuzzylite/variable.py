@@ -49,7 +49,6 @@ class Variable:
         maximum: float = inf,
         lock_range: bool = False,
         terms: Iterable[Term] | None = None,
-        value: Scalar = nan,
     ) -> None:
         """Create the variable.
         @param name is the name of the variable
@@ -69,7 +68,7 @@ class Variable:
         self.maximum = maximum
         self.lock_range = lock_range
         self.terms = list(terms) if terms else []
-        self.value = value
+        self.value = scalar(nan)
 
     def __str__(self) -> str:
         """@return variable in the FuzzyLite Language."""
@@ -78,7 +77,14 @@ class Variable:
     def __repr__(self) -> str:
         """@return Python code to construct the variable."""
         fields = vars(self).copy()
-        fields["value"] = fields.pop("_value")
+
+        fields.pop("_value")
+
+        if not self.description:
+            fields.pop("description")
+        if self.enabled:
+            fields.pop("enabled")
+
         return representation.as_constructor(self, fields)
 
     def term(self, name: str) -> Term:
@@ -191,7 +197,6 @@ class InputVariable(Variable):
         maximum: float = inf,
         lock_range: bool = False,
         terms: Iterable[Term] | None = None,
-        value: Scalar = nan,
     ) -> None:
         """Create the input variable.
         @param name is the name of the variable
@@ -211,7 +216,6 @@ class InputVariable(Variable):
             maximum=maximum,
             lock_range=lock_range,
             terms=terms,
-            value=value,
         )
 
     def __str__(self) -> str:
@@ -290,11 +294,9 @@ class OutputVariable(Variable):
         lock_range: bool = False,
         lock_previous: bool = False,
         default_value: float = nan,
-        previous_value: float = nan,
         aggregation: SNorm | None = None,
         defuzzifier: Defuzzifier | None = None,
         terms: Iterable[Term] | None = None,
-        value: Scalar = nan,
     ) -> None:
         """Create the output variable.
         @param name is the name of the variable
@@ -326,13 +328,12 @@ class OutputVariable(Variable):
             maximum=maximum,
             lock_range=lock_range,
             terms=terms,
-            value=value,
         )
         # set values of output variable
         self.defuzzifier = defuzzifier
         self.lock_previous = lock_previous
         self.default_value = default_value
-        self.previous_value = previous_value
+        self.previous_value = nan
 
     def __str__(self) -> str:
         """@return variable in the FuzzyLite Language."""
@@ -341,11 +342,20 @@ class OutputVariable(Variable):
     def __repr__(self) -> str:
         """@return Python code to construct the variable."""
         fields = vars(self).copy()
-        fields.pop("fuzzy")
+
         fields["minimum"] = self.minimum
         fields["maximum"] = self.maximum
         fields["aggregation"] = self.aggregation
-        fields["value"] = fields.pop("_value")
+
+        fields.pop("fuzzy")
+        fields.pop("_value")
+        fields.pop("previous_value")
+
+        if not self.description:
+            fields.pop("description")
+        if self.enabled:
+            fields.pop("enabled")
+
         return representation.as_constructor(self, fields)
 
     @property
