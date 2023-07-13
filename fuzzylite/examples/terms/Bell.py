@@ -28,7 +28,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Bell("left", 0.333, 0.166, 3.0),
                     fl.Bell("right", 0.666, 0.166, 3.0),

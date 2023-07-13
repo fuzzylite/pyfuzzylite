@@ -73,7 +73,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.MeanOfMaximum(resolution=500),
+                defuzzifier=fl.MeanOfMaximum(),
                 terms=[
                     fl.Discrete(
                         "less_than_usual",
@@ -110,7 +110,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.MeanOfMaximum(resolution=500),
+                defuzzifier=fl.MeanOfMaximum(),
                 terms=[
                     fl.Discrete(
                         "short",

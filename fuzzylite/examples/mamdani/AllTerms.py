@@ -54,7 +54,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Sigmoid("A", 0.5, -20.0),
                     fl.ZShape("B", 0.0, 1.0),

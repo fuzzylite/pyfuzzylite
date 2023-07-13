@@ -28,7 +28,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.GaussianProduct("left", 0.333, 0.143, 0.333, 0.143),
                     fl.GaussianProduct("right", 0.666, 0.143, 0.666, 0.143),

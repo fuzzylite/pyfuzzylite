@@ -29,7 +29,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Bell("negBig", -5.0, 1.67, 8.0),
                     fl.Bell("negSmall", -1.67, 1.67, 8.0),

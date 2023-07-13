@@ -37,7 +37,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Triangle("close_fast", -1.0, -0.9, -0.8),
                     fl.Triangle("close_slow", -0.6, -0.5, -0.4),
