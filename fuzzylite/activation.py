@@ -453,6 +453,10 @@ class Threshold(Activation):
             GreaterThan: operator.gt,
         }
 
+        def __repr__(self) -> str:
+            """@return Python code to construct the comparator."""
+            return f"'{self.value}'"
+
         @property
         def operator(self) -> Callable[[Scalar, Scalar], bool | Array[np.bool_]]:
             """Gets the function reference for the operator."""

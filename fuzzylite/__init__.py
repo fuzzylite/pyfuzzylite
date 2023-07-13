@@ -30,16 +30,9 @@ from .term import *
 from .types import *
 from .variable import *
 
-
-def __getattr__(name: str) -> object:
-    # temporal, to avoid recursion with examples instantiating Engines.
-    if name == "examples":
-        import fuzzylite.examples as examples
-
-        return examples
-    raise ModuleNotFoundError(f"module {__name__} has no attribute {name}")
-
-
 __name__ = information.name
 __doc__ = information.description
 __version__ = information.version
+
+# importing examples last to prevent circular imports
+from . import examples  # noqa

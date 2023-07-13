@@ -77,8 +77,7 @@ class Engine:
         input_variables: Iterable[InputVariable] | None = None,
         output_variables: Iterable[OutputVariable] | None = None,
         rule_blocks: Iterable[RuleBlock] | None = None,
-        load_rules: bool = False,
-        update_reference: bool = False,
+        load: bool = True,
     ) -> None:
         """Creates an Engine with the parameters given.
 
@@ -87,20 +86,19 @@ class Engine:
         @param input_variables a list of input variables
         @param output_variables a list of output variables
         @param rule_blocks a list of rule blocks
-        @param load_rules whether to automatically load the rules in the rule blocks
+        @param load whether to automatically update references to this engine and load the rules in the rule blocks
         """
         self.name = name
         self.description = description
         self.input_variables = list(input_variables) if input_variables else []
         self.output_variables = list(output_variables) if output_variables else []
         self.rule_blocks = list(rule_blocks) if rule_blocks else []
-        if load_rules:
-            for rb in self.rule_blocks:
-                rb.load_rules(self)
-        if update_reference:
+        if load:
             for variable in self.variables:
                 for term in variable.terms:
                     term.update_reference(self)
+            for rb in self.rule_blocks:
+                rb.load_rules(self)
 
     def __str__(self) -> str:
         """@return engine in the FuzzyLite Language."""
@@ -109,8 +107,8 @@ class Engine:
     def __repr__(self) -> str:
         """@return Python code to construct the engine."""
         fields = vars(self).copy()
-        fields["load_rules"] = True
-        fields["update_reference"] = True
+        if not self.description:
+            fields.pop("description")
         return representation.as_constructor(self, fields)
 
     def configure(

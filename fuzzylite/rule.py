@@ -165,7 +165,7 @@ class Antecedent:
         """@return Python code to construct the antecedent."""
         fields = vars(self).copy()
         fields.pop("expression")
-        return representation.as_constructor(self, fields)
+        return representation.as_constructor(self, fields, positional=True)
 
     def is_loaded(self) -> bool:
         """Indicates whether the antecedent is loaded
@@ -491,7 +491,7 @@ class Consequent:
         """@return Python code to construct the consequent."""
         fields = vars(self).copy()
         fields.pop("conclusions")
-        return representation.as_constructor(self, fields)
+        return representation.as_constructor(self, fields, positional=True)
 
     def is_loaded(self) -> bool:
         """Indicates whether the consequent is loaded
@@ -677,14 +677,13 @@ class Rule:
         self,
         enabled: bool = True,
         weight: float = 1.0,
-        activation_degree: Scalar = 0.0,
         antecedent: Antecedent | None = None,
         consequent: Consequent | None = None,
     ) -> None:
         """Create the rule."""
         self.enabled = enabled
         self.weight = weight
-        self.activation_degree = activation_degree
+        self.activation_degree = scalar(0.0)
         self.triggered = array(False)
         self.antecedent = antecedent or Antecedent()
         self.consequent = consequent or Consequent()
@@ -695,9 +694,7 @@ class Rule:
 
     def __repr__(self) -> str:
         """@return Python code to construct the rule."""
-        fields = vars(self).copy()
-        fields.pop("triggered")
-        return representation.as_constructor(self, fields)
+        return f"{Op.class_name(self, qualname=True)}.{Rule.create.__name__}('{self.text}')"
 
     @property
     def text(self) -> str:
@@ -890,7 +887,12 @@ class RuleBlock:
 
     def __repr__(self) -> str:
         """@return Python code to construct the rule block."""
-        return representation.as_constructor(self)
+        fields = vars(self).copy()
+        if not self.description:
+            fields.pop("description")
+        if self.enabled:
+            fields.pop("enabled")
+        return representation.as_constructor(self, fields)
 
     def activate(self) -> None:
         """Activates the rule block."""

@@ -426,7 +426,7 @@ class TestEngine(unittest.TestCase):
 
     def test_repr(self) -> None:
         """Tests repr."""
-        code = fl.repr(fuzzylite.examples.mamdani.SimpleDimmer.engine)
+        code = fl.repr(fuzzylite.examples.mamdani.SimpleDimmer.create())
         engine = eval(code)
         engine.input_variables[0].value = 1 / 3
         engine.process()

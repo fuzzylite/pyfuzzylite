@@ -1,52 +1,51 @@
 import fuzzylite as fl
 
-engine = fl.Engine(name="SimpleDimmer", description="")
-engine.input_variables = [
-    fl.InputVariable(
-        name="Ambient",
-        description="",
-        enabled=True,
-        minimum=0.000,
-        maximum=1.000,
-        lock_range=False,
-        terms=[
-            fl.Triangle("DARK", 0.000, 0.250, 0.500),
-            fl.Triangle("MEDIUM", 0.250, 0.500, 0.750),
-            fl.Triangle("BRIGHT", 0.500, 0.750, 1.000),
+
+def create() -> fl.Engine:
+    return fl.Engine(
+        name="SimpleDimmer",
+        input_variables=[
+            fl.InputVariable(
+                name="Ambient",
+                minimum=0.0,
+                maximum=1.0,
+                lock_range=False,
+                terms=[
+                    fl.Triangle("DARK", 0.0, 0.25, 0.5),
+                    fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
+                    fl.Triangle("BRIGHT", 0.5, 0.75, 1.0),
+                ],
+            )
+        ],
+        output_variables=[
+            fl.OutputVariable(
+                name="Power",
+                minimum=0.0,
+                maximum=1.0,
+                lock_range=False,
+                lock_previous=False,
+                default_value=fl.nan,
+                aggregation=None,
+                defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),
+                terms=[
+                    fl.Constant("LOW", 0.25),
+                    fl.Constant("MEDIUM", 0.5),
+                    fl.Constant("HIGH", 0.75),
+                ],
+            )
+        ],
+        rule_blocks=[
+            fl.RuleBlock(
+                name="",
+                conjunction=None,
+                disjunction=None,
+                implication=None,
+                activation=fl.General(),
+                rules=[
+                    fl.Rule.create("if Ambient is DARK then Power is HIGH"),
+                    fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM"),
+                    fl.Rule.create("if Ambient is BRIGHT then Power is LOW"),
+                ],
+            )
         ],
     )
-]
-engine.output_variables = [
-    fl.OutputVariable(
-        name="Power",
-        description="",
-        enabled=True,
-        minimum=0.000,
-        maximum=1.000,
-        lock_range=False,
-        aggregation=None,
-        defuzzifier=fl.WeightedAverage("TakagiSugeno"),
-        lock_previous=False,
-        terms=[
-            fl.Constant("LOW", 0.250),
-            fl.Constant("MEDIUM", 0.500),
-            fl.Constant("HIGH", 0.750),
-        ],
-    )
-]
-engine.rule_blocks = [
-    fl.RuleBlock(
-        name="",
-        description="",
-        enabled=True,
-        conjunction=None,
-        disjunction=None,
-        implication=None,
-        activation=fl.General(),
-        rules=[
-            fl.Rule.create("if Ambient is DARK then Power is HIGH", engine),
-            fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine),
-            fl.Rule.create("if Ambient is BRIGHT then Power is LOW", engine),
-        ],
-    )
-]

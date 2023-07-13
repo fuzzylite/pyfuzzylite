@@ -32,8 +32,8 @@ class HedgeAssert(BaseAssert[fl.Hedge]):
         """Assert the hedge produces the expected values from the keys."""
         for a, z in az.items():
             np.testing.assert_equal(self.actual.hedge(a), z, err_msg=f"when x={a}")
-        vector_a = np.array(list(az.keys()))
-        vector_z = np.array(list(az.values()))
+        vector_a = fl.array(list(az.keys()))
+        vector_z = fl.array(list(az.values()))
         np.testing.assert_equal(vector_z, self.actual.hedge(vector_a))
         return self
 

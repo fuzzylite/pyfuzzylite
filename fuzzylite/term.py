@@ -107,7 +107,10 @@ class Term(ABC):
 
     def __repr__(self) -> str:
         """@return Python code to construct the term."""
-        return representation.as_constructor(self)
+        fields = vars(self).copy()
+        if Op.is_close(self.height, 1.0):
+            fields.pop("height")
+        return representation.as_constructor(self, fields, positional=True)
 
     def parameters(self) -> str:
         """Returns the parameters to configure the term. The parameters are
@@ -716,7 +719,7 @@ class Constant(Term):
         """@return Python code to construct the term."""
         fields = vars(self).copy()
         fields.pop("height")
-        return representation.as_constructor(self, fields)
+        return representation.as_constructor(self, fields, positional=True)
 
     def membership(self, x: Scalar) -> Scalar:
         """Computes the membership function evaluated at $x$
@@ -1141,7 +1144,7 @@ class Linear(Term):
         fields = vars(self).copy()
         fields.pop("height")
         fields.pop("engine")
-        return representation.as_constructor(self, fields)
+        return representation.as_constructor(self, fields, positional=True)
 
     def membership(self, x: Scalar) -> Scalar:
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
@@ -2325,7 +2328,7 @@ class Function(Term):
                 if not local_variables or self.variable not in local_variables:
                     raise ValueError(
                         f"expected a map of variables containing the value for '{self.variable}', "
-                        f"but the map contains: {local_variables}"
+                        f"but the map contains: {representation.repr(local_variables)}"
                     )
                 result = local_variables[self.variable]
 
@@ -2440,12 +2443,12 @@ class Function(Term):
     def __repr__(self) -> str:
         """@return Python code to construct the term."""
         fields = vars(self).copy()
-        if not self.variables:
-            fields.pop("variables")
         fields.pop("height")
         fields.pop("root")
         fields.pop("engine")
-        return representation.as_constructor(self, fields)
+        if not self.variables:
+            fields.pop("variables")
+        return representation.as_constructor(self, fields, positional=True)
 
     def parameters(self) -> str:
         """Returns the parameters of the term as `formula`

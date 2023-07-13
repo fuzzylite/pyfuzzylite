@@ -98,7 +98,7 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
             return f"if {rule_id.upper()} is {rule_id.lower()} then {rule_id.upper()} is {rule_id.lower()}"
 
         expected = {
-            rule_text(rule_id): np.array(activation)
+            rule_text(rule_id): fl.array(activation)
             for rule_id, activation in rules.items()
         }
         obtained = {rule.text: rule.activation_degree for rule in self.actual.rules}
@@ -138,7 +138,8 @@ class TestActivation(unittest.TestCase):
 
     def test_general_activation(self) -> None:
         """Asserts the general activation is correct."""
-        self.assertEqual("General", str(fl.General()))
+        BaseAssert(self, fl.General()).repr_is("fl.General()").exports_fll("General")
+
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
         ).given(rule="b", activation_degree=0.0).given(
@@ -177,11 +178,11 @@ class TestActivation(unittest.TestCase):
         expected_c = [True, False] * 4
 
         ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=np.array(expected_a, dtype=np.float_)
+            rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
         ).given(
-            rule="b", activation_degree=np.array(expected_b, dtype=np.float_)
+            rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
         ).given(
-            rule="c", activation_degree=np.array(expected_c, dtype=np.float_)
+            rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
         ).activate(
             fl.General()
         ).then_triggers(
@@ -198,18 +199,20 @@ class TestActivation(unittest.TestCase):
         ]
         for activation in unsupported_activations:
             ActivationAssert(self, fl.RuleBlock()).given(
-                rule="a", activation_degree=np.array(expected_a, dtype=np.float_)
+                rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
             ).given(
-                rule="b", activation_degree=np.array(expected_b, dtype=np.float_)
+                rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
             ).given(
-                rule="c", activation_degree=np.array(expected_c, dtype=np.float_)
+                rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
             ).activate_fails(
                 activation
             )
 
     def test_first_activation(self) -> None:
         """Asserts the first activation is correct."""
-        self.assertEqual("First 1 0.000", str(fl.First()))
+        BaseAssert(self, fl.First()).repr_is(
+            "fl.First(rules=1, threshold=0.0)"
+        ).exports_fll("First 1 0.000")
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
@@ -305,7 +308,9 @@ class TestActivation(unittest.TestCase):
 
     def test_last_activation(self) -> None:
         """Asserts the last activation is correct."""
-        self.assertEqual("Last 1 0.000", str(fl.Last()))
+        BaseAssert(self, fl.Last()).repr_is(
+            "fl.Last(rules=1, threshold=0.0)"
+        ).exports_fll("Last 1 0.000")
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
@@ -401,7 +406,9 @@ class TestActivation(unittest.TestCase):
 
     def test_highest_activation(self) -> None:
         """Asserts the highest activation is correct."""
-        self.assertEqual("Highest 1", str(fl.Highest()))
+        BaseAssert(self, fl.Highest()).repr_is("fl.Highest(rules=1)").exports_fll(
+            "Highest 1"
+        )
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
@@ -466,7 +473,9 @@ class TestActivation(unittest.TestCase):
 
     def test_lowest_activation(self) -> None:
         """Asserts the lowest activation is correct."""
-        self.assertEqual("Lowest 1", str(fl.Lowest()))
+        BaseAssert(self, fl.Lowest()).repr_is("fl.Lowest(rules=1)").exports_fll(
+            "Lowest 1"
+        )
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
@@ -531,7 +540,9 @@ class TestActivation(unittest.TestCase):
 
     def test_proportional_activation(self) -> None:
         """Asserts the proportional activation is correct."""
-        self.assertEqual("Proportional", str(fl.Proportional()))
+        BaseAssert(self, fl.Proportional()).repr_is("fl.Proportional()").exports_fll(
+            "Proportional"
+        )
         # Default activation
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
@@ -570,7 +581,9 @@ class TestActivation(unittest.TestCase):
     def test_threshold_activation(self) -> None:
         """Asserts the threshold activation is correct."""
         # Default: > 0.0
-        self.assertEqual("Threshold > 0.000", str(fl.Threshold()))
+        BaseAssert(self, fl.Threshold()).repr_is(
+            "fl.Threshold(comparator='>', threshold=0.0)"
+        ).exports_fll("Threshold > 0.000")
 
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=0.0
