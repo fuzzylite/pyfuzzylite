@@ -3,7 +3,7 @@ import fuzzylite as fl
 
 def create() -> fl.Engine:
     return fl.Engine(
-        name="Ramp",
+        name="SemiEllipse",
         description="obstacle avoidance for self-driving cars",
         input_variables=[
             fl.InputVariable(
@@ -29,7 +29,10 @@ def create() -> fl.Engine:
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
                 defuzzifier=fl.Centroid(resolution=100),
-                terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
+                terms=[
+                    fl.SemiEllipse("left", 0.0, 0.666),
+                    fl.SemiEllipse("right", 0.333, 1.0),
+                ],
             )
         ],
         rule_blocks=[
