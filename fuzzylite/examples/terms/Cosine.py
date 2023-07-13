@@ -31,7 +31,7 @@ def create() -> fl.Engine:
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
                     fl.Cosine("left", 0.333, 0.666),
-                    fl.Cosine("right", 0.6665, 0.667),
+                    fl.Cosine("right", 0.666, 0.666),
                 ],
             )
         ],

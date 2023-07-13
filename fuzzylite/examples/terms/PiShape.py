@@ -31,7 +31,7 @@ def create() -> fl.Engine:
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
                     fl.PiShape("left", 0.0, 0.333, 0.333, 0.666),
-                    fl.PiShape("right", 0.333, 0.6665, 0.6665, 1.0),
+                    fl.PiShape("right", 0.333, 0.666, 0.666, 1.0),
                 ],
             )
         ],

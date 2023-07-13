@@ -31,7 +31,7 @@ def create() -> fl.Engine:
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
                     fl.Spike("left", 0.333, 0.666),
-                    fl.Spike("right", 0.6665, 0.667),
+                    fl.Spike("right", 0.666, 0.666),
                 ],
             )
         ],

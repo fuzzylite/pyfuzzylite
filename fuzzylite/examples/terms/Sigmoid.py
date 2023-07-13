@@ -30,8 +30,8 @@ def create() -> fl.Engine:
                 aggregation=fl.Maximum(),
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
-                    fl.Sigmoid("left", 0.5, -30.03003003),
-                    fl.Sigmoid("right", 0.5, 29.985007496),
+                    fl.Sigmoid("left", 0.5, -30.0),
+                    fl.Sigmoid("right", 0.5, 30.0),
                 ],
             )
         ],

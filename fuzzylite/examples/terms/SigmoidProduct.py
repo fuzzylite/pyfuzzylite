@@ -31,10 +31,10 @@ def create() -> fl.Engine:
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
                     fl.SigmoidProduct(
-                        "left", 0.1665, 30.03003003, -30.03003003, 0.4995
+                        "left", 0.167, 30.0, -30.0, 0.5
                     ),
                     fl.SigmoidProduct(
-                        "right", 0.49975, 29.985007496, -29.985007496, 0.83325
+                        "right", 0.5, 30.0, -30.0, 0.833
                     ),
                 ],
             )

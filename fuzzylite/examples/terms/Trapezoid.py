@@ -30,8 +30,8 @@ def create() -> fl.Engine:
                 aggregation=fl.Maximum(),
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
-                    fl.Trapezoid("left", 0.0, 0.1665, 0.4995, 0.666),
-                    fl.Trapezoid("right", 0.333, 0.49975, 0.83325, 1.0),
+                    fl.Trapezoid("left", 0.0, 0.167, 0.5, 0.666),
+                    fl.Trapezoid("right", 0.333, 0.5, 0.833, 1.0),
                 ],
             )
         ],

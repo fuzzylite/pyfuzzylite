@@ -30,8 +30,8 @@ def create() -> fl.Engine:
                 aggregation=fl.Maximum(),
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
-                    fl.GaussianProduct("left", 0.333, 0.143534483, 0.333, 0.143534483),
-                    fl.GaussianProduct("right", 0.6665, 0.14375, 0.6665, 0.14375),
+                    fl.GaussianProduct("left", 0.333, 0.143, 0.333, 0.143),
+                    fl.GaussianProduct("right", 0.666, 0.143, 0.666, 0.143),
                 ],
             )
         ],

@@ -29,7 +29,7 @@ def create() -> fl.Engine:
                 default_value=fl.nan,
                 aggregation=None,
                 defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),
-                terms=[fl.Constant("left", 0.333), fl.Constant("right", 0.6665)],
+                terms=[fl.Constant("left", 0.333), fl.Constant("right", 0.666)],
             )
         ],
         rule_blocks=[

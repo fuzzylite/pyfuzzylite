@@ -31,7 +31,7 @@ def create() -> fl.Engine:
                 defuzzifier=fl.Centroid(resolution=100),
                 terms=[
                     fl.Concave("left", 0.333, 0.0),
-                    fl.Concave("right", 0.6665, 1.0),
+                    fl.Concave("right", 0.666, 1.0),
                 ],
             )
         ],
