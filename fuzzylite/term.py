@@ -2466,7 +2466,7 @@ class Function(Term):
     def update_reference(self, engine: Engine | None) -> None:
         """Updates the reference to the engine and loads it."""
         self.engine = engine
-        if self.is_loaded():
+        if not self.is_loaded():
             self.load()
 
     @staticmethod
