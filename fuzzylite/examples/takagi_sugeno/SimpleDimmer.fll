@@ -17,7 +17,7 @@ OutputVariable: Power
   term: LOW Constant 0.250
   term: MEDIUM Constant 0.500
   term: HIGH Constant 0.750
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none

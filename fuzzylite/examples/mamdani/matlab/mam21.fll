@@ -1,29 +1,29 @@
 Engine: mam21
 InputVariable: angle
   enabled: true
-  range: -5.000000000 5.000000000
+  range: -5.000 5.000
   lock-range: false
-  term: small Bell -5.000000000 5.000000000 8.000000000
-  term: big Bell 5.000000000 5.000000000 8.000000000
+  term: small Bell -5.000 5.000 8.000
+  term: big Bell 5.000 5.000 8.000
 InputVariable: velocity
   enabled: true
-  range: -5.000000000 5.000000000
+  range: -5.000 5.000
   lock-range: false
-  term: small Bell -5.000000000 5.000000000 2.000000000
-  term: big Bell 5.000000000 5.000000000 2.000000000
+  term: small Bell -5.000 5.000 2.000
+  term: big Bell 5.000 5.000 2.000
 OutputVariable: force
   enabled: true
-  range: -5.000000000 5.000000000
+  range: -5.000 5.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
-  term: negBig Bell -5.000000000 1.670000000 8.000000000
-  term: negSmall Bell -1.670000000 1.670000000 8.000000000
-  term: posSmall Bell 1.670000000 1.670000000 8.000000000
-  term: posBig Bell 5.000000000 1.670000000 8.000000000
-RuleBlock: 
+  term: negBig Bell -5.000 1.670 8.000
+  term: negSmall Bell -1.670 1.670 8.000
+  term: posSmall Bell 1.670 1.670 8.000
+  term: posBig Bell 5.000 1.670 8.000
+RuleBlock:
   enabled: true
   conjunction: Minimum
   disjunction: Maximum

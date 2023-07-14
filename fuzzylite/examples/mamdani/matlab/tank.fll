@@ -18,7 +18,7 @@ OutputVariable: valve
   range: -1.000 1.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: close_fast Triangle -1.000 -0.900 -0.800
@@ -26,7 +26,7 @@ OutputVariable: valve
   term: no_change Triangle -0.100 0.000 0.100
   term: open_slow Triangle 0.200 0.300 0.400
   term: open_fast Triangle 0.800 0.900 1.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: AlgebraicProduct
   disjunction: AlgebraicSum

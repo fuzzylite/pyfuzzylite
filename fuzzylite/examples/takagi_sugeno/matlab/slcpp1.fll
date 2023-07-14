@@ -57,7 +57,7 @@ OutputVariable: out
   term: outmf9 Linear -528.520 -157.460 502.680 130.920 -1.000 -2.960 0.000 0.000
   term: outmf10 Linear -419.870 -129.890 393.380 102.410 -1.000 -2.980 0.000 0.000
   term: outmf11 Linear -354.770 -113.680 327.650 85.270 -1.000 -3.010 0.000 0.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none

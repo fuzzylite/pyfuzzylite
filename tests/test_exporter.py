@@ -1187,7 +1187,7 @@ Ambient Power
 class TestExporters(unittest.TestCase):
     """Test exporters for every example."""
 
-    @unittest.skip("Re-enable after test coverage improved independently")
+    # @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         """Test every FLL example can be exported."""
         import concurrent.futures
@@ -1196,7 +1196,7 @@ class TestExporters(unittest.TestCase):
 
         with fl.settings.context(decimals=3):
             files = [
-                str(example) for example in Path(*examples.__path__).rglob("*.fll")
+                str(example) for example in Path(*examples.__path__).rglob("*.py")
             ]
             print(files)
             with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -1241,13 +1241,18 @@ class TestExporters(unittest.TestCase):
                 engine = fl.FllImporter().from_string(import_fll)
         elif path.suffix == ".py":
             module = ".".join(package) + f".{path.stem}"
+            if "__init__" in module:
+                return
             engine = importlib.import_module(module).create()
+            for output_variable in engine.output_variables:
+                if isinstance(output_variable.defuzzifier, fl.IntegralDefuzzifier):
+                    output_variable.defuzzifier.resolution = fl.IntegralDefuzzifier.default_resolution
         else:
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
-            # fl.FllExporter(),
-            fl.PythonExporter(encapsulated=True),
+            fl.FllExporter(),
+            # fl.PythonExporter(encapsulated=True),
             # fl.FldExporter(),
         ]
 

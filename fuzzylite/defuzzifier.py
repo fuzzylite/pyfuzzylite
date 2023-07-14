@@ -116,7 +116,9 @@ class IntegralDefuzzifier(Defuzzifier):
         """Returns the parameters to configure the defuzzifier
         @return the parameters to configure the defuzzifier.
         """
-        return Op.str(self.resolution)
+        if self.resolution != IntegralDefuzzifier.default_resolution:
+            return Op.str(self.resolution)
+        return ""
 
     def configure(self, parameters: str) -> None:
         """Configures the defuzzifier with the given parameters
@@ -357,6 +359,8 @@ class WeightedDefuzzifier(Defuzzifier):
 
     def parameters(self) -> str:
         """Gets the type of weighted defuzzifier."""
+        if self.type == WeightedDefuzzifier.Type.Automatic:
+            return ""
         return self.type.name
 
     def configure(self, parameters: str) -> None:

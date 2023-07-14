@@ -30,7 +30,7 @@ OutputVariable: out1
   term: out1mf7 Linear 0.012 -0.012 -0.600
   term: out1mf8 Linear -0.384 0.067 10.158
   term: out1mf9 Linear -0.002 0.035 -1.402
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: AlgebraicProduct
   disjunction: none
