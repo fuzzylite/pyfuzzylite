@@ -16,8 +16,8 @@ OutputVariable: steer
   defuzzifier: Centroid
   default: nan
   lock-previous: false
-  term: left Bell 0.333 0.166 3.000
-  term: right Bell 0.666 0.166 3.000
+  term: left Bell 0.333 0.167 3.000
+  term: right Bell 0.666 0.167 3.000
 RuleBlock: steer_away
   description: steer away from obstacles
   enabled: true
