@@ -265,9 +265,9 @@ class FllImporter(Importer):
         term = settings.factory_manager.term.construct(
             values[1], name=Op.as_identifier(values[0])
         )
-        term.update_reference(engine)
         if len(values) > 2:
             term.configure(values[2])
+        term.update_reference(engine)
         return term
 
     def rule(self, fll: str, engine: Engine | None = None) -> Rule | None:
