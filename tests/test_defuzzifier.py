@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import re
 import unittest
+from typing import Any
 
 import numpy as np
+from typing_extensions import Self
 
 import fuzzylite as fl
 from fuzzylite.types import Scalar
@@ -29,14 +31,21 @@ from tests.assert_component import BaseAssert
 class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
     """Defuzzifier assert."""
 
-    def configured_as(self, parameters: str) -> DefuzzifierAssert:
+    def configured_as(self, parameters: str) -> Self:
         """Configures the actual defuzzifier with the parameters."""
         self.actual.configure(parameters)
         return self
 
-    def has_parameters(self, parameters: str) -> DefuzzifierAssert:
+    def has_parameters(self, parameters: str) -> Self:
         """Assert that the defuzzifier has the given parameters."""
         self.test.assertEqual(self.actual.parameters(), parameters)
+        return self
+
+    def has_attribute(self, **kwargs: Any) -> Self:
+        """Assert that the defuzzifier has the given attributes."""
+        for key, value in kwargs.items():
+            self.test.assertIn(key, vars(self.actual))
+            self.test.assertEqual(value, vars(self.actual)[key])
         return self
 
     def defuzzifies(
@@ -45,7 +54,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         maximum: float,
         terms: dict[fl.Term, float],
         vectorized: bool = True,
-    ) -> DefuzzifierAssert:
+    ) -> Self:
         """Assert that the defuzzification of the given terms result in the expected values."""
         for term, expected in terms.items():
             obtained = self.actual.defuzzify(term, minimum, maximum)
@@ -94,9 +103,9 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_bisector(self) -> None:
         """Test the bisector defuzzifier."""
-        DefuzzifierAssert(self, fl.Bisector()).exports_fll(
-            "Bisector 1000"
-        ).has_parameters("1000").configured_as("200").exports_fll("Bisector 200")
+        DefuzzifierAssert(self, fl.Bisector()).exports_fll("Bisector").has_attribute(
+            resolution=1000
+        ).configured_as("200").exports_fll("Bisector 200")
 
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
             0,
@@ -154,9 +163,9 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_centroid(self) -> None:
         """Test the centroid defuzzifier."""
-        DefuzzifierAssert(self, fl.Centroid()).exports_fll(
-            "Centroid 1000"
-        ).has_parameters("1000").configured_as("200").exports_fll("Centroid 200")
+        DefuzzifierAssert(self, fl.Centroid()).exports_fll("Centroid").has_attribute(
+            resolution=1000
+        ).configured_as("200").has_parameters("200").exports_fll("Centroid 200")
 
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
             -fl.inf,
@@ -209,8 +218,8 @@ class TestDefuzzifier(unittest.TestCase):
     def test_som_defuzzifier(self) -> None:
         """Test the Smallest of Maximum defuzzifier."""
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).exports_fll(
-            "SmallestOfMaximum 1000"
-        ).has_parameters("1000").configured_as("200").exports_fll(
+            "SmallestOfMaximum"
+        ).has_attribute(resolution=1000).configured_as("200").exports_fll(
             "SmallestOfMaximum 200"
         )
 
@@ -281,8 +290,10 @@ class TestDefuzzifier(unittest.TestCase):
     def test_lom_defuzzifier(self) -> None:
         """Test the Largest of Maximum defuzzifier."""
         DefuzzifierAssert(self, fl.LargestOfMaximum()).exports_fll(
-            "LargestOfMaximum 1000"
-        ).has_parameters("1000").configured_as("200").exports_fll(
+            "LargestOfMaximum"
+        ).has_attribute(resolution=1000).configured_as("200").has_parameters(
+            "200"
+        ).exports_fll(
             "LargestOfMaximum 200"
         )
 
@@ -353,8 +364,12 @@ class TestDefuzzifier(unittest.TestCase):
     def test_mom_defuzzifier(self) -> None:
         """Test the Largest of Maximum defuzzifier."""
         DefuzzifierAssert(self, fl.MeanOfMaximum()).exports_fll(
-            "MeanOfMaximum 1000"
-        ).has_parameters("1000").configured_as("200").exports_fll("MeanOfMaximum 200")
+            "MeanOfMaximum"
+        ).has_attribute(resolution=1000).configured_as("200").has_parameters(
+            "200"
+        ).exports_fll(
+            "MeanOfMaximum 200"
+        )
 
         # Test case:
         #            ______
@@ -523,9 +538,9 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_weighted_average(self) -> None:
         """Test the weighted average defuzzifier."""
-        DefuzzifierAssert(self, fl.WeightedAverage()).exports_fll(
-            "WeightedAverage Automatic"
-        )
+        DefuzzifierAssert(self, fl.WeightedAverage()).has_attribute(
+            type=fl.WeightedDefuzzifier.Type.Automatic
+        ).exports_fll("WeightedAverage")
         DefuzzifierAssert(self, fl.WeightedAverage()).configured_as(
             "TakagiSugeno"
         ).exports_fll("WeightedAverage TakagiSugeno")
@@ -628,7 +643,7 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_weighted_sum(self) -> None:
         """Test the weighted sum defuzzifier."""
-        DefuzzifierAssert(self, fl.WeightedSum()).exports_fll("WeightedSum Automatic")
+        DefuzzifierAssert(self, fl.WeightedSum()).exports_fll("WeightedSum")
         DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
             "TakagiSugeno"
         ).exports_fll("WeightedSum TakagiSugeno")

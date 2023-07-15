@@ -300,7 +300,7 @@ RuleBlock: rb
             fl.FllExporter().to_string(defuzzifier),
             fl.FllExporter().defuzzifier(defuzzifier),
         )
-        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid 1000")
+        self.assertEqual(fl.FllExporter().defuzzifier(defuzzifier), "Centroid")
 
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
@@ -506,7 +506,7 @@ fl.Engine(
             lock_previous=False,
             default_value=fl.nan,
             aggregation=fl.Maximum(),
-            defuzzifier=fl.Centroid(resolution=200),
+            defuzzifier=fl.Centroid(),
             terms=[
                 fl.Triangle("LOW", 0.0, 0.25, 0.5),
                 fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
@@ -586,7 +586,7 @@ fl.OutputVariable(
     lock_previous=False,
     default_value=fl.nan,
     aggregation=fl.Maximum(),
-    defuzzifier=fl.Centroid(resolution=200),
+    defuzzifier=fl.Centroid(),
     terms=[
         fl.Triangle("LOW", 0.0, 0.25, 0.5),
         fl.Triangle("MEDIUM", 0.25, 0.5, 0.75),
@@ -997,22 +997,22 @@ Ambient Power
         self.assertEqual(
             """\
 service food mTip tsTip
-0.000 0.000 4.999 5.000
-0.000 3.333 7.756 6.538
-0.000 6.667 12.949 10.882
+0.000 0.000 5.000 5.000
+0.000 3.333 7.754 6.538
+0.000 6.667 12.950 10.882
 0.000 10.000 13.571 11.667
-3.333 0.000 8.569 7.500
+3.333 0.000 8.571 7.500
 3.333 3.333 10.110 8.673
-3.333 6.667 13.770 12.925
-3.333 10.000 14.368 13.889
+3.333 6.667 13.769 12.925
+3.333 10.000 14.367 13.889
 6.667 0.000 12.895 11.000
-6.667 3.333 13.204 12.797
-6.667 6.667 17.986 20.636
-6.667 10.000 21.156 22.778
+6.667 3.333 13.205 12.797
+6.667 6.667 17.987 20.636
+6.667 10.000 21.154 22.778
 10.000 0.000 13.571 11.667
-10.000 3.333 13.709 13.889
-10.000 6.667 20.216 22.778
-10.000 10.000 25.001 25.000
+10.000 3.333 13.710 13.889
+10.000 6.667 20.217 22.778
+10.000 10.000 25.000 25.000
 """,
             writer.getvalue(),
         )
@@ -1034,22 +1034,22 @@ service food mTip tsTip
         self.assertEqual(
             """\
 service food mTip tsTip
-0.000 0.000 4.999 5.000
-0.000 3.333 7.756 6.538
-0.000 6.667 12.949 10.882
+0.000 0.000 5.000 5.000
+0.000 3.333 7.754 6.538
+0.000 6.667 12.950 10.882
 0.000 10.000 13.571 11.667
-3.333 0.000 8.569 7.500
+3.333 0.000 8.571 7.500
 3.333 3.333 10.110 8.673
-3.333 6.667 13.770 12.925
-3.333 10.000 14.368 13.889
+3.333 6.667 13.769 12.925
+3.333 10.000 14.367 13.889
 6.667 0.000 12.895 11.000
-6.667 3.333 13.204 12.797
-6.667 6.667 17.986 20.636
-6.667 10.000 21.156 22.778
+6.667 3.333 13.205 12.797
+6.667 6.667 17.987 20.636
+6.667 10.000 21.154 22.778
 10.000 0.000 13.571 11.667
-10.000 3.333 13.709 13.889
-10.000 6.667 20.216 22.778
-10.000 10.000 25.001 25.000
+10.000 3.333 13.710 13.889
+10.000 6.667 20.217 22.778
+10.000 10.000 25.000 25.000
 """,
             writer.getvalue(),
         )
@@ -1195,9 +1195,7 @@ class TestExporters(unittest.TestCase):
         from fuzzylite import examples
 
         with fl.settings.context(decimals=9):
-            files = [
-                str(example) for example in Path(*examples.__path__).rglob("*.py")
-            ]
+            files = [str(example) for example in Path(*examples.__path__).rglob("*.py")]
             print(files)
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 threads = [
@@ -1246,7 +1244,9 @@ class TestExporters(unittest.TestCase):
             engine = importlib.import_module(module).create()
             for output_variable in engine.output_variables:
                 if isinstance(output_variable.defuzzifier, fl.IntegralDefuzzifier):
-                    output_variable.defuzzifier.resolution = fl.IntegralDefuzzifier.default_resolution
+                    output_variable.defuzzifier.resolution = (
+                        fl.IntegralDefuzzifier.default_resolution
+                    )
         else:
             raise Exception(f"unknown importer of files like {path}")
 
