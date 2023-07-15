@@ -783,13 +783,12 @@ class Cosine(Term):
         x = scalar(x)
         c = self.center
         w = self.width
-        increasing = x >= c - 0.5 * w
-        decreasing = x <= c + 0.5 * w
+        within = (x >= c - 0.5 * w) & (x <= c + 0.5 * w)
         y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
-                np.isfinite(x) & (increasing | decreasing),
+                np.isfinite(x) & within,
                 0.5 * (1.0 + np.cos(2.0 / w * np.pi * (x - c))),
                 0.0,
             )

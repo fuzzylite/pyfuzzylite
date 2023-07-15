@@ -106,7 +106,7 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def membership_fails(
-        self, x: float, exception: type[Exception], message: str
+            self, x: float, exception: type[Exception], message: str
     ) -> Self:
         """Assert the membership function raises the exception when evaluating $f(x)$."""
         with self.test.assertRaises(exception) as error:
@@ -128,10 +128,10 @@ class TermAssert(BaseAssert[fl.Term]):
         return self
 
     def apply(
-        self,
-        func: Callable[..., None],
-        args: Sequence[str] = (),
-        **keywords: dict[str, object],
+            self,
+            func: Callable[..., None],
+            args: Sequence[str] = (),
+            **keywords: dict[str, object],
     ) -> Self:
         """Applies function on the term with the arguments and keywords as parameters."""
         func(self.actual, *args, **keywords)
@@ -260,7 +260,7 @@ class TestTerm(unittest.TestCase):
 
         activated = fl.Activated(fl.Triangle("x", 0, 1), degree=1.0)
         with self.assertRaisesRegex(
-            ValueError, "expected an implication operator, but none found"
+                ValueError, "expected an implication operator, but none found"
         ):
             activated.membership(0.0)
 
@@ -343,7 +343,7 @@ class TestTerm(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(
-            ValueError, "expected an aggregation operator, but none found"
+                ValueError, "expected an aggregation operator, but none found"
         ):
             aggregated.membership(0.0)
 
@@ -760,7 +760,8 @@ class TestTerm(unittest.TestCase):
             "fl.Cosine('cosine', 0.0, 1.0)"
         ).has_memberships(
             {
-                -0.5: 0.0,
+                -1.0: 0.0,
+                - 0.5: 0.0,
                 -0.4: 0.09549150281252633,
                 -0.25: 0.5,
                 -0.1: 0.9045084971874737,
@@ -769,6 +770,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.09549150281252633,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -868,21 +870,21 @@ class TestTerm(unittest.TestCase):
 
         term = fl.Discrete()
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape("expected xy to contain coordinate pairs, but it is empty"),
+                ValueError,
+                re.escape("expected xy to contain coordinate pairs, but it is empty"),
         ):
             term.membership(0.0)
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape("expected xy to contain coordinate pairs, but it is empty"),
+                ValueError,
+                re.escape("expected xy to contain coordinate pairs, but it is empty"),
         ):
             term.values = fl.Discrete.to_xy([], [])
             term.membership(0.0)
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape(
-                "expected xy to have with 2 columns, but got 1 in shape (1,): [1.]"
-            ),
+                ValueError,
+                re.escape(
+                    "expected xy to have with 2 columns, but got 1 in shape (1,): [1.]"
+                ),
         ):
             term.values = fl.array([1.0])
             term.membership(0.0)
@@ -1069,7 +1071,7 @@ class TestTerm(unittest.TestCase):
         engine.input_variables[2].value = 2
 
         with self.assertRaisesRegex(
-            ValueError, "expected reference to an engine, but found none"
+                ValueError, "expected reference to an engine, but found none"
         ):
             fl.Linear().membership(nan)
 
@@ -2200,7 +2202,7 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         return self
 
     def evaluates_to(
-        self, expected: float, variables: dict[str, fl.Scalar] | None = None
+            self, expected: float, variables: dict[str, fl.Scalar] | None = None
     ) -> FunctionNodeAssert:
         """Assert the node evaluates to the expected value (optionally) given variables."""
         obtained = self.actual.evaluate(variables)
@@ -2213,7 +2215,7 @@ class FunctionNodeAssert(BaseAssert[fl.Function.Node]):
         return self
 
     def fails_to_evaluate(
-        self, exception: type[Exception], message: str
+            self, exception: type[Exception], message: str
     ) -> FunctionNodeAssert:
         """Assert the node raises the expection on evaluation."""
         with self.test.assertRaisesRegex(exception, message):
@@ -2227,7 +2229,7 @@ class TestFunction(unittest.TestCase):
     def test_function(self) -> None:
         """Test the function term."""
         with self.assertRaisesRegex(
-            RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")
+                RuntimeError, re.escape("function 'f(x)=2x+1' is not loaded")
         ):
             fl.Function("f(x)", "f(x)=2x+1").membership(nan)
 
@@ -2260,11 +2262,11 @@ class TestFunction(unittest.TestCase):
         output_a = fl.OutputVariable("o_A")
         engine_a = fl.Engine("A", "Engine A", [input_a], [output_a])
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape(
-                "expected a map of variables containing the value for 'i_A', "
-                "but the map contains: {'x': 0.0}"
-            ),
+                ValueError,
+                re.escape(
+                    "expected a map of variables containing the value for 'i_A', "
+                    "but the map contains: {'x': 0.0}"
+                ),
         ):
             fl.Function.create("engine_a", "2*i_A + o_A + x").membership(0.0)
 
@@ -2290,11 +2292,11 @@ class TestFunction(unittest.TestCase):
 
         function_a.variables = {"x": nan}
         with self.assertRaisesRegex(
-            ValueError,
-            re.escape(
-                "variable 'x' is reserved for internal use of Function term, "
-                "please remove it from the map of variables: {'x': nan}"
-            ),
+                ValueError,
+                re.escape(
+                    "variable 'x' is reserved for internal use of Function term, "
+                    "please remove it from the map of variables: {'x': nan}"
+                ),
         ):
             function_a.membership(0.0)
         del function_a.variables["x"]
@@ -2574,7 +2576,7 @@ class TestFunction(unittest.TestCase):
             "a+~b": "a b ~ +",
             "~a*~b": "a ~ b ~ *",
             "(sin(pi()/4) + cos(pi/4)) / (~sin(pi()/4) - ~cos(pi/4))": "pi 4.000 / sin pi 4.000 / cos + "
-            "pi 4.000 / sin ~ pi 4.000 / cos ~ - /",
+                                                                       "pi 4.000 / sin ~ pi 4.000 / cos ~ - /",
         }
         for infix, postfix in infix_postfix.items():
             self.assertEqual(postfix, fl.Function.parse(infix).postfix())
