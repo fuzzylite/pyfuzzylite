@@ -305,7 +305,7 @@ RuleBlock: rb
     def test_object(self) -> None:
         """Test a non-fuzzylite object cannot exported."""
         with self.assertRaisesRegex(
-                TypeError, r"expected a fuzzylite object, but got <class 'object'>"
+            TypeError, r"expected a fuzzylite object, but got <class 'object'>"
         ):
             fl.FllExporter().to_string(object())
 
@@ -322,9 +322,9 @@ class TestPythonExporter(unittest.TestCase):
         return SimpleDimmer.create()
 
     def assert_that(
-            self,
-            instance: Any,
-            expected: str,
+        self,
+        instance: Any,
+        expected: str,
     ) -> None:
         """Assert helper to compare the Python code of the instance against what is expected, plus other tests."""
         exporter = fl.PythonExporter()
@@ -826,7 +826,7 @@ Ambient Power
 """
         # Fails with headers
         with self.assertRaisesRegex(
-                ValueError, r"could not convert string to float: 'Ambient'"
+            ValueError, r"could not convert string to float: 'Ambient'"
         ):
             fl.FldExporter().write_from_reader(
                 engine, io.StringIO(), io.StringIO(reader), skip_lines=0
@@ -861,9 +861,9 @@ Ambient Power
     """
 
         file_name = (
-                "file-"
-                + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
-                + ".fld"
+            "file-"
+            + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
+            + ".fld"
         )
         fl.FldExporter().to_file_from_reader(
             Path(file_name), engine, io.StringIO(reader), skip_lines=1
@@ -935,7 +935,7 @@ Ambient Power
         engine = fl.Engine()
         writer = io.StringIO()
         with self.assertRaisesRegex(
-                ValueError, "expected input variables in engine, but got none"
+            ValueError, "expected input variables in engine, but got none"
         ):
             fl.FldExporter().write_from_scope(
                 engine,
@@ -1109,9 +1109,9 @@ service food mTip tsTip
         engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
 
         file_name = (
-                "file-"
-                + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
-                + ".fld"
+            "file-"
+            + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
+            + ".fld"
         )
 
         fl.FldExporter().to_file_from_scope(
@@ -1162,7 +1162,7 @@ Ambient Power
     def test_to_string(self) -> None:
         """Test the exporter can export to string."""
         with self.assertRaisesRegex(
-                ValueError, "expected an Engine, but got InputVariable"
+            ValueError, "expected an Engine, but got InputVariable"
         ):
             fl.FldExporter().to_string(fl.InputVariable())
 
