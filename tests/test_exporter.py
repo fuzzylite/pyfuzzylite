@@ -1194,7 +1194,7 @@ class TestExporters(unittest.TestCase):
 
         from fuzzylite import examples
 
-        with fl.settings.context(decimals=3):
+        with fl.settings.context(decimals=9):
             files = [
                 str(example) for example in Path(*examples.__path__).rglob("*.py")
             ]
@@ -1251,9 +1251,9 @@ class TestExporters(unittest.TestCase):
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
-            fl.FllExporter(),
+            # fl.FllExporter(),
             # fl.PythonExporter(encapsulated=True),
-            # fl.FldExporter(),
+            fl.FldExporter(),
         ]
 
         file_name = path.stem
@@ -1264,7 +1264,7 @@ class TestExporters(unittest.TestCase):
             fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
                 exporter.to_file_from_scope(
-                    target_path / (file_name + ".fld"), engine, 1024
+                    target_path / (file_name + ".fld"), engine, 100_001
                 )
 
             elif isinstance(exporter, fl.FllExporter):
