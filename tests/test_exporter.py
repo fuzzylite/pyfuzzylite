@@ -1264,7 +1264,7 @@ class TestExporters(unittest.TestCase):
             fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
                 exporter.to_file_from_scope(
-                    target_path / (file_name + ".fld"), engine, 100_001
+                    target_path / (file_name + ".fld"), engine, 1024
                 )
 
             elif isinstance(exporter, fl.FllExporter):
