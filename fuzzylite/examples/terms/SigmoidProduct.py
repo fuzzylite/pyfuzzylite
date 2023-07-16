@@ -28,14 +28,10 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
-                    fl.SigmoidProduct(
-                        "left", 0.1665, 30.03003003, -30.03003003, 0.4995
-                    ),
-                    fl.SigmoidProduct(
-                        "right", 0.49975, 29.985007496, -29.985007496, 0.83325
-                    ),
+                    fl.SigmoidProduct("left", 0.167, 30.0, -30.0, 0.5),
+                    fl.SigmoidProduct("right", 0.5, 30.0, -30.0, 0.833),
                 ],
             )
         ],

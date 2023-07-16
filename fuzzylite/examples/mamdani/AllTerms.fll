@@ -28,7 +28,7 @@ OutputVariable: AllOutputTerms
   range: 0.000 6.500
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: A Sigmoid 0.500 -20.000
@@ -51,7 +51,7 @@ OutputVariable: AllOutputTerms
   term: R Ramp 5.500 6.500
   term: S SShape 5.500 6.500
   term: T Sigmoid 6.000 20.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: Minimum
   disjunction: Maximum

@@ -3,21 +3,21 @@ Engine: Gaussian
 InputVariable: obstacle
   description: location of obstacle relative to vehicle
   enabled: true
-  range: 0.000000000 1.000000000
+  range: 0.000 1.000
   lock-range: false
-  term: left Triangle 0.000000000 0.333000000 0.666000000
-  term: right Triangle 0.333000000 0.666000000 1.000000000
+  term: left Triangle 0.000 0.333 0.666
+  term: right Triangle 0.333 0.666 1.000
 OutputVariable: steer
   description: direction to steer the vehicle to
   enabled: true
-  range: 0.000000000 1.000000000
+  range: 0.000 1.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 100
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
-  term: left Gaussian 0.333000000 0.143534483
-  term: right Gaussian 0.666500000 0.143750000
+  term: left Gaussian 0.333 0.143
+  term: right Gaussian 0.666 0.143
 RuleBlock: steer_away
   description: steer away from obstacles
   enabled: true

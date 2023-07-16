@@ -15,7 +15,7 @@ OutputVariable: output
   lock-previous: false
   term: line1 Linear -1.000 -1.000
   term: line2 Linear 1.000 -1.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none

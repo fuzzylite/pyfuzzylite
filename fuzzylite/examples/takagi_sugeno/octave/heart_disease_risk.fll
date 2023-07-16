@@ -28,7 +28,7 @@ OutputVariable: HeartDiseaseRisk
   term: MediumRisk Constant 5.000
   term: HighRisk Constant 7.500
   term: ExtremeRisk Constant 10.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: Minimum
   disjunction: none

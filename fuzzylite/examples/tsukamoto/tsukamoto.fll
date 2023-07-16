@@ -11,7 +11,7 @@ OutputVariable: Ramps
   range: 0.000 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: false
   term: b Ramp 0.600 0.400
@@ -22,7 +22,7 @@ OutputVariable: Sigmoids
   range: 0.020 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: false
   term: b Sigmoid 0.500 -30.000
@@ -33,7 +33,7 @@ OutputVariable: ZSShapes
   range: 0.000 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: false
   term: b ZShape 0.300 0.600
@@ -44,13 +44,13 @@ OutputVariable: Concaves
   range: 0.000 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: false
   term: b Concave 0.500 0.400
   term: a Concave 0.240 0.250
   term: c Concave 0.900 1.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none

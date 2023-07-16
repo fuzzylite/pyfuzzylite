@@ -26,7 +26,7 @@ OutputVariable: valve
   term: no_change Constant 0.000
   term: open_slow Constant 0.300
   term: open_fast Constant 0.900
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: AlgebraicProduct
   disjunction: none

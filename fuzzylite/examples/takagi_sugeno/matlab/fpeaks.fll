@@ -39,7 +39,7 @@ OutputVariable: out1
   term: out1mf14 Linear -0.304 -4.434 -6.561
   term: out1mf15 Linear -0.166 -6.284 7.307
   term: out1mf16 Linear 0.107 -2.028 8.159
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: AlgebraicProduct
   disjunction: none

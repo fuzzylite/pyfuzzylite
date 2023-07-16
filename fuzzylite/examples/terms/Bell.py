@@ -28,10 +28,10 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
-                    fl.Bell("left", 0.333, 0.1665, 3.0),
-                    fl.Bell("right", 0.6665, 0.16675, 3.0),
+                    fl.Bell("left", 0.333, 0.167, 3.0),
+                    fl.Bell("right", 0.666, 0.167, 3.0),
                 ],
             )
         ],

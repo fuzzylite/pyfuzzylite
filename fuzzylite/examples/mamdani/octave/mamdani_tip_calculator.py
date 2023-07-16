@@ -35,7 +35,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.AlgebraicSum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Gaussian("AboutTenPercent", 10.0, 2.0),
                     fl.Gaussian("AboutFifteenPercent", 15.0, 2.0),
@@ -50,7 +50,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.AlgebraicSum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Gaussian("PlusAboutTenPercent", 1.1, 0.02),
                     fl.Gaussian("PlusAboutFifteenPercent", 1.15, 0.02),

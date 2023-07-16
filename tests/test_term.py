@@ -217,6 +217,7 @@ class TestTerm(unittest.TestCase):
             "term: _ Activated AlgebraicProduct(1.000,triangle)"
         ).is_not_monotonic().has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.375,
@@ -226,6 +227,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.375,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -243,6 +245,7 @@ class TestTerm(unittest.TestCase):
             "term: _ Activated AlgebraicProduct(0.500,triangle)"
         ).is_not_monotonic().has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.18750000000000003,
@@ -252,6 +255,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.18750000000000003,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -286,6 +290,7 @@ class TestTerm(unittest.TestCase):
             "implication=fl.Minimum())])"
         ).is_not_monotonic().has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.6,
                 -0.4: 0.6,
                 -0.25: 0.5,
@@ -295,6 +300,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4,
                 0.4: 0.2,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -507,6 +513,7 @@ class TestTerm(unittest.TestCase):
             "term: bell Bell 0.000 0.250 3.000"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.015384615384615385,
                 -0.4: 0.05625177755617076,
                 -0.25: 0.5,
@@ -516,6 +523,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.05625177755617076,
                 0.5: 0.015384615384615385,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -528,6 +536,7 @@ class TestTerm(unittest.TestCase):
             "fl.Bell('bell', 0.0, 0.25, 3.0, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.015384615384615385,
                 -0.4: 0.05625177755617076,
                 -0.25: 0.5,
@@ -537,6 +546,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.05625177755617076,
                 0.5: 0.015384615384615385,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -556,6 +566,7 @@ class TestTerm(unittest.TestCase):
             "term: binary Binary 0.000 inf"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.0,
                 -0.25: 0.0,
@@ -565,6 +576,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 1.0,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -574,6 +586,7 @@ class TestTerm(unittest.TestCase):
             "term: binary Binary 0.000 -inf 0.500"
         ).repr_is("fl.Binary('binary', 0.0, -fl.inf, 0.5)").has_memberships(
             {
+                -1: 0.5,
                 -0.5: 0.5,
                 -0.4: 0.5,
                 -0.25: 0.5,
@@ -583,6 +596,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.5,
@@ -601,6 +615,7 @@ class TestTerm(unittest.TestCase):
             "term: concave Concave 0.000 0.500"
         ).has_memberships(
             {
+                -1.0: 0.25,
                 -0.5: 0.3333333333333333,
                 -0.4: 0.35714285714285715,
                 -0.25: 0.4,
@@ -610,6 +625,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6666666666666666,
                 0.4: 0.8333333333333334,
                 0.5: 1.0,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -634,11 +650,17 @@ class TestTerm(unittest.TestCase):
             "term: concave Concave 0.000 -0.500"
         ).has_memberships(
             {
+                -1.0: 1.0,
+                -0.5: 1.0,
+                -0.4: 0.833,
+                -0.25: 0.666,
+                -0.1: 0.555,
                 0.0: 0.5,
-                0.1: 0.45454545454545453,
+                0.1: 0.455,
                 0.25: 0.4,
-                0.4: 0.35714285714285715,
-                0.5: 0.333333,
+                0.4: 0.357,
+                0.5: 0.333,
+                1.0: 0.25,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -665,6 +687,7 @@ class TestTerm(unittest.TestCase):
             "term: concave Concave 0.000 -0.500 0.500"
         ).has_memberships(
             {
+                -1.0: 0.5,
                 -0.5: 0.5,
                 -0.4: 0.416,
                 -0.25: 0.333,
@@ -674,6 +697,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.2,
                 0.4: 0.178,
                 0.5: 0.166,
+                1.0: 0.125,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.5,
@@ -710,6 +734,7 @@ class TestTerm(unittest.TestCase):
             "fl.Constant('constant', 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.5,
                 -0.5: 0.5,
                 -0.4: 0.5,
                 -0.25: 0.5,
@@ -719,6 +744,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.5,
                 0.5: 0.5,
+                1.0: 0.5,
                 nan: 0.5,
                 inf: 0.5,
                 -inf: 0.5,
@@ -731,6 +757,7 @@ class TestTerm(unittest.TestCase):
             "term: constant Constant -0.500"
         ).has_memberships(
             {
+                -1.0: -0.5,
                 -0.5: -0.5,
                 -0.4: -0.5,
                 -0.25: -0.5,
@@ -740,6 +767,7 @@ class TestTerm(unittest.TestCase):
                 0.25: -0.5,
                 0.4: -0.5,
                 0.5: -0.5,
+                1.0: -0.5,
                 nan: -0.5,
                 inf: -0.5,
                 -inf: -0.5,
@@ -760,6 +788,7 @@ class TestTerm(unittest.TestCase):
             "fl.Cosine('cosine', 0.0, 1.0)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.09549150281252633,
                 -0.25: 0.5,
@@ -769,6 +798,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.09549150281252633,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -781,6 +811,7 @@ class TestTerm(unittest.TestCase):
             "fl.Cosine('cosine', 0.0, 1.0, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.09549150281252633,
                 -0.25: 0.5,
@@ -790,6 +821,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.09549150281252633,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -830,6 +862,7 @@ class TestTerm(unittest.TestCase):
             "-0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.3999999999999999,
                 -0.25: 1.0,
@@ -839,6 +872,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 0.3999999999999999,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -850,6 +884,7 @@ class TestTerm(unittest.TestCase):
             "-0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.3999999999999999,
                 -0.25: 1.0,
@@ -859,6 +894,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 0.3999999999999999,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -965,6 +1001,7 @@ class TestTerm(unittest.TestCase):
             "fl.Gaussian('gaussian', 0.0, 0.25)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.1353352832366127,
                 -0.4: 0.2780373004531941,
                 -0.25: 0.6065306597126334,
@@ -974,6 +1011,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6065306597126334,
                 0.4: 0.2780373004531941,
                 0.5: 0.1353352832366127,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -986,6 +1024,7 @@ class TestTerm(unittest.TestCase):
             "term: gaussian Gaussian 0.000 0.250 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.1353352832366127,
                 -0.4: 0.2780373004531941,
                 -0.25: 0.6065306597126334,
@@ -995,6 +1034,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.6065306597126334,
                 0.4: 0.2780373004531941,
                 0.5: 0.1353352832366127,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1018,6 +1058,7 @@ class TestTerm(unittest.TestCase):
             "term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.1353352832366127,
                 -0.4: 0.2780373004531941,
                 -0.25: 0.6065306597126334,
@@ -1027,6 +1068,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9559974818331,
                 0.4: 0.835270211411272,
                 0.5: 0.7261490370736908,
+                1.0: 0.198,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1039,6 +1081,7 @@ class TestTerm(unittest.TestCase):
             "fl.GaussianProduct('gaussian_product', 0.0, 0.25, 0.1, 0.5, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.1353352832366127,
                 -0.4: 0.2780373004531941,
                 -0.25: 0.6065306597126334,
@@ -1048,6 +1091,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.9559974818331,
                 0.4: 0.835270211411272,
                 0.5: 0.7261490370736908,
+                1.0: 0.198,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1086,7 +1130,8 @@ class TestTerm(unittest.TestCase):
             "fl.Linear('linear', [1.0, 2.0, 3.0])"
         ).has_memberships(
             {
-                -0.5: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
+                -1.0: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
+                -0.5: 8,
                 -0.4: 8,
                 -0.25: 8,
                 -0.1: 8,
@@ -1095,6 +1140,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 8,
                 0.4: 8,
                 0.5: 8,
+                1.0: 8,
                 nan: 8,
                 inf: 8,
                 -inf: 8,
@@ -1104,7 +1150,8 @@ class TestTerm(unittest.TestCase):
             "term: linear Linear 1.000 2.000 3.000 5.000"
         ).has_memberships(
             {
-                -0.5: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
+                -1.0: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
+                -0.5: 13,
                 -0.4: 13,
                 -0.25: 13,
                 -0.1: 13,
@@ -1113,6 +1160,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 13,
                 0.4: 13,
                 0.5: 13,
+                1.0: 13,
                 nan: 13,
                 inf: 13,
                 -inf: 13,
@@ -1143,6 +1191,7 @@ class TestTerm(unittest.TestCase):
             "fl.PiShape('pi_shape', -0.9, -0.1, 0.1, 1.0)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.5,
                 -0.4: 0.71875,
                 -0.25: 0.9296875,
@@ -1153,6 +1202,7 @@ class TestTerm(unittest.TestCase):
                 0.4: 0.7777777777777777,
                 0.5: 0.6049382716049383,
                 0.95: 0.00617283950617285,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1165,6 +1215,7 @@ class TestTerm(unittest.TestCase):
             "fl.PiShape('pi_shape', -0.9, -0.1, 0.1, 1.0, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.5,
                 -0.4: 0.71875,
                 -0.25: 0.9296875,
@@ -1175,6 +1226,7 @@ class TestTerm(unittest.TestCase):
                 0.4: 0.7777777777777777,
                 0.5: 0.6049382716049383,
                 0.95: 0.00617283950617285,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1192,6 +1244,7 @@ class TestTerm(unittest.TestCase):
             "term: ramp Ramp 0.000 0.000"
         ).has_memberships(
             {
+                -1.0: nan,
                 -0.5: nan,
                 -0.4: nan,
                 -0.25: nan,
@@ -1201,6 +1254,7 @@ class TestTerm(unittest.TestCase):
                 0.25: nan,
                 0.4: nan,
                 0.5: nan,
+                1.0: nan,
                 nan: nan,
                 inf: nan,
                 -inf: nan,
@@ -1220,6 +1274,7 @@ class TestTerm(unittest.TestCase):
             "term: ramp Ramp -0.250 0.750"
         ).repr_is("fl.Ramp('ramp', -0.25, 0.75)").has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.0,
                 -0.25: 0.0,
@@ -1229,6 +1284,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.50,
                 0.4: 0.65,
                 0.5: 0.75,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1253,6 +1309,7 @@ class TestTerm(unittest.TestCase):
             "term: ramp Ramp 0.250 -0.750"
         ).has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 0.750,
                 -0.4: 0.650,
                 -0.25: 0.500,
@@ -1262,6 +1319,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -1286,6 +1344,7 @@ class TestTerm(unittest.TestCase):
             "term: ramp Ramp 0.250 -0.750 0.500"
         ).repr_is("fl.Ramp('ramp', 0.25, -0.75, 0.5)").has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 0.750,
                 -0.4: 0.650,
                 -0.25: 0.500,
@@ -1295,6 +1354,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0,
                 0.4: 0.0,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -1332,6 +1392,7 @@ class TestTerm(unittest.TestCase):
             "fl.Rectangle('rectangle', -0.4, 0.4)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 1.0,
                 -0.25: 1.0,
@@ -1341,6 +1402,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1353,6 +1415,7 @@ class TestTerm(unittest.TestCase):
             "fl.Rectangle('rectangle', -0.4, 0.4, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 1.0,
                 -0.25: 1.0,
@@ -1362,6 +1425,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.0,
                 0.4: 1.0,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1383,6 +1447,7 @@ class TestTerm(unittest.TestCase):
             "fl.SemiEllipse('semiellipse', -0.5, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.6,
                 -0.25: 0.866,
@@ -1392,6 +1457,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.866,
                 0.4: 0.6,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1400,6 +1466,7 @@ class TestTerm(unittest.TestCase):
             "0.5 -0.5"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.6,
                 -0.25: 0.866,
@@ -1409,6 +1476,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.866,
                 0.4: 0.6,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1421,6 +1489,7 @@ class TestTerm(unittest.TestCase):
             "fl.SemiEllipse('semiellipse', -0.5, 0.5, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.6,
                 -0.25: 0.866,
@@ -1430,6 +1499,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.866,
                 0.4: 0.6,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1451,6 +1521,7 @@ class TestTerm(unittest.TestCase):
             "fl.Sigmoid('sigmoid', 0.0, 10.0)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.007,
                 -0.4: 0.018,
                 -0.25: 0.076,
@@ -1460,6 +1531,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.924,
                 0.4: 0.982,
                 0.5: 0.993,
+                1.0: 0.999,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1484,6 +1556,7 @@ class TestTerm(unittest.TestCase):
             "term: sigmoid Sigmoid 0.000 -10.000"
         ).has_memberships(
             {
+                -1.0: 0.999,
                 -0.5: 0.994,
                 -0.4: 0.982,
                 -0.25: 0.924,
@@ -1493,6 +1566,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.076,
                 0.4: 0.018,
                 0.5: 0.007,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -1517,6 +1591,7 @@ class TestTerm(unittest.TestCase):
             "term: sigmoid Sigmoid 0.000 10.000 0.500"
         ).repr_is("fl.Sigmoid('sigmoid', 0.0, 10.0, 0.5)").has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.007,
                 -0.4: 0.018,
                 -0.25: 0.076,
@@ -1526,6 +1601,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.924,
                 0.4: 0.982,
                 0.5: 0.993,
+                1.0: 0.999,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1565,6 +1641,7 @@ class TestTerm(unittest.TestCase):
             "fl.SigmoidDifference('sigmoid_difference', -0.25, 25.0, 50.0, 0.25)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0019267346633274238,
                 -0.4: 0.022977369910017923,
                 -0.25: 0.49999999998611205,
@@ -1574,6 +1651,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.49999627336071584,
                 0.4: 0.000552690994449101,
                 0.5: 3.7194451510957904e-06,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1586,6 +1664,7 @@ class TestTerm(unittest.TestCase):
             "term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0019267346633274238,
                 -0.4: 0.022977369910017923,
                 -0.25: 0.49999999998611205,
@@ -1595,6 +1674,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.49999627336071584,
                 0.4: 0.000552690994449101,
                 0.5: 3.7194451510957904e-06,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1618,6 +1698,7 @@ class TestTerm(unittest.TestCase):
             "fl.SigmoidProduct('sigmoid_product', -0.25, 20.0, -20.0, 0.25)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.006692848876926853,
                 -0.4: 0.04742576597971327,
                 -0.25: 0.4999773010656488,
@@ -1627,6 +1708,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4999773010656488,
                 0.4: 0.04742576597971327,
                 0.5: 0.006692848876926853,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1639,6 +1721,7 @@ class TestTerm(unittest.TestCase):
             "term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.006692848876926853,
                 -0.4: 0.04742576597971327,
                 -0.25: 0.4999773010656488,
@@ -1648,6 +1731,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.4999773010656488,
                 0.4: 0.04742576597971327,
                 0.5: 0.006692848876926853,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1669,6 +1753,7 @@ class TestTerm(unittest.TestCase):
             "fl.Spike('spike', 0.0, 1.0)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.006737946999085467,
                 -0.4: 0.01831563888873418,
                 -0.25: 0.0820849986238988,
@@ -1678,6 +1763,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0820849986238988,
                 0.4: 0.01831563888873418,
                 0.5: 0.006737946999085467,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1690,6 +1776,7 @@ class TestTerm(unittest.TestCase):
             "term: spike Spike 0.000 1.000 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.006737946999085467,
                 -0.4: 0.01831563888873418,
                 -0.25: 0.0820849986238988,
@@ -1699,6 +1786,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.0820849986238988,
                 0.4: 0.01831563888873418,
                 0.5: 0.006737946999085467,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1720,6 +1808,7 @@ class TestTerm(unittest.TestCase):
             "fl.SShape('s_shape', -0.5, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.02,
                 -0.25: 0.125,
@@ -1729,6 +1818,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.875,
                 0.4: 0.98,
                 0.5: 1.0,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1753,6 +1843,7 @@ class TestTerm(unittest.TestCase):
             "fl.SShape('s_shape', -0.5, 0.5, 0.5)"
         ).exports_fll("term: s_shape SShape -0.500 0.500 0.500").has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.0,
                 -0.4: 0.02,
                 -0.25: 0.125,
@@ -1762,6 +1853,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.875,
                 0.4: 0.98,
                 0.5: 1.0,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1803,6 +1895,7 @@ class TestTerm(unittest.TestCase):
             "term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.500,
@@ -1812,6 +1905,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1824,6 +1918,7 @@ class TestTerm(unittest.TestCase):
             "fl.Trapezoid('trapezoid', -0.4, -0.1, 0.1, 0.4, 0.5)"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.500,
@@ -1833,6 +1928,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1844,6 +1940,7 @@ class TestTerm(unittest.TestCase):
             "term: trapezoid Trapezoid -0.400 -0.400 0.100 0.400"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 1.000,
                 -0.25: 1.000,
@@ -1853,6 +1950,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1863,6 +1961,7 @@ class TestTerm(unittest.TestCase):
             "term: trapezoid Trapezoid -0.400 -0.100 0.400 0.400"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.5,
@@ -1872,6 +1971,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1882,6 +1982,7 @@ class TestTerm(unittest.TestCase):
             "term: trapezoid Trapezoid -inf -0.100 0.100 0.400"
         ).has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 1.000,
                 -0.4: 1.000,
                 -0.25: 1.000,
@@ -1891,6 +1992,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.500,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -1901,6 +2003,7 @@ class TestTerm(unittest.TestCase):
             "term: trapezoid Trapezoid -0.400 -0.100 0.100 inf 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.500,
@@ -1910,6 +2013,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 1.000,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.0,
                 -inf: 0.0,
@@ -1933,6 +2037,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.400 0.000 0.400"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.37500000000000006,
@@ -1942,6 +2047,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1954,6 +2060,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.400 0.000 0.400 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.37500000000000006,
@@ -1963,6 +2070,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.37500000000000006,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1974,6 +2082,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.500 0.000 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.2,
                 -0.25: 0.5,
@@ -1983,6 +2092,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.5,
                 0.4: 0.2,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -1993,6 +2103,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.500 -0.500 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 1.000,
                 -0.4: 0.900,
                 -0.25: 0.75,
@@ -2002,6 +2113,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.25,
                 0.4: 0.1,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
@@ -2012,6 +2124,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.500 0.500 0.500"
         ).has_memberships(
             {
+                1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.1,
                 -0.25: 0.25,
@@ -2031,6 +2144,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -inf 0.000 0.400"
         ).has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 1.000,
                 -0.4: 1.000,
                 -0.25: 1.000,
@@ -2040,6 +2154,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.375,
                 0.4: 0.000,
                 0.5: 0.000,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.000,
@@ -2050,6 +2165,7 @@ class TestTerm(unittest.TestCase):
             "term: triangle Triangle -0.400 0.000 inf 0.500"
         ).has_memberships(
             {
+                -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
                 -0.25: 0.375,
@@ -2059,6 +2175,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 1.000,
                 0.4: 1.000,
                 0.5: 1.000,
+                1.0: 1.0,
                 nan: nan,
                 inf: 1.000,
                 -inf: 0.0,
@@ -2080,6 +2197,7 @@ class TestTerm(unittest.TestCase):
             "fl.ZShape('z_shape', -0.5, 0.5)"
         ).has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 1.0,
                 -0.4: 0.98,
                 -0.25: 0.875,
@@ -2089,6 +2207,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.125,
                 0.4: 0.02,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,
@@ -2113,6 +2232,7 @@ class TestTerm(unittest.TestCase):
             "fl.ZShape('z_shape', -0.5, 0.5, 0.5)"
         ).exports_fll("term: z_shape ZShape -0.500 0.500 0.500").has_memberships(
             {
+                -1.0: 1.0,
                 -0.5: 1.0,
                 -0.4: 0.98,
                 -0.25: 0.875,
@@ -2122,6 +2242,7 @@ class TestTerm(unittest.TestCase):
                 0.25: 0.125,
                 0.4: 0.02,
                 0.5: 0.0,
+                1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
                 -inf: 1.0,

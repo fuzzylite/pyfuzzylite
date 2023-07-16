@@ -16,13 +16,13 @@ OutputVariable: PercentageInStocks
   range: 0.000 100.000
   lock-range: false
   aggregation: EinsteinSum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: AboutFifteen Gaussian 15.000 10.000
   term: AboutFifty Gaussian 50.000 10.000
   term: AboutEightyFive Gaussian 85.000 10.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: EinsteinProduct
   disjunction: EinsteinSum

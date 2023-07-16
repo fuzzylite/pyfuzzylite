@@ -30,7 +30,7 @@ OutputVariable: theta
   term: out1mf Linear -0.022 -0.500 1.256
   term: out1mf Linear -0.022 -0.500 1.256
   term: out1mf Linear -0.022 -0.500 1.256
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: AlgebraicProduct
   disjunction: none

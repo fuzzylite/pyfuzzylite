@@ -28,10 +28,10 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
-                    fl.Gaussian("left", 0.333, 0.143534483),
-                    fl.Gaussian("right", 0.6665, 0.14375),
+                    fl.Gaussian("left", 0.333, 0.143),
+                    fl.Gaussian("right", 0.666, 0.143),
                 ],
             )
         ],

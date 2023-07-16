@@ -18,7 +18,7 @@ OutputVariable: cold
   range: -1.000 1.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: closeFast Triangle -1.000 -0.600 -0.300
@@ -31,7 +31,7 @@ OutputVariable: hot
   range: -1.000 1.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: closeFast Triangle -1.000 -0.600 -0.300
@@ -39,7 +39,7 @@ OutputVariable: hot
   term: steady Triangle -0.300 0.000 0.300
   term: openSlow Triangle 0.000 0.300 0.600
   term: openFast Triangle 0.300 0.600 1.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: Minimum
   disjunction: Maximum

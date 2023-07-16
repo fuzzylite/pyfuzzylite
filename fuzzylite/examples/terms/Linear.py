@@ -31,7 +31,7 @@ def create() -> fl.Engine:
                 defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),
                 terms=[
                     fl.Linear("left", [0.0, 0.333]),
-                    fl.Linear("right", [0.0, 0.6665]),
+                    fl.Linear("right", [0.0, 0.666]),
                 ],
             )
         ],

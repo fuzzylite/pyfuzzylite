@@ -34,7 +34,7 @@ OutputVariable: trueFx
   range: -1.000 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: true
   term: fx Function sin(inputX)/inputX
@@ -43,11 +43,11 @@ OutputVariable: diffFx
   range: -1.000 1.000
   lock-range: false
   aggregation: none
-  defuzzifier: WeightedAverage Automatic
+  defuzzifier: WeightedAverage
   default: nan
   lock-previous: false
   term: diff Function fabs(outputFx-trueFx)
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none

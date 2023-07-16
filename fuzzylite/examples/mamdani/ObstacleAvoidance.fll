@@ -10,7 +10,7 @@ OutputVariable: mSteer
   range: 0.000 1.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 100
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: left Ramp 1.000 0.000

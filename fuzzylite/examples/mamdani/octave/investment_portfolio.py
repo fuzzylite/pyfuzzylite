@@ -29,7 +29,7 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.EinsteinSum(),
-                defuzzifier=fl.Centroid(resolution=200),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Gaussian("AboutFifteen", 15.0, 10.0),
                     fl.Gaussian("AboutFifty", 50.0, 10.0),

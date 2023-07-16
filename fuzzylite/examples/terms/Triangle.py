@@ -28,10 +28,10 @@ def create() -> fl.Engine:
                 lock_previous=False,
                 default_value=fl.nan,
                 aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
+                defuzzifier=fl.Centroid(),
                 terms=[
                     fl.Triangle("left", 0.0, 0.333, 0.666),
-                    fl.Triangle("right", 0.333, 0.6665, 1.0),
+                    fl.Triangle("right", 0.333, 0.666, 1.0),
                 ],
             )
         ],

@@ -33,7 +33,7 @@ OutputVariable: ApproxXCubed
   term: TangentatThree Linear 27.000 -54.000
   term: TangentatFour Linear 48.000 -128.000
   term: TangentatFive Linear 75.000 -250.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: none
   disjunction: none
