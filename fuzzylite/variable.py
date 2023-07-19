@@ -19,7 +19,8 @@ from __future__ import annotations
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
 
 import contextlib
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from typing import overload
 
 import numpy as np
 
@@ -70,6 +71,38 @@ class Variable:
         self.terms = list(terms) if terms else []
         self.value = scalar(nan)
 
+    # TODO: implement properly. Currently, RecursionError when using self[item]
+    # def __getattr__(self, item: str) -> Term:
+    #     """@return the term with the given name, so it can be used like `engine.power.low`."""
+    #     try:
+    #         return self[item]
+    #     except ValueError:
+    #         raise AttributeError(
+    #             f"'{self.__class__.__name__}' object has no attribute '{item}'"
+    #         ) from None
+
+    @overload
+    def __getitem__(self, item: int | str) -> Term:
+        ...
+
+    @overload
+    def __getitem__(self, item: slice) -> list[Term]:
+        ...
+
+    def __getitem__(self, item: int | str | slice) -> Term | list[Term]:
+        """@return the term with the given name, so it can be used like `engine["power"]["low"]`."""
+        if isinstance(item, slice):
+            return self.terms[item]
+        return self.term(item)
+
+    def __iter__(self) -> Iterator[Term]:
+        """@return iterator over the variable terms."""
+        return iter(self.terms)
+
+    def __len__(self) -> int:
+        """@return the number of terms of the variable."""
+        return len(self.terms)
+
     def __str__(self) -> str:
         """@return variable in the FuzzyLite Language."""
         return representation.fll.variable(self)
@@ -87,16 +120,19 @@ class Variable:
 
         return representation.as_constructor(self, fields)
 
-    def term(self, name: str) -> Term:
-        """Gets the term by the name.
-        @param name is the name of the term
-        @return the term of the given name.
-
+    def term(self, index_or_name: int | str) -> Term:
+        """Gets the term by index or name.
+        @param index_or_name is the index or the name of the term
+        @return the term at the given index or of the given name.
         """
+        if isinstance(index_or_name, int):
+            return self.terms[index_or_name]
         for term in self.terms:
-            if term.name == name:
+            if term.name == index_or_name:
                 return term
-        raise ValueError(f"term '{name}' not found in {[t.name for t in self.terms]}")
+        raise ValueError(
+            f"term '{index_or_name}' not found in {[t.name for t in self.terms]}"
+        )
 
     @property
     def drange(self) -> float:

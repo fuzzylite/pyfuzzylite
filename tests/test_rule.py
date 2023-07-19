@@ -1004,6 +1004,40 @@ class TestRuleBlock(unittest.TestCase):
             )
         )
 
+    def test_len_iter_getitem(self) -> None:
+        """Test iter, len, and getitem of rule blocks."""
+        a, b = [fl.Rule.create("if a then z"), fl.Rule.create("if b then y")]
+        rule_block = fl.RuleBlock("test", rules=[a, b])
+
+        # test getitem
+        self.assertEqual(rule_block[0], a)
+        self.assertEqual(rule_block[1], b)
+        with self.assertRaises(IndexError) as error:
+            rule_block[2]
+        self.assertEqual("list index out of range", str(error.exception))
+        # test slice
+        self.assertListEqual(rule_block[:], rule_block.rules)
+        self.assertListEqual(rule_block[0:], rule_block.rules)
+        self.assertListEqual(rule_block[0:1], [rule_block.rules[0]])
+        self.assertListEqual(rule_block[1:], [rule_block.rules[1]])
+
+        self.assertEqual(0, len(fl.RuleBlock()))
+        self.assertEqual(2, len(rule_block))
+
+        # iterating over rules
+        ## via list comprehension
+        self.assertListEqual([r for r in rule_block], rule_block.rules)
+
+        ## via enumeration
+        rules = [a, b]
+        for index, rule in enumerate(rule_block):
+            self.assertEqual(rules[index], rule)
+
+        ## via iterators
+        iterator = iter(rule_block)
+        self.assertEqual(next(iterator), a)
+        self.assertEqual(next(iterator), b)
+
     def test_activate(self) -> None:
         """Test the activation method."""
         activation = fl.General()

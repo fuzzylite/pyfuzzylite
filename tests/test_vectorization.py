@@ -16,6 +16,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
+import copy
 import unittest
 
 import numpy as np
@@ -31,7 +32,7 @@ class AssertIntegration:
         """@param engine is the engine to test on.
         @param vectorize is whether to test vectorization.
         """
-        self.engine = engine.copy()
+        self.engine = copy.deepcopy(engine)
         self.vectorize = vectorize
 
     def assert_that(
