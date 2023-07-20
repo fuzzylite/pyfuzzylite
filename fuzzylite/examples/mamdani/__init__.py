@@ -1,20 +1,21 @@
 __all__ = [
-    "AllTerms",
-    "Laundry",
-    "ObstacleAvoidance",
-    "SimpleDimmer",
-    "SimpleDimmerChained",
-    "SimpleDimmerInverse",
+    "all_terms",
+    "laundry",
+    "obstacle_avoidance",
+    "simple_dimmer",
+    "simple_dimmer_chained",
+    "simple_dimmer_inverse",
     "matlab",
     "octave",
 ]
+
 from . import (
-    AllTerms,
-    Laundry,
-    ObstacleAvoidance,
-    SimpleDimmer,
-    SimpleDimmerChained,
-    SimpleDimmerInverse,
+    all_terms,
+    laundry,
+    obstacle_avoidance,
+    simple_dimmer,
+    simple_dimmer_chained,
+    simple_dimmer_inverse,
     matlab,
     octave,
 )
