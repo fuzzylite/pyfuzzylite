@@ -14,7 +14,7 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-
+from . import examples  # noqa
 from .activation import *
 from .defuzzifier import *
 from .engine import *
@@ -33,6 +33,3 @@ from .variable import *
 __name__ = information.name
 __doc__ = information.description
 __version__ = information.version
-
-# importing examples last to prevent circular imports
-from . import examples  # noqa
