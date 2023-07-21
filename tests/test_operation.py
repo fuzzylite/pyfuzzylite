@@ -272,8 +272,32 @@ class TestOperation(unittest.TestCase):
         """Test what a valid identifier is."""
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims
         self.assertEqual(fl.Op.as_identifier("   ~!@#$%^&*()+{}[]:;\"'<>?/,   "), "_")
-        self.assertEqual(fl.Op.as_identifier("abc123_.ABC"), "abc123_.ABC")
+        self.assertEqual(fl.Op.as_identifier("abc123_.ABC"), "abc123_ABC")
         self.assertEqual(fl.Op.as_identifier("      "), "_")
+        self.assertEqual(fl.Op.as_identifier("9abc_ABC"), "_9abc_ABC")
+
+    def test_snake_case(self) -> None:
+        """Test conversion to snake_case."""
+        self.assertEqual("", fl.Op.snake_case(""))
+        self.assertEqual("hello_world", fl.Op.snake_case("helloWorld"))
+        self.assertEqual("hello_world", fl.Op.snake_case("HelloWorld"))
+        self.assertEqual("hello_world", fl.Op.snake_case("Hello World!"))
+        self.assertEqual("hello_world", fl.Op.snake_case(" ¡Hello World! "))
+        self.assertEqual("hello_world_123", fl.Op.snake_case(" ¡Hello World! @\t123"))
+        self.assertEqual("123_456_789_00_x", fl.Op.snake_case(" 123@@456..789--00_x "))
+
+    def test_pascal_case(self) -> None:
+        """Test conversion of strings to CamelCase."""
+        self.assertEqual("", fl.Op.pascal_case(""))
+        self.assertEqual("HelloWorld", fl.Op.pascal_case("HelloWorld"))
+        self.assertEqual("HelloWorld", fl.Op.pascal_case("Hello World!"))
+        self.assertEqual("HelloWorld", fl.Op.pascal_case(" ¡Hello World! "))
+        self.assertEqual("HelloWorld123", fl.Op.pascal_case(" ¡Hello World! @\t123"))
+
+        self.assertEqual("HelloWorld", fl.Op.pascal_case("hello_world"))
+        self.assertEqual("HelloWorld", fl.Op.pascal_case("__hello_world__!"))
+        self.assertEqual("HelloWorld", fl.Op.pascal_case(" ¡Hello World! "))
+        self.assertEqual("HelloWorld123", fl.Op.pascal_case(" ¡Hello World! @\t123"))
 
     def test_str(self) -> None:
         """Test string operation uses global decimals."""

@@ -228,6 +228,8 @@ information: Final[Information] = Information()
 class Representation(reprlib.Repr):
     """Representation class for the library."""
 
+    T = typing.TypeVar("T")
+
     def __init__(self) -> None:
         """Initialize the representation class."""
         super().__init__()
@@ -260,7 +262,9 @@ class Representation(reprlib.Repr):
                 package = settings.alias
             else:
                 package = module.__name__
-
+            if module.__name__.startswith("fuzzylite.examples.") and settings.alias:
+                # use fully qualified package
+                package += module.__name__[len("fuzzylite") :]
         if package and not package.endswith("."):
             package += "."
         return package
@@ -276,15 +280,40 @@ class Representation(reprlib.Repr):
 
     def as_constructor(
         self,
-        x: Any,
+        x: T,
         /,
         fields: dict[str, Any] | None = None,
         *,
         positional: bool = False,
+        cast_as: type[T] | None = None,
     ) -> str:
-        """Returns the constructor of the given object.
-        @param x is the object
-        @return the constructor of the given object.
+        """Returns the Python code representing the constructor of the given object using its signature.
+        @param x is the object to construct
+        @param fields overrides the parameters and arguments to use in the constructor
+        @param positional indicates whether to use positional parameters or keyword parameters
+        @param cast_as indicates the type to upcast the object (useful in inheritance approaches)
+        @return the Python code representing the constructor of the given object.
+        """
+        arguments = self.construction_arguments(
+            x, fields=fields, positional=positional, cast_as=cast_as
+        )
+        return f"{self.package_of((cast_as or x))}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
+
+    def construction_arguments(
+        self,
+        x: T,
+        /,
+        fields: dict[str, Any] | None = None,
+        *,
+        positional: bool = False,
+        cast_as: type[T] | None = None,
+    ) -> list[str]:
+        """Returns the list of parameters and arguments for the constructor of the given object using its signature.
+        @param x is the object to construct
+        @param fields overrides the parameters and arguments to use in the constructor
+        @param positional indicates whether to use positional parameters or keyword parameters
+        @param cast_as indicates the type to upcast the object (useful in inheritance approaches)
+        @return the list of parameters and arguments for the constructor of the given object.
         """
         if fields is None:
             fields = vars(x) or {}
@@ -294,7 +323,7 @@ class Representation(reprlib.Repr):
             constructor = []
         else:
             constructor = list(
-                inspect.signature(x.__class__.__init__).parameters.values()
+                inspect.signature((cast_as or x.__class__).__init__).parameters.values()
             )
         for parameter in constructor:
             if parameter.name == "self":
@@ -314,7 +343,7 @@ class Representation(reprlib.Repr):
                         f"expected argument for parameter `{parameter.name}` in constructor of {x.__class__.__name__}, "
                         f"but it was missing from the fields context: {fields}"
                     )
-        return f"{self.package_of(x)}{x.__class__.__name__}({', '.join(arguments)})"
+        return arguments
 
     def repr_float(self, obj: float | np.floating[Any], level: int) -> Any:
         """Returns the representation of floats in fuzzylite."""

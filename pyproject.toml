@@ -165,7 +165,10 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 target-version = "py39"
 
 [tool.ruff.per-file-ignores]
-"fuzzylite/examples/**/*.py" = ["D103"] # D103: Missing docstring in public function
+"fuzzylite/examples/**/*.py" = [
+    "D101", # Missing docstring in public class
+    "D107", # Missing docstring in `__init__`
+]
 
 [tool.ruff.mccabe]
 max-complexity = 10

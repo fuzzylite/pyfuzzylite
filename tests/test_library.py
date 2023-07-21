@@ -149,15 +149,15 @@ variable InputVariable OutputVariable Variable
 
     def test_repr_with_takagi_sugeno(self) -> None:
         """Tests the repr with terms referencing engines."""
-        from fuzzylite.examples.takagi_sugeno import SimpleDimmer
+        from fuzzylite.examples.takagi_sugeno.simple_dimmer import SimpleDimmer
 
-        engine = SimpleDimmer.create()
+        engine = SimpleDimmer().engine
         engine.input_variables[0].value = 1 / 3
         engine.process()
         self.assertEqual(2 / 3, engine.output_variables[0].value)
         engine.restart()
 
-        engine = eval(repr(SimpleDimmer.create()))
+        engine = eval(repr(SimpleDimmer().engine))
         engine.input_variables[0].value = 1 / 3
         engine.process()
         self.assertEqual(2 / 3, engine.output_variables[0].value)
@@ -180,9 +180,11 @@ variable InputVariable OutputVariable Variable
 
     def test_repr_with_takagi_sugeno_referencing_engines(self) -> None:
         """Tests the repr with terms referencing engines."""
-        from fuzzylite.examples.takagi_sugeno.octave import linear_tip_calculator
+        from fuzzylite.examples.takagi_sugeno.octave.linear_tip_calculator import (
+            LinearTipCalculator,
+        )
 
-        engine = linear_tip_calculator.create()
+        engine = LinearTipCalculator().engine
         engine.input_values = fl.array(
             [
                 [1, 2],
@@ -195,7 +197,7 @@ variable InputVariable OutputVariable Variable
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 
-        engine = eval(repr(linear_tip_calculator.create()))
+        engine = eval(repr(LinearTipCalculator().engine))
         engine.input_values = fl.array(
             [
                 [1, 2],
@@ -208,7 +210,7 @@ variable InputVariable OutputVariable Variable
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 
-        engine = eval(repr(linear_tip_calculator.create()))
+        engine = eval(repr(LinearTipCalculator().engine))
         engine.input_values = fl.array([1, 2])
         np.testing.assert_allclose(1, engine.input_variable(0).value)
         np.testing.assert_allclose(2, engine.input_variable(1).value)

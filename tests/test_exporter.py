@@ -16,6 +16,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
+import inspect
 import io
 import logging
 import os
@@ -27,8 +28,10 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
+import black
+
 import fuzzylite as fl
-from fuzzylite.examples.mamdani import SimpleDimmer
+from fuzzylite.examples import hybrid, mamdani, takagi_sugeno
 
 
 class TestExporter(unittest.TestCase):
@@ -317,28 +320,21 @@ class TestPythonExporter(unittest.TestCase):
         """Display the entire diff in tests."""
         self.maxDiff = None
 
-    def engine(self) -> fl.Engine:
-        """Gets the engine to run tests on."""
-        return SimpleDimmer.create()
-
     def assert_that(
-        self,
-        instance: Any,
-        expected: str,
+        self, instance: Any, expected: str, encapsulated: str | None = None
     ) -> None:
         """Assert helper to compare the Python code of the instance against what is expected, plus other tests."""
         exporter = fl.PythonExporter()
         obtained = exporter.to_string(instance)
-        self.assertEqual(expected, obtained)
+        self.assertEqual(
+            black.format_str(expected, mode=black.Mode()),  # type:ignore
+            obtained,
+        )
 
         def expected_encapsulated(return_type: str, code: str) -> str:
-            import black
-
             return black.format_str(
                 f"""\
 import fuzzylite as fl
-
-
 def create() -> {return_type}:
     return {code}
     """,
@@ -346,78 +342,88 @@ def create() -> {return_type}:
             )
 
         obtained_encapsulated = fl.PythonExporter(encapsulated=True).to_string(instance)
-        if instance is None:
+        if encapsulated is not None:
             self.assertEqual(
-                expected_encapsulated(return_type="NoneType", code=expected),
+                black.format_str(encapsulated, mode=black.Mode()),  # type:ignore
                 obtained_encapsulated,
             )
-        elif isinstance(instance, fl.Engine):
-            self.assertEqual(expected, exporter.engine(instance))
-            self.assertEqual(
-                expected_encapsulated(return_type="fl.Engine", code=expected),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.InputVariable):
-            self.assertEqual(expected, exporter.input_variable(instance))
-            self.assertEqual(
-                expected_encapsulated(return_type="fl.InputVariable", code=expected),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.OutputVariable):
-            self.assertEqual(expected, exporter.output_variable(instance))
-            self.assertEqual(
-                expected_encapsulated(return_type="fl.OutputVariable", code=expected),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.RuleBlock):
-            self.assertEqual(expected, exporter.rule_block(instance))
-            self.assertEqual(
-                expected_encapsulated(return_type="fl.RuleBlock", code=expected),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.Term):
-            self.assertEqual(expected, exporter.term(instance))
-            self.assertEqual(
-                expected_encapsulated(
-                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
-                ),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.Rule):
-            self.assertEqual(expected, exporter.rule(instance))
-            self.assertEqual(
-                expected_encapsulated(return_type="fl.Rule", code=expected),
-                obtained_encapsulated,
-            )
-        elif isinstance(instance, fl.Norm):
-            self.assertEqual(expected, exporter.norm(instance))
-            self.assertEqual(
-                expected_encapsulated(
-                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
-                ),
-                obtained_encapsulated,
-            )
-            self.assertEqual("None", exporter.norm(None))
-        elif isinstance(instance, fl.Activation):
-            self.assertEqual(expected, exporter.activation(instance))
-            self.assertEqual(
-                expected_encapsulated(
-                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
-                ),
-                obtained_encapsulated,
-            )
-            self.assertEqual("None", exporter.activation(None))
-        elif isinstance(instance, fl.Defuzzifier):
-            self.assertEqual(expected, exporter.defuzzifier(instance))
-            self.assertEqual(
-                expected_encapsulated(
-                    return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
-                ),
-                obtained_encapsulated,
-            )
-            self.assertEqual("None", exporter.defuzzifier(None))
         else:
-            raise NotImplementedError()
+            if instance is None:
+                self.assertEqual(
+                    expected_encapsulated(return_type="NoneType", code=expected),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.Engine):
+                self.assertEqual(expected, exporter.engine(instance))
+                self.assertEqual(
+                    expected_encapsulated(return_type="fl.Engine", code=expected),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.InputVariable):
+                self.assertEqual(expected, exporter.input_variable(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type="fl.InputVariable", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.OutputVariable):
+                self.assertEqual(expected, exporter.output_variable(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type="fl.OutputVariable", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.RuleBlock):
+                self.assertEqual(expected, exporter.rule_block(instance))
+                self.assertEqual(
+                    expected_encapsulated(return_type="fl.RuleBlock", code=expected),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.Term):
+                self.assertEqual(expected, exporter.term(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.Rule):
+                self.assertEqual(expected, exporter.rule(instance))
+                self.assertEqual(
+                    expected_encapsulated(return_type="fl.Rule", code=expected),
+                    obtained_encapsulated,
+                )
+            elif isinstance(instance, fl.Norm):
+                self.assertEqual(expected, exporter.norm(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+                self.assertEqual("None", exporter.norm(None))
+            elif isinstance(instance, fl.Activation):
+                self.assertEqual(expected, exporter.activation(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+                self.assertEqual("None", exporter.activation(None))
+            elif isinstance(instance, fl.Defuzzifier):
+                self.assertEqual(expected, exporter.defuzzifier(instance))
+                self.assertEqual(
+                    expected_encapsulated(
+                        return_type=f"fl.{fl.Op.class_name(instance)}", code=expected
+                    ),
+                    obtained_encapsulated,
+                )
+                self.assertEqual("None", exporter.defuzzifier(None))
+            else:
+                raise NotImplementedError()
 
     def test_missing_black_when_formatting(self) -> None:
         """Tests missing black library when formatting."""
@@ -443,45 +449,40 @@ def create() -> {return_type}:
 
     def test_empty_engine(self) -> None:
         """Test an empty engine is exported."""
-        engine = fl.Engine(name="engine", description="an engine")
+        engine = fl.Engine(name="Choo Choo", description="My Choo-Choo engine")
         self.assert_that(
             engine,
             expected="""\
 fl.Engine(
-    name="engine",
-    description="an engine",
+    name="Choo Choo",
+    description="My Choo-Choo engine",
     input_variables=[],
     output_variables=[],
     rule_blocks=[],
 )
 """,
-        )
-        self.assertEqual(
-            fl.PythonExporter(encapsulated=True).engine(engine),
-            """\
+            encapsulated="""\
 import fuzzylite as fl
 
-
-def create() -> fl.Engine:
-    return fl.Engine(
-        name="engine",
-        description="an engine",
-        input_variables=[],
-        output_variables=[],
-        rule_blocks=[],
-    )
+class ChooChoo:
+    def __init__(self) -> None:
+        self.engine = fl.Engine(
+            name="Choo Choo",
+            description="My Choo-Choo engine",
+            input_variables=[],
+            output_variables=[],
+            rule_blocks=[],
+        )
 """,
         )
 
     def test_engine(self) -> None:
         """Test a basic engine is exported."""
-        engine = self.engine()
+        engine = mamdani.simple_dimmer.SimpleDimmer().engine
         self.assertEqual(
             fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine)
         )
-        self.assert_that(
-            engine,
-            expected="""\
+        constructor = """\
 fl.Engine(
     name="SimpleDimmer",
     input_variables=[
@@ -528,13 +529,22 @@ fl.Engine(
             ],
         )
     ],
-)
-""",
+)"""
+        self.assert_that(
+            engine,
+            constructor,
+            encapsulated=f"""\
+import fuzzylite as fl
+
+class SimpleDimmer:
+    def __init__(self) -> None:
+        self.engine = {constructor}
+        """,
         )
 
     def test_input_variable(self) -> None:
         """Test input variables are exported."""
-        input_variable = self.engine().input_variable(0)
+        input_variable = mamdani.simple_dimmer.SimpleDimmer().engine.input_variable(0)
         self.assert_that(
             input_variable,
             expected="""\
@@ -574,7 +584,7 @@ fl.InputVariable(
 
     def test_output_variable(self) -> None:
         """Test output variables are exported."""
-        output_variable = self.engine().output_variable(0)
+        output_variable = mamdani.simple_dimmer.SimpleDimmer().engine.output_variable(0)
         self.assert_that(
             output_variable,
             """\
@@ -598,7 +608,7 @@ fl.OutputVariable(
 
     def test_rule_block(self) -> None:
         """Test rule blocks are exported."""
-        rule_block = self.engine().rule_block(0)
+        rule_block = mamdani.simple_dimmer.SimpleDimmer().engine.rule_block(0)
         self.assert_that(
             rule_block,
             """\
@@ -728,7 +738,9 @@ class TestFldExporter(unittest.TestCase):
 
         # input and output values
         writer = io.StringIO()
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         fl.FldExporter(input_values=True, output_values=True, headers=False).write(
             engine,
             writer,
@@ -814,7 +826,9 @@ class TestFldExporter(unittest.TestCase):
 
     def test_write_from_reader(self) -> None:
         """Test exporter can read an FLD and export it again."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         reader = """\
 Ambient Power
 0.000000000 nan
@@ -849,7 +863,9 @@ Ambient Power
 
     def test_to_file_from_reader(self) -> None:
         """Test exporter can read file and export it using default decimals."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         reader = """\
     Ambient Power
     0.000000000 nan
@@ -883,7 +899,9 @@ Ambient Power
 
     def test_to_string_from_reader(self) -> None:
         """Test exporter can read from a reader and export to a string."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         reader = """\
         Ambient Power
         0.000000000 nan
@@ -909,7 +927,9 @@ Ambient Power
 
     def test_write_from_scope_each_variable_1(self) -> None:
         """Test exporter can write from a specific scope of specific variables."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -947,7 +967,9 @@ Ambient Power
 
     def test_write_from_scope_all_variables_1(self) -> None:
         """Test the exporter can export the values of all variables in the AllVariables scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -982,9 +1004,7 @@ Ambient Power
 
     def test_write_from_scope_each_variable_2(self) -> None:
         """Test the exporter can export the values of all variables in each variable scope."""
-        from fuzzylite.examples.hybrid import tipper
-
-        engine = fl.FllImporter().from_string(str(tipper.create()))
+        engine = fl.FllImporter().from_string(str(hybrid.tipper.Tipper().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1019,9 +1039,7 @@ service food mTip tsTip
 
     def test_write_from_scope_all_variables_2(self) -> None:
         """Test the exporter can export the values of all variables in the AllVariables scope."""
-        from fuzzylite.examples.hybrid import tipper
-
-        engine = fl.FllImporter().from_string(str(tipper.create()))
+        engine = fl.FllImporter().from_string(str(hybrid.tipper.Tipper().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1056,9 +1074,7 @@ service food mTip tsTip
 
     def test_write_from_scope_each_variable_one_inactive(self) -> None:
         """Test the exporter can export the values of only active variables in EachVariable scope."""
-        from fuzzylite.examples.hybrid import tipper
-
-        engine = fl.FllImporter().from_string(str(tipper.create()))
+        engine = fl.FllImporter().from_string(str(hybrid.tipper.Tipper().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1081,9 +1097,7 @@ service food mTip tsTip
 
     def test_write_from_scope_all_variables_one_inactive(self) -> None:
         """Test the exporter can export the values of only active variables in AllVariables scope."""
-        from fuzzylite.examples.hybrid import tipper
-
-        engine = fl.FllImporter().from_string(str(tipper.create()))
+        engine = fl.FllImporter().from_string(str(hybrid.tipper.Tipper().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1106,7 +1120,9 @@ service food mTip tsTip
 
     def test_to_file_from_scope(self) -> None:
         """Test the exporter can export the values to a file from EachVariable scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
 
         file_name = (
             "file-"
@@ -1139,7 +1155,9 @@ Ambient Power
 
     def test_to_string_from_scope(self) -> None:
         """Test the exporter can export the values to a file from AllVariables scope."""
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(mamdani.simple_dimmer.SimpleDimmer().engine)
+        )
 
         obtained = fl.FldExporter().to_string_from_scope(
             engine,
@@ -1166,9 +1184,9 @@ Ambient Power
         ):
             fl.FldExporter().to_string(fl.InputVariable())
 
-        from fuzzylite.examples.takagi_sugeno import SimpleDimmer
-
-        engine = fl.FllImporter().from_string(str(SimpleDimmer.create()))
+        engine = fl.FllImporter().from_string(
+            str(takagi_sugeno.simple_dimmer.SimpleDimmer().engine)
+        )
 
         obtained = fl.FldExporter().to_string(engine)
         self.assertEqual(1025 + 1, len(obtained.split("\n")))
@@ -1194,7 +1212,7 @@ class TestExporters(unittest.TestCase):
 
         from fuzzylite import examples
 
-        with fl.settings.context(decimals=9):
+        with fl.settings.context(decimals=3):
             files = [str(example) for example in Path(*examples.__path__).rglob("*.py")]
             print(files)
             with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -1212,9 +1230,9 @@ class TestExporters(unittest.TestCase):
     @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
-        from fuzzylite.examples.terms import Bell
+        from fuzzylite.examples.terms import bell
 
-        example = Bell.__file__  # .replace(".py", ".fll")
+        example = bell.__file__  # .replace(".py", ".fll")
         with fl.settings.context(decimals=3):
             TestExporters.export(example)
 
@@ -1241,7 +1259,11 @@ class TestExporters(unittest.TestCase):
             module = ".".join(package) + f".{path.stem}"
             if "__init__" in module:
                 return
-            engine = importlib.import_module(module).create()
+            example_class, *_ = inspect.getmembers(
+                importlib.import_module(module), predicate=lambda x: inspect.isclass(x)
+            )
+            # example_class: tuple[str, type[...]]
+            engine = example_class[1]().engine
             for output_variable in engine.output_variables:
                 if isinstance(output_variable.defuzzifier, fl.IntegralDefuzzifier):
                     output_variable.defuzzifier.resolution = (
@@ -1251,9 +1273,9 @@ class TestExporters(unittest.TestCase):
             raise Exception(f"unknown importer of files like {path}")
 
         exporters = [
-            fl.FllExporter(),
+            # fl.FllExporter(),
             fl.PythonExporter(encapsulated=True),
-            fl.FldExporter(),
+            # fl.FldExporter(),
         ]
 
         file_name = path.stem
@@ -1264,7 +1286,7 @@ class TestExporters(unittest.TestCase):
             fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
                 exporter.to_file_from_scope(
-                    target_path / (file_name + ".fld"), engine, 100_001
+                    target_path / (file_name + ".fld"), engine, 1024
                 )
 
             elif isinstance(exporter, fl.FllExporter):

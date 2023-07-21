@@ -154,10 +154,34 @@ class Operation:
         """Convert the name into a valid FuzzyLite identifier
         @param name is the name to convert
         @returns the name as a valid identifier.
-
         """
-        result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
-        return result if result else "_"
+        name = "".join([x for x in name if x.isalnum() or x == "_"]) or "_"
+        if name[0].isnumeric():
+            name = f"_{name}"
+        return name
+
+    @staticmethod
+    def snake_case(text: str) -> str:
+        """Converts the string to snake_case."""
+        result = [" "]
+        for character in text:
+            if character.isalpha() and character.isupper():
+                if result[-1] != " ":
+                    result.append(" ")
+                result.append(character.lower())
+            elif character.isalnum():
+                result.append(character)
+            elif (character.isspace() or not character.isalnum()) and result[-1] != " ":
+                result.append(" ")
+        sc_text = "".join(result).strip().replace(" ", "_")
+        return sc_text
+
+    @staticmethod
+    def pascal_case(text: str) -> str:
+        """Converts the string to PascalCase."""
+        result = Op.snake_case(text)
+        cc_text = "".join(word.capitalize() for word in result.split("_"))
+        return cc_text
 
     @staticmethod
     def scale(

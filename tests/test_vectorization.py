@@ -74,7 +74,7 @@ class TestMamdani(unittest.TestCase):
 
     def test_simple_mamdani_bisector_integration(self) -> None:
         """Test a simple integration with Bisector."""
-        AssertIntegration(mamdani.SimpleDimmer.create()).assert_that(
+        AssertIntegration(mamdani.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.Bisector(),
             {
                 0.0: fl.nan,
@@ -90,7 +90,7 @@ class TestMamdani(unittest.TestCase):
 
     def test_simple_mamdani_centroid_integration(self) -> None:
         """Test a simple integration with Centroid."""
-        AssertIntegration(mamdani.SimpleDimmer.create()).assert_that(
+        AssertIntegration(mamdani.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.Centroid(),
             {
                 0.0: fl.nan,
@@ -106,7 +106,7 @@ class TestMamdani(unittest.TestCase):
 
     def test_simple_mamdani_lom_integration(self) -> None:
         """Test a simple integration with LargestOfMaximum."""
-        AssertIntegration(mamdani.SimpleDimmer.create()).assert_that(
+        AssertIntegration(mamdani.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.LargestOfMaximum(),
             {
                 0.0: fl.nan,
@@ -122,7 +122,7 @@ class TestMamdani(unittest.TestCase):
 
     def test_simple_mamdani_mom_integration(self) -> None:
         """Test a simple integration with MeanOfMaximum."""
-        AssertIntegration(mamdani.SimpleDimmer.create()).assert_that(
+        AssertIntegration(mamdani.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.MeanOfMaximum(),
             {
                 0.0: fl.nan,
@@ -138,7 +138,7 @@ class TestMamdani(unittest.TestCase):
 
     def test_simple_mamdani_som_integration(self) -> None:
         """Test a simple integration without vectorization."""
-        AssertIntegration(mamdani.SimpleDimmer.create()).assert_that(
+        AssertIntegration(mamdani.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.SmallestOfMaximum(),
             {
                 0.0: fl.nan,
@@ -158,7 +158,9 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_takagisugeno_avg_integration(self) -> None:
         """Test a simple integration with WeightedAverage."""
-        AssertIntegration(takagi_sugeno.SimpleDimmer.create()).assert_that(
+        AssertIntegration(
+            takagi_sugeno.simple_dimmer.SimpleDimmer().engine
+        ).assert_that(
             fl.WeightedAverage(),
             {
                 0.0: fl.nan,
@@ -174,7 +176,9 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_takagisugeno_sum_integration(self) -> None:
         """Test a simple integration with WeightedSum."""
-        AssertIntegration(takagi_sugeno.SimpleDimmer.create()).assert_that(
+        AssertIntegration(
+            takagi_sugeno.simple_dimmer.SimpleDimmer().engine
+        ).assert_that(
             fl.WeightedSum(),
             {
                 0.0: np.nan,
@@ -190,7 +194,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_tsukamoto_avg_integration(self) -> None:
         """Test a simple integration with WeightedAverage."""
-        AssertIntegration(tsukamoto.tsukamoto.create()).assert_that(
+        AssertIntegration(tsukamoto.tsukamoto.Tsukamoto().engine).assert_that(
             fl.WeightedAverage(),
             {
                 -20: 0.014,
@@ -214,7 +218,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_tsukamoto_sum_integration(self) -> None:
         """Test a simple integration with WeightedSum."""
-        AssertIntegration(tsukamoto.tsukamoto.create()).assert_that(
+        AssertIntegration(tsukamoto.tsukamoto.Tsukamoto().engine).assert_that(
             fl.WeightedSum(),
             {
                 -20: 0.0,

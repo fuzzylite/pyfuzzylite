@@ -321,18 +321,30 @@ class PythonExporter(Exporter):
             raise
         return code
 
+    def encapsulate(self, instance: Any) -> str:
+        """Encapsulate the instance in a new class if it is an engine, or in a create method otherwise."""
+        from .engine import Engine
+        from .library import representation
+
+        code = f"{representation.import_statement()}\n\n"
+        if isinstance(instance, Engine):
+            code += f"""\
+class {Op.pascal_case(instance.name)}:
+
+    def __init__(self) -> None:
+        self.engine = {repr(instance)}
+"""
+        else:
+            code += f"""\
+def create() -> {Op.class_name(instance, qualname=True)}:
+    return {repr(instance)}
+"""
+        return code
+
     def to_string(self, instance: Any, /) -> str:
         """@return Python code to construct the given instance."""
-        code = repr(instance)
-        if self.encapsulated:
-            from .library import representation
+        code = self.encapsulate(instance) if self.encapsulated else repr(instance)
 
-            code = f"""\
-{representation.import_statement()}
-
-def create() -> {Op.class_name(instance, qualname=True)}:
-    return {code}
-"""
         if self.formatted:
             code = self.format(code)
         return code
