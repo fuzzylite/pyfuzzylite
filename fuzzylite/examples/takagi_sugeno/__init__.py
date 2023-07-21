@@ -1,3 +1,15 @@
-__all__ = ["approximation", "obstacle_avoidance", "simple_dimmer", "matlab", "octave"]
+__all__ = [
+    "approximation",
+    "matlab",
+    "obstacle_avoidance",
+    "octave",
+    "simple_dimmer",
+]
 
-from . import approximation, obstacle_avoidance, simple_dimmer, matlab, octave
+from . import (
+    approximation,
+    matlab,
+    obstacle_avoidance,
+    octave,
+    simple_dimmer,
+)
