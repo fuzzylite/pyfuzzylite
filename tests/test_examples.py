@@ -17,6 +17,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 from __future__ import annotations
 
 import importlib
+import inspect
 import logging
 import pathlib
 import unittest
@@ -31,16 +32,16 @@ class TestExamples(unittest.TestCase):
         """Tests the examples can be imported."""
         from fuzzylite import examples  # noqa
         from fuzzylite.examples import hybrid, mamdani, takagi_sugeno  # noqa
-        from fuzzylite.examples.mamdani import SimpleDimmer  # noqa
-        from fuzzylite.examples.mamdani.SimpleDimmer import create  # noqa
+        from fuzzylite.examples.mamdani import simple_dimmer  # noqa
+        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
 
     def test_absolute_imports(self) -> None:
         """Tests the examples can be imported with absolute imports."""
         import fuzzylite  # noqa
         import fuzzylite.examples  # noqa
         import fuzzylite.examples.mamdani  # noqa
-        import fuzzylite.examples.mamdani.SimpleDimmer  # noqa
-        from fuzzylite.examples.mamdani.SimpleDimmer import create  # noqa
+        import fuzzylite.examples.mamdani.simple_dimmer  # noqa
+        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
 
     def test_examples(self) -> None:
         """Test all the examples are included and can be imported."""
@@ -51,14 +52,14 @@ class TestExamples(unittest.TestCase):
 
         expected = set(
             """\
-fuzzylite.examples.hybrid.ObstacleAvoidance
+fuzzylite.examples.hybrid.obstacle_avoidance
 fuzzylite.examples.hybrid.tipper
-fuzzylite.examples.mamdani.AllTerms
-fuzzylite.examples.mamdani.Laundry
-fuzzylite.examples.mamdani.ObstacleAvoidance
-fuzzylite.examples.mamdani.SimpleDimmer
-fuzzylite.examples.mamdani.SimpleDimmerChained
-fuzzylite.examples.mamdani.SimpleDimmerInverse
+fuzzylite.examples.mamdani.all_terms
+fuzzylite.examples.mamdani.laundry
+fuzzylite.examples.mamdani.obstacle_avoidance
+fuzzylite.examples.mamdani.simple_dimmer
+fuzzylite.examples.mamdani.simple_dimmer_chained
+fuzzylite.examples.mamdani.simple_dimmer_inverse
 fuzzylite.examples.mamdani.matlab.mam21
 fuzzylite.examples.mamdani.matlab.mam22
 fuzzylite.examples.mamdani.matlab.shower
@@ -68,8 +69,8 @@ fuzzylite.examples.mamdani.matlab.tipper
 fuzzylite.examples.mamdani.matlab.tipper1
 fuzzylite.examples.mamdani.octave.investment_portfolio
 fuzzylite.examples.mamdani.octave.mamdani_tip_calculator
-fuzzylite.examples.takagi_sugeno.ObstacleAvoidance
-fuzzylite.examples.takagi_sugeno.SimpleDimmer
+fuzzylite.examples.takagi_sugeno.obstacle_avoidance
+fuzzylite.examples.takagi_sugeno.simple_dimmer
 fuzzylite.examples.takagi_sugeno.approximation
 fuzzylite.examples.takagi_sugeno.matlab.fpeaks
 fuzzylite.examples.takagi_sugeno.matlab.invkine1
@@ -89,28 +90,28 @@ fuzzylite.examples.takagi_sugeno.octave.cubic_approximator
 fuzzylite.examples.takagi_sugeno.octave.heart_disease_risk
 fuzzylite.examples.takagi_sugeno.octave.linear_tip_calculator
 fuzzylite.examples.takagi_sugeno.octave.sugeno_tip_calculator
-fuzzylite.examples.terms.Arc
-fuzzylite.examples.terms.Bell
-fuzzylite.examples.terms.Binary
-fuzzylite.examples.terms.Concave
-fuzzylite.examples.terms.Constant
-fuzzylite.examples.terms.Cosine
-fuzzylite.examples.terms.Discrete
-fuzzylite.examples.terms.Function
-fuzzylite.examples.terms.Gaussian
-fuzzylite.examples.terms.GaussianProduct
-fuzzylite.examples.terms.Linear
-fuzzylite.examples.terms.PiShape
-fuzzylite.examples.terms.Ramp
-fuzzylite.examples.terms.Rectangle
-fuzzylite.examples.terms.SemiEllipse
-fuzzylite.examples.terms.Sigmoid
-fuzzylite.examples.terms.SigmoidDifference
-fuzzylite.examples.terms.SigmoidProduct
-fuzzylite.examples.terms.Spike
-fuzzylite.examples.terms.Trapezoid
-fuzzylite.examples.terms.Triangle
-fuzzylite.examples.terms.ZSShape
+fuzzylite.examples.terms.arc
+fuzzylite.examples.terms.bell
+fuzzylite.examples.terms.binary
+fuzzylite.examples.terms.concave
+fuzzylite.examples.terms.constant
+fuzzylite.examples.terms.cosine
+fuzzylite.examples.terms.discrete
+fuzzylite.examples.terms.function
+fuzzylite.examples.terms.gaussian
+fuzzylite.examples.terms.gaussian_product
+fuzzylite.examples.terms.linear
+fuzzylite.examples.terms.pi_shape
+fuzzylite.examples.terms.ramp
+fuzzylite.examples.terms.rectangle
+fuzzylite.examples.terms.semi_ellipse
+fuzzylite.examples.terms.sigmoid
+fuzzylite.examples.terms.sigmoid_difference
+fuzzylite.examples.terms.sigmoid_product
+fuzzylite.examples.terms.spike
+fuzzylite.examples.terms.trapezoid
+fuzzylite.examples.terms.triangle
+fuzzylite.examples.terms.zs_shape
 fuzzylite.examples.tsukamoto.tsukamoto
 """.split()
         )
@@ -130,8 +131,11 @@ fuzzylite.examples.tsukamoto.tsukamoto
         for module in obtained:
             logger.info(f"Importing: {module}")
             # if an example is incorrect, an exception will be thrown below
-            engine = importlib.import_module(module).create()
-            logger.info(str(engine))
+            engine_class, *_ = inspect.getmembers(
+                importlib.import_module(module), predicate=lambda x: inspect.isclass(x)
+            )
+            # engine_class: tuple[str, type[...]]
+            logger.info(str(engine_class[1]().engine))
 
 
 if __name__ == "__main__":

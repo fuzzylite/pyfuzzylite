@@ -22,7 +22,7 @@ import numpy as np
 from typing_extensions import Self
 
 import fuzzylite as fl
-import fuzzylite.examples.mamdani.SimpleDimmer
+from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer
 from tests.assert_component import BaseAssert
 
 
@@ -426,7 +426,7 @@ class TestEngine(unittest.TestCase):
 
     def test_repr(self) -> None:
         """Tests repr."""
-        code = fl.repr(fuzzylite.examples.mamdani.SimpleDimmer.create())
+        code = fl.repr(SimpleDimmer().engine)
         engine = eval(code)
         engine.input_variables[0].value = 1 / 3
         engine.process()
