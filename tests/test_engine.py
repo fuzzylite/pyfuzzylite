@@ -498,7 +498,7 @@ RuleBlock:
     def test_getattr(self) -> None:
         """Test components are accessible using `engine.component` style."""
         # Regular usage
-        engine = SimpleDimmer.create()
+        engine = SimpleDimmer().engine
         engine.rule_block(0).name = "Dimmer"
         engine.Ambient.value = fl.array([0.0, 0.25, 0.5, 0.75, 1.0])  # type: ignore
         engine.Dimmer.activate()  # type: ignore
@@ -523,7 +523,7 @@ RuleBlock:
     def test_getitem(self) -> None:
         """Test components are accessible using `engine.component` style."""
         # Regular usage
-        engine = SimpleDimmer.create()
+        engine = SimpleDimmer().engine
         engine.rule_block(0).name = "Dimmer"
         engine["Ambient"].value = fl.array([0.0, 0.25, 0.5, 0.75, 1.0])  # type: ignore
         engine["Dimmer"].activate()  # type: ignore
