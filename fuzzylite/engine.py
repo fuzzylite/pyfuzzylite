@@ -18,7 +18,6 @@ from __future__ import annotations
 
 __all__ = ["Engine"]
 
-import copy
 import enum
 from collections.abc import Iterable
 
@@ -99,6 +98,32 @@ class Engine:
                     term.update_reference(self)
             for rb in self.rule_blocks:
                 rb.load_rules(self)
+
+    # TODO: implement properly. Currently, RecursionError when using self[item]
+    # def __getattr__(self, item: str) -> InputVariable | OutputVariable | RuleBlock:
+    #     """@return the component with the given name in input variables, output variables, or rule blocks,
+    #     so it can be used like `engine.power.value`.
+    #     """
+    #     try:
+    #         return self[item]
+    #     except ValueError:
+    #         raise AttributeError(
+    #             f"'{self.__class__.__name__}' object has no attribute '{item}'"
+    #         ) from None
+
+    def __getitem__(self, item: str) -> InputVariable | OutputVariable | RuleBlock:
+        """@return the component with the given name in input variables, output variables, or rule blocks,
+        so it can be used like `engine["power"].value`.
+        """
+        components = [self.input_variable, self.output_variable, self.rule_block]
+        for component in components:
+            try:
+                return component(item)  # type: ignore
+            except:  # noqa
+                pass
+        raise ValueError(
+            f"engine '{self.name}' does not have a component named '{item}'"
+        )
 
     def __str__(self) -> str:
         """@return engine in the FuzzyLite Language."""
@@ -350,13 +375,13 @@ class Engine:
         # TODO: Implement
         raise NotImplementedError()
 
-    def copy(self) -> Engine:
-        # TODO: Revisit deep copies and deal with engines in Function and Linear
-        """Creates a copy of the engine, including all variables, rule blocks,
-        and rules. The copy is a deep copy, meaning that all objects are
-        duplicated such that the copy can be modified without affecting the
-        original.
-
-        @return a deep copy of the engine
-        """
-        return copy.deepcopy(self)
+    # def copy(self) -> Engine:
+    #     # TODO: Revisit deep copies and deal with engines in Function and Linear
+    #     """Creates a copy of the engine, including all variables, rule blocks,
+    #     and rules. The copy is a deep copy, meaning that all objects are
+    #     duplicated such that the copy can be modified without affecting the
+    #     original.
+    #
+    #     @return a deep copy of the engine
+    #     """
+    #     return copy.deepcopy(self)

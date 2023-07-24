@@ -179,6 +179,36 @@ class TestFactory(unittest.TestCase):
             "instance of Example",
         )
 
+    def test_iter_len_getitem_setitem(self) -> None:
+        """Test iter, len, getitem, and setitem on construction factories."""
+        self.assertEqual(0, len(fl.ConstructionFactory()))
+        self.assertEqual(23, len(fl.TermFactory()))
+
+        factory = fl.DefuzzifierFactory()
+        self.assertEqual(factory["Centroid"], fl.Centroid)
+
+        factory["CoG"] = fl.Centroid
+        self.assertEqual(factory["CoG"], fl.Centroid)
+
+        iterator = iter(factory)
+        for defuzzifier in factory:
+            self.assertEqual(defuzzifier, next(iterator))
+
+        defuzzifiers = [
+            "Bisector",
+            "Centroid",
+            "LargestOfMaximum",
+            "MeanOfMaximum",
+            "SmallestOfMaximum",
+            "WeightedAverage",
+            "WeightedSum",
+            "CoG",
+        ]
+        for index, defuzzifier in enumerate(factory):
+            self.assertEqual(defuzzifiers[index], defuzzifier)
+
+        self.assertEqual([d for d in factory], defuzzifiers)
+
     def test_activation_factory(self) -> None:
         """Test the activation factory."""
         FactoryAssert(self, fl.ActivationFactory()).has_class_name(
@@ -317,165 +347,187 @@ class TestFactory(unittest.TestCase):
             self, fl.CloningFactory(objects={"example": Example("Clone of Example")})
         ).copies_exactly({"example": Example("Clone of Example")})
 
-    class TestFunctionFactory(unittest.TestCase):
-        """Test the function factory."""
 
-        def test_factory_precedence(self) -> None:
-            """Test the precedence values are internally inversed."""
-            precedence_expected = {
-                0: 100,
-                1: 90,
-                2: 80,
-                3: 70,
-                4: 60,
-                5: 50,
-                6: 40,
-                7: 30,
-                8: 20,
-                9: 10,
-                10: 0,
-            }
-            factory = fl.FunctionFactory()
-            for p, e in precedence_expected.items():
-                self.assertEqual(e, factory._precedence(p))
+class TestFunctionFactory(unittest.TestCase):
+    """Test the function factory."""
 
-        def test_factory_matches_keys_and_names(self) -> None:
-            """Test the registration names of functions match the function names."""
-            exceptions = {
-                "acos": "arccos",
-                "asin": "arcsin",
-                "atan": "arctan",
-                "atan2": "arctan2",
-                "acosh": "arccosh",
-                "asinh": "arcsinh",
-                "atanh": "arctanh",
-                "pi": "<lambda>",
-            }
-            for key, element in fl.FunctionFactory().objects.items():
-                self.assertEqual(key, element.name)
-                # if it is a function, the name should be contained in
-                # in the methods name
-                if element.type == fl.Function.Element.Type.Function:
-                    if key in exceptions:
-                        self.assertIn(exceptions[key], element.method.__name__)
-                    else:
-                        self.assertIn(key, element.method.__name__)
+    def test_factory_precedence(self) -> None:
+        """Test the precedence values are internally inversed."""
+        precedence_expected = {
+            0: 100,
+            1: 90,
+            2: 80,
+            3: 70,
+            4: 60,
+            5: 50,
+            6: 40,
+            7: 30,
+            8: 20,
+            9: 10,
+            10: 0,
+        }
+        factory = fl.FunctionFactory()
+        for p, e in precedence_expected.items():
+            self.assertEqual(e, factory._precedence(p))
 
-        def test_arity(self) -> None:
-            """Tests correct arity of functions by calling functions without raising exceptions."""
-            values = [-np.inf, -10, -5, -1, -0.5, 0, np.nan, 0.5, 1, 5, 10, np.inf]
+    def test_len_iter_getitem_setitem(self) -> None:
+        """Test iter, len, getitem, and setitem on cloning factories."""
+        self.assertEqual(0, len(fl.CloningFactory()))
+        self.assertEqual(47, len(fl.FunctionFactory()))
 
-            for element in fl.FunctionFactory().objects.values():
-                if element.arity == 0:
-                    element.method()
+        factory = fl.FunctionFactory()
+        self.assertEqual(factory["sin"], factory.objects["sin"])
+
+        factory["sine"] = factory["sin"]
+        self.assertEqual(factory["sine"], factory.objects["sin"])
+
+        iterator = iter(factory)
+        for function in factory:
+            self.assertEqual(function, next(iterator))
+
+        functions = list(factory.operators().keys()) + list(factory.functions().keys())
+        for index, function in enumerate(factory):
+            self.assertEqual(functions[index], function)
+
+        self.assertEqual([f for f in factory], functions)
+
+    def test_factory_matches_keys_and_names(self) -> None:
+        """Test the registration names of functions match the function names."""
+        exceptions = {
+            "acos": "arccos",
+            "asin": "arcsin",
+            "atan": "arctan",
+            "atan2": "arctan2",
+            "acosh": "arccosh",
+            "asinh": "arcsinh",
+            "atanh": "arctanh",
+            "pi": "<lambda>",
+        }
+        for key, element in fl.FunctionFactory().objects.items():
+            self.assertEqual(key, element.name)
+            # if it is a function, the name should be contained in
+            # in the methods name
+            if element.type == fl.Function.Element.Type.Function:
+                if key in exceptions:
+                    self.assertIn(exceptions[key], element.method.__name__)
                 else:
-                    for a, b in itertools.combinations(values, 2):
-                        if element.arity == 1:
-                            element.method(a)
-                            element.method(b)
-                        else:
-                            element.method(a, a)
-                            element.method(a, b)
-                            element.method(b, a)
-                            element.method(b, b)
+                    self.assertIn(key, element.method.__name__)
 
-        def test_factory_contains_exactly(self) -> None:
-            """Test the factory contains all the operators and functions."""
-            FunctionFactoryAssert(self, fl.FunctionFactory()).contains_exactly(
-                {"!", "~", "^", "**", "*", "/", "%", "+", "-", ".+", ".-", "and", "or"},
-                fl.Function.Element.Type.Operator,
-            ).contains_exactly(
-                {
-                    "abs",
-                    "acos",
-                    "acosh",
-                    "asin",
-                    "asinh",
-                    "atan",
-                    "atan2",
-                    "atanh",
-                    "ceil",
-                    "cos",
-                    "cosh",
-                    "eq",
-                    "exp",
-                    "fabs",
-                    "floor",
-                    "fmod",
-                    "ge",
-                    "gt",
-                    "le",
-                    "log",
-                    "log10",
-                    "log1p",
-                    "lt",
-                    "max",
-                    "min",
-                    "neq",
-                    "pi",
-                    "pow",
-                    "round",
-                    "sin",
-                    "sinh",
-                    "sqrt",
-                    "tan",
-                    "tanh",
-                },
-                fl.Function.Element.Type.Function,
-            )
+    def test_arity(self) -> None:
+        """Tests correct arity of functions by calling functions without raising exceptions."""
+        values = [-np.inf, -10, -5, -1, -0.5, 0, np.nan, 0.5, 1, 5, 10, np.inf]
 
-        def test_function_operators(self) -> None:
-            """Tests the operators yield correct resutls."""
-            FunctionFactoryAssert(self, fl.FunctionFactory()).operation_is(
-                {
-                    ("!", (0,)): 1,
-                    ("!", (1,)): 0,
-                    ("~", (1,)): -1,
-                    ("~", (-2,)): 2,
-                    ("~", (0,)): 0,
-                    ("^", (3, 3)): 27,
-                    ("^", (9, 0.5)): 3,
-                    ("*", (-2, 3)): -6,
-                    ("*", (3, -2)): -6,
-                    ("/", (6, 3)): 2,
-                    ("/", (3, 6)): 0.5,
-                    ("%", (6, 3)): 0,
-                    ("%", (3, 6)): 3,
-                    ("%", (3.5, 6)): 3.5,
-                    ("%", (6, 3.5)): 2.5,
-                    ("+", (2, 3)): 5,
-                    ("+", (2, -3)): -1,
-                    ("-", (2, 3)): -1,
-                    ("-", (2, -3)): 5,
-                    ("and", (1, 0)): 0,
-                    ("and", (1, 1)): 1,
-                    ("or", (1, 0)): 1,
-                    ("or", (0, 0)): 0,
-                }
-            )
+        for element in fl.FunctionFactory().objects.values():
+            if element.arity == 0:
+                element.method()
+            else:
+                for a, b in itertools.combinations(values, 2):
+                    if element.arity == 1:
+                        element.method(a)
+                        element.method(b)
+                    else:
+                        element.method(a, a)
+                        element.method(a, b)
+                        element.method(b, a)
+                        element.method(b, b)
 
-        def test_function_precedence(self) -> None:
-            """Tests the precedence of operators."""
-            (
-                FunctionFactoryAssert(self, fl.FunctionFactory())
-                .precedence_is_the_same("!", "~")
-                .precedence_is_the_same("^", "**", ".-", ".+")
-                .precedence_is_the_same("*", "/", "%")
-                .precedence_is_the_same("+", "-")
-            )
-            (
-                FunctionFactoryAssert(self, fl.FunctionFactory())
-                .precedence_is_higher("!", ".+")
-                .precedence_is_higher("^", "%")
-                .precedence_is_higher("*", "-")
-                .precedence_is_higher("+", "and")
-                .precedence_is_higher("and", "or")
-            )
+    def test_factory_contains_exactly(self) -> None:
+        """Test the factory contains all the operators and functions."""
+        FunctionFactoryAssert(self, fl.FunctionFactory()).contains_exactly(
+            {"!", "~", "^", "**", "*", "/", "%", "+", "-", ".+", ".-", "and", "or"},
+            fl.Function.Element.Type.Operator,
+        ).contains_exactly(
+            {
+                "abs",
+                "acos",
+                "acosh",
+                "asin",
+                "asinh",
+                "atan",
+                "atan2",
+                "atanh",
+                "ceil",
+                "cos",
+                "cosh",
+                "eq",
+                "exp",
+                "fabs",
+                "floor",
+                "fmod",
+                "ge",
+                "gt",
+                "le",
+                "log",
+                "log10",
+                "log1p",
+                "lt",
+                "max",
+                "min",
+                "neq",
+                "pi",
+                "pow",
+                "round",
+                "sin",
+                "sinh",
+                "sqrt",
+                "tan",
+                "tanh",
+            },
+            fl.Function.Element.Type.Function,
+        )
 
-            np.testing.assert_allclose(
-                fl.Function("f", "(10 + 5) * 2 - 3 / 4 ** 2", load=True).evaluate(),
-                29.8125,
-            )
+    def test_function_operators(self) -> None:
+        """Tests the operators yield correct resutls."""
+        FunctionFactoryAssert(self, fl.FunctionFactory()).operation_is(
+            {
+                ("!", (0,)): 1,
+                ("!", (1,)): 0,
+                ("~", (1,)): -1,
+                ("~", (-2,)): 2,
+                ("~", (0,)): 0,
+                ("^", (3, 3)): 27,
+                ("^", (9, 0.5)): 3,
+                ("*", (-2, 3)): -6,
+                ("*", (3, -2)): -6,
+                ("/", (6, 3)): 2,
+                ("/", (3, 6)): 0.5,
+                ("%", (6, 3)): 0,
+                ("%", (3, 6)): 3,
+                ("%", (3.5, 6)): 3.5,
+                ("%", (6, 3.5)): 2.5,
+                ("+", (2, 3)): 5,
+                ("+", (2, -3)): -1,
+                ("-", (2, 3)): -1,
+                ("-", (2, -3)): 5,
+                ("and", (1, 0)): 0,
+                ("and", (1, 1)): 1,
+                ("or", (1, 0)): 1,
+                ("or", (0, 0)): 0,
+            }
+        )
+
+    def test_function_precedence(self) -> None:
+        """Tests the precedence of operators."""
+        (
+            FunctionFactoryAssert(self, fl.FunctionFactory())
+            .precedence_is_the_same("!", "~")
+            .precedence_is_the_same("^", "**", ".-", ".+")
+            .precedence_is_the_same("*", "/", "%")
+            .precedence_is_the_same("+", "-")
+        )
+        (
+            FunctionFactoryAssert(self, fl.FunctionFactory())
+            .precedence_is_higher("!", ".+")
+            .precedence_is_higher("^", "%")
+            .precedence_is_higher("*", "-")
+            .precedence_is_higher("+", "and")
+            .precedence_is_higher("and", "or")
+        )
+
+        np.testing.assert_allclose(
+            fl.Function("f", "(10 + 5) * 2 - 3 / 4 ** 2", load=True).evaluate(),
+            29.8125,
+        )
 
 
 if __name__ == "__main__":

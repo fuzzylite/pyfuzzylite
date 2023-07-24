@@ -90,6 +90,79 @@ class TestVariable(unittest.TestCase):
             )
         )
 
+    @unittest.skip(reason="__getattr__ has not been implemented properly yet.")
+    def test_getattr(self) -> None:
+        """Test accessing term with getattr and getitem."""
+        a, b = [fl.Constant("a", 0), fl.Constant("b", 1)]
+        variable = fl.Variable("test", terms=[a, b])
+
+        # test getattr
+        self.assertEqual(variable.a, a)  # type:ignore
+        self.assertEqual(variable.b, b)  # type:ignore
+
+    def test_getitem_len_iter(self) -> None:
+        """Test accessing term with getattr and getitem."""
+        a, b = [fl.Constant("a", 0), fl.Constant("b", 1)]
+        variable = fl.Variable("test", terms=[a, b])
+
+        # test getitem
+        self.assertEqual(variable["a"], a)
+        self.assertEqual(variable["b"], b)
+
+        # side-effect
+        self.assertEqual(variable[0], a)
+        self.assertEqual(variable[1], b)
+
+        self.assertEqual(0, len(fl.Variable()))
+        self.assertEqual(2, len(variable))
+
+        # iterating over terms
+        ## via list comprehension
+        self.assertListEqual([t for t in variable], variable.terms)
+
+        ## via enumeration
+        terms = [a, b]
+        for index, term in enumerate(variable):
+            self.assertEqual(terms[index], term)
+
+        ## via iterators
+        iterator = iter(variable)
+        self.assertEqual(next(iterator), a)
+        self.assertEqual(next(iterator), b)
+
+    def test_deepcopy(self) -> None:
+        """Test the variable can be deeply copied."""
+        import copy
+
+        variable = fl.Variable(
+            "name", "description", terms=[fl.Triangle("a"), fl.Triangle("b")]
+        )
+        variable_copy = copy.deepcopy(variable)
+
+        self.assertNotEqual(variable, variable_copy)
+        self.assertEqual(repr(variable), repr(variable_copy))
+
+        variable_copy["a"].name = "z"
+        self.assertEqual(variable_copy.term(0).name, "z")
+        self.assertEqual(variable.term(0).name, "a")
+
+    def test_term_by_index_or_name(self) -> None:
+        """Test finding term by index or name."""
+        a, b = [fl.Constant("a", 0), fl.Constant("b", 1)]
+        variable = fl.Variable("test", terms=[a, b])
+
+        self.assertEqual(variable.term(0), a)
+        self.assertEqual(variable.term(1), b)
+        with self.assertRaises(IndexError) as index_error:
+            variable.term(2)
+        self.assertEqual("list index out of range", str(index_error.exception))
+
+        self.assertEqual(variable.term("a"), a)
+        self.assertEqual(variable.term("b"), b)
+        with self.assertRaises(ValueError) as value_error:
+            variable.term("z")
+        self.assertEqual("term 'z' not found in ['a', 'b']", str(value_error.exception))
+
     def test_lock_range(self) -> None:
         """Test the lock range."""
         variable = fl.Variable("name", "description")

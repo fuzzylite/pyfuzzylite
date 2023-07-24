@@ -28,7 +28,8 @@ __all__ = [
 
 import typing
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from typing import overload
 
 from .hedge import Any
 from .library import array, nan, representation, scalar, settings
@@ -91,16 +92,15 @@ class Proposition(Expression):
         """@return textual representation of the proposition."""
         result = []
 
-        if self.variable:
+        if self.variable is not None:
             result.append(self.variable.name)
-
             result.append(Rule.IS)
 
         if self.hedges:
             for hedge in self.hedges:
                 result.append(hedge.name)
 
-        if self.term:
+        if self.term is not None:
             result.append(self.term.name)
 
         return " ".join(result)
@@ -880,6 +880,26 @@ class RuleBlock:
         self.implication = implication
         self.activation = activation
         self.rules = list(rules) if rules else []
+
+    def __iter__(self) -> Iterator[Rule]:
+        """@return iterator over the rules."""
+        return iter(self.rules)
+
+    @overload
+    def __getitem__(self, item: int) -> Rule:
+        ...
+
+    @overload
+    def __getitem__(self, item: slice) -> list[Rule]:
+        ...
+
+    def __getitem__(self, item: int | slice) -> Rule | list[Rule]:
+        """@return the rule at the given index."""
+        return self.rules[item]
+
+    def __len__(self) -> int:
+        """@return the number of rules."""
+        return len(self.rules)
 
     def __str__(self) -> str:
         """@return rule block in the FuzzyLite Language."""

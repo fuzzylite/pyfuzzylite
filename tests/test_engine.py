@@ -494,6 +494,63 @@ RuleBlock:
         engine.process()
         np.testing.assert_allclose(0.2, engine.output_variable(0).value)
 
+    @unittest.skip(reason="__getattr__ has not been implemented properly yet.")
+    def test_getattr(self) -> None:
+        """Test components are accessible using `engine.component` style."""
+        # Regular usage
+        engine = SimpleDimmer().engine
+        engine.rule_block(0).name = "Dimmer"
+        engine.Ambient.value = fl.array([0.0, 0.25, 0.5, 0.75, 1.0])  # type: ignore
+        engine.Dimmer.activate()  # type: ignore
+        engine.Power.defuzzify()  # type: ignore
+        np.testing.assert_allclose(
+            [fl.nan, 0.75, 0.5, 0.25, fl.nan],
+            engine.Power.value,  # type: ignore
+        )
+
+        # Non-existing component by name
+        with self.assertRaises(AttributeError) as error:
+            engine.Variable  # type: ignore
+        self.assertEqual(
+            "'Engine' object has no attribute 'Variable'", str(error.exception)
+        )
+
+        # engine's members are retrieved first
+        engine.name = "Test my name"
+        engine.input_variables.append(fl.InputVariable("name"))
+        self.assertEqual("Test my name", engine.name)
+
+    def test_getitem(self) -> None:
+        """Test components are accessible using `engine.component` style."""
+        # Regular usage
+        engine = SimpleDimmer().engine
+        engine.rule_block(0).name = "Dimmer"
+        engine["Ambient"].value = fl.array([0.0, 0.25, 0.5, 0.75, 1.0])  # type: ignore
+        engine["Dimmer"].activate()  # type: ignore
+        engine["Power"].defuzzify()  # type: ignore
+        np.testing.assert_allclose(
+            [fl.nan, 0.75, 0.5, 0.25, fl.nan],
+            engine["Power"].value,  # type: ignore
+        )
+
+        # Non-existing component by name
+        with self.assertRaises(ValueError) as error:
+            engine["Variable"]
+        self.assertEqual(
+            str(error.exception),
+            "engine 'SimpleDimmer' does not have a component named 'Variable'",
+        )
+
+        # engine's members are retrieved first, except in this case
+        engine.name = "Test my name"
+        expected = fl.InputVariable("name")
+        engine.input_variables.append(expected)
+        self.assertEqual(expected, engine["name"])
+        self.assertNotEqual(engine.name, engine["name"])
+
+        # side effect caught by type annotations
+        self.assertEqual(engine.input_variable(0), engine[0])  # type:ignore
+
 
 if __name__ == "__main__":
     unittest.main()

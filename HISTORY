@@ -6,6 +6,9 @@
 - New: fl.array maps to np.array
 - New: fl.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
 - New: Arc and SemiEllipse terms.
+- New: Engine: get variables or ruleblocks by name using square brackets, eg, `engine["light"].value`
+- New: Variable: get terms by name using square brackets, eg, `variable["low"].membership(value)`
+- New: Factory: get constructors and objects by name using square brackets, eg, `factory["Triangle"]()`, `factory["sin"](3.14)`
 - Using `from __future__ import annotations` in every file to use better type annotations
 - Changed: Dual license: GNU GPL and paid proprietary license for commercial purposes
 - Changed: Requires Python >=3.9
@@ -42,6 +45,7 @@
 - New: Properties Engine.input_values and Engine.output_values produce 2D matrices with their respective values
 - New: Property setter Engine.input_values provides shortcuts to setting input variable values
 - New: constructor parameter `load:bool=True` to automatically update the reference of all terms in variables and load the rules
+- New: `__getitem__` implemented to get variables or ruleblocks using square brackets
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
 - Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
 
@@ -57,6 +61,8 @@
 - New: Arc and SemiEllipse added to TermFactory
 - New: ConstructionFactory.import_from automatically imports all the classes from the given fuzzylite module
 - New: ConstructionFactory.construct takes variadic parameters to configure the constructor
+- New: `__getitem__` implemented in `[Construction|Cloning]Factory` to get constructors and objects using square brackets
+- New: `__len__` implemented in `[Construction|Cloning]Factory` to get number of constructors and objects using `len`
 - Changed: ConstructionFactory takes an optional dictionary of constructors
 - Changed: CloningFactory takes an optional dictionary of objects
 - Changed: FunctionFactory: Operators and Functions now mostly map to their equivalent methods in numpy, but preserving their names
@@ -98,6 +104,8 @@
 - Removed: `scalar` method, moved to `library.py`
 
 ## rule.py
+- New: `RuleBlock.__getitem__` gets the rule by index using square brackets `rb[0]`
+- New: `RuleBlock.__len__` gets the number of rules the block has using `len(rb)`
 - Changed: Expression is abstract
 - Changed: Enabled vectorization
 - Changed: in `Rule`, `triggered` is now an array of bools and `activation_degrees` is now a Scalar to support vectorization
@@ -130,6 +138,7 @@
 ## variable.py
 - New: constructor argument `value` in Variable, InputVariable, and OutputVariable (default: nan)
 - New: constructor argument `previous_value` in OutputVariable (default: nan)
+- New: `__getitem__` implemented to get terms using square brackets, eg, `variable[0]` or `variable["low"]`
 - Changed: OutputVariable.defuzzify is simpler and works with vectorized operations
 
 ## noxfile.py

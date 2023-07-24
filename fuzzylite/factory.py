@@ -64,7 +64,19 @@ class ConstructionFactory(Generic[T]):
 
     def __iter__(self) -> Iterator[str]:
         """Gets the iterator of constructors."""
-        return self.constructors.__iter__()
+        return iter(self.constructors)
+
+    def __getitem__(self, key: str) -> type[T]:
+        """Get type by 'key'."""
+        return self.constructors[key]
+
+    def __setitem__(self, key: str, value: type[T]) -> None:
+        """Add (or replace) the key with the given value."""
+        self.constructors[key] = value
+
+    def __len__(self) -> int:
+        """@return number of constructors."""
+        return len(self.constructors)
 
     def __str__(self) -> str:
         """@return class name of the factory."""
@@ -121,7 +133,19 @@ class CloningFactory(Generic[T]):
 
     def __iter__(self) -> Iterator[str]:
         """Get iterator of objects."""
-        return self.objects.__iter__()
+        return iter(self.objects)
+
+    def __getitem__(self, key: str) -> T:
+        """Get object by 'key'."""
+        return self.objects[key]
+
+    def __setitem__(self, key: str, value: T) -> None:
+        """Add (or replace) key with the given value."""
+        self.objects[key] = value
+
+    def __len__(self) -> int:
+        """@return number of objects in factory."""
+        return len(self.objects)
 
     def __str__(self) -> str:
         """@return class name of the factory."""
