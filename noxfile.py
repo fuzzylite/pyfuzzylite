@@ -104,7 +104,15 @@ def lint_qodana(session: nox.Session) -> None:
     else:
         token = os.environ["QODANA_TOKEN"] or ""
         session.run(
-            *"qodana scan --source-directory fuzzylite/ --results-dir .qodana/ --clear-cache".split(),
+            *" ".join(
+                [
+                    "qodana scan",
+                    "--source-directory fuzzylite/",
+                    "--results-dir .qodana/",
+                    "--baseline .qodana/baseline/qodana.sarif.json",
+                    "--clear-cache",
+                ]
+            ).split(),
             env={"QODANA_TOKEN": token},
             external=True,
         )
