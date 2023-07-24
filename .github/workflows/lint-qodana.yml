@@ -6,19 +6,27 @@ on:
   pull_request:
     branches: [main, development]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   qodana:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      checks: write
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # required by Qodana on PRs
+          fetch-depth: 0
       - name: Qodana Scan
         uses: JetBrains/qodana-action@v2023.2
         with:
-          args: -p,qodana.yaml
-          upload-result: true
+          args: -p,qodana.yaml,--project-dir,fuzzylite
+          results-dir: ${{ runner.temp }}/.qodana
+          use-caches: false
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
 #      - name: Qodana Upload SARIF
