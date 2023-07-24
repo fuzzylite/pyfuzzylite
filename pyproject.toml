@@ -67,6 +67,7 @@ pytest = "^7.3.1"             # Test Driven Development
 ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
 pyright = "^1.1.305"          # Static code analysis
+python-dotenv = "^1.0.0"
 
 [tool.black]
 target-version = ["py39"]
@@ -175,7 +176,6 @@ max-complexity = 10
 
 [tool.ruff.pydocstyle]
 convention = "google"
-
 
 [tool.pyright]
 include = ["fuzzylite/", "noxfile.py", "tests/"]

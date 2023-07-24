@@ -49,7 +49,7 @@ def lint(session: nox.Session) -> None:
         "qodana": "lint_qodana",
     }
     # Case 1: posargs is empty, run all linters
-    # Case 2: posargs only contains -qodana, run all linters except qodana
+    # Case 2: posargs only contains -qodana, run all linters except qodana (cloud linting)
     # Case 3: posargs is not empty, run only the specified linters
     posargs = list(session.posargs)
     if "-qodana" in posargs:
@@ -95,11 +95,19 @@ def lint_mypy(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_qodana(session: nox.Session) -> None:
     """Run qodana linter."""
-    # assumes qodana is installed (eg, `brew install jetbrains/utils/qodana`)
-    session.run(
-        *"qodana scan --print-problems --clear-cache ".split(),
-        external=True,
-    )
+    import dotenv
+    import os
+
+    dotenv.load_dotenv()
+    if "QODANA_TOKEN" not in os.environ:
+        session.warn(
+            "Qodana linting failed to run because environment variable 'QODANA_TOKEN' is not present"
+        )
+    else:
+        session.run(
+            *"qodana scan --clear-cache --results-dir .qodana".split(),
+            external=True,
+        )
 
 
 @nox.session(python=False)
