@@ -17,7 +17,7 @@ jobs:
       - name: Qodana Scan
         uses: JetBrains/qodana-action@v2023.1.4
         with:
-          args: -p,qodana.yaml,--clear-cache
+          args: -p,qodana.yaml
           upload-result: true
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
