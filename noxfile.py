@@ -96,6 +96,7 @@ def lint_mypy(session: nox.Session) -> None:
 def lint_qodana(session: nox.Session) -> None:
     """Run qodana linter."""
     import os
+
     if "QODANA_TOKEN" not in os.environ:
         session.warn(
             "Qodana linting failed to run because environment variable 'QODANA_TOKEN' is not present"
