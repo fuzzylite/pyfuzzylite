@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0 # required by Qodana on PRs
       - name: Qodana Scan
-        uses: JetBrains/qodana-action@v2023.1.4
+        uses: JetBrains/qodana-action@2023.2
         with:
           args: -p,qodana.yaml
           upload-result: true
