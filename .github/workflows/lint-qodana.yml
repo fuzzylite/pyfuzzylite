@@ -24,9 +24,9 @@ jobs:
       - name: Qodana Scan
         uses: JetBrains/qodana-action@v2023.2
         with:
-          args: -p,qodana.yaml,--project-dir,fuzzylite
+          args: -p,qodana.yaml,--source-directory,fuzzylite,--clear-cache
           results-dir: ${{ runner.temp }}/.qodana
-          use-caches: false
+          pr-mode: false
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
 #      - name: Qodana Upload SARIF
