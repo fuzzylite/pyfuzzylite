@@ -268,7 +268,7 @@ class Antecedent:
 
     def load(self, engine: Engine) -> None:
         """Loads the antecedent using the given engine to identify and get references to the input and output variables
-        @param engine is the engine referenced by the antecedent
+        @param engine is the engine referenced by the antecedent.
         """
         from collections import deque
 
@@ -538,7 +538,7 @@ class Consequent:
 
     def load(self, engine: Engine) -> None:
         """Loads the consequent using the engine to identify and get the references to the input and output variables
-        @param engine is the engine referenced by the consequent
+        @param engine is the engine referenced by the consequent.
         """
         self.unload()
         if not self.text:
@@ -705,7 +705,7 @@ class Rule:
 
     def parse(self, text: str) -> None:
         """Parses and loads the rule based on the text
-        @param text is the rule
+        @param text is the rule.
         """
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]

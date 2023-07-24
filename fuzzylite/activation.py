@@ -35,7 +35,7 @@ from typing import Callable
 
 import numpy as np
 
-from .library import representation, scalar, to_float, array
+from .library import array, representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .types import Array, Scalar

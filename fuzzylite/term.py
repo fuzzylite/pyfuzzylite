@@ -147,12 +147,11 @@ class Term(ABC):
     def _parse(
         self, required: int, parameters: str, *, height: bool = True
     ) -> list[float]:
-        """
-        Parses the required values from the parameters
+        """Parses the required values from the parameters
         @param required is the number of values to parse
         @param parameters is the text containing the values
         @param height whether the parameters contain an extra value for the height of the term
-        @return a list of values parsed from the parameters
+        @return a list of values parsed from the parameters.
         """
         values = [to_float(x) for x in parameters.split()]
         if height and len(values) == required:
@@ -215,7 +214,7 @@ class Term(ABC):
         @param end is the end of the range
         @param resolution is the number of points to discretize
         @param midpoints if true, discretize using midpoints at the given resolution,
-                         otherwise discretize from start to end at the given resolution + 1
+                         otherwise discretize from start to end at the given resolution + 1.
         """
         if midpoints:
             x = Op.midpoints(start, end, resolution)
@@ -955,7 +954,7 @@ class Discrete(Term):
         """Creates a list of values from the given parameters.
         @param x is the x-coordinate(s) that can be converted into scalar(s)
         @param y is the y-coordinate(s) that can be converted into scalar(s)
-        @return an array of n-rows and 2-columns (n,2)
+        @return an array of n-rows and 2-columns (n,2).
         """
         x = array(x, dtype=settings.float_type)
         y = array(y, dtype=settings.float_type)
@@ -2310,7 +2309,7 @@ class Function(Term):
             """Evaluates the node and substitutes the variables therein for the values in the local variables (if any).
             The expression tree is evaluated recursively.
             @param local_variables is a map of substitutions of variable names for scalars
-            @return a scalar corresponding to the result of the evaluation
+            @return a scalar corresponding to the result of the evaluation.
             """
             result = scalar(nan)
             if self.element:

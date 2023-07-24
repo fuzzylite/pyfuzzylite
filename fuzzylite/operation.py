@@ -20,8 +20,9 @@ __all__ = ["Operation", "Op"]
 
 import builtins
 import inspect
+from collections.abc import Sequence
 from typing import Any, Callable
-from collections.abc import Iterable
+
 import numpy as np
 
 from .library import scalar, settings
@@ -360,7 +361,7 @@ class Operation:
             return x
         if isinstance(x, (float, np.floating)):
             return f"{x:.{settings.decimals}f}"
-        if isinstance(x, (np.ndarray, Iterable)):
+        if isinstance(x, (np.ndarray, Sequence)):
             return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
         return builtins.str(x)
 
