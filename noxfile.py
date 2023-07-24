@@ -96,16 +96,17 @@ def lint_mypy(session: nox.Session) -> None:
 def lint_qodana(session: nox.Session) -> None:
     """Run qodana linter."""
     import dotenv
-    import os
 
-    dotenv.load_dotenv()
-    if "QODANA_TOKEN" not in os.environ:
+    environment = dotenv.dotenv_values()
+    if "QODANA_TOKEN" not in environment:
         session.warn(
             "Qodana linting failed to run because environment variable 'QODANA_TOKEN' is not present"
         )
     else:
+        token = environment["QODANA_TOKEN"] or ""
         session.run(
-            *"qodana scan --clear-cache --results-dir .qodana".split(),
+            *"qodana scan --clear-cache --results-dir .qodana/".split(),
+            env={"QODANA_TOKEN": token},
             external=True,
         )
 
