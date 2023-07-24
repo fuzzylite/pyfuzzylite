@@ -209,9 +209,9 @@ class Engine:
         variables. The cost of this method is O(n), where n is the number of
         input variables in the engine. For performance, please get the
         variables by index.
-        @param name is the name of the input variable
+        @param name_or_index is the name or index of the input variable
         @return input variable of the given name
-        @throws ValueError if there is no variable with the given name.
+        @raise ValueError if there is no variable with the given name.
         """
         if isinstance(name_or_index, int):
             return self.input_variables[name_or_index]
@@ -228,9 +228,9 @@ class Engine:
         variables. The cost of this method is O(n), where n is the number of
         output variables in the engine. For performance, please get the
         variables by index.
-        @param name is the name of the output variable
+        @param name_or_index is the name or index of the output variable
         @return output variable of the given name
-        @throws ValueError if there is no variable with the given name.
+        @raise ValueError if there is no variable with the given name.
         """
         if isinstance(name_or_index, int):
             return self.output_variables[name_or_index]
@@ -247,9 +247,9 @@ class Engine:
         The cost of this method is O(n), where n is the number of
         rule blocks in the engine. For performance, please get the rule blocks
         by index.
-        @param name is the name of the rule block
+        @param name_or_index is the name or index of the rule block
         @return rule block of the given name
-        @throws ValueError if there is no block with the given name.
+        @raise ValueError if there is no block with the given name.
         """
         if isinstance(name_or_index, int):
             return self.rule_blocks[name_or_index]

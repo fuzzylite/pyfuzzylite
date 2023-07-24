@@ -147,6 +147,13 @@ class Term(ABC):
     def _parse(
         self, required: int, parameters: str, *, height: bool = True
     ) -> list[float]:
+        """
+        Parses the required values from the parameters
+        @param required is the number of values to parse
+        @param parameters is the text containing the values
+        @param height whether the parameters contain an extra value for the height of the term
+        @return a list of values parsed from the parameters
+        """
         values = [to_float(x) for x in parameters.split()]
         if height and len(values) == required:
             values.append(1.0)
@@ -206,8 +213,9 @@ class Term(ABC):
         """Discretise the term.
         @param start is the start of the range
         @param end is the end of the range
-        @param resolution is the number of points to discretise
-        @param bounded_mf whether to bound the membership values to [0.0, 1.0].
+        @param resolution is the number of points to discretize
+        @param midpoints if true, discretize using midpoints at the given resolution,
+                         otherwise discretize from start to end at the given resolution + 1
         """
         if midpoints:
             x = Op.midpoints(start, end, resolution)
@@ -944,8 +952,10 @@ class Discrete(Term):
 
     @staticmethod
     def to_xy(x: Any, y: Any) -> ScalarArray:
-        """Creates a list of values from the given values.
-        @param values is a string or a flat list of (x, y)-pairs or a dictionary of values {x: y}.
+        """Creates a list of values from the given parameters.
+        @param x is the x-coordinate(s) that can be converted into scalar(s)
+        @param y is the y-coordinate(s) that can be converted into scalar(s)
+        @return an array of n-rows and 2-columns (n,2)
         """
         x = array(x, dtype=settings.float_type)
         y = array(y, dtype=settings.float_type)
@@ -1149,7 +1159,7 @@ class Linear(Term):
         r"""Computes the linear function $f(x)=\sum_i c_iv_i +k$,
         where $v_i$ is the value of the input variable $i$ registered
         in the Linear::getEngine()
-        @param _ is not utilized
+        @param x is not used
         @return $\sum_i c_ix_i +k$.
         """
         if not self.engine:
@@ -2297,13 +2307,10 @@ class Function(Term):
             return result
 
         def evaluate(self, local_variables: dict[str, Scalar] | None = None) -> Scalar:
-            """Evaluates the node and substitutes the variables therein for the
-            values passed in the map. The expression tree is evaluated
-            recursively.
-            @param variables is a map of substitutions of variable names for
-            fl::scalar%s
-            @return a fl::scalar indicating the result of the evaluation of
-            the node.
+            """Evaluates the node and substitutes the variables therein for the values in the local variables (if any).
+            The expression tree is evaluated recursively.
+            @param local_variables is a map of substitutions of variable names for scalars
+            @return a scalar corresponding to the result of the evaluation
             """
             result = scalar(nan)
             if self.element:

@@ -267,11 +267,8 @@ class Antecedent:
         raise RuntimeError(f"unexpected type of node '{node}': {type(node)}")
 
     def load(self, engine: Engine) -> None:
-        """Loads the antecedent with the given text and uses the engine to
-        identify and retrieve references to the input variables and output
-        variables as required
-        @param antecedent is the antecedent of the rule in text
-        @param engine is the engine from which the rules are part of.
+        """Loads the antecedent using the given engine to identify and get references to the input and output variables
+        @param engine is the engine referenced by the antecedent
         """
         from collections import deque
 
@@ -504,13 +501,9 @@ class Consequent:
         self.conclusions.clear()
 
     def modify(self, activation_degree: Scalar, implication: TNorm | None) -> None:
-        """Modifies the proposition set according to the activation degree
-        (computed in the Antecedent of the Rule) and the implication operator
-        (given in the RuleBlock)
-        @param activationDegree is the activation degree computed in the
-        Antecedent of the Rule
-        @param implication is the implication operator configured in the
-        RuleBlock.
+        """Modifies the consequent according to the activation degree and the implication operator
+        @param activation_degree is the activation degree computed in the Antecedent of the Rule
+        @param implication is the implication operator configured in the RuleBlock.
         """
         from .term import Activated
 
@@ -544,11 +537,8 @@ class Consequent:
                     )
 
     def load(self, engine: Engine) -> None:
-        """Loads the consequent with the given text and uses the engine to
-        identify and retrieve references to the input variables and output
-        variables as required
-        @param consequent is the consequent of the rule in text
-        @param engine is the engine from which the rules are part of.
+        """Loads the consequent using the engine to identify and get the references to the input and output variables
+        @param engine is the engine referenced by the consequent
         """
         self.unload()
         if not self.text:
@@ -714,10 +704,8 @@ class Rule:
         self.parse(text)
 
     def parse(self, text: str) -> None:
-        """Parses and creates a new rule based on the text passed
-        @param rule is the rule in text
-        @param engine is the engine from which the rule is part of
-        @return a new rule parsed from the given text.
+        """Parses and loads the rule based on the text
+        @param text is the rule
         """
         comment_index = text.find("#")
         rule = text if comment_index == -1 else text[0:comment_index]

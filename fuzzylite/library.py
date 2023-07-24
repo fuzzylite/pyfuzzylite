@@ -368,10 +368,6 @@ class Representation(reprlib.Repr):
         elements = ", ".join(self.repr1(y, level) for y in x)
         return f"{self.package_of(settings)}{array.__name__}([{elements}])"
 
-    def repr_ellipsis(self, x: Any, level: int) -> str:
-        """Returns the representation of `...` to address references not available."""
-        return "..."
-
 
 representation: Final[Representation] = Representation()
 repr: Final[Callable[[Any], str]] = representation.repr

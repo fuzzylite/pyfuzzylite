@@ -401,16 +401,17 @@ class WeightedDefuzzifier(Defuzzifier):
         minimum: float = nan,
         maximum: float = nan,
     ) -> Scalar:
-        r"""Computes the weighted fuzzy set represented as an
-        Aggregated Term as.
+        """Defuzzifies the term.
 
         In versions 6 and 7, the implication and aggregation operators are not
         used for defuzzification.
 
         From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
+        @param minimum is not used
+        @param maximum is not used
         @param term is the fuzzy set represented as an AggregatedTerm
-        @return the weighted sum of the given fuzzy set
+        @return the defuzzified value of the term
         """
         pass
 
@@ -445,6 +446,8 @@ class WeightedAverage(WeightedDefuzzifier):
         From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
         @param term is the fuzzy set represented as an AggregatedTerm
+        @param minimum is not used
+        @param maximum is not used
         @return the weighted sum of the given fuzzy set
         """
         fuzzy_output = term
@@ -504,6 +507,8 @@ class WeightedSum(WeightedDefuzzifier):
         From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
         @param term is the fuzzy set represented as an AggregatedTerm
+        @param minimum is not used
+        @param maximum is not used
         @return the weighted sum of the given fuzzy set
         """
         fuzzy_output = term

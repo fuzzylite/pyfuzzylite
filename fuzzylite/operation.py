@@ -21,7 +21,7 @@ __all__ = ["Operation", "Op"]
 import builtins
 import inspect
 from typing import Any, Callable
-
+from collections.abc import Iterable
 import numpy as np
 
 from .library import scalar, settings
@@ -195,13 +195,11 @@ class Operation:
         `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
         truncated to the range `[toMin,toMax]` if bounded is `true`.
         @param x is the source value to interpolate
-        @param fromMin is the minimum value of the source range
-        @param fromMax is the maximum value of the source range
-        @param toMin is the minimum value of the target range
-        @param toMax is the maximum value of the target range
-        @param bounded determines whether the resulting value is bounded to
-        the range
-        @return the source value linearly interpolated to the target range:
+        @param from_minimum is the minimum value of the source range
+        @param from_maximum is the maximum value of the source range
+        @param to_minimum is the minimum value of the target range
+        @param to_maximum is the maximum value of the target range
+        @return the x value linearly interpolated to the target range:
         $ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} $.
         """
         x = scalar(x)
@@ -213,8 +211,8 @@ class Operation:
     def bound(x: Scalar, minimum: float, maximum: float) -> Scalar:
         r"""Returns $x$ bounded in $[\min,\max]$
         @param x is the value to be bounded
-        @param min is the minimum value of the range
-        @param max is the maximum value of the range
+        @param minimum is the minimum value of the range
+        @param maximum is the maximum value of the range
         @return $
         \begin{cases}
         \min & \mbox{if $x < \min$} \cr
@@ -248,7 +246,6 @@ class Operation:
     ) -> str:
         """Describes the instance in terms of its slots, variables, and class hierarchy.
         @param instance is the instance to describe
-        @param slots whether to include slots in the description
         @param variables whether to include variables in the description
         @param class_hierarchy whether to include class hierarchy in the description.
 
@@ -332,6 +329,7 @@ class Operation:
     def class_name(x: Any, /, qualname: bool = False) -> str:
         """Returns the class name of the given object.
         @param x is the object
+        @param qualname whether to use fully qualified classes
         @return the class name of the given object.
         """
         package = ""
@@ -355,12 +353,14 @@ class Operation:
     def str(x: Any, /, delimiter: str = " ") -> str:
         """Returns a string representation of the given value
         @param x is the value
-        @param decimals is the number of decimals to display
+        @param delimiter is the delimiter used in case of x being a list
         @return a string representation of the given value.
         """
+        if isinstance(x, str):
+            return x
         if isinstance(x, (float, np.floating)):
             return f"{x:.{settings.decimals}f}"
-        if isinstance(x, (np.ndarray, list)):
+        if isinstance(x, (np.ndarray, Iterable)):
             return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
         return builtins.str(x)
 
