@@ -4,4 +4,4 @@ failThreshold: 0
 fixesStrategy: none
 disableSanityInspections: true
 profile:
-  name: qodana.starter # use qodana.recommended to get more inspections
+  name: qodana.recommended # use qodana.recommended to get more inspections
