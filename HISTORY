@@ -9,6 +9,7 @@
 - New: Engine: get variables or ruleblocks by name using square brackets, eg, `engine["light"].value`
 - New: Variable: get terms by name using square brackets, eg, `variable["low"].membership(value)`
 - New: Factory: get constructors and objects by name using square brackets, eg, `factory["Triangle"]()`, `factory["sin"](3.14)`
+- New: Qodana Static Code Analysis works locally, but not properly in Github, so the workflow is not enabled
 - Using `from __future__ import annotations` in every file to use better type annotations
 - Changed: Dual license: GNU GPL and paid proprietary license for commercial purposes
 - Changed: Requires Python >=3.9

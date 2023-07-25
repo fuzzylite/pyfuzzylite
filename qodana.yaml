@@ -1,0 +1,7 @@
+version: "1.0"
+linter: jetbrains/qodana-python:latest
+failThreshold: 0
+fixesStrategy: none
+disableSanityInspections: true
+profile:
+  name: qodana.recommended # use qodana.recommended to get more inspections

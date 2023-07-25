@@ -35,7 +35,7 @@ from typing import Callable
 
 import numpy as np
 
-from .library import representation, scalar, to_float
+from .library import array, representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .types import Array, Scalar
@@ -92,7 +92,7 @@ class Activation(ABC):
         """Asserts that the activation degree is not a vector.
         @param activation_degree is the activation degree to assert.
         """
-        elements = np.float_(activation_degree).size
+        elements = array(activation_degree).size
         if elements > 1:
             raise TypeError(
                 "expected activation degree to be a single scalar, "

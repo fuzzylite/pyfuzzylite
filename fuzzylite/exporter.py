@@ -183,6 +183,7 @@ class FllExporter(Exporter):
     def variable(self, variable: Variable, /, terms: bool = True) -> str:
         """Returns a string representation of the variable
         @param variable is the variable
+        @param terms whether to export the terms
         @return a string representation of the variable.
         """
         result = [self.format(Op.class_name(variable), variable.name)]
@@ -557,6 +558,7 @@ class FldExporter(Exporter):
         self, path: Path, engine: Engine, reader: IO[str], skip_lines: int = 0
     ) -> None:
         """Saves the engine as a FuzzyLite Dataset into the specified file
+        @param path is the path to the output file
         @param engine is the engine to export
         @param reader is the reader of a set of lines containing space-separated
         input values

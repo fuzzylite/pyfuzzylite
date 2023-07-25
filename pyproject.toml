@@ -14,15 +14,15 @@ repository = "https://github.com/fuzzylite/pyfuzzylite.git"
 include = [
     "fuzzylite/",
     "tests/",
+    "AUTHOR",
+    "fuzzylite.png",
+    "HISTORY",
+    "LICENSE.FuzzyLite.txt",
+    "LICENSE.GPL.txt",
     "noxfile.py",
     "poetry.lock",
     "poetry.toml",
     "pyproject.toml",
-    "AUTHOR",
-    "CHANGELOG",
-    "fuzzylite.png",
-    "LICENSE.FuzzyLite.txt",
-    "LICENSE.GPL.txt",
     "README.md",
     "THANKS",
 ]
@@ -175,7 +175,6 @@ max-complexity = 10
 
 [tool.ruff.pydocstyle]
 convention = "google"
-
 
 [tool.pyright]
 include = ["fuzzylite/", "noxfile.py", "tests/"]

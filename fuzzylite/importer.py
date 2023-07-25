@@ -51,21 +51,21 @@ class Importer(ABC):
         return representation.as_constructor(self)
 
     @abstractmethod
-    def from_string(self, fll: str) -> Engine:
+    def from_string(self, text: str, /) -> Engine:
         """Imports the engine from the given text
         @param text is the string representation of the engine to import from
         @return the engine represented by the text.
         """
         raise NotImplementedError()
 
-    def from_file(self, path: Path | str) -> Engine:
+    def from_file(self, path: Path | str, /) -> Engine:
         """Imports the engine from the given file
         @param path is the full path of the file containing the engine to import from
         @return the engine represented by the file.
         """
         if isinstance(path, str):
             path = Path(path)
-        with path.open(encoding="UTF8") as fll:
+        with path.open(encoding="utf-8") as fll:
             return self.from_string(fll.read())
 
 
@@ -111,12 +111,12 @@ class FllImporter(Importer):
             rule_block = self.rule_block(self.separator.join(block), engine)
             engine.rule_blocks.append(rule_block)
 
-    def from_string(self, fll: str) -> Engine:
+    def from_string(self, text: str, /) -> Engine:
         """Creates an engine from the FuzzyLite Language.
-        @param fll is the engine in the FuzzyLite Language
+        @param text is the engine in the FuzzyLite Language
         @returns the engine.
         """
-        return self.engine(fll)
+        return self.engine(text)
 
     def engine(self, fll: str) -> Engine:
         """Creates an engine from the FuzzyLite Language.
