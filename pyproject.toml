@@ -6,6 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "pyfuzzylite"
 version = "8.0.0"
 description = "a fuzzy logic control library in Python"
+license = "Proprietary"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
 authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
@@ -135,14 +136,14 @@ ignore = [
     "D104", # Missing docstring in public package
     "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
-    # "D417",   # Missing argument descriptions in the docstring
+    # "D417", # Missing argument descriptions in the docstring
     "E501", # Line too long (handled by black)
     # "F401", #  imported but unused
     "F405", # Imports from star
     "F403", # Detect names from star imports
-    "N817", # CamelCase imported as acronym
+    # "N817", # CamelCase imported as acronym
     "N999", # Invalid module name
-    "N812", # Lowercase  imported as non-lowercase
+    # "N812", # Lowercase  imported as non-lowercase
     "PD901", # df is a bad variable name
     "PLW2901", # `for` loop variable `line` overwritten by assignment target
     "RET504", # Unnecessary variable assignment before `return` statement
