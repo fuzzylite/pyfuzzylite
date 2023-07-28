@@ -15,6 +15,8 @@ pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
+import os
+
 import nox
 
 nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
@@ -95,8 +97,6 @@ def lint_mypy(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_qodana(session: nox.Session) -> None:
     """Run qodana linter."""
-    import os
-
     if "QODANA_TOKEN" not in os.environ:
         session.warn(
             "Qodana linting failed to run because environment variable 'QODANA_TOKEN' is not present"
@@ -142,6 +142,25 @@ def test(session: nox.Session) -> None:
     """Run the tests in the project."""
     session.run(*"coverage run -m pytest".split(), external=True)
     session.run(*"coverage report".split(), external=True)
+
+
+@nox.session(python=False)
+def benchmark(session: nox.Session) -> None:
+    """Run the benchmarks."""
+    if "codspeed" in session.posargs:
+        if "CODSPEED_TOKEN" not in os.environ:
+            session.warn(
+                "Codspeed benchmark failed to run because environment variable 'CODSPEED_TOKEN' is not present"
+            )
+        else:
+            token = os.environ.get("CODSPEED_TOKEN") or ""
+            session.run(
+                *"pytest tests/test_benchmark_codspeed.py".split(),
+                external=True,
+                env={"CODSPEED_TOKEN": token},
+            )
+    else:
+        session.run(*"pytest tests/test_benchmark_pytest.py".split(), external=True)
 
 
 @nox.session

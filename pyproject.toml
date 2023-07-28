@@ -69,6 +69,7 @@ ruff = "^0.0.256"             # Code formatting
 twine = "^4.0.2"              # Publish package
 pyright = "^1.1.305"          # Static code analysis
 pytest-benchmark = "^4.0.0"
+pytest-codspeed = "^2.0.1"
 
 [tool.black]
 target-version = ["py39"]
@@ -203,3 +204,10 @@ dump_inference_stats = false
 # ignore errors of abstract types used in factories
 module = "fuzzylite.factory"
 disable_error_code = ["type-abstract"]
+
+[[tool.mypy.overrides]]
+module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--ignore=tests/test_benchmark_pytest.py --ignore=tests/test_benchmark_codspeed.py"

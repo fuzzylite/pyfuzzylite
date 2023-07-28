@@ -1346,6 +1346,27 @@ elasticsearch = ["elasticsearch"]
 histogram = ["pygal", "pygaljs"]
 
 [[package]]
+name = "pytest-codspeed"
+version = "2.0.1"
+description = "Pytest plugin to create CodSpeed benchmarks"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_codspeed-2.0.1-py3-none-any.whl", hash = "sha256:342af8a02d956009a538126e8a360310375088f851f5bc261c72ebacbf11be7c"},
+    {file = "pytest_codspeed-2.0.1.tar.gz", hash = "sha256:e529394d016b3512fe0defdab694eda54771ffbc36abd53a64f821f49a91784f"},
+]
+
+[package.dependencies]
+cffi = ">=1.15.1,<1.16.0"
+pytest = ">=3.8"
+setuptools = {version = ">=67.8.0,<67.9.0", markers = "python_full_version >= \"3.12.0b1\""}
+
+[package.extras]
+compat = ["pytest-benchmark (>=4.0.0,<4.1.0)"]
+lint = ["black (>=23.3.0,<23.4.0)", "isort (>=5.12.0,<5.13.0)", "mypy (>=1.3.0,<1.4.0)", "ruff (>=0.0.275,<0.1.0)"]
+test = ["pytest (>=7.0,<8.0)", "pytest-cov (>=4.0.0,<4.1.0)"]
+
+[[package]]
 name = "pywin32-ctypes"
 version = "0.2.0"
 description = ""
@@ -1840,4 +1861,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "a0b01499c6de7f73678708a57ed055c3d0e991f1964d911edb944aa4491bed19"
+content-hash = "2636e5a35ccdae94c0cb2c6f2336eff128bf54951f983542a807eba2f14b6397"
