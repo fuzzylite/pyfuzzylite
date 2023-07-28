@@ -18,5 +18,12 @@ import unittest
 
 
 class TestBenchmark(unittest.TestCase):
+    """Test the benchmark class."""
+
+    def test_repr(self) -> None:
+        """Test the representation as Python code."""
+        pass
+
     def test_run(self) -> None:
+        """Test the run."""
         pass

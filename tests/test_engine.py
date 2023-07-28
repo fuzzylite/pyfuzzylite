@@ -366,7 +366,7 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(iv.name, names[i])
 
     def test_values(self) -> None:
-        """Test the engine exports the input and output values"""
+        """Test the engine exports the input and output values."""
         engine = fl.Engine(
             name="test",
             input_variables=[fl.InputVariable("A")],

@@ -23,12 +23,13 @@ import inspect
 from pathlib import Path
 from types import ModuleType
 from typing import Any
-from .operation import Op
+
 import numpy as np
 from typing_extensions import Self
 
 from .engine import Engine
 from .library import representation, settings
+from .operation import Op
 from .types import ScalarArray
 
 
@@ -130,8 +131,7 @@ class Benchmark:
 
     def measure(self, runs: int = 1) -> None:
         """Measure the performance of the engine on the dataset for a number of runs
-        @param runs is the number of runs to evaluate the engine on the test data
-        .
+        @param runs is the number of runs to evaluate the engine on the test data.
         """
         from timeit import default_timer as timer
 
@@ -142,6 +142,14 @@ class Benchmark:
             self.run()
             end = timer()
             self.results.append(end - start)
+
+    def run(self) -> None:
+        """Run the benchmark once."""
+        self.engine.input_values = self.test_data[:, : len(self.engine.input_variables)]
+        self.engine.process()
+        np.testing.assert_allclose(
+            self.test_data, self.engine.values, atol=settings.atol, rtol=settings.rtol
+        )
 
     def summary(self) -> dict[str, Any]:
         """Summarize the benchmark results."""
@@ -161,7 +169,8 @@ class Benchmark:
 
     def summary_markdown(self, header: bool = False) -> str:
         """Summarize the benchmark results and format them using markdown.
-        @param header whether to include table header in summary"""
+        @param header whether to include table header in summary.
+        """
         markdown = []
         summary = self.summary()
         if header:
@@ -171,11 +180,3 @@ class Benchmark:
         markdown.append(f"|{' | '.join(stats)}|")
         result = "\n".join(markdown)
         return result
-
-    def run(self) -> None:
-        """Run the benchmark once."""
-        self.engine.input_values = self.test_data[:, : len(self.engine.input_variables)]
-        self.engine.process()
-        np.testing.assert_allclose(
-            self.test_data, self.engine.values, atol=settings.atol, rtol=settings.rtol
-        )
