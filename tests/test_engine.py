@@ -419,7 +419,7 @@ class TestEngine(unittest.TestCase):
         e2.when_input_values(
             fl.array([[1.0, 2.0, 3.0]]),
             raises=ValueError(
-                "expected a value with 2 columns (one for each input variable), "
+                "expected an array with 2 columns (one for each input variable), "
                 "but got 3 columns: [[1. 2. 3.]]"
             ),
         )
