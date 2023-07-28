@@ -35,6 +35,8 @@ __name__ __package__ __path__ __spec__ __version__
 
 activation Activation First General Highest Last Lowest Proportional Threshold
 
+benchmark Benchmark
+
 defuzzifier Bisector Centroid Defuzzifier IntegralDefuzzifier LargestOfMaximum MeanOfMaximum
 SmallestOfMaximum WeightedAverage WeightedDefuzzifier WeightedSum
 

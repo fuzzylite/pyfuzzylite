@@ -14,23 +14,9 @@ pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 pyfuzzylite is a trademark of FuzzyLite Limited
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
-from . import examples  # noqa
-from .activation import *
-from .benchmark import *
-from .defuzzifier import *
-from .engine import *
-from .exporter import *
-from .factory import *
-from .hedge import *
-from .importer import *
-from .library import *
-from .norm import *
-from .operation import *
-from .rule import *
-from .term import *
-from .types import *
-from .variable import *
+import unittest
 
-__name__ = information.name
-__doc__ = information.description
-__version__ = information.version
+
+class TestBenchmark(unittest.TestCase):
+    def test_run(self) -> None:
+        pass
