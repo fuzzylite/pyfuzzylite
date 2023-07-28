@@ -295,7 +295,7 @@ class Engine:
             )
         if values.shape[1] != len(self.input_variables):
             raise ValueError(
-                f"expected a value with {len(self.input_variables)} columns (one for each input variable), "
+                f"expected an array with {len(self.input_variables)} columns (one for each input variable), "
                 f"but got {values.shape[1]} columns: {values}"
             )
         for i, v in enumerate(self.input_variables):
@@ -311,6 +311,11 @@ class Engine:
             np.array([v.value for v in self.output_variables])
         ).T
 
+    @property
+    def values(self) -> ScalarArray:
+        """Return array of current input and output values."""
+        return np.hstack((self.input_values, self.output_values))
+
     def restart(self) -> None:
         """Restarts the engine by setting the values of the input variables to
         fl::nan and clearing the output variables
@@ -319,6 +324,9 @@ class Engine:
         """
         for input_variable in self.input_variables:
             input_variable.value = nan
+
+        for rule_block in self.rule_blocks:
+            rule_block.reload_rules(self)
 
         for output_variable in self.output_variables:
             output_variable.clear()

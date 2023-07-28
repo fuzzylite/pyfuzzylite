@@ -365,6 +365,29 @@ class TestEngine(unittest.TestCase):
         for i, iv in enumerate(flc.output_variables):
             self.assertEqual(iv.name, names[i])
 
+    def test_values(self) -> None:
+        """Test the engine exports the input and output values"""
+        engine = fl.Engine(
+            name="test",
+            input_variables=[fl.InputVariable("A")],
+            output_variables=[fl.OutputVariable("Z")],
+        )
+        engine.input_variable("A").value = fl.array([1, 2, 3])
+        engine.output_variable("Z").value = fl.array([9, 8, 7])
+        np.testing.assert_allclose(
+            fl.scalar(
+                [
+                    [1, 9],
+                    [2, 8],
+                    [3, 7],
+                ]
+            ),
+            engine.values,
+        )
+        engine.input_variable("A").value = fl.nan
+        engine.output_variable("Z").value = fl.nan
+        np.testing.assert_allclose(fl.array([[fl.nan, fl.nan]]), engine.values)
+
     def test_input_values_setter(self) -> None:
         """Tests the setter of input values through the engine."""
         EngineAssert(
