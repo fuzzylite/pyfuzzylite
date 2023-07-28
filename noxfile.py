@@ -148,17 +148,7 @@ def test(session: nox.Session) -> None:
 def benchmark(session: nox.Session) -> None:
     """Run the benchmarks."""
     if "codspeed" in session.posargs:
-        if "CODSPEED_TOKEN" not in os.environ:
-            session.warn(
-                "Codspeed benchmark failed to run because environment variable 'CODSPEED_TOKEN' is not present"
-            )
-        else:
-            token = os.environ.get("CODSPEED_TOKEN") or ""
-            session.run(
-                *"pytest tests/test_benchmark_codspeed.py".split(),
-                external=True,
-                env={"CODSPEED_TOKEN": token},
-            )
+        session.run(*"pytest tests/test_benchmark_codspeed.py".split(), external=True)
     else:
         session.run(*"pytest tests/test_benchmark_pytest.py".split(), external=True)
 
