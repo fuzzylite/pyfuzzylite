@@ -35,7 +35,7 @@ from .types import Scalar, ScalarArray
 
 class Benchmark:
     """The Benchmark class evaluates the performance of an Engine on a given dataset.
-    The performance time is measured in seconds and the error corresponds to the mean squared error
+    The performance time is measured in seconds and the error is measured as the mean squared error
     over the differences between the expected dataset outputs and the obtained output values.
 
     @author Juan Rada-Vilela, Ph.D.
