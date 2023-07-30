@@ -16,6 +16,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from . import examples  # noqa
 from .activation import *
+from .benchmark import *
 from .defuzzifier import *
 from .engine import *
 from .exporter import *

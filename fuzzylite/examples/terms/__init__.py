@@ -1,4 +1,5 @@
 __all__ = [
+    "arc",
     "bell",
     "binary",
     "concave",
@@ -12,6 +13,7 @@ __all__ = [
     "pi_shape",
     "ramp",
     "rectangle",
+    "semi_ellipse",
     "sigmoid",
     "sigmoid_difference",
     "sigmoid_product",
@@ -22,6 +24,7 @@ __all__ = [
 ]
 
 from . import (
+    arc,
     bell,
     binary,
     concave,
@@ -35,6 +38,7 @@ from . import (
     pi_shape,
     ramp,
     rectangle,
+    semi_ellipse,
     sigmoid,
     sigmoid_difference,
     sigmoid_product,

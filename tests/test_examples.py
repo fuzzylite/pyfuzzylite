@@ -132,7 +132,7 @@ fuzzylite.examples.tsukamoto.tsukamoto
             logger.info(f"Importing: {module}")
             # if an example is incorrect, an exception will be thrown below
             engine_class, *_ = inspect.getmembers(
-                importlib.import_module(module), predicate=lambda x: inspect.isclass(x)
+                importlib.import_module(module), predicate=inspect.isclass
             )
             # engine_class: tuple[str, type[...]]
             logger.info(str(engine_class[1]().engine))

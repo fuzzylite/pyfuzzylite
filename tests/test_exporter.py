@@ -1260,7 +1260,7 @@ class TestExporters(unittest.TestCase):
             if "__init__" in module:
                 return
             example_class, *_ = inspect.getmembers(
-                importlib.import_module(module), predicate=lambda x: inspect.isclass(x)
+                importlib.import_module(module), predicate=inspect.isclass
             )
             # example_class: tuple[str, type[...]]
             engine = example_class[1]().engine
