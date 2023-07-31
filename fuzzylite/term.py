@@ -478,7 +478,7 @@ class Arc(Term):
         c = s + r
         sign = -1 if s < e else 1
         x = c + sign * np.sqrt(r**2 - np.square(y * r / h))
-        return x
+        return x  # type: ignore
 
     def is_monotonic(self) -> bool:
         """Returns True because the term is monotonic."""
