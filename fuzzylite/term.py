@@ -459,7 +459,7 @@ class Arc(Term):
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
                 (left & (c <= x) & (x <= s)) | (right & (s <= x) & (x <= c)),
-                np.sqrt(r**2 - (x - c) ** 2) / abs(r),
+                np.sqrt(r**2 - np.square(x - c)) / abs(r),
                 (left & (x < e)) | (right & (x > e)),
             )
         )
@@ -477,7 +477,7 @@ class Arc(Term):
         r = e - s
         c = s + r
         sign = -1 if s < e else 1
-        x = c + sign * np.sqrt(r**2 - (y * r / h) ** 2)
+        x = c + sign * np.sqrt(r**2 - np.square(y * r / h))
         return x
 
     def is_monotonic(self) -> bool:
@@ -539,7 +539,7 @@ class Bell(Term):
         y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * (1.0 / (1.0 + (np.abs((x - c) / w) ** (2.0 * s))))
+            * (1.0 / (1.0 + np.power(np.abs((x - c) / w), 2.0 * s)))
         )
         return y
 
@@ -1006,7 +1006,7 @@ class Gaussian(Term):
         y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
-            * np.exp((-((x - m) ** 2)) / (2.0 * std**2))
+            * np.exp(-np.square(x - m) / (2.0 * std**2))
         )
         return y  # type: ignore
 
@@ -1082,12 +1082,12 @@ class GaussianProduct(Term):
         stdb = self.standard_deviation_b
         a = np.where(
             x < ma,
-            np.exp((-((x - ma) ** 2)) / (2.0 * stda**2)),
+            np.exp((-(np.square(x - ma))) / (2.0 * stda**2)),
             1.0,
         )
         b = np.where(
             x > mb,
-            np.exp((-((x - mb) ** 2)) / (2.0 * stdb**2)),
+            np.exp((-(np.square(x - mb))) / (2.0 * stdb**2)),
             1.0,
         )
         y = self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b
@@ -1261,10 +1261,10 @@ class PiShape(Term):
             0.0,
             np.where(
                 x <= 0.5 * (bl + tl),
-                2.0 * ((x - bl) / (tl - bl)) ** 2,
+                2.0 * np.square((x - bl) / (tl - bl)),
                 np.where(
                     x < tl,
-                    1.0 - 2.0 * ((x - tl) / (tl - bl)) ** 2,
+                    1.0 - 2.0 * np.square((x - tl) / (tl - bl)),
                     1.0,
                 ),
             ),
@@ -1274,10 +1274,10 @@ class PiShape(Term):
             1.0,
             np.where(
                 x <= 0.5 * (tr + br),
-                1.0 - 2.0 * ((x - tr) / (br - tr)) ** 2,
+                1.0 - 2.0 * np.square((x - tr) / (br - tr)),
                 np.where(
                     x < br,
-                    2.0 * ((x - br) / (br - tr)) ** 2,
+                    2.0 * np.square((x - br) / (br - tr)),
                     0.0,
                 ),
             ),
@@ -1485,7 +1485,7 @@ class SemiEllipse(Term):
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
                 (x >= s) & (x <= e),
-                np.sqrt(r * r - (x - c) ** 2) / r,
+                np.sqrt(r * r - np.square(x - c)) / r,
                 0,
             )
         )
@@ -1828,10 +1828,10 @@ class SShape(Term):
             0.0,
             np.where(
                 x <= 0.5 * (s + e),
-                2.0 * ((x - s) / (e - s)) ** 2,
+                2.0 * np.square((x - s) / (e - s)),
                 np.where(
                     x < e,
-                    1.0 - 2.0 * ((x - e) / (e - s)) ** 2,
+                    1.0 - 2.0 * np.square((x - e) / (e - s)),
                     1.0,
                 ),
             ),
@@ -2115,10 +2115,10 @@ class ZShape(Term):
             1.0,
             np.where(
                 x < 0.5 * (s + e),
-                1.0 - 2.0 * ((x - s) / (e - s)) ** 2,
+                1.0 - 2.0 * np.square((x - s) / (e - s)),
                 np.where(
                     x < e,
-                    2.0 * ((x - e) / (e - s)) ** 2,
+                    2.0 * np.square((x - e) / (e - s)),
                     0.0,
                 ),
             ),
