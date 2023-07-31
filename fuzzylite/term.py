@@ -537,7 +537,6 @@ class Bell(Term):
         c = self.center
         w = self.width
         s = self.slope
-        time.sleep(0.1)
         y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
@@ -1487,7 +1486,7 @@ class SemiEllipse(Term):
             * np.where(np.isnan(x), np.nan, 1.0)
             * np.where(
                 (x >= s) & (x <= e),
-                np.sqrt(r * r - np.square(x - c)) / r,
+                np.sqrt(r**2 - np.square(x - c)) / r,
                 0,
             )
         )
