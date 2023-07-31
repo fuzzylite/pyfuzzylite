@@ -47,7 +47,6 @@ __all__ = [
 
 import enum
 import re
-import time
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
