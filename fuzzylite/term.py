@@ -47,6 +47,7 @@ __all__ = [
 
 import enum
 import re
+import time
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
@@ -536,6 +537,7 @@ class Bell(Term):
         c = self.center
         w = self.width
         s = self.slope
+        time.sleep(0.1)
         y = (
             self.height
             * np.where(np.isnan(x), np.nan, 1.0)
