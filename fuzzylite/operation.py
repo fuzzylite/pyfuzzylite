@@ -19,14 +19,22 @@ from __future__ import annotations
 __all__ = ["Operation", "Op"]
 
 import builtins
+import importlib
+import importlib.util
 import inspect
-from collections.abc import Sequence
-from typing import Any, Callable
+import typing
+from collections.abc import Iterable, Sequence
+from pathlib import Path
+from types import ModuleType
+from typing import Any, Callable, Literal, overload
 
 import numpy as np
 
 from .library import scalar, settings
 from .types import Array, Scalar, ScalarArray
+
+if typing.TYPE_CHECKING:
+    from .engine import Engine
 
 
 class Operation:
@@ -351,7 +359,117 @@ class Operation:
         return representation.fll.to_string(x)
 
     @staticmethod
-    def str(x: Any, /, delimiter: str = " ") -> str:
+    @overload
+    def glob_examples(
+        return_type: Literal["module"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ModuleType]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["engine"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[Engine]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["dataset"] | Literal["fld"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ScalarArray]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["language"] | Literal["fll"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[str]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["files"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[Path]:
+        ...
+
+    @staticmethod
+    def glob_examples(
+        return_type: Literal["module"]
+        | Literal["engine"]
+        | Literal["dataset"]
+        | Literal["fld"]
+        | Literal["language"]
+        | Literal["fll"]
+        | Literal["files"] = "engine",
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:
+        """Glob the examples (alphabetically in ascending order) returning the specified type.
+        @param return_type is the type to return, one of {engine, dataset (or fld), language (or fll), files}
+        @param module is the module to glob (eg, fuzzylite.examples)
+        @param recursive whether to glob subdirectories
+        @return generator of the specified type.
+        """
+        if module is None:
+            import fuzzylite.examples
+
+            module = fuzzylite.examples
+        package = Path(*module.__path__)
+        pattern = "**/" if recursive else ""
+        if return_type in {"module", "engine"}:
+            pattern += "*.py"
+            for file in sorted(package.glob(pattern)):
+                if file.stem != "__init__":
+                    submodule = ".".join(
+                        Op.as_identifier(part)
+                        for part in file.with_suffix("").relative_to(package).parts
+                    )
+                    example_module = importlib.import_module(
+                        f"{module.__name__}.{submodule}"
+                    )
+                    if return_type == "module":
+                        yield example_module
+                    else:
+                        example_class, *_ = inspect.getmembers(
+                            example_module, predicate=inspect.isclass
+                        )
+                        engine = example_class[1]().engine
+                        yield engine
+        elif return_type in {"dataset", "fld"}:
+            pattern += "*.fld"
+            for file in sorted(package.glob(pattern)):
+                yield np.loadtxt(file, skiprows=1)
+        elif return_type in {"language", "fll"}:
+            pattern += "*.fll"
+            for file in sorted(package.glob(pattern)):
+                yield file.read_text()
+        elif return_type == "files":
+            pattern += "*.*"
+            for file in sorted(package.glob(pattern)):
+                if (
+                    file.suffix in {".py", ".fll", ".fld"}
+                    and file.name != "__init__.py"
+                ):
+                    yield file
+        else:
+            raise ValueError(
+                f"expected 'return_type' in {'module engine dataset fld language fll files'.split()}, "
+                f"but got '{return_type}'"
+            )
+
+    @staticmethod
+    def str(x: Any, /, delimiter: str = " ") -> builtins.str:
         """Returns a string representation of the given value
         @param x is the value
         @param delimiter is the delimiter used in case of x being a list

@@ -37,20 +37,6 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def is_ready(self, expected: bool, status: str = "") -> EngineAssert:
-        """Asserts whether the engine is ready and its status."""
-        ready, message = self.actual.is_ready()
-        self.test.assertEqual(
-            ready,
-            expected,
-            (
-                f"expected engine {'*not*' if not expected else ''} to be ready,"
-                f"but was {'*not*' if not ready else ''} ready"
-            ),
-        )
-        self.test.assertEqual(message, status)
-        return self
-
     def has_n_inputs(self, n: int) -> EngineAssert:
         """Asserts the engine has the expected number of input variables."""
         n_inputs = len(self.actual.input_variables)
@@ -573,6 +559,106 @@ RuleBlock:
 
         # side effect caught by type annotations
         self.assertEqual(engine.input_variable(0), engine[0])  # type:ignore
+
+    def test_is_ready(self) -> None:
+        """Test the engine is ready."""
+        for engine in fl.Op.glob_examples("engine"):
+            status: list[str] = []
+            ready = engine.is_ready(status)
+            if not ready:
+                raise ValueError(f"{engine.name} is not ready: " + "\n".join(status))
+            self.assertTrue(ready)
+
+        obtained: list[str] = []
+        self.assertFalse(fl.Engine("test").is_ready(obtained))
+        self.assertEqual(
+            (
+                "Engine 'test' does not have any input variables\n"
+                "Engine 'test' does not have any output variables\n"
+                "Engine 'test' does not have any rule blocks"
+            ),
+            "\n".join(obtained),
+        )
+
+        obtained = []
+        self.assertFalse(
+            fl.Engine(
+                "test",
+                input_variables=[fl.InputVariable("A")],
+                output_variables=[fl.OutputVariable("Z")],
+                rule_blocks=[fl.RuleBlock("R")],
+            ).is_ready(obtained)
+        )
+        self.assertEqual(
+            (
+                "Output variable 'Z' does not have any terms\n"
+                "Output variable 'Z' does not have any defuzzifier\n"
+                "Rule block 'R' does not have any rules"
+            ),
+            "\n".join(obtained),
+        )
+
+        obtained = []
+        self.assertFalse(
+            fl.Engine(
+                "test",
+                input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.Centroid()
+                    ),
+                ],
+                rule_blocks=[
+                    fl.RuleBlock(
+                        "R",
+                        rules=[
+                            fl.Rule.create("if A is a then Z is z"),
+                            fl.Rule.create("if A is a and Z is z then Z is z"),
+                            fl.Rule.create("if A is a or Z is z then Z is z"),
+                        ],
+                    )
+                ],
+            ).is_ready(obtained)
+        )
+        self.assertEqual(
+            (
+                "Output variable 'Z' does not have any aggregation operator\n"
+                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule\n"
+                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule\n"
+                "Rule block 'R' does not have any implication operator and is needed by 3 rules"
+            ),
+            "\n".join(obtained),
+        )
+
+        obtained = []
+        self.assertFalse(
+            fl.Engine(
+                "test",
+                input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.WeightedSum()
+                    ),
+                ],
+                rule_blocks=[
+                    fl.RuleBlock(
+                        "R",
+                        rules=[
+                            fl.Rule.create("if A is a then Z is z"),
+                            fl.Rule.create("if A is a and Z is z then Z is z"),
+                            fl.Rule.create("if A is a or Z is z then Z is z"),
+                        ],
+                    )
+                ],
+            ).is_ready(obtained)
+        )
+        self.assertEqual(
+            (
+                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule\n"
+                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule"
+            ),
+            "\n".join(obtained),
+        )
 
 
 if __name__ == "__main__":

@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import math
 import unittest
+from types import ModuleType
 from typing import Callable
 
+import numpy as np
 import numpy.testing as npt
 
 import fuzzylite as fl
@@ -301,23 +303,21 @@ class TestOperation(unittest.TestCase):
 
     def test_str(self) -> None:
         """Test string operation uses global decimals."""
-        fl.settings.decimals = 3
-        self.assertEqual(fl.Op.str(0.3), "0.300")
-        self.assertEqual(fl.Op.str(-0.3), "-0.300")
-        self.assertEqual(fl.Op.str(3), "3")
-        self.assertEqual(fl.Op.str(3.0001), "3.000")
+        with fl.library.settings.context(decimals=3):
+            self.assertEqual(fl.Op.str(0.3), "0.300")
+            self.assertEqual(fl.Op.str(-0.3), "-0.300")
+            self.assertEqual(fl.Op.str(3), "3")
+            self.assertEqual(fl.Op.str(3.0001), "3.000")
 
         self.assertEqual(fl.Op.str(math.inf), "inf")
         self.assertEqual(fl.Op.str(-math.inf), "-inf")
         self.assertEqual(fl.Op.str(math.nan), "nan")
 
-        fl.settings.decimals = 5
-        self.assertEqual(fl.Op.str(0.3), "0.30000")
+        with fl.library.settings.context(decimals=5):
+            self.assertEqual(fl.Op.str(0.3), "0.30000")
 
-        fl.settings.decimals = 0
-        self.assertEqual(fl.Op.str(0.3), "0")
-
-        fl.settings.decimals = 3
+        with fl.library.settings.context(decimals=0):
+            self.assertEqual(fl.Op.str(0.3), "0")
 
     def test_scale(self) -> None:
         """Test linear interpolation."""
@@ -338,13 +338,143 @@ class TestOperation(unittest.TestCase):
 
     def test_decimals(self) -> None:
         """Test decimals."""
-        import fuzzylite as fl
-
         x = fl.Op.str(1.0)
         self.assertEqual("1.000", x)
-        fl.library.settings.decimals = 6
-        x = fl.Op.str(1.0)
+        with fl.library.settings.context(decimals=6):
+            x = fl.Op.str(1.0)
         self.assertEqual("1.000000", x)
+
+    def test_glob_examples(self) -> None:
+        """Test globbing examples."""
+        # Modules
+        modules = list(fl.Op.glob_examples("module"))
+        self.assertEqual(61, len(modules))
+        self.assertSetEqual({ModuleType}, {m.__class__ for m in modules})
+
+        modules = list(fl.Op.glob_examples("module", fl.examples, recursive=False))
+        self.assertEqual(0, len(modules))
+
+        modules = list(
+            fl.Op.glob_examples("module", fl.examples.hybrid, recursive=False)
+        )
+        self.assertEqual(
+            [
+                "fuzzylite.examples.hybrid.obstacle_avoidance",
+                "fuzzylite.examples.hybrid.tipper",
+            ],
+            [m.__name__ for m in modules],
+        )
+
+        # Engines
+        engines = list(
+            fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False)
+        )
+        self.assertEqual(
+            [
+                "AllTerms",
+                "Laundry",
+                "ObstacleAvoidance",
+                "SimpleDimmer",
+                "SimpleDimmerChained",
+                "SimpleDimmerInverse",
+            ],
+            [e.name for e in engines],
+        )
+
+        engines = list(fl.Op.glob_examples("engine"))
+        self.assertEqual(61, len(engines))
+        self.assertSetEqual({fl.Engine}, {e.__class__ for e in engines})
+
+        engines = list(
+            fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False)
+        )
+        self.assertEqual(
+            [
+                "AllTerms",
+                "Laundry",
+                "ObstacleAvoidance",
+                "SimpleDimmer",
+                "SimpleDimmerChained",
+                "SimpleDimmerInverse",
+            ],
+            [e.name for e in engines],
+        )
+
+        # Datasets
+        datasets = fl.array(
+            [d for d in fl.Op.glob_examples("dataset", fl.examples.tsukamoto)]
+        )
+        np.testing.assert_allclose(
+            datasets,
+            fl.array([d for d in fl.Op.glob_examples("fld", fl.examples.tsukamoto)]),
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
+        )
+        self.assertEqual(1, len(datasets))
+        tsukamoto_fld = fl.array(
+            [
+                [-10.000000000, 0.255363311, fl.inf, 0.255012132, 0.250961670],
+                [-9.980449658, 0.255423538, 1.229664676, 0.255066538, 0.250971506],
+                [-9.960899316, 0.255484536, 1.092913074, 0.255121547, 0.250981462],
+            ]
+        )
+        np.testing.assert_allclose(
+            tsukamoto_fld,
+            datasets[0][: len(tsukamoto_fld), :],
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
+        )
+
+        # Language
+        flls = list(fl.Op.glob_examples("fll", fl.examples.terms))
+        self.assertEqual(flls, list(fl.Op.glob_examples("language", fl.examples.terms)))
+        self.assertEqual(22, len(flls))
+        self.assertEqual(
+            flls[0],
+            (
+                "Engine: Arc\n"
+                "  description: obstacle avoidance for self-driving cars\n"
+                "InputVariable: obstacle\n"
+                "  description: location of obstacle relative to vehicle\n"
+                "  enabled: true\n"
+                "  range: 0.000 1.000\n"
+                "  lock-range: false\n"
+                "  term: left Triangle 0.000 0.333 0.666\n"
+                "  term: right Triangle 0.333 0.666 1.000\n"
+                "OutputVariable: steer\n"
+                "  description: direction to steer the vehicle to\n"
+                "  enabled: true\n"
+                "  range: 0.000 1.000\n"
+                "  lock-range: false\n"
+                "  aggregation: Maximum\n"
+                "  defuzzifier: Centroid\n"
+                "  default: nan\n"
+                "  lock-previous: false\n"
+                "  term: left Arc 0.666 0.000\n"
+                "  term: right Arc 0.333 1.000\n"
+                "RuleBlock: steer_away\n"
+                "  description: steer away from obstacles\n"
+                "  enabled: true\n"
+                "  conjunction: none\n"
+                "  disjunction: none\n"
+                "  implication: Minimum\n"
+                "  activation: General\n"
+                "  rule: if obstacle is left then steer is right\n"
+                "  rule: if obstacle is right then steer is left\n"
+            ),
+        )
+
+        # Files
+        files = list(fl.Op.glob_examples("files", fl.examples.takagi_sugeno.octave))
+        expected_files = []
+        for example in [
+            "cubic_approximator",
+            "heart_disease_risk",
+            "linear_tip_calculator",
+            "sugeno_tip_calculator",
+        ]:
+            expected_files.extend([f"{example}.fld", f"{example}.fll", f"{example}.py"])
+        self.assertEqual([f.name for f in files], expected_files)
 
     @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:

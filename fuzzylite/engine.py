@@ -24,10 +24,10 @@ from collections.abc import Iterable
 import numpy as np
 
 from .activation import Activation
-from .defuzzifier import Defuzzifier
+from .defuzzifier import Defuzzifier, IntegralDefuzzifier
 from .library import nan, representation, settings
 from .norm import SNorm, TNorm
-from .rule import RuleBlock
+from .rule import Rule, RuleBlock
 from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
 
@@ -361,17 +361,89 @@ class Engine:
         if settings.debugging:
             pass
 
-    def is_ready(self) -> tuple[bool, str]:
+    def is_ready(self, errors: list[str] | None = None) -> bool:
         """Indicates whether the engine has been configured correctly and is
         ready for operation. In more advanced engines, the result of this
         method should be taken as a suggestion and not as a prerequisite to
         operate the engine.
-
-        @return a Tuple[bool,str] that indicates whether the engine is ready
-        to operate and any related messages if it is not.
+        @param errors an optional output empty list to store what is missing from the engine if it is not ready
+        @return whether the engine is ready.
         """
-        # TODO: Implement
-        raise NotImplementedError()
+        if errors is None:
+            errors = []
+
+        # Input Variables
+        if not self.input_variables:
+            errors.append(f"Engine '{self.name}' does not have any input variables")
+
+        # ignore because sometimes inputs can be empty: takagi-sugeno/matlab/slcpp1.fis
+        # for variable in self.input_variables:
+        #     if not variable.terms:
+        #         missing.append(
+        #             f"Variable '{variable.name}' does not have any input terms"
+        #         )
+
+        # Output Variables
+        if not self.output_variables:
+            errors.append(f"Engine '{self.name}' does not have any output variables")
+        for variable in self.output_variables:
+            if not variable.terms:
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any terms"
+                )
+            if not variable.defuzzifier:
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any defuzzifier"
+                )
+            if not variable.aggregation and isinstance(
+                variable.defuzzifier, IntegralDefuzzifier
+            ):
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any aggregation operator"
+                )
+
+        # Rule Blocks
+        if not self.rule_blocks:
+            errors.append(f"Engine '{self.name}' does not have any rule blocks")
+        for index, rule_block in enumerate(self.rule_blocks):
+            name_or_index = f"'{rule_block.name}'" if rule_block.name else f"[{index}]"
+            if not rule_block.rules:
+                errors.append(f"Rule block {name_or_index} does not have any rules")
+
+            # Operators needed for rules
+            conjunction_needed, disjunction_needed, implication_needed = (0, 0, 0)
+            for rule in rule_block.rules:
+                conjunction_needed += f" {Rule.AND} " in rule.antecedent.text
+                disjunction_needed += f" {Rule.OR} " in rule.antecedent.text
+                if rule.is_loaded():
+                    mamdani_consequents = 0
+                    for consequent in rule.consequent.conclusions:
+                        mamdani_consequents += isinstance(
+                            consequent.variable, OutputVariable
+                        ) and isinstance(
+                            consequent.variable.defuzzifier, IntegralDefuzzifier
+                        )
+                    implication_needed += mamdani_consequents > 0
+
+            if conjunction_needed and not rule_block.conjunction:
+                errors.append(
+                    f"Rule block {name_or_index} does not have any conjunction operator "
+                    f"and is needed by {conjunction_needed} rule{'s'[:conjunction_needed ^ 1]}"
+                )
+
+                if disjunction_needed and not rule_block.disjunction:
+                    errors.append(
+                        f"Rule block {name_or_index} does not have any disjunction operator "
+                        f"and is needed by {disjunction_needed} rule{'s'[:disjunction_needed ^ 1]}"
+                    )
+
+            if implication_needed and not rule_block.implication:
+                errors.append(
+                    f"Rule block {name_or_index} does not have any implication operator "
+                    f"and is needed by {implication_needed} rule{'s'[:implication_needed ^ 1]}"
+                )
+
+        return not errors
 
     def infer_type(self) -> tuple[Engine.Type, str]:
         """Infers the type of the engine based on its current configuration.
