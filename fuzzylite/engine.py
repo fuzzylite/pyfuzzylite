@@ -24,9 +24,9 @@ from collections.abc import Iterable
 import numpy as np
 
 from .activation import Activation
-from .defuzzifier import Defuzzifier, IntegralDefuzzifier
+from .defuzzifier import Defuzzifier, IntegralDefuzzifier, WeightedDefuzzifier
 from .library import nan, representation, settings
-from .norm import SNorm, TNorm
+from .norm import AlgebraicProduct, SNorm, TNorm
 from .rule import Rule, RuleBlock
 from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
@@ -366,7 +366,7 @@ class Engine:
         ready for operation. In more advanced engines, the result of this
         method should be taken as a suggestion and not as a prerequisite to
         operate the engine.
-        @param errors an optional output empty list to store what is missing from the engine if it is not ready
+        @param errors an optional output list to store the errors found if the engine is not ready
         @return whether the engine is ready.
         """
         if errors is None:
@@ -445,23 +445,107 @@ class Engine:
 
         return not errors
 
-    def infer_type(self) -> tuple[Engine.Type, str]:
-        """Infers the type of the engine based on its current configuration.
-
-        @return a Tuple[Engine.Type, str] indicating the inferred type of the
-        engine based on its current configuration, and a string explaining
-        the reasons for the inferred type
+    def infer_type(self, reasons: list[str] | None = None) -> Engine.Type:
+        """Infers the type of the engine based on its configuration.
+        @param reasons is an optional output list explaining the reasons for the inferred type
+        @return the type of engine inferred from its configuration.
         """
-        # TODO: Implement
-        raise NotImplementedError()
+        if reasons is None:
+            reasons = []
 
-    # def copy(self) -> Engine:
-    #     # TODO: Revisit deep copies and deal with engines in Function and Linear
-    #     """Creates a copy of the engine, including all variables, rule blocks,
-    #     and rules. The copy is a deep copy, meaning that all objects are
-    #     duplicated such that the copy can be modified without affecting the
-    #     original.
-    #
-    #     @return a deep copy of the engine
-    #     """
-    #     return copy.deepcopy(self)
+        # Unknown
+        if not self.output_variables:
+            reasons.append(f"Engine '{self.name}' does not have any output variables")
+            return Engine.Type.Unknown
+
+        # Mamdani
+        mamdani = all(
+            isinstance(variable.defuzzifier, IntegralDefuzzifier)
+            for variable in self.output_variables
+        )
+
+        # Larsen
+        larsen = (
+            mamdani
+            and self.rule_blocks
+            and all(
+                isinstance(rule_block.implication, AlgebraicProduct)
+                for rule_block in self.rule_blocks
+            )
+        )
+        if larsen:
+            reasons.append("Output variables have integral defuzzifiers")
+            reasons.append("Implication in rule blocks is the AlgebraicProduct")
+            return Engine.Type.Larsen
+
+        if mamdani:
+            reasons.append("Output variables have integral defuzzifiers")
+            return Engine.Type.Mamdani
+
+        # Takagi-Sugeno
+        takagi_sugeno = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.TakagiSugeno
+            )
+            for variable in self.output_variables
+        )
+        if takagi_sugeno:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append(
+                "Output variables only have Constant, Linear, or Function terms"
+            )
+            return Engine.Type.TakagiSugeno
+
+        # Tsukamoto
+        tsukamoto = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.Tsukamoto
+            )
+            for variable in self.output_variables
+        )
+        if tsukamoto:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append("Output variables only have monotonic terms")
+            return Engine.Type.Tsukamoto
+
+        # Inverse Tsukamoto
+        inverse_tsukamoto = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.Automatic
+            )
+            for variable in self.output_variables
+        )
+        if inverse_tsukamoto:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append("Output variables have non-monotonic terms")
+            reasons.append(
+                "Output variables have terms different from Constant, Linear, or Function terms"
+            )
+            return Engine.Type.InverseTsukamoto
+
+        # Hybrids
+        hybrid = all(variable.defuzzifier for variable in self.output_variables)
+        if hybrid:
+            reasons.append("Output variables have different types of defuzzifiers")
+            return Engine.Type.Hybrid
+
+        # Unknown
+        reasons.append("One or more output variables do not have a defuzzifier")
+        return Engine.Type.Unknown
+
+        # def copy(self) -> Engine:
+        #     # TODO: Revisit deep copies and deal with engines in Function and Linear
+        #     """Creates a copy of the engine, including all variables, rule blocks,
+        #     and rules. The copy is a deep copy, meaning that all objects are
+        #     duplicated such that the copy can be modified without affecting the
+        #     original.
+        #
+        #     @return a deep copy of the engine
+        #     """
+        #     return copy.deepcopy(self)

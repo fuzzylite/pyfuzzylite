@@ -29,12 +29,24 @@ from tests.assert_component import BaseAssert
 class EngineAssert(BaseAssert[fl.Engine]):
     """Engine assert."""
 
-    def has_type(self, expected: fl.Engine.Type) -> EngineAssert:
-        """Asserts the engine has the expectd type."""
-        type = self.actual.infer_type()
-        self.test.assertEqual(
-            type, expected, f"expected engine of type {expected}, but found {type}"
+    def has_type(
+        self,
+        expected: fl.Engine.Type | set[fl.Engine.Type],
+        reasons: list[str] | None = None,
+    ) -> EngineAssert:
+        """Asserts the engine has the expected type."""
+        obtained_reasons: list[str] = []
+        inferred_type = self.actual.infer_type(obtained_reasons)
+
+        if isinstance(expected, fl.Engine.Type):
+            expected = {expected}
+        self.test.assertIn(
+            inferred_type,
+            expected,
+            f"expected engine type in {expected}, but found {type}",
         )
+        if reasons is not None:
+            self.test.assertEqual(obtained_reasons, reasons)
         return self
 
     def has_n_inputs(self, n: int) -> EngineAssert:
@@ -659,6 +671,157 @@ RuleBlock:
             ),
             "\n".join(obtained),
         )
+
+    def test_engine_type(self) -> None:
+        """Test engine inferred types."""
+        # Unknown
+        EngineAssert(self, fl.Engine("test")).has_type(
+            fl.Engine.Type.Unknown, ["Engine 'test' does not have any output variables"]
+        )
+
+        EngineAssert(
+            self, fl.Engine("test", output_variables=[fl.OutputVariable("Z")])
+        ).has_type(
+            fl.Engine.Type.Unknown,
+            ["One or more output variables do not have a defuzzifier"],
+        )
+
+        # Mamdani
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[fl.OutputVariable("Z", defuzzifier=fl.Centroid())],
+            ),
+        ).has_type(
+            fl.Engine.Type.Mamdani, ["Output variables have integral defuzzifiers"]
+        )
+
+        # Larsen
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[fl.OutputVariable("Z", defuzzifier=fl.Centroid())],
+                rule_blocks=[fl.RuleBlock("R", implication=fl.AlgebraicProduct())],
+            ),
+        ).has_type(
+            fl.Engine.Type.Larsen,
+            [
+                "Output variables have integral defuzzifiers",
+                "Implication in rule blocks is the AlgebraicProduct",
+            ],
+        )
+
+        # Takagi-Sugeno
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z",
+                        terms=[fl.Constant("", 1.0)],
+                        defuzzifier=fl.WeightedSum(),
+                    )
+                ],
+            ),
+        ).has_type(
+            fl.Engine.Type.TakagiSugeno,
+            [
+                "Output variables have weighted defuzzifiers",
+                "Output variables only have Constant, Linear, or Function terms",
+            ],
+        )
+
+        # Tsukamoto
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z",
+                        terms=[fl.Arc("", 0, 1)],
+                        defuzzifier=fl.WeightedAverage(),
+                    )
+                ],
+            ),
+        ).has_type(
+            fl.Engine.Type.Tsukamoto,
+            [
+                "Output variables have weighted defuzzifiers",
+                "Output variables only have monotonic terms",
+            ],
+        )
+
+        # Inverse Tsukamoto
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z",
+                        terms=[fl.Triangle()],
+                        defuzzifier=fl.WeightedSum(),
+                    )
+                ],
+            ),
+        ).has_type(
+            fl.Engine.Type.InverseTsukamoto,
+            [
+                "Output variables have weighted defuzzifiers",
+                "Output variables have non-monotonic terms",
+                "Output variables have terms different from Constant, Linear, or Function terms",
+            ],
+        )
+
+        # Hybrids
+        EngineAssert(
+            self,
+            fl.Engine(
+                "test",
+                output_variables=[
+                    fl.OutputVariable(
+                        "Z1",
+                        terms=[fl.Triangle()],
+                        defuzzifier=fl.Centroid(),
+                    ),
+                    fl.OutputVariable(
+                        "Z2", terms=[fl.Linear()], defuzzifier=fl.WeightedAverage()
+                    ),
+                ],
+            ),
+        ).has_type(
+            fl.Engine.Type.Hybrid,
+            ["Output variables have different types of defuzzifiers"],
+        )
+
+    def test_engine_type_from_examples(self) -> None:
+        """Test types of engines from examples."""
+        # Mamdani
+        for engine in fl.Op.glob_examples("engine", fl.examples.mamdani):
+            EngineAssert(self, engine).has_type(
+                {fl.Engine.Type.Mamdani, fl.Engine.Type.Larsen}
+            )
+        # TakagiSugeno
+        for engine in fl.Op.glob_examples("engine", fl.examples.takagi_sugeno):
+            EngineAssert(self, engine).has_type(fl.Engine.Type.TakagiSugeno)
+
+        # Tsukamoto
+        for engine in fl.Op.glob_examples("engine", fl.examples.tsukamoto):
+            EngineAssert(self, engine).has_type(fl.Engine.Type.Tsukamoto)
+
+        # Hybrid
+        for engine in fl.Op.glob_examples("engine", fl.examples.hybrid):
+            EngineAssert(self, engine).has_type(fl.Engine.Type.Hybrid)
+
+        # Mamdani or TakagiSugeno
+        for engine in fl.Op.glob_examples("engine", fl.examples.terms):
+            EngineAssert(self, engine).has_type(
+                {fl.Engine.Type.Mamdani, fl.Engine.Type.TakagiSugeno}
+            )
 
 
 if __name__ == "__main__":
