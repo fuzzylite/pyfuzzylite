@@ -30,6 +30,7 @@ __all__ = [
 ]
 
 import enum
+import typing
 import warnings
 from abc import ABC, abstractmethod
 
@@ -39,6 +40,9 @@ from .library import nan, representation, scalar
 from .operation import Op
 from .term import Activated, Aggregated, Constant, Function, Linear, Term
 from .types import Scalar
+
+if typing.TYPE_CHECKING:
+    from .variable import Variable
 
 
 class Defuzzifier(ABC):
@@ -371,13 +375,15 @@ class WeightedDefuzzifier(Defuzzifier):
             self.type = WeightedDefuzzifier.Type[parameters]
 
     @classmethod
-    def infer_type(cls, term: Term) -> WeightedDefuzzifier.Type:
+    def infer_type(cls, component: Term | Variable, /) -> WeightedDefuzzifier.Type:
         """Infers the type of the defuzzifier based on the given term.
-        @param term is the given term
+        @param component is the given term
         @return the inferred type of the defuzzifier based on the given term.
         """
-        if isinstance(term, Aggregated):
-            types = {cls.infer_type(t_i) for t_i in term.terms}
+        from .variable import Variable
+
+        if isinstance(component, (Aggregated, Variable)):
+            types = {cls.infer_type(t_i) for t_i in component.terms}
             if len(types) == 1:
                 return types.pop()
             if len(types) == 0:
@@ -386,13 +392,15 @@ class WeightedDefuzzifier(Defuzzifier):
             raise TypeError(
                 f"cannot infer type of {cls.__name__}, got multiple types: {sorted(str(t) for t in types)}"
             )
-        elif isinstance(term, Activated):  # noqa: RET506 - False Positive
-            return cls.infer_type(term.term)
-        elif isinstance(term, (Constant, Linear, Function)):
+        elif isinstance(component, Activated):  # noqa: RET506 - False Positive
+            return cls.infer_type(component.term)
+        elif isinstance(component, (Constant, Linear, Function)):
             return WeightedDefuzzifier.Type.TakagiSugeno
-        elif term.is_monotonic():
+        elif component.is_monotonic():
             return WeightedDefuzzifier.Type.Tsukamoto
-        raise TypeError(f"cannot infer type of {cls.__name__} from {term}")
+        else:
+            # Inverse Tsukamoto: non-monotonic terms that are not TakagiSugeno
+            return WeightedDefuzzifier.Type.Automatic
 
     @abstractmethod
     def defuzzify(
@@ -413,7 +421,7 @@ class WeightedDefuzzifier(Defuzzifier):
         @param term is the fuzzy set represented as an AggregatedTerm
         @return the defuzzified value of the term
         """
-        pass
+        raise NotImplementedError()
 
 
 class WeightedAverage(WeightedDefuzzifier):

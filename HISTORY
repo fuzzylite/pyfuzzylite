@@ -6,10 +6,11 @@
 - New: fl.array maps to np.array
 - New: fl.to_float converts any argument to a float, which is the old behaviour of Op.scalar.
 - New: Arc and SemiEllipse terms.
-- New: Engine: get variables or ruleblocks by name using square brackets, eg, `engine["light"].value`
+- New: Engine: get variables or rule blocks by name using square brackets, eg, `engine["light"].value`
 - New: Variable: get terms by name using square brackets, eg, `variable["low"].membership(value)`
 - New: Factory: get constructors and objects by name using square brackets, eg, `factory["Triangle"]()`, `factory["sin"](3.14)`
 - New: Qodana Static Code Analysis works locally, but not properly in Github, so the workflow is not enabled
+- New: Benchmark class to benchmark engines
 - Using `from __future__ import annotations` in every file to use better type annotations
 - Changed: Dual license: GNU GPL and paid proprietary license for commercial purposes
 - Changed: Requires Python >=3.9
@@ -21,6 +22,7 @@
 
 
 ## __init__.py
+- New: benchmark import
 - Changed: library `__name__` is now `fuzzylite`, it was incorrectly `pyfuzzylite` before but such a package does not exist
 - Changed: fl.inf, fl.nan, fl.isnan, fl.isinf now map to their numpy equivalents
 - Changed: fl.isnan and fl.isinf moved to Op (use now: fl.Op.isnan, fl.Op.isinf)
@@ -32,9 +34,12 @@
 - Changed: Activation is abstract
 - Removed: Activation.class_name, use now Op.class_name when needed
 
+## benchmark.py
+- New: Benchmark class to measure performance time and errors of engines
+
 ## defuzzifier.py
 - Bug fix: Weighted defuzzifiers infer the type correctly now (see WeightedDefuzzifier::infer_type)
-- Changed: Defuzzifier is abstract, and hence so are IntegralDefuzzifier and WeightedDefuzzifier
+- Changed: Defuzzifier is abstract, and so are IntegralDefuzzifier and WeightedDefuzzifier
 - Changed: Integral defuzzifiers work on vectors
 - Changed: Integral defuzzifiers use 1000 steps instead of 100
 - Changed: Algorithms to compute BiSector, Centroid, MeanOfMaximum, and WeightedAverage are simplified
@@ -47,6 +52,8 @@
 - New: Property setter Engine.input_values provides shortcuts to setting input variable values
 - New: constructor parameter `load:bool=True` to automatically update the reference of all terms in variables and load the rules
 - New: `__getitem__` implemented to get variables or ruleblocks using square brackets
+- New: Engine.infer_type to infer type of engine based on its configuration
+- New: Engine.ready to check whether engine is ready to operate
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
 - Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
 
@@ -96,6 +103,7 @@
 - New: `midpoints` method to discretize a range of values into a list of midpoints
 - New: Op.is_close method to compare two values with absolute and relative tolerance given by the library settings
 - New: Op.class_name method to get the class name of the given object
+- New: Op.glob_examples method to glob over the fuzzylite examples
 - Changed: Removed `decimals` parameter from `Op.str()`
 - Changed: Vectorized all comparative operations (eq, neq, lt, le, gt, ge)
 - Changed: empty identifiers now return "_" instead of "unnamed" (see `as_identifier(name:str)`

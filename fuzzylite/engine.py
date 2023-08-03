@@ -24,10 +24,10 @@ from collections.abc import Iterable
 import numpy as np
 
 from .activation import Activation
-from .defuzzifier import Defuzzifier
+from .defuzzifier import Defuzzifier, IntegralDefuzzifier, WeightedDefuzzifier
 from .library import nan, representation, settings
-from .norm import SNorm, TNorm
-from .rule import RuleBlock
+from .norm import AlgebraicProduct, SNorm, TNorm
+from .rule import Rule, RuleBlock
 from .types import ScalarArray
 from .variable import InputVariable, OutputVariable, Variable
 
@@ -361,35 +361,191 @@ class Engine:
         if settings.debugging:
             pass
 
-    def is_ready(self) -> tuple[bool, str]:
+    def is_ready(self, errors: list[str] | None = None) -> bool:
         """Indicates whether the engine has been configured correctly and is
         ready for operation. In more advanced engines, the result of this
         method should be taken as a suggestion and not as a prerequisite to
         operate the engine.
-
-        @return a Tuple[bool,str] that indicates whether the engine is ready
-        to operate and any related messages if it is not.
+        @param errors an optional output list to store the errors found if the engine is not ready
+        @return whether the engine is ready.
         """
-        # TODO: Implement
-        raise NotImplementedError()
+        if errors is None:
+            errors = []
 
-    def infer_type(self) -> tuple[Engine.Type, str]:
-        """Infers the type of the engine based on its current configuration.
+        # Input Variables
+        if not self.input_variables:
+            errors.append(f"Engine '{self.name}' does not have any input variables")
 
-        @return a Tuple[Engine.Type, str] indicating the inferred type of the
-        engine based on its current configuration, and a string explaining
-        the reasons for the inferred type
+        # ignore because sometimes inputs can be empty: takagi-sugeno/matlab/slcpp1.fis
+        # for variable in self.input_variables:
+        #     if not variable.terms:
+        #         missing.append(
+        #             f"Variable '{variable.name}' does not have any input terms"
+        #         )
+
+        # Output Variables
+        if not self.output_variables:
+            errors.append(f"Engine '{self.name}' does not have any output variables")
+        for variable in self.output_variables:
+            if not variable.terms:
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any terms"
+                )
+            if not variable.defuzzifier:
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any defuzzifier"
+                )
+            if not variable.aggregation and isinstance(
+                variable.defuzzifier, IntegralDefuzzifier
+            ):
+                errors.append(
+                    f"Output variable '{variable.name}' does not have any aggregation operator"
+                )
+
+        # Rule Blocks
+        if not self.rule_blocks:
+            errors.append(f"Engine '{self.name}' does not have any rule blocks")
+        for index, rule_block in enumerate(self.rule_blocks):
+            name_or_index = f"'{rule_block.name}'" if rule_block.name else f"[{index}]"
+            if not rule_block.rules:
+                errors.append(f"Rule block {name_or_index} does not have any rules")
+
+            # Operators needed for rules
+            conjunction_needed, disjunction_needed, implication_needed = (0, 0, 0)
+            for rule in rule_block.rules:
+                conjunction_needed += f" {Rule.AND} " in rule.antecedent.text
+                disjunction_needed += f" {Rule.OR} " in rule.antecedent.text
+                if rule.is_loaded():
+                    mamdani_consequents = 0
+                    for consequent in rule.consequent.conclusions:
+                        mamdani_consequents += isinstance(
+                            consequent.variable, OutputVariable
+                        ) and isinstance(
+                            consequent.variable.defuzzifier, IntegralDefuzzifier
+                        )
+                    implication_needed += mamdani_consequents > 0
+
+            if conjunction_needed and not rule_block.conjunction:
+                errors.append(
+                    f"Rule block {name_or_index} does not have any conjunction operator "
+                    f"and is needed by {conjunction_needed} rule{'s'[:conjunction_needed ^ 1]}"
+                )
+
+                if disjunction_needed and not rule_block.disjunction:
+                    errors.append(
+                        f"Rule block {name_or_index} does not have any disjunction operator "
+                        f"and is needed by {disjunction_needed} rule{'s'[:disjunction_needed ^ 1]}"
+                    )
+
+            if implication_needed and not rule_block.implication:
+                errors.append(
+                    f"Rule block {name_or_index} does not have any implication operator "
+                    f"and is needed by {implication_needed} rule{'s'[:implication_needed ^ 1]}"
+                )
+
+        return not errors
+
+    def infer_type(self, reasons: list[str] | None = None) -> Engine.Type:
+        """Infers the type of the engine based on its configuration.
+        @param reasons is an optional output list explaining the reasons for the inferred type
+        @return the type of engine inferred from its configuration.
         """
-        # TODO: Implement
-        raise NotImplementedError()
+        if reasons is None:
+            reasons = []
 
-    # def copy(self) -> Engine:
-    #     # TODO: Revisit deep copies and deal with engines in Function and Linear
-    #     """Creates a copy of the engine, including all variables, rule blocks,
-    #     and rules. The copy is a deep copy, meaning that all objects are
-    #     duplicated such that the copy can be modified without affecting the
-    #     original.
-    #
-    #     @return a deep copy of the engine
-    #     """
-    #     return copy.deepcopy(self)
+        # Unknown
+        if not self.output_variables:
+            reasons.append(f"Engine '{self.name}' does not have any output variables")
+            return Engine.Type.Unknown
+
+        # Mamdani
+        mamdani = all(
+            isinstance(variable.defuzzifier, IntegralDefuzzifier)
+            for variable in self.output_variables
+        )
+
+        # Larsen
+        larsen = (
+            mamdani
+            and self.rule_blocks
+            and all(
+                isinstance(rule_block.implication, AlgebraicProduct)
+                for rule_block in self.rule_blocks
+            )
+        )
+        if larsen:
+            reasons.append("Output variables have integral defuzzifiers")
+            reasons.append("Implication in rule blocks is the AlgebraicProduct")
+            return Engine.Type.Larsen
+
+        if mamdani:
+            reasons.append("Output variables have integral defuzzifiers")
+            return Engine.Type.Mamdani
+
+        # Takagi-Sugeno
+        takagi_sugeno = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.TakagiSugeno
+            )
+            for variable in self.output_variables
+        )
+        if takagi_sugeno:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append(
+                "Output variables only have Constant, Linear, or Function terms"
+            )
+            return Engine.Type.TakagiSugeno
+
+        # Tsukamoto
+        tsukamoto = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.Tsukamoto
+            )
+            for variable in self.output_variables
+        )
+        if tsukamoto:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append("Output variables only have monotonic terms")
+            return Engine.Type.Tsukamoto
+
+        # Inverse Tsukamoto
+        inverse_tsukamoto = all(
+            isinstance(variable.defuzzifier, WeightedDefuzzifier)
+            and (
+                variable.defuzzifier.infer_type(variable)
+                == WeightedDefuzzifier.Type.Automatic
+            )
+            for variable in self.output_variables
+        )
+        if inverse_tsukamoto:
+            reasons.append("Output variables have weighted defuzzifiers")
+            reasons.append("Output variables have non-monotonic terms")
+            reasons.append(
+                "Output variables have terms different from Constant, Linear, or Function terms"
+            )
+            return Engine.Type.InverseTsukamoto
+
+        # Hybrids
+        hybrid = all(variable.defuzzifier for variable in self.output_variables)
+        if hybrid:
+            reasons.append("Output variables have different types of defuzzifiers")
+            return Engine.Type.Hybrid
+
+        # Unknown
+        reasons.append("One or more output variables do not have a defuzzifier")
+        return Engine.Type.Unknown
+
+        # def copy(self) -> Engine:
+        #     # TODO: Revisit deep copies and deal with engines in Function and Linear
+        #     """Creates a copy of the engine, including all variables, rule blocks,
+        #     and rules. The copy is a deep copy, meaning that all objects are
+        #     duplicated such that the copy can be modified without affecting the
+        #     original.
+        #
+        #     @return a deep copy of the engine
+        #     """
+        #     return copy.deepcopy(self)
