@@ -458,10 +458,19 @@ class TestDefuzzifier(unittest.TestCase):
             defuzzifier.infer_type(fl.Constant()),
             fl.WeightedDefuzzifier.Type.TakagiSugeno,
         )
-        with self.assertRaises(TypeError) as type_error:
-            defuzzifier.infer_type(fl.Triangle())
+
+        # Inverse Tsukamoto
         self.assertEqual(
-            "cannot infer type of BaseWeightedDefuzzifier from term: _ Triangle nan nan nan",
+            defuzzifier.infer_type(fl.Triangle()),
+            fl.WeightedDefuzzifier.Type.Automatic,
+        )
+        with self.assertRaises(TypeError) as type_error:
+            defuzzifier.infer_type(
+                fl.OutputVariable(terms=[fl.Triangle(), fl.Constant()])
+            )
+        self.assertEqual(
+            "cannot infer type of BaseWeightedDefuzzifier, got multiple types: "
+            "['Type.Automatic', 'Type.TakagiSugeno']",
             str(type_error.exception),
         )
 

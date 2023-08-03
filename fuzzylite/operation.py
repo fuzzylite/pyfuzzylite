@@ -425,8 +425,10 @@ class Operation:
             import fuzzylite.examples
 
             module = fuzzylite.examples
+
         package = Path(*module.__path__)
         pattern = "**/" if recursive else ""
+
         if return_type in {"module", "engine"}:
             pattern += "*.py"
             for file in sorted(package.glob(pattern)):
@@ -444,16 +446,20 @@ class Operation:
                         example_class, *_ = inspect.getmembers(
                             example_module, predicate=inspect.isclass
                         )
+                        # example_class: tuple[str, type]
                         engine = example_class[1]().engine
                         yield engine
+
         elif return_type in {"dataset", "fld"}:
             pattern += "*.fld"
             for file in sorted(package.glob(pattern)):
                 yield np.loadtxt(file, skiprows=1)
+
         elif return_type in {"language", "fll"}:
             pattern += "*.fll"
             for file in sorted(package.glob(pattern)):
                 yield file.read_text()
+
         elif return_type == "files":
             pattern += "*.*"
             for file in sorted(package.glob(pattern)):
@@ -462,6 +468,7 @@ class Operation:
                     and file.name != "__init__.py"
                 ):
                     yield file
+
         else:
             raise ValueError(
                 f"expected 'return_type' in {'module engine dataset fld language fll files'.split()}, "
