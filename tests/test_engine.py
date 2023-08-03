@@ -17,7 +17,9 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 from __future__ import annotations
 
 import unittest
+from typing import cast
 
+import black
 import numpy as np
 from typing_extensions import Self
 
@@ -825,6 +827,186 @@ RuleBlock:
             EngineAssert(self, engine).has_type(
                 {fl.Engine.Type.Mamdani, fl.Engine.Type.TakagiSugeno}
             )
+
+    @unittest.expectedFailure
+    def test_copy_takagi_sugeno(self) -> None:
+        """Test engine can do shallow copy of a Mamdani engine.
+        Expected failure because a shallow copy of an engine
+        will contain internal references to the original engine (eg, Linear terms referencing original engine).
+        """
+        import copy
+
+        engine = fl.examples.terms.linear.Linear().engine
+        expected = (
+            "fl.Engine(\n"
+            '    name="Linear",\n'
+            '    description="obstacle avoidance for self-driving cars",\n'
+            "    input_variables=[\n"
+            "        fl.InputVariable(\n"
+            '            name="obstacle",\n'
+            '            description="location of obstacle relative to vehicle",\n'
+            "            minimum=0.0,\n"
+            "            maximum=1.0,\n"
+            "            lock_range=False,\n"
+            "            terms=[\n"
+            '                fl.Triangle("left", 0.0, 0.333, 0.666),\n'
+            '                fl.Triangle("right", 0.333, 0.666, 1.0),\n'
+            "            ],\n"
+            "        )\n"
+            "    ],\n"
+            "    output_variables=[\n"
+            "        fl.OutputVariable(\n"
+            '            name="steer",\n'
+            '            description="direction to steer the vehicle to",\n'
+            "            minimum=0.0,\n"
+            "            maximum=1.0,\n"
+            "            lock_range=False,\n"
+            "            lock_previous=False,\n"
+            "            default_value=fl.nan,\n"
+            "            aggregation=None,\n"
+            '            defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),\n'
+            '            terms=[fl.Linear("left", [0.0, 0.333]), fl.Linear("right", [0.0, '
+            "0.666])],\n"
+            "        )\n"
+            "    ],\n"
+            "    rule_blocks=[\n"
+            "        fl.RuleBlock(\n"
+            '            name="steer_away",\n'
+            '            description="steer away from obstacles",\n'
+            "            conjunction=None,\n"
+            "            disjunction=None,\n"
+            "            implication=None,\n"
+            "            activation=fl.General(),\n"
+            "            rules=[\n"
+            '                fl.Rule.create("if obstacle is left then steer is right"),\n'
+            '                fl.Rule.create("if obstacle is right then steer is left"),\n'
+            "            ],\n"
+            "        )\n"
+            "    ],\n"
+            ")\n"
+        )
+        self.assertEqual(
+            expected,
+            black.format_str(
+                repr(engine),
+                mode=black.Mode(),  # type: ignore
+            ),
+        )
+
+        engine_copy = copy.copy(engine)
+
+        self.assertEqual(
+            expected,
+            black.format_str(
+                repr(engine_copy),
+                mode=black.Mode(),  # type: ignore
+            ),
+        )
+
+        for variables in zip(engine.variables, engine_copy.variables):
+            self.assertEqual(*variables)
+
+        for rule_blocks in zip(engine.rule_blocks, engine_copy.rule_blocks):
+            self.assertEqual(*rule_blocks)
+
+        for output_variable in engine_copy.output_variables:
+            for term in output_variable.terms:
+                self.assertEqual(fl.Linear, term.__class__)
+                self.assertEqual(id(engine_copy), id(cast(fl.Linear, term).engine))
+
+    def test_deep_copy_takagi_sugeno(self) -> None:
+        """Test engine can do shallow copy of a Mamdani engine."""
+        engine = fl.examples.terms.linear.Linear().engine
+        for output_variable in engine.output_variables:
+            for term in output_variable.terms:
+                output_variable.fuzzy.terms.append(fl.Activated(term, 1.0))
+
+        expected = (
+            "fl.Engine(\n"
+            '    name="Linear",\n'
+            '    description="obstacle avoidance for self-driving cars",\n'
+            "    input_variables=[\n"
+            "        fl.InputVariable(\n"
+            '            name="obstacle",\n'
+            '            description="location of obstacle relative to vehicle",\n'
+            "            minimum=0.0,\n"
+            "            maximum=1.0,\n"
+            "            lock_range=False,\n"
+            "            terms=[\n"
+            '                fl.Triangle("left", 0.0, 0.333, 0.666),\n'
+            '                fl.Triangle("right", 0.333, 0.666, 1.0),\n'
+            "            ],\n"
+            "        )\n"
+            "    ],\n"
+            "    output_variables=[\n"
+            "        fl.OutputVariable(\n"
+            '            name="steer",\n'
+            '            description="direction to steer the vehicle to",\n'
+            "            minimum=0.0,\n"
+            "            maximum=1.0,\n"
+            "            lock_range=False,\n"
+            "            lock_previous=False,\n"
+            "            default_value=fl.nan,\n"
+            "            aggregation=None,\n"
+            '            defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),\n'
+            '            terms=[fl.Linear("left", [0.0, 0.333]), fl.Linear("right", [0.0, '
+            "0.666])],\n"
+            "        )\n"
+            "    ],\n"
+            "    rule_blocks=[\n"
+            "        fl.RuleBlock(\n"
+            '            name="steer_away",\n'
+            '            description="steer away from obstacles",\n'
+            "            conjunction=None,\n"
+            "            disjunction=None,\n"
+            "            implication=None,\n"
+            "            activation=fl.General(),\n"
+            "            rules=[\n"
+            '                fl.Rule.create("if obstacle is left then steer is right"),\n'
+            '                fl.Rule.create("if obstacle is right then steer is left"),\n'
+            "            ],\n"
+            "        )\n"
+            "    ],\n"
+            ")\n"
+        )
+        self.assertEqual(
+            expected,
+            black.format_str(
+                repr(engine),
+                mode=black.Mode(),  # type: ignore
+            ),
+        )
+
+        engine_copy = engine.copy()
+
+        self.assertEqual(
+            expected,
+            black.format_str(
+                repr(engine_copy),
+                mode=black.Mode(),  # type: ignore
+            ),
+        )
+
+        for variables in zip(engine.variables, engine_copy.variables):
+            self.assertEqual(repr(variables[0]), repr(variables[1]))
+            self.assertTrue(id(variables[0]) != id(variables[1]))
+
+        for rule_blocks in zip(engine.rule_blocks, engine_copy.rule_blocks):
+            self.assertEqual(repr(rule_blocks[0]), repr(rule_blocks[1]))
+            self.assertTrue(id(rule_blocks[0]) != id(rule_blocks[1]))
+
+        self.assertTrue(engine_copy.output_variables)
+        for output_variable in engine_copy.output_variables:
+            self.assertTrue(output_variable.terms)
+            for term in output_variable.terms:
+                self.assertEqual(fl.Linear, term.__class__)
+                self.assertEqual(id(engine_copy), id(cast(fl.Linear, term).engine))
+            self.assertTrue(output_variable.fuzzy.terms)
+            for index, activated in enumerate(output_variable.fuzzy.terms):
+                self.assertEqual(id(activated.term), id(output_variable.term(index)))
+                self.assertEqual(
+                    id(engine_copy), id(cast(fl.Linear, activated.term).engine)
+                )
 
 
 if __name__ == "__main__":

@@ -54,6 +54,7 @@
 - New: `__getitem__` implemented to get variables or ruleblocks using square brackets
 - New: Engine.infer_type to infer type of engine based on its configuration
 - New: Engine.ready to check whether engine is ready to operate
+- New: Engine.copy to deep copy an engine
 - Changed: values of Engine.Type are enum.auto() instead of manual assignments
 - Changed: method signature from `str` to `str|int` for Engine.[input_variable | output_variable | rule_block] to also get them by index
 

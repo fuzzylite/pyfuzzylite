@@ -22,6 +22,7 @@ import enum
 from collections.abc import Iterable
 
 import numpy as np
+from typing_extensions import Self
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier, IntegralDefuzzifier, WeightedDefuzzifier
@@ -539,13 +540,9 @@ class Engine:
         reasons.append("One or more output variables do not have a defuzzifier")
         return Engine.Type.Unknown
 
-        # def copy(self) -> Engine:
-        #     # TODO: Revisit deep copies and deal with engines in Function and Linear
-        #     """Creates a copy of the engine, including all variables, rule blocks,
-        #     and rules. The copy is a deep copy, meaning that all objects are
-        #     duplicated such that the copy can be modified without affecting the
-        #     original.
-        #
-        #     @return a deep copy of the engine
-        #     """
-        #     return copy.deepcopy(self)
+    def copy(self) -> Self:
+        """Creates a deep copy of the engine."""
+        import copy
+
+        engine = copy.deepcopy(self)
+        return engine
