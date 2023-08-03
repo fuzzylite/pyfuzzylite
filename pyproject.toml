@@ -209,9 +209,5 @@ disable_error_code = ["type-abstract"]
 module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture"]
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = "black"
-ignore_errors = true
-
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/test_benchmark_pytest.py --ignore=tests/test_benchmark_codspeed.py"
