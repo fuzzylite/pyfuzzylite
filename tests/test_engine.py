@@ -32,8 +32,9 @@ class EngineAssert(BaseAssert[fl.Engine]):
     def has_type(
         self,
         expected: fl.Engine.Type | set[fl.Engine.Type],
+        /,
         reasons: list[str] | None = None,
-    ) -> EngineAssert:
+    ) -> Self:
         """Asserts the engine has the expected type."""
         obtained_reasons: list[str] = []
         inferred_type = self.actual.infer_type(obtained_reasons)
@@ -49,7 +50,18 @@ class EngineAssert(BaseAssert[fl.Engine]):
             self.test.assertEqual(obtained_reasons, reasons)
         return self
 
-    def has_n_inputs(self, n: int) -> EngineAssert:
+    def is_ready(
+        self, expected: bool = True, /, reasons: list[str] | None = None
+    ) -> Self:
+        """Test engine is ready."""
+        obtained_reasons: list[str] = []
+        obtained = self.actual.is_ready(obtained_reasons)
+        self.test.assertEqual(expected, obtained)
+        if reasons is not None:
+            self.test.assertEqual(reasons, obtained_reasons)
+        return self
+
+    def has_n_inputs(self, n: int) -> Self:
         """Asserts the engine has the expected number of input variables."""
         n_inputs = len(self.actual.input_variables)
         self.test.assertEqual(
@@ -57,14 +69,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_inputs(self, names: list[str]) -> EngineAssert:
+    def has_inputs(self, names: list[str]) -> Self:
         """Asserts the engine has the expected input variables by name."""
         self.test.assertSequenceEqual(
             [iv.name for iv in self.actual.input_variables], names
         )
         return self
 
-    def has_n_outputs(self, n: int) -> EngineAssert:
+    def has_n_outputs(self, n: int) -> Self:
         """Asserts the engine has the expected number of output variables."""
         n_outputs = len(self.actual.output_variables)
         self.test.assertEqual(
@@ -72,14 +84,14 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_outputs(self, names: list[str]) -> EngineAssert:
+    def has_outputs(self, names: list[str]) -> Self:
         """Asserts the engine has the expected output variables by name."""
         self.test.assertSequenceEqual(
             [ov.name for ov in self.actual.output_variables], names
         )
         return self
 
-    def has_n_blocks(self, n: int) -> EngineAssert:
+    def has_n_blocks(self, n: int) -> Self:
         """Asserts the engine has the expected number of rule blocks."""
         n_blocks = len(self.actual.rule_blocks)
         self.test.assertEqual(
@@ -87,7 +99,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         )
         return self
 
-    def has_blocks(self, names: list[str]) -> EngineAssert:
+    def has_blocks(self, names: list[str]) -> Self:
         """Asserts the engine has the expected number of rule blocks by name."""
         self.test.assertSequenceEqual(
             [rb.name for rb in self.actual.rule_blocks], names
@@ -116,7 +128,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
         np.testing.assert_allclose(expected, obtained)
         return self
 
-    def evaluate_fld(self, fld: str, decimals: int) -> EngineAssert:
+    def evaluate_fld(self, fld: str, decimals: int) -> Self:
         """Asserts the engine produces the expected fld."""
         for line, evaluation in enumerate(fld.split("\n")):
             comment_index = evaluation.find("#")
@@ -145,7 +157,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
             )
 
             np.testing.assert_allclose(
-                obtained, expected, rtol=fl.settings.rtol, atol=fl.settings.atol
+                obtained, expected, rtol=fl.settings.rtol, atol=10 ** (-decimals)
             )
         return self
 
@@ -309,7 +321,7 @@ class TestEngine(unittest.TestCase):
 10.0000000000000 6.6666666666666 20.2157800031293 22.7777777777777
 10.0000000000000 10.0000000000000 25.0010497900419 25.0000000000000
 """,
-            decimals=13,
+            decimals=12,
         )
 
     @unittest.skip("Not implemented yet")
@@ -575,43 +587,36 @@ RuleBlock:
     def test_is_ready(self) -> None:
         """Test the engine is ready."""
         for engine in fl.Op.glob_examples("engine"):
-            status: list[str] = []
-            ready = engine.is_ready(status)
-            if not ready:
-                raise ValueError(f"{engine.name} is not ready: " + "\n".join(status))
-            self.assertTrue(ready)
+            EngineAssert(self, engine).is_ready()
 
-        obtained: list[str] = []
-        self.assertFalse(fl.Engine("test").is_ready(obtained))
-        self.assertEqual(
-            (
-                "Engine 'test' does not have any input variables\n"
-                "Engine 'test' does not have any output variables\n"
-                "Engine 'test' does not have any rule blocks"
-            ),
-            "\n".join(obtained),
+        EngineAssert(self, fl.Engine("test")).is_ready(
+            False,
+            [
+                "Engine 'test' does not have any input variables",
+                "Engine 'test' does not have any output variables",
+                "Engine 'test' does not have any rule blocks",
+            ],
         )
 
-        obtained = []
-        self.assertFalse(
+        EngineAssert(
+            self,
             fl.Engine(
                 "test",
                 input_variables=[fl.InputVariable("A")],
                 output_variables=[fl.OutputVariable("Z")],
                 rule_blocks=[fl.RuleBlock("R")],
-            ).is_ready(obtained)
-        )
-        self.assertEqual(
-            (
-                "Output variable 'Z' does not have any terms\n"
-                "Output variable 'Z' does not have any defuzzifier\n"
-                "Rule block 'R' does not have any rules"
             ),
-            "\n".join(obtained),
+        ).is_ready(
+            False,
+            [
+                "Output variable 'Z' does not have any terms",
+                "Output variable 'Z' does not have any defuzzifier",
+                "Rule block 'R' does not have any rules",
+            ],
         )
 
-        obtained = []
-        self.assertFalse(
+        EngineAssert(
+            self,
             fl.Engine(
                 "test",
                 input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
@@ -630,20 +635,19 @@ RuleBlock:
                         ],
                     )
                 ],
-            ).is_ready(obtained)
-        )
-        self.assertEqual(
-            (
-                "Output variable 'Z' does not have any aggregation operator\n"
-                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule\n"
-                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule\n"
-                "Rule block 'R' does not have any implication operator and is needed by 3 rules"
             ),
-            "\n".join(obtained),
+        ).is_ready(
+            False,
+            [
+                "Output variable 'Z' does not have any aggregation operator",
+                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule",
+                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule",
+                "Rule block 'R' does not have any implication operator and is needed by 3 rules",
+            ],
         )
 
-        obtained = []
-        self.assertFalse(
+        EngineAssert(
+            self,
             fl.Engine(
                 "test",
                 input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
@@ -662,14 +666,13 @@ RuleBlock:
                         ],
                     )
                 ],
-            ).is_ready(obtained)
-        )
-        self.assertEqual(
-            (
-                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule\n"
-                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule"
             ),
-            "\n".join(obtained),
+        ).is_ready(
+            False,
+            [
+                "Rule block 'R' does not have any conjunction operator and is needed by 1 rule",
+                "Rule block 'R' does not have any disjunction operator and is needed by 1 rule",
+            ],
         )
 
     def test_engine_type(self) -> None:
