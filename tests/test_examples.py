@@ -16,8 +16,6 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
-import importlib
-import inspect
 import logging
 import pathlib
 import unittest
@@ -45,9 +43,9 @@ class TestExamples(unittest.TestCase):
 
     def test_examples(self) -> None:
         """Test all the examples are included and can be imported."""
-        import fuzzylite.examples
+        import fuzzylite as fl
 
-        examples = pathlib.Path(*fuzzylite.examples.__path__)
+        examples = pathlib.Path(*fl.examples.__path__)
         self.assertTrue(examples.exists() and examples.is_dir())
 
         expected = set(
@@ -116,26 +114,11 @@ fuzzylite.examples.tsukamoto.tsukamoto
 """.split()
         )
 
-        obtained = set()
-        for file_py in examples.rglob("*.py"):
-            if file_py.suffix == ".py" and file_py.name != "__init__.py":
-                package = []
-                for parent in file_py.parents:
-                    package.append(parent.stem)
-                    if parent.stem == "fuzzylite":
-                        break
-                module = ".".join(reversed(package)) + f".{file_py.stem}"
-                obtained.add(module)
-        self.assertSetEqual(expected, obtained)
+        obtained = {module for module in fl.Op.glob_examples("module")}
+        self.assertSetEqual(expected, {module.__name__ for module in obtained})
 
-        for module in obtained:
-            logger.info(f"Importing: {module}")
-            # if an example is incorrect, an exception will be thrown below
-            engine_class, *_ = inspect.getmembers(
-                importlib.import_module(module), predicate=inspect.isclass
-            )
-            # engine_class: tuple[str, type[...]]
-            logger.info(str(engine_class[1]().engine))
+        engines = [engine for engine in fl.Op.glob_examples("engine")]
+        self.assertEqual(len(engines), len(obtained))
 
 
 if __name__ == "__main__":

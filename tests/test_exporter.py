@@ -16,7 +16,6 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
-import inspect
 import io
 import logging
 import os
@@ -25,6 +24,7 @@ import string
 import tempfile
 import unittest
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -1205,19 +1205,16 @@ Ambient Power
 class TestExporters(unittest.TestCase):
     """Test exporters for every example."""
 
-    @unittest.skip("Re-enable after test coverage improved independently")
+    # @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         """Test every FLL example can be exported."""
         import concurrent.futures
 
-        from fuzzylite import examples
-
         with fl.settings.context(decimals=3):
-            files = [str(example) for example in Path(*examples.__path__).rglob("*.py")]
-            print(files)
+            modules = [module for module in fl.Op.glob_examples("module")]
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 threads = [
-                    executor.submit(TestExporters.export, file) for file in files
+                    executor.submit(TestExporters.export, module) for module in modules
                 ]
             concurrent.futures.wait(
                 threads, return_when=concurrent.futures.FIRST_EXCEPTION
@@ -1227,63 +1224,37 @@ class TestExporters(unittest.TestCase):
 
         self.assertEqual(fl.settings.decimals, 3)
 
-    @unittest.skip("Testing export single thread")
+    # @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
         from fuzzylite.examples.terms import bell
 
-        example = bell.__file__  # .replace(".py", ".fll")
         with fl.settings.context(decimals=3):
-            TestExporters.export(example)
+            TestExporters.export(bell)
 
     @staticmethod
-    def export(file_path: str) -> None:
+    def export(example: ModuleType) -> None:
         """Given an FLL file or Python example, export to FLL, Python and FLD."""
-        import importlib
-        import pathlib
         import time
 
-        path = pathlib.Path(file_path)
-        package: list[str] = []
-        for parent in path.parents:
-            package.append(parent.name)
-            if parent.name == "fuzzylite":
-                break
-        package.reverse()
+        import numpy as np
 
-        if path.suffix == ".fll":
-            with open(path) as file:
-                import_fll = file.read()
-                engine = fl.FllImporter().from_string(import_fll)
-        elif path.suffix == ".py":
-            module = ".".join(package) + f".{path.stem}"
-            if "__init__" in module:
-                return
-            example_class, *_ = inspect.getmembers(
-                importlib.import_module(module), predicate=inspect.isclass
-            )
-            # example_class: tuple[str, type[...]]
-            engine = example_class[1]().engine
-            for output_variable in engine.output_variables:
-                if isinstance(output_variable.defuzzifier, fl.IntegralDefuzzifier):
-                    output_variable.defuzzifier.resolution = (
-                        fl.IntegralDefuzzifier.default_resolution
-                    )
-        else:
-            raise Exception(f"unknown importer of files like {path}")
+        np.seterr(invalid="ignore", divide="ignore")
 
+        engine, *_ = fl.Op.glob_examples("engine", module=example)
         exporters = [
-            # fl.FllExporter(),
+            fl.FllExporter(),
             fl.PythonExporter(encapsulated=True),
-            # fl.FldExporter(),
+            fl.FldExporter(),
         ]
 
-        file_name = path.stem
+        file_name = Path(f"{example.__file__}").stem
+        package = Path(f"{example.__file__}").parent.relative_to(*fl.__path__)
         for exporter in exporters:
             start = time.time()
-            target_path = Path("/tmp/fl/") / "/".join(package)
+            target_path = Path("/tmp/fl/") / package
             target_path.mkdir(parents=True, exist_ok=True)
-            fl.settings.logger.info(str(path) + f" -> {fl.Op.class_name(exporter)}")
+            fl.settings.logger.info(str(package) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
                 exporter.to_file_from_scope(
                     target_path / (file_name + ".fld"), engine, 1024
@@ -1296,7 +1267,8 @@ class TestExporters(unittest.TestCase):
                 exporter.to_file(target_path / (file_name + ".py"), engine)
 
             fl.settings.logger.info(
-                str(path) + f" -> {fl.Op.class_name(exporter)}\t{time.time() - start}"
+                str(package)
+                + f" -> {fl.Op.class_name(exporter)}\t{time.time() - start}"
             )
 
 

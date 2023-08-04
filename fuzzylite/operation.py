@@ -417,7 +417,7 @@ class Operation:
     ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:
         """Glob the examples (alphabetically in ascending order) returning the specified type.
         @param return_type is the type to return, one of {engine, dataset (or fld), language (or fll), files}
-        @param module is the module to glob (eg, fuzzylite.examples)
+        @param module is the package (eg, fuzzylite.examples) or module (eg, fuzzylite.examples.terms.arc) to glob
         @param recursive whether to glob subdirectories
         @return generator of the specified type.
         """
@@ -426,20 +426,34 @@ class Operation:
 
             module = fuzzylite.examples
 
-        package = Path(*module.__path__)
         pattern = "**/" if recursive else ""
 
+        # A package is a module with a __path__ attribute: https://docs.python.org/3/reference/import.html#packages
+        is_package = hasattr(module, "__path__")
+
+        if is_package:
+            # module is a package (directory) (eg, fuzzylite.examples)
+            package = Path(*module.__path__)
+            pattern += "*"
+        else:
+            # module is a module (eg, fuzzylite.examples.terms.arc)
+            package = Path(f"{module.__file__}").parent
+            pattern += Path(f"{module.__file__}").stem
+
         if return_type in {"module", "engine"}:
-            pattern += "*.py"
+            pattern += ".py"
             for file in sorted(package.glob(pattern)):
                 if file.stem != "__init__":
                     submodule = ".".join(
                         Op.as_identifier(part)
                         for part in file.with_suffix("").relative_to(package).parts
                     )
-                    example_module = importlib.import_module(
+                    import_name = (
                         f"{module.__name__}.{submodule}"
+                        if is_package
+                        else module.__name__
                     )
+                    example_module = importlib.import_module(import_name)
                     if return_type == "module":
                         yield example_module
                     else:
@@ -451,17 +465,17 @@ class Operation:
                         yield engine
 
         elif return_type in {"dataset", "fld"}:
-            pattern += "*.fld"
+            pattern += ".fld"
             for file in sorted(package.glob(pattern)):
                 yield np.loadtxt(file, skiprows=1)
 
         elif return_type in {"language", "fll"}:
-            pattern += "*.fll"
+            pattern += ".fll"
             for file in sorted(package.glob(pattern)):
                 yield file.read_text()
 
         elif return_type == "files":
-            pattern += "*.*"
+            pattern += ".*"
             for file in sorted(package.glob(pattern)):
                 if (
                     file.suffix in {".py", ".fll", ".fld"}

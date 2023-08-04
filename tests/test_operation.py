@@ -431,7 +431,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(22, len(flls))
         self.assertEqual(
             flls[0],
-            (
+            expected_arc_fll := (
                 "Engine: Arc\n"
                 "  description: obstacle avoidance for self-driving cars\n"
                 "InputVariable: obstacle\n"
@@ -475,6 +475,34 @@ class TestOperation(unittest.TestCase):
         ]:
             expected_files.extend([f"{example}.fld", f"{example}.fll", f"{example}.py"])
         self.assertEqual([f.name for f in files], expected_files)
+
+        # Modules, not packages:
+        # engine
+        engines = list(fl.Op.glob_examples("engine", fl.examples.terms.arc))
+        self.assertEqual(1, len(engines))
+        self.assertEqual("Arc", engines[0].name)
+
+        # module
+        modules = list(fl.Op.glob_examples("module", fl.examples.mamdani.simple_dimmer))
+        self.assertEqual(1, len(modules))
+        self.assertEqual(modules[0], fl.examples.mamdani.simple_dimmer)
+
+        # fll
+        flls = list(fl.Op.glob_examples("fll", fl.examples.terms.arc))
+        self.assertEqual(1, len(flls))
+        self.assertEqual(flls[0], expected_arc_fll)
+
+        # fld
+        flds = list(fl.Op.glob_examples("fld", fl.examples.tsukamoto.tsukamoto))
+        self.assertEqual(1, len(flds))
+        np.testing.assert_allclose(tsukamoto_fld, flds[0][: len(tsukamoto_fld), :])
+
+        # files
+        files = list(fl.Op.glob_examples("files", fl.examples.tsukamoto.tsukamoto))
+        self.assertSetEqual(
+            {"tsukamoto.py", "tsukamoto.fld", "tsukamoto.fll"},
+            {file.name for file in files},
+        )
 
     @unittest.skip("Revisit describe() method")
     def test_describe(self) -> None:
