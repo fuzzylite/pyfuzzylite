@@ -27,7 +27,6 @@ include = [
     "README.md",
     "THANKS",
 ]
-exclude = ["fuzzylite/examples/**/*.fld"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
