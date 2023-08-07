@@ -279,8 +279,6 @@ class Antecedent:
             raise SyntaxError("expected the antecedent of a rule, but found none")
 
         postfix = Function.infix_to_postfix(self.text)
-        if settings.debugging:
-            settings.logger.debug(f"antecedent={self.text}\npostfix={postfix}")
 
         # Build a proposition tree from the antecedent of a fuzzy rule. The rules are:
         # (1) After a variable comes 'is',

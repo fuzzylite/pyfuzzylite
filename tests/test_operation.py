@@ -319,6 +319,19 @@ class TestOperation(unittest.TestCase):
         with fl.library.settings.context(decimals=0):
             self.assertEqual(fl.Op.str(0.3), "0")
 
+        self.assertEqual("0.000 1.000 2.000 3.000", fl.Op.str([0.0, 1.0, 2.0, 3.0]))
+        self.assertEqual(
+            "0.000 1.000 2.000 3.000", fl.Op.str(fl.scalar([0.0, 1.0, 2.0, 3.0]))
+        )
+        self.assertEqual(
+            "0.000 0.000\n1.000 1.000\n2.000 2.000",
+            fl.Op.str(fl.scalar([[0, 0], [1, 1], [2, 2]])),
+        )
+        self.assertEqual(
+            "[[[0.000 0.000]\n  [1.000 1.000]\n  [2.000 2.000]\n  [3.000 3.000]]]",
+            fl.Op.str(fl.scalar([[[0, 0], [1, 1], [2, 2], [3, 3]]])),
+        )
+
     def test_scale(self) -> None:
         """Test linear interpolation."""
         self.assertEqual(fl.Op.scale(0, 0, 1, -10, 10), -10.0)

@@ -500,8 +500,16 @@ class Operation:
             return x
         if isinstance(x, (float, np.floating)):
             return f"{x:.{settings.decimals}f}"
-        if isinstance(x, (np.ndarray, Sequence)):
-            return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
+        if isinstance(x, Sequence):
+            return delimiter.join([Op.str(x_i) for x_i in x])
+        if isinstance(x, np.ndarray):
+            if x.ndim == 0:
+                return f"{x.item():.{settings.decimals}f}"
+            if x.ndim == 1:
+                return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
+            if x.ndim == 2:
+                return "\n".join(Op.str(x[i, :]) for i in range(len(x)))
+            return np.array2string(x, precision=settings.decimals, floatmode="fixed")
         return builtins.str(x)
 
 

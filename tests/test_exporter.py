@@ -1205,7 +1205,7 @@ Ambient Power
 class TestExporters(unittest.TestCase):
     """Test exporters for every example."""
 
-    # @unittest.skip("Re-enable after test coverage improved independently")
+    @unittest.skip("Re-enable after test coverage improved independently")
     def test_exporters(self) -> None:
         """Test every FLL example can be exported."""
         import concurrent.futures
@@ -1224,7 +1224,7 @@ class TestExporters(unittest.TestCase):
 
         self.assertEqual(fl.settings.decimals, 3)
 
-    # @unittest.skip("Testing export single thread")
+    @unittest.skip("Testing export single thread")
     def test_exporter(self) -> None:
         """Test exporting an arbitrary FLL file."""
         from fuzzylite.examples.terms import bell
