@@ -78,7 +78,7 @@ class TestFuzzyliteExamplesTerms:
 
     def setup_method(self, method: Callable[[BenchmarkFixture], None]) -> None:
         """Configures the benchmark before execution."""
-        self.parameters: dict[str, Any] = dict(rows=1e-3, shuffle=True)
+        self.parameters: dict[str, Any] = dict(rows=0.1, shuffle=True)
 
     def test_arc(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.arc."""
