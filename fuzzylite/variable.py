@@ -120,6 +120,10 @@ class Variable:
 
         return representation.as_constructor(self, fields)
 
+    def clear(self) -> None:
+        """Clear the variable setting it up to its initial state."""
+        self.value = nan
+
     def term(self, index_or_name: int | str) -> Term:
         """Gets the term by index or name.
         @param index_or_name is the index or the name of the term
@@ -468,8 +472,8 @@ class OutputVariable(Variable):
         self.value = value
 
     def clear(self) -> None:
-        r"""Clears the output variable by setting $\tilde{y}=\{\}$,
-        $y^{t}=\mbox{NaN}$, $y^{t-1}=\mbox{NaN}$.
+        """Clears the output variable by emptying the aggregate fuzzy value and
+        resetting previous and current values.
         """
         self.fuzzy.clear()
         self.previous_value = nan

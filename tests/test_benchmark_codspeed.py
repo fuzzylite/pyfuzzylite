@@ -196,4 +196,6 @@ class TestFuzzyliteExamplesTerms:
 
 
 if __name__ == "__main__":
-    print(generate_tests(fl.examples.terms))
+    import pytest
+
+    pytest.main([__file__])

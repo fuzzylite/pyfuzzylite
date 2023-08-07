@@ -313,3 +313,7 @@ class TestBenchmark(unittest.TestCase):
             ),
             "\n".join(summary),
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

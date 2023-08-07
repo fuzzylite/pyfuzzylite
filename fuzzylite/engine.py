@@ -340,27 +340,15 @@ class Engine:
         @see RuleBlock::activate()
         @see OutputVariable::defuzzify().
         """
-        # Clear output values
         for variable in self.output_variables:
             variable.fuzzy.clear()
 
-        if settings.debugging:
-            pass
-
-        # Activate rule blocks
         for block in self.rule_blocks:
             if block.enabled:
                 block.activate()
 
-        if settings.debugging:
-            pass
-
-        # Defuzzify output variables
         for variable in self.output_variables:
             variable.defuzzify()
-
-        if settings.debugging:
-            pass
 
     def is_ready(self, errors: list[str] | None = None) -> bool:
         """Indicates whether the engine has been configured correctly and is
