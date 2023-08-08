@@ -1,7 +1,7 @@
 
 pyfuzzylite&trade; 
 ==================
-<img src="https://raw.githubusercontent.com/fuzzylite/pyfuzzylite/master/fuzzylite.png" align="right" alt="fuzzylite">
+<img src="/fuzzylite.png" align="right" alt="fuzzylite">
 
 
 A Fuzzy Logic Control Library in Python
