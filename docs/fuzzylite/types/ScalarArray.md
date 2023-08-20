@@ -1,0 +1,1 @@
+::: fuzzylite.types.ScalarArray
