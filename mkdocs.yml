@@ -1,1 +1,225 @@
-site_name: My Docs
+site_name: pyfuzzylite
+site_description: "a fuzzy logic control library in Python"
+site_author: Juan Rada-Vilela, Ph.D.
+site_url: https://fuzzylite.com
+repo_url: "https://github.com/fuzzylite/pyfuzzylite"
+edit_uri: "edit/main/docs/"
+repo_name: "fuzzylite/pyfuzzylite"
+#site_dir: "site"
+copyright: Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+
+watch: [ README.md, fuzzylite/ ]
+
+nav:
+  - Home: index.md
+  - About: about.md
+  - Reference:
+      - activation:
+          - Activation: fuzzylite/activation/Activation.md
+          - First: fuzzylite/activation/First.md
+          - General: fuzzylite/activation/General.md
+          - Highest: fuzzylite/activation/Highest.md
+          - Last: fuzzylite/activation/Last.md
+          - Lowest: fuzzylite/activation/Lowest.md
+          - Proportional: fuzzylite/activation/Proportional.md
+          - Threshold: fuzzylite/activation/Threshold.md
+      - benchmark:
+          - Benchmark: fuzzylite/benchmark/Benchmark.md
+      - defuzzifier:
+          - Bisector: fuzzylite/defuzzifier/Bisector.md
+          - Centroid: fuzzylite/defuzzifier/Centroid.md
+          - Defuzzifier: fuzzylite/defuzzifier/Defuzzifier.md
+          - IntegralDefuzzifier: fuzzylite/defuzzifier/IntegralDefuzzifier.md
+          - LargestOfMaximum: fuzzylite/defuzzifier/LargestOfMaximum.md
+          - MeanOfMaximum: fuzzylite/defuzzifier/MeanOfMaximum.md
+          - SmallestOfMaximum: fuzzylite/defuzzifier/SmallestOfMaximum.md
+          - WeightedAverage: fuzzylite/defuzzifier/WeightedAverage.md
+          - WeightedDefuzzifier: fuzzylite/defuzzifier/WeightedDefuzzifier.md
+          - WeightedSum: fuzzylite/defuzzifier/WeightedSum.md
+      - engine:
+          - Engine: fuzzylite/engine/Engine.md
+      - exporter:
+          - Exporter: fuzzylite/exporter/Exporter.md
+          - FldExporter: fuzzylite/exporter/FldExporter.md
+          - FllExporter: fuzzylite/exporter/FllExporter.md
+          - PythonExporter: fuzzylite/exporter/PythonExporter.md
+      - factory:
+          - ActivationFactory: fuzzylite/factory/ActivationFactory.md
+          - CloningFactory: fuzzylite/factory/CloningFactory.md
+          - ConstructionFactory: fuzzylite/factory/ConstructionFactory.md
+          - DefuzzifierFactory: fuzzylite/factory/DefuzzifierFactory.md
+          - FactoryManager: fuzzylite/factory/FactoryManager.md
+          - FunctionFactory: fuzzylite/factory/FunctionFactory.md
+          - HedgeFactory: fuzzylite/factory/HedgeFactory.md
+          - SNormFactory: fuzzylite/factory/SNormFactory.md
+          - TNormFactory: fuzzylite/factory/TNormFactory.md
+          - TermFactory: fuzzylite/factory/TermFactory.md
+      - hedge:
+          - Any: fuzzylite/hedge/Any.md
+          - Extremely: fuzzylite/hedge/Extremely.md
+          - Hedge: fuzzylite/hedge/Hedge.md
+          - HedgeFunction: fuzzylite/hedge/HedgeFunction.md
+          - HedgeLambda: fuzzylite/hedge/HedgeLambda.md
+          - Not: fuzzylite/hedge/Not.md
+          - Seldom: fuzzylite/hedge/Seldom.md
+          - Somewhat: fuzzylite/hedge/Somewhat.md
+          - Very: fuzzylite/hedge/Very.md
+      - importer:
+          - FllImporter: fuzzylite/importer/FllImporter.md
+          - Importer: fuzzylite/importer/Importer.md
+      - library:
+          - Information: fuzzylite/library/Information.md
+          - Representation: fuzzylite/library/Representation.md
+          - Settings: fuzzylite/library/Settings.md
+          - array: fuzzylite/library/array.md
+          - inf: fuzzylite/library/inf.md
+          - information: fuzzylite/library/_information.md
+          - nan: fuzzylite/library/nan.md
+          - repr: fuzzylite/library/repr.md
+          - representation: fuzzylite/library/_representation.md
+          - scalar: fuzzylite/library/scalar.md
+          - settings: fuzzylite/library/_settings.md
+          - to_float: fuzzylite/library/to_float.md
+      - norm:
+          - AlgebraicProduct: fuzzylite/norm/AlgebraicProduct.md
+          - AlgebraicSum: fuzzylite/norm/AlgebraicSum.md
+          - BoundedDifference: fuzzylite/norm/BoundedDifference.md
+          - BoundedSum: fuzzylite/norm/BoundedSum.md
+          - DrasticProduct: fuzzylite/norm/DrasticProduct.md
+          - DrasticSum: fuzzylite/norm/DrasticSum.md
+          - EinsteinProduct: fuzzylite/norm/EinsteinProduct.md
+          - EinsteinSum: fuzzylite/norm/EinsteinSum.md
+          - HamacherProduct: fuzzylite/norm/HamacherProduct.md
+          - HamacherSum: fuzzylite/norm/HamacherSum.md
+          - Maximum: fuzzylite/norm/Maximum.md
+          - Minimum: fuzzylite/norm/Minimum.md
+          - NilpotentMaximum: fuzzylite/norm/NilpotentMaximum.md
+          - NilpotentMinimum: fuzzylite/norm/NilpotentMinimum.md
+          - Norm: fuzzylite/norm/Norm.md
+          - NormFunction: fuzzylite/norm/NormFunction.md
+          - NormLambda: fuzzylite/norm/NormLambda.md
+          - NormalizedSum: fuzzylite/norm/NormalizedSum.md
+          - SNorm: fuzzylite/norm/SNorm.md
+          - TNorm: fuzzylite/norm/TNorm.md
+          - UnboundedSum: fuzzylite/norm/UnboundedSum.md
+      - operation:
+          - Op: fuzzylite/operation/Op.md
+          - Operation: fuzzylite/operation/Operation.md
+      - rule:
+          - Antecedent: fuzzylite/rule/Antecedent.md
+          - Consequent: fuzzylite/rule/Consequent.md
+          - Expression: fuzzylite/rule/Expression.md
+          - Operator: fuzzylite/rule/Operator.md
+          - Proposition: fuzzylite/rule/Proposition.md
+          - Rule: fuzzylite/rule/Rule.md
+          - RuleBlock: fuzzylite/rule/RuleBlock.md
+      - term:
+          - Activated: fuzzylite/term/Activated.md
+          - Aggregated: fuzzylite/term/Aggregated.md
+          - Arc: fuzzylite/term/Arc.md
+          - Bell: fuzzylite/term/Bell.md
+          - Binary: fuzzylite/term/Binary.md
+          - Concave: fuzzylite/term/Concave.md
+          - Constant: fuzzylite/term/Constant.md
+          - Cosine: fuzzylite/term/Cosine.md
+          - Discrete: fuzzylite/term/Discrete.md
+          - Function: fuzzylite/term/Function.md
+          - Gaussian: fuzzylite/term/Gaussian.md
+          - GaussianProduct: fuzzylite/term/GaussianProduct.md
+          - Linear: fuzzylite/term/Linear.md
+          - PiShape: fuzzylite/term/PiShape.md
+          - Ramp: fuzzylite/term/Ramp.md
+          - Rectangle: fuzzylite/term/Rectangle.md
+          - SShape: fuzzylite/term/SShape.md
+          - SemiEllipse: fuzzylite/term/SemiEllipse.md
+          - Sigmoid: fuzzylite/term/Sigmoid.md
+          - SigmoidDifference: fuzzylite/term/SigmoidDifference.md
+          - SigmoidProduct: fuzzylite/term/SigmoidProduct.md
+          - Spike: fuzzylite/term/Spike.md
+          - Term: fuzzylite/term/Term.md
+          - Trapezoid: fuzzylite/term/Trapezoid.md
+          - Triangle: fuzzylite/term/Triangle.md
+          - ZShape: fuzzylite/term/ZShape.md
+      - types:
+          - Array: fuzzylite/types/Array.md
+          - Scalar: fuzzylite/types/Scalar.md
+          - ScalarArray: fuzzylite/types/ScalarArray.md
+      - variable:
+          - InputVariable: fuzzylite/variable/InputVariable.md
+          - OutputVariable: fuzzylite/variable/OutputVariable.md
+          - Variable: fuzzylite/variable/Variable.md
+
+theme:
+  name: material
+  favicon: image/fuzzylite.svg
+  logo: image/fuzzylite.svg
+  palette:
+    primary: black
+    accent: red
+  features:
+    - navigation  # Sections are included in the navigation on the left.
+#    - toc  # Table of contents is integrated on the left; does not appear separately on the right.
+#    - header.autohide  # header disappears as you scroll
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fuzzylite/pyfuzzylite
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pyfuzzylite
+
+markdown_extensions:
+  - pymdownx.arithmatex: # Render LaTeX via MathJax
+      generic: true
+  - pymdownx.magiclink # Convert URLs into links
+  - pymdownx.details # Collapsable blocks
+  - pymdownx.b64 # Insert images from relative paths
+  - toc:
+      permalink: true # "¤"  # Adds a clickable permalink to each section heading
+      toc_depth: 4
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - search
+  - autorefs  # Cross-links to headings
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [ "fuzzylite/" ]
+          options:
+            # https://mkdocstrings.github.io/python/usage/
+            # General options:
+            #show_source: true
+            # Headings options:
+            heading_level: 2
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_root_full_path: false
+            show_root_members_full_path: false
+            show_object_full_path: false
+            show_category_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            # Members options:
+            inherited_members: true
+            members: true
+            members_order: alphabetical
+            group_by_category: true
+            show_submodules: true
+            # Docstrings options:
+            #docstring_style: google
+            merge_init_into_class: true
+            show_if_no_docstring: true
+            # Signatures/annotations options:
+            #annotations_path: brief
+            line_length: 120
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: true
+          import:
+            - https://docs.python.org/3/objects.inv

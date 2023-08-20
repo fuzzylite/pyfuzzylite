@@ -49,6 +49,7 @@ def lint(session: nox.Session) -> None:
         "pyright": "lint_pyright",
         "mypy": "lint_mypy",
         "qodana": "lint_qodana",
+        "markdown": "lint_markdown",
     }
     # Case 1: posargs is empty, run all linters
     # Case 2: posargs only contains -qodana, run all linters except qodana (cloud linting)
@@ -116,6 +117,14 @@ def lint_qodana(session: nox.Session) -> None:
             env={"QODANA_TOKEN": token},
             external=True,
         )
+
+
+@nox.session(python=False)
+def lint_markdown(session: nox.Session) -> None:
+    """Run mypy linter."""
+    files = ["README.md", "docs/"]
+    session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
+    session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
 
 
 @nox.session(python=False)

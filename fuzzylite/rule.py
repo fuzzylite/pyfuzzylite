@@ -646,12 +646,12 @@ class Rule:
      where elements in brackets are optional, elements in parentheses are
      compulsory, `*`-marked elements may appear zero or more times, and
     `?`-marked elements may appear once or not at all.
-     @author Juan Rada-Vilela, Ph.D.
-     @see Antecedent
-     @see Consequent
-     @see Hedge
-     @see RuleBlock
-     @since 4.0.
+     # @author Juan Rada-Vilela, Ph.D.
+     # @see Antecedent
+     # @see Consequent
+     # @see Hedge
+     # @see RuleBlock
+     # @since 4.0.
     """
 
     IF = "if"

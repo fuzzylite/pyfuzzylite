@@ -21,7 +21,6 @@ include = [
     "LICENSE.FuzzyLite.txt",
     "LICENSE.GPL.txt",
     "noxfile.py",
-    "poetry.lock",
     "poetry.toml",
     "pyproject.toml",
     "README.md",
@@ -61,15 +60,17 @@ numpy = "^1.20"               # Numeric manipulation and vectorisation
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"             # Code formatting
 coverage = "^7.2.3"           # Code coverage
+mkdocs-material = "^9.1.21"   # Documentation with material theme for mkdocs
+mkdocstrings = {extras = ["python"], version = "^0.22.0"} # Source code documentation for mkdocs
 mypy = "^1.2.0"               # Static code analysis
 poetry-bumpversion = "^0.3.0" # Version management
-pytest = "^7.3.1"             # Test Driven Development
-ruff = "^0.0.256"             # Code formatting
-twine = "^4.0.2"              # Publish package
+pymarkdownlnt = "^0.9.12"     # Markdown linter
 pyright = "^1.1.305"          # Static code analysis
+pytest = "^7.3.1"             # Test driven development
 pytest-benchmark = "^4.0.0"   # Local benchmarks
 pytest-codspeed = "^2.0.1"    # Cloud benchmarks
-mkdocs = "^1.5.2"
+ruff = "^0.0.256"             # Code formatting
+twine = "^4.0.2"              # Publish package
 
 [tool.black]
 target-version = ["py39"]
@@ -206,8 +207,13 @@ module = "fuzzylite.factory"
 disable_error_code = ["type-abstract"]
 
 [[tool.mypy.overrides]]
+# skipping analyzing "pytest_benchmark.fixture": module is installed, but missing library stubs or py.typed marker
 module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/test_benchmark_pytest.py --ignore=tests/test_benchmark_codspeed.py"
+
+[tool.pymarkdown]
+plugins.line-length.enabled = true
+plugins.line-length.line_length = 100
