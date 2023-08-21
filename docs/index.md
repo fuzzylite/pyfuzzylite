@@ -1,8 +1,8 @@
 # pyfuzzylite&trade;
 
-*** 
+***
 
-<img src="/image/fuzzylite.svg" align="left" alt="fuzzylite"> 
+<img src="/image/fuzzylite.svg" align="left" alt="fuzzylite">
 
 ## A Fuzzy Logic Control Library in Python
 
@@ -14,12 +14,20 @@ by [Juan Rada-Vilela](https://fuzzylite.com/jcrada), Ph.D.
 ***
 
 [main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
-[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
+[![Python package](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](
+https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
+https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
 
 [development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
-[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
+[![Python package](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](
+https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](
+https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
 
 ***
 
@@ -77,7 +85,6 @@ System `fis`, Fuzzy Control Language `fcl`.
 each included in the following formats: `C++`, `Java`, `fll`, `fld`, `R`, `fis`, and `fcl`.
 
 ## <a name="examples">Examples</a>
-
 
 ```python title="pyfuzzylite"
 import fuzzylite as fl
@@ -168,9 +175,9 @@ Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL htt
  }
 ```
 
-fuzzylite&reg; is a registered trademark of FuzzyLite Limited    
+fuzzylite&reg; is a registered trademark of FuzzyLite Limited  
 jfuzzylite&trade; is a trademark of FuzzyLite Limited  
 pyfuzzylite&trade; is a trademark of FuzzyLite Limited  
 QtFuzzyLite&trade; is a trademark of FuzzyLite Limited
 
-Copyright &copy; 2010-2023 FuzzyLite Limited. All rights reserved
+Copyright &copy; 2010-2023 FuzzyLite Limited. All rights reserved.

@@ -1,49 +1,59 @@
 
-pyfuzzylite&trade; 
-==================
+# pyfuzzylite&trade;
+
 <img src="/fuzzylite.png" align="right" alt="fuzzylite">
 
+## A Fuzzy Logic Control Library in Python
 
-A Fuzzy Logic Control Library in Python
----------------------------------------
+by [Juan Rada-Vilela](https://fuzzylite.com/jcrada), Ph.D.
 
-By: [Juan Rada-Vilela](https://fuzzylite.com/jcrada), Ph.D.
-
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/) 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
 
-
 [main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
-[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
+[![Python package](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](
+https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
+https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
 
 [development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
-[![Coverage Status](https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
+[![Python package](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Coverage Status](
+https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](
+https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
 
 ***
 
-
 ### <a name="license">License</a>
-`pyfuzzylite` is dual-licensed under the [**GNU GPL 3.0**](https://opensource.org/license/gpl-3-0/) and under a **proprietary license for commercial purposes**.
 
-You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of [`QtFuzzyLite`](https://fuzzylite.com/downloads).
+`pyfuzzylite` is dual-licensed under the [**GNU GPL 3.0**](https://opensource.org/license/gpl-3-0/) and under a
+**proprietary license for commercial purposes**.
 
-[`QtFuzzyLite`](https://fuzzylite.com/downloads/) is the best graphical user interface available to  easily design and directly operate fuzzy logic controllers in real time. Available for Windows, Mac, and Linux, its goal is to significantly **speed up** the design of your fuzzy logic controllers, while providing a very **useful**, **functional** and **beautiful** user interface.
+You are **strongly** encouraged to support the development of the FuzzyLite Libraries by purchasing a license of
+[`QtFuzzyLite`](https://fuzzylite.com/downloads).
+
+[`QtFuzzyLite`](https://fuzzylite.com/downloads/) is the best graphical user interface available to  easily design and
+directly operate fuzzy logic controllers in real time. Available for Windows, Mac, and Linux, its goal is to
+significantly **speed up** the design of your fuzzy logic controllers, while providing a very **useful**, **functional**
+and **beautiful** user interface.
 Please, download it and check it out for free at [fuzzylite.com/downloads](https://fuzzylite.com/downloads).
-
-
-
 
 ### <a name="introduction">Introduction</a>
 
-**The FuzzyLite Libraries for Fuzzy Logic Control** refer to [`fuzzylite`](https://github.com/fuzzylite/fuzzylite/) (C++), [`pyfuzzylite`](https://github.com/fuzzylite/pyfuzzylite/) (Python), and [`jfuzzylite`](https://github.com/fuzzylite/jfuzzylite/) (Java). 
+**The FuzzyLite Libraries for Fuzzy Logic Control** refer to
+[`fuzzylite`](https://github.com/fuzzylite/fuzzylite/) (C++),
+[`pyfuzzylite`](https://github.com/fuzzylite/pyfuzzylite/) (Python),
+and [`jfuzzylite`](https://github.com/fuzzylite/jfuzzylite/) (Java).
 
- The **goal** of the FuzzyLite Libraries is to **easily** design and **efficiently** operate fuzzy logic controllers following an **object-oriented** programming model with minimal dependency on external libraries.
-
+The **goal** of the FuzzyLite Libraries is to **easily** design and **efficiently** operate fuzzy logic controllers
+following an **object-oriented** programming model with minimal dependency on external libraries.
 
 #### Reference
+
 If you are using the FuzzyLite Libraries, please cite the following reference in your article:
 
 Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL https://fuzzylite.com.
@@ -57,17 +67,18 @@ Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL htt
 ```
 
 #### Documentation
-The documentation for the `fuzzylite` library is available at [fuzzylite.com/documentation](https://fuzzylite.com/documentation).
+
+The documentation for the `fuzzylite` library is available at
+[fuzzylite.com/documentation](https://fuzzylite.com/documentation).
 
 #### Contributing
+
 All contributions are welcome, provided they follow the following guidelines:
- - Pull requests are made to the [development](https://github.com/fuzzylite/pyfuzzylite/tree/development) branch
- - Source code is consistent with standards in the library
- - Contribution is appropriately documented and tested, raising issues where appropriate
- - License of the contribution is waived to match the licenses of the FuzzyLite Libraries
 
-
-
+- Pull requests are made to the [development](https://github.com/fuzzylite/pyfuzzylite/tree/development) branch
+- Source code is consistent with standards in the library
+- Contribution is appropriately documented and tested, raising issues where appropriate
+- License of the contribution is waived to match the licenses of the FuzzyLite Libraries
 
 ### <a name="features">Features</a>
 
@@ -80,9 +91,11 @@ All contributions are welcome, provided they follow the following guidelines:
 
 **(7) Activation methods**:  general, proportional, threshold, first, last, lowest, highest.
 
-**(8) Conjunction and Implication (T-Norms)**: minimum, algebraic product, bounded difference, drastic product, einstein product, hamacher product, nilpotent minimum, function.
+**(8) Conjunction and Implication (T-Norms)**: minimum, algebraic product, bounded difference, drastic product,
+einstein product, hamacher product, nilpotent minimum, function.
 
-**(10) Disjunction and Aggregation (S-Norms)**:  maximum, algebraic sum, bounded sum, drastic sum, einstein sum, hamacher sum, nilpotent maximum, normalized sum, unbounded sum,  function.
+**(10) Disjunction and Aggregation (S-Norms)**:  maximum, algebraic sum, bounded sum, drastic sum, einstein sum,
+hamacher sum, nilpotent maximum, normalized sum, unbounded sum,  function.
 
 **(7) Defuzzifiers**:  (5) *Integral*: centroid, bisector, smallest of maximum, largest of maximum, mean of maximum.
 (2) *Weighted*: weighted average, weighted sum.
@@ -91,16 +104,16 @@ All contributions are welcome, provided they follow the following guidelines:
 
 **(3) Importers**: FuzzyLite Language `fll`, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
 
-**(7) Exporters**: `C++`, `Java`, FuzzyLite Language `fll`, FuzzyLite Dataset `fld`, `R` script, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+**(7) Exporters**: `C++`, `Java`, FuzzyLite Language `fll`, FuzzyLite Dataset `fld`, `R` script,
+Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
 
-**(30+) Examples**  of Mamdani, Takagi-Sugeno, Tsukamoto, and Hybrid controllers from `fuzzylite`, Octave, and Matlab, each included in the following formats: `C++`, `Java`, `fll`, `fld`, `R`, `fis`, and `fcl`.
-
-
-
-
+**(30+) Examples**  of Mamdani, Takagi-Sugeno, Tsukamoto, and Hybrid controllers from `fuzzylite`, Octave, and Matlab,
+each included in the following formats: `C++`, `Java`, `fll`, `fld`, `R`, `fis`, and `fcl`.
 
 ### <a name="example">Example</a>
+
 #### FuzzyLite Language
+
 ```yaml
 #File: ObstacleAvoidance.fll
 Engine: ObstacleAvoidance
@@ -132,12 +145,9 @@ RuleBlock: mamdani
 
 ***
 
-
-
-fuzzylite&reg; is a registered trademark of FuzzyLite Limited    
+fuzzylite&reg; is a registered trademark of FuzzyLite Limited  
 jfuzzylite&trade; is a trademark of FuzzyLite Limited  
 pyfuzzylite&trade; is a trademark of FuzzyLite Limited  
 QtFuzzyLite&trade; is a trademark of FuzzyLite Limited  
 
-
-Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved
+Copyright &#xa9; 2010-2023 FuzzyLite Limited. All rights reserved.
