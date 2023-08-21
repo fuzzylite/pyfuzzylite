@@ -525,7 +525,7 @@ class FldExporter(Exporter):
             resolution if iv in active_variables else 0 for iv in engine.input_variables
         ]
 
-        input_values = []
+        input_values: list[list[float]] = []
         incremented = True
         while incremented:
             row = []
@@ -577,7 +577,7 @@ class FldExporter(Exporter):
         @param reader is the reader of a set of lines containing space-separated input values
         @param skip_lines is the number of lines to initially skip.
         """
-        input_values = []
+        input_values: list[list[float]] = []
         for i, line in enumerate(reader.readlines()):
             if i < skip_lines:
                 continue

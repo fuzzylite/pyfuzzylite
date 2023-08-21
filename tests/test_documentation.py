@@ -33,10 +33,10 @@ def generate_documentation() -> str:
             documentation.write_text(f"::: {module.__name__}.{component}")
             mkdocs[target_module.stem].append(component)
     result = []
-    for module, components in mkdocs.items():
-        result.append(f"- {module}:")
+    for module_name, components in mkdocs.items():
+        result.append(f"- {module_name}:")
         result.extend(
-            f"  - {component}: fuzzylite/{module}/{component}.md"
+            f"  - {component}: fuzzylite/{module_name}/{component}.md"
             for component in components
         )
     mkdocs_yaml = "\n".join(result)
