@@ -1,1 +1,1 @@
-[//]: # (::: fuzzylite.library.inf)
+::: fuzzylite.library.inf

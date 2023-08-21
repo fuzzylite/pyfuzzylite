@@ -1,1 +1,1 @@
-[//]: # (::: fuzzylite.types.Array)
+::: fuzzylite.types.Array
