@@ -1,10 +1,13 @@
-import fuzzylite as fl
-from pathlib import Path
-import inspect
 import shutil
+from pathlib import Path
+
+import fuzzylite as fl
 
 
 def generate_documentation() -> str:
+    """Generate markdown files in `/tmp/fl/docs` from the modules and exports of fuzzylite.
+    @return mkdocs configuration linking to generated markdown files.
+    """
     modules = [
         module
         for module in fl.Op.glob_examples("module", module=fl)
