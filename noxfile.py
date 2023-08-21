@@ -162,6 +162,12 @@ def benchmark(session: nox.Session) -> None:
         session.run(*"pytest tests/test_benchmark_pytest.py".split(), external=True)
 
 
+@nox.session(python=False)
+def docs(session: nox.Session) -> None:
+    """Build the documentation."""
+    session.run(*"mkdocs build --strict".split(), external=True)
+
+
 @nox.session
 def test_publish(session: nox.Session) -> None:
     """Build the distributable and upload it to testpypi."""
