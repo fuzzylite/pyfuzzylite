@@ -16,27 +16,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install requirements
-        run: |
-          pip install poetry nox
+        run: pip install poetry nox
+
       - name: Check
-        run: |
-          nox -e check
+        run: nox -e check
+
       - name: Install
-        run: |
-          nox -e install
+        run: nox -e install
+
       - name: Lint
-        run: |
-          nox -e lint -- -qodana
+        run: nox -e lint -- -qodana
+
       - name: Test
-        run: |
-          nox -e test
+        run: nox -e test
+
+      - name: Documentation
+        run: nox -e docs
+
       - name: Coverage
         uses: coverallsapp/github-action@v2
+
       - name: Benchmark
         uses: CodSpeedHQ/action@v1
         with:

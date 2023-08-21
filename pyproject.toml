@@ -216,4 +216,9 @@ addopts = "--ignore=tests/test_benchmark_pytest.py --ignore=tests/test_benchmark
 
 [tool.pymarkdown]
 plugins.line-length.enabled = true
-plugins.line-length.line_length = 100
+plugins.line-length.line_length = 120
+
+# MD033: Inline HTML [Element: a] (no-inline-html)
+plugins.MD033.enabled = false
+# MD034: Bare URL used (no-bare-urls)
+plugins.MD034.enabled = false

@@ -124,7 +124,6 @@ def lint_markdown(session: nox.Session) -> None:
     """Run mypy linter."""
     files = ["README.md", "docs/"]
     session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
-    session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
 
 
 @nox.session(python=False)
