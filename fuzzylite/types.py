@@ -5,8 +5,7 @@ __all__ = ["Array", "Scalar", "ScalarArray"]
 from typing import Any, Union
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import NDArray as Array
 
-Array = NDArray
 Scalar = Union[float, np.floating[Any], Array[np.floating[Any]]]
 ScalarArray = Array[np.floating[Any]]

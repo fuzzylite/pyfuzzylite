@@ -42,6 +42,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Final, overload
 
 import numpy as np
+from numpy import array, inf, nan
 
 from .types import Array, Scalar, ScalarArray
 
@@ -57,10 +58,6 @@ logging.basicConfig(
     "%(module)s::%(funcName)s()[%(lineno)d]"
     "\n%(message)s",
 )
-
-array = np.array
-inf = np.inf
-nan = np.nan
 
 
 def to_float(x: Any, /) -> float:
