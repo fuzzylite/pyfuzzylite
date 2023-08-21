@@ -2,18 +2,108 @@ site_name: pyfuzzylite
 site_description: "a fuzzy logic control library in Python"
 site_author: Juan Rada-Vilela, Ph.D.
 site_url: https://fuzzylite.com
-repo_url: "https://github.com/fuzzylite/pyfuzzylite"
-edit_uri: "edit/main/docs/"
 repo_name: "fuzzylite/pyfuzzylite"
-#site_dir: "site"
+repo_url: "https://github.com/fuzzylite/pyfuzzylite"
+edit_uri: "edit/development/docs/"
 copyright: Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
 
-watch: [ README.md, fuzzylite/ ]
+watch: [ README.md, fuzzylite/, docs/ ]
+
+theme:
+  name: material
+  favicon: image/fuzzylite.svg
+  logo: image/fuzzylite.svg
+  palette:
+    primary: black
+    accent: red
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation  # Sections are included in the navigation on the left.
+    - navigation.tabs # Tabs for navigation
+    - navigation.tabs.sticky # Tabs remain visible when scrolling down
+    - navigation.top # "Back to top" when reaching bottom of page
+    - toc.follow # follow content in TOC
+    - toc.integrate # TOC integrated in left panel
+    - content.action.edit # Edit documentation
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/fuzzylite/pyfuzzylite
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pyfuzzylite
+
+markdown_extensions:
+  - pymdownx.arithmatex: # Render LaTeX via MathJax
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.magiclink # Convert URLs into links
+  - pymdownx.details # Collapsable blocks
+  - pymdownx.b64 # Insert images from relative paths
+  - toc:
+      permalink: true # "¤"  # Adds a clickable permalink to each section heading
+      toc_depth: 4
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+      # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-search/#+search.separator
+  - autorefs  # Cross-links to headings
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [ "fuzzylite/" ]
+          options:
+            # https://mkdocstrings.github.io/python/usage/
+            # General options:
+            #show_source: true
+            # Headings options:
+            heading_level: 2
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_root_full_path: false
+            show_root_members_full_path: false
+            show_object_full_path: false
+            show_category_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            # Members options:
+            inherited_members: true
+            members: true
+            members_order: alphabetical
+            group_by_category: true
+            show_submodules: true
+            # Docstrings options:
+            #docstring_style: google
+            merge_init_into_class: true
+            show_if_no_docstring: true
+            # Signatures/annotations options:
+            #annotations_path: brief
+            line_length: 120
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: true
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+
 
 nav:
   - Home: index.md
   - About: about.md
-  - Reference:
+  - Modules:
       - activation:
           - Activation: fuzzylite/activation/Activation.md
           - First: fuzzylite/activation/First.md
@@ -80,6 +170,7 @@ nav:
           - scalar: fuzzylite/library/scalar.md
           - settings: fuzzylite/library/_settings.md
           - to_float: fuzzylite/library/to_float.md
+#          - test: fuzzylite/library/test.md
       - norm:
           - AlgebraicProduct: fuzzylite/norm/AlgebraicProduct.md
           - AlgebraicSum: fuzzylite/norm/AlgebraicSum.md
@@ -148,78 +239,3 @@ nav:
           - InputVariable: fuzzylite/variable/InputVariable.md
           - OutputVariable: fuzzylite/variable/OutputVariable.md
           - Variable: fuzzylite/variable/Variable.md
-
-theme:
-  name: material
-  favicon: image/fuzzylite.svg
-  logo: image/fuzzylite.svg
-  palette:
-    primary: black
-    accent: red
-  features:
-    - navigation  # Sections are included in the navigation on the left.
-#    - toc  # Table of contents is integrated on the left; does not appear separately on the right.
-#    - header.autohide  # header disappears as you scroll
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/fuzzylite/pyfuzzylite
-    - icon: fontawesome/brands/python
-      link: https://pypi.org/project/pyfuzzylite
-
-markdown_extensions:
-  - pymdownx.arithmatex: # Render LaTeX via MathJax
-      generic: true
-  - pymdownx.magiclink # Convert URLs into links
-  - pymdownx.details # Collapsable blocks
-  - pymdownx.b64 # Insert images from relative paths
-  - toc:
-      permalink: true # "¤"  # Adds a clickable permalink to each section heading
-      toc_depth: 4
-
-extra_javascript:
-  - javascripts/mathjax.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
-
-plugins:
-  - search
-  - autorefs  # Cross-links to headings
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          paths: [ "fuzzylite/" ]
-          options:
-            # https://mkdocstrings.github.io/python/usage/
-            # General options:
-            #show_source: true
-            # Headings options:
-            heading_level: 2
-            show_root_heading: true
-            show_root_toc_entry: true
-            show_root_full_path: false
-            show_root_members_full_path: false
-            show_object_full_path: false
-            show_category_heading: true
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
-            # Members options:
-            inherited_members: true
-            members: true
-            members_order: alphabetical
-            group_by_category: true
-            show_submodules: true
-            # Docstrings options:
-            #docstring_style: google
-            merge_init_into_class: true
-            show_if_no_docstring: true
-            # Signatures/annotations options:
-            #annotations_path: brief
-            line_length: 120
-            show_signature_annotations: true
-            signature_crossrefs: true
-            separate_signature: true
-          import:
-            - https://docs.python.org/3/objects.inv
