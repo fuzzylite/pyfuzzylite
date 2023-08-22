@@ -169,7 +169,6 @@ nav:
           - scalar: fuzzylite/library/scalar.md
           - settings: fuzzylite/library/_settings.md
           - to_float: fuzzylite/library/to_float.md
-#          - test: fuzzylite/library/test.md
       - norm:
           - AlgebraicProduct: fuzzylite/norm/AlgebraicProduct.md
           - AlgebraicSum: fuzzylite/norm/AlgebraicSum.md
