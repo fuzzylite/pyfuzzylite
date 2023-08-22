@@ -26,6 +26,7 @@ nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
 def check(session: nox.Session) -> None:
     """Check the `pyproject.toml` is valid."""
     session.run(*"poetry check".split(), external=True)
+    session.run(*"poetry lock --check".split(), external=True)
 
 
 @nox.session(python=False)
@@ -129,7 +130,7 @@ def lint_markdown(session: nox.Session) -> None:
 @nox.session(python=False)
 def install(session: nox.Session) -> None:
     """Install the project using poetry."""
-    session.run(*"poetry install -vvv --no-interaction".split(), external=True)
+    session.run(*"poetry install -v --no-interaction".split(), external=True)
 
 
 @nox.session(python=False)
