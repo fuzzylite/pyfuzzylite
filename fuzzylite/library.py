@@ -39,10 +39,9 @@ import typing
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Final, overload
+from typing import Any, Final, overload
 
 import numpy as np
-from numpy import inf, nan
 
 from .types import Array, Scalar, ScalarArray
 
@@ -58,6 +57,10 @@ logging.basicConfig(
     "%(module)s::%(funcName)s()[%(lineno)d]"
     "\n%(message)s",
 )
+
+array: Final = np.array
+inf: Final = np.inf
+nan: Final = np.nan
 
 
 def to_float(x: Any, /) -> float:
@@ -84,9 +87,6 @@ def scalar(
     @param x is the value to convert.
     """
     return np.asarray(x, dtype=settings.float_type, **kwargs)
-
-
-array = np.array
 
 
 class Settings:
@@ -194,7 +194,7 @@ class Settings:
                 setattr(self, key, rollback_settings[key])
 
 
-settings: Final[Settings] = Settings()
+settings: Final = Settings()
 
 
 @dataclass(frozen=True, repr=False)
@@ -222,7 +222,7 @@ class Information:
         return __version__
 
 
-information: Final[Information] = Information()
+information: Final = Information()
 
 
 class Representation(reprlib.Repr):
@@ -240,7 +240,7 @@ class Representation(reprlib.Repr):
         self.maxlevel = 10  # except for recursion level
         from .exporter import FllExporter
 
-        self.fll: Final[FllExporter] = FllExporter()
+        self.fll: Final = FllExporter()
 
     def __repr__(self) -> str:
         """@return Python code to construct the representation."""
@@ -369,5 +369,5 @@ class Representation(reprlib.Repr):
         return f"{self.package_of(settings)}{array.__name__}([{elements}])"
 
 
-representation: Final[Representation] = Representation()
-repr: Final[Callable[[Any], str]] = representation.repr
+representation: Final = Representation()
+repr: Final = representation.repr

@@ -128,7 +128,7 @@ class General(Activation):
 
 
 class First(Activation):
-    """The First class is a RuleBlock Activation method that activates the first
+    r"""The First class is a RuleBlock Activation method that activates the first
     $n$ rules whose activation degrees are greater than or equal to the given
     threshold. The rules are iterated in the order they were added to the rule block.
 

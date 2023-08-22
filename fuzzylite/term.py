@@ -86,10 +86,6 @@ class Term(ABC):
     @see InputVariable
     @see OutputVariable
     @since 4.0
-
-    Attributes:
-        name is the name of the term
-        height is the height of the term
     """
 
     def __init__(self, name: str = "", height: float = 1.0) -> None:
@@ -925,7 +921,7 @@ class Discrete(Term):
         name: str,
         xy: str
         | Sequence[Floatable]
-        | tuple[Sequence[Floatable], tuple[Sequence[Floatable]]]
+        | tuple[Sequence[Floatable], Sequence[Floatable]]
         | dict[Floatable, Floatable],
         height: float = 1.0,
     ) -> Discrete:
@@ -943,9 +939,10 @@ class Discrete(Term):
             x = scalar(xy[0::2])
             y = scalar(xy[1::2])
         if isinstance(xy, tuple):
-            x, y = map(scalar, xy)
+            x = scalar(xy[0])
+            y = scalar(xy[1])
         if isinstance(xy, dict):
-            x = scalar([xi for xi in xy])
+            x = scalar([xi for xi in xy.keys()])  # noqa: SIM118
             y = scalar([yi for yi in xy.values()])
         return Discrete(name, Discrete.to_xy(x, y), height=height)
 

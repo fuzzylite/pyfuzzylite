@@ -480,7 +480,7 @@ class OutputVariable(Variable):
         self.value = nan
 
     def fuzzy_value(self) -> str:
-        r"""Returns: string representation of the fuzzy output value $\tilde{y}$."""
+        r"""Create string representation of the fuzzy output value $\tilde{y}$."""
         # TODO: fix for vectorisation
         result: list[str] = []
         for term in self.terms:

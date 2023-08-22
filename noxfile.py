@@ -26,6 +26,7 @@ nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
 def check(session: nox.Session) -> None:
     """Check the `pyproject.toml` is valid."""
     session.run(*"poetry check".split(), external=True)
+    session.run(*"poetry lock --check".split(), external=True)
 
 
 @nox.session(python=False)
@@ -49,6 +50,7 @@ def lint(session: nox.Session) -> None:
         "pyright": "lint_pyright",
         "mypy": "lint_mypy",
         "qodana": "lint_qodana",
+        "markdown": "lint_markdown",
     }
     # Case 1: posargs is empty, run all linters
     # Case 2: posargs only contains -qodana, run all linters except qodana (cloud linting)
@@ -119,6 +121,13 @@ def lint_qodana(session: nox.Session) -> None:
 
 
 @nox.session(python=False)
+def lint_markdown(session: nox.Session) -> None:
+    """Run mypy linter."""
+    files = ["README.md", "docs/"]
+    session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
+
+
+@nox.session(python=False)
 def install(session: nox.Session) -> None:
     """Install the project using poetry."""
     session.run(*"poetry install -v --no-interaction".split(), external=True)
@@ -151,6 +160,18 @@ def benchmark(session: nox.Session) -> None:
         session.run(*"pytest tests/test_benchmark_codspeed.py".split(), external=True)
     else:
         session.run(*"pytest tests/test_benchmark_pytest.py".split(), external=True)
+
+
+@nox.session(python=False)
+def docs(session: nox.Session) -> None:
+    """Build the documentation."""
+    session.run(*"mkdocs build --strict".split(), external=True)
+
+
+@nox.session(python=False)
+def docs_deploy(session: nox.Session) -> None:
+    """Deploy the documentation in Github Pages."""
+    session.run(*"mkdocs gh-deploy".split(), external=True)
 
 
 @nox.session
