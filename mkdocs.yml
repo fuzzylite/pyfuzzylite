@@ -1,7 +1,7 @@
 site_name: pyfuzzylite
 site_description: "a fuzzy logic control library in Python"
 site_author: Juan Rada-Vilela, Ph.D.
-site_url: https://fuzzylite.com
+#site_url: https://fuzzylite.com
 repo_name: "fuzzylite/pyfuzzylite"
 repo_url: "https://github.com/fuzzylite/pyfuzzylite"
 edit_uri: "edit/development/docs/"
@@ -102,7 +102,6 @@ plugins:
 
 nav:
   - Home: index.md
-  - About: about.md
   - Modules:
       - activation:
           - Activation: fuzzylite/activation/Activation.md

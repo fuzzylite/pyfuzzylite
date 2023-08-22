@@ -2,7 +2,7 @@
 
 ***
 
-<img src="/image/fuzzylite.svg" align="left" alt="fuzzylite">
+<img src="image/fuzzylite.svg" align="left" alt="fuzzylite">
 
 ## A Fuzzy Logic Control Library in Python
 
