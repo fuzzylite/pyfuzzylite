@@ -167,6 +167,12 @@ def docs(session: nox.Session) -> None:
     session.run(*"mkdocs build --strict".split(), external=True)
 
 
+@nox.session(python=False)
+def docs_deploy(session: nox.Session) -> None:
+    """Deploy the documentation in Github Pages."""
+    session.run(*"mkdocs gh-deploy".split(), external=True)
+
+
 @nox.session
 def test_publish(session: nox.Session) -> None:
     """Build the distributable and upload it to testpypi."""
