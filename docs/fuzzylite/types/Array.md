@@ -1,1 +1,1 @@
-::: fuzzylite.types.Array
+::: numpy.typing.NDArray
