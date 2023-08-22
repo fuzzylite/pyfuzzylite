@@ -1,1 +1,0 @@
-::: fuzzylite.rule.Rule
