@@ -35,6 +35,7 @@ extra:
       link: https://pypi.org/project/pyfuzzylite
 
 markdown_extensions:
+  - admonition # Render blocks (eg, todo, note, info): https://squidfunk.github.io/mkdocs-material/reference/admonitions/
   - pymdownx.arithmatex: # Render LaTeX via MathJax
       generic: true
   - pymdownx.highlight:
@@ -45,7 +46,7 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.superfences
   - pymdownx.magiclink # Convert URLs into links
-  - pymdownx.details # Collapsable blocks
+  - pymdownx.details # Collapsible blocks
   - pymdownx.b64 # Insert images from relative paths
   - toc:
       permalink: true # "¤"  # Adds a clickable permalink to each section heading
@@ -82,19 +83,19 @@ plugins:
             # Members options:
             inherited_members: true
             members: true
-            members_order: alphabetical
+            members_order: alphabetical # source
             group_by_category: true
             show_submodules: true
             # Docstrings options:
-            #docstring_style: google
-            merge_init_into_class: true
+            docstring_style: google
+            merge_init_into_class: false
             show_if_no_docstring: true
             # Signatures/annotations options:
             #annotations_path: brief
             line_length: 120
             show_signature_annotations: true
             signature_crossrefs: true
-            separate_signature: true
+            separate_signature: false
           import:
             - https://docs.python.org/3/objects.inv
             - https://numpy.org/doc/stable/objects.inv

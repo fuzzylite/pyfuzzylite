@@ -313,7 +313,7 @@ class PythonExporter(Exporter):
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode())  # type: ignore
+            return black.format_str(code, mode=black.Mode())
         except ModuleNotFoundError:
             settings.logger.error(
                 "expected `black` module to be installed, but could not be found"

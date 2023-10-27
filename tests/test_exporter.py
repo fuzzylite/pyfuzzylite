@@ -327,7 +327,7 @@ class TestPythonExporter(unittest.TestCase):
         exporter = fl.PythonExporter()
         obtained = exporter.to_string(instance)
         self.assertEqual(
-            black.format_str(expected, mode=black.Mode()),  # type:ignore
+            black.format_str(expected, mode=black.Mode()),
             obtained,
         )
 
@@ -338,13 +338,13 @@ import fuzzylite as fl
 def create() -> {return_type}:
     return {code}
     """,
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             )
 
         obtained_encapsulated = fl.PythonExporter(encapsulated=True).to_string(instance)
         if encapsulated is not None:
             self.assertEqual(
-                black.format_str(encapsulated, mode=black.Mode()),  # type:ignore
+                black.format_str(encapsulated, mode=black.Mode()),
                 obtained_encapsulated,
             )
         else:

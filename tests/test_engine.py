@@ -889,7 +889,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -899,7 +899,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine_copy),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -973,7 +973,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -983,7 +983,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine_copy),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 

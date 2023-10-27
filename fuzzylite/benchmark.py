@@ -190,9 +190,9 @@ class Benchmark:
                 mean=np.mean(values),
                 std=np.std(values),
                 min=np.min(values),
-                q1=np.percentile(values, [25]).item(),
+                q1=np.percentile(values, q=[25.0]).item(),
                 median=np.median(values),
-                q3=np.percentile(values, [75]).item(),
+                q3=np.percentile(values, q=[75.0]).item(),
                 max=np.max(values),
             )
         return result

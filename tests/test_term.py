@@ -182,8 +182,10 @@ class TestTerm(unittest.TestCase):
             0.8: nan,
             1.0: nan,
         }
-        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
-        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
+        np.testing.assert_allclose(discrete_base.x(), fl.array([x for x in xy]))
+        np.testing.assert_allclose(
+            discrete_base.y(), fl.array([y for y in xy.values()])
+        )
 
         discrete_base = BaseTerm().discretize(-1, 1, 10, midpoints=True)
         xy = {
@@ -198,8 +200,10 @@ class TestTerm(unittest.TestCase):
             0.7: nan,
             0.9: nan,
         }
-        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
-        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
+        np.testing.assert_allclose(discrete_base.x(), fl.array([x for x in xy]))
+        np.testing.assert_allclose(
+            discrete_base.y(), fl.array([y for y in xy.values()])
+        )
 
     def test_activated(self) -> None:
         """Test the activated term."""

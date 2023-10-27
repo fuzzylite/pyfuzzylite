@@ -61,7 +61,7 @@ numpy = "^1.20"               # Numeric manipulation and vectorisation
 black = "^23.3.0"             # Code formatting
 coverage = "^7.2.3"           # Code coverage
 mkdocs-material = "^9.1.21"   # Documentation with material theme for mkdocs
-mkdocstrings = {extras = ["python"], version = "^0.22.0"} # Source code documentation for mkdocs
+mkdocstrings = { extras = ["python"], version = "^0.22.0" } # Source code documentation for mkdocs
 mypy = "^1.2.0"               # Static code analysis
 poetry-bumpversion = "^0.3.0" # Version management
 pymarkdownlnt = "^0.9.12"     # Markdown linter
@@ -137,6 +137,9 @@ ignore = [
     "B007", # [*] Loop control variable `x` not used within loop body
     "D100", # Missing docstring in public module
     "D104", # Missing docstring in public package
+    "D212", # Multi-line docstring summary should start at the first line
+    "D400", # First line should end with a period
+    "D415", # First line should end with a period, question mark, or exclamation point
     "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     # "D417", # Missing argument descriptions in the docstring
@@ -156,7 +159,12 @@ ignore = [
     # "W605",    # [*] Invalid escape sequence: latex
 ]
 
-unfixable = []
+unfixable = [
+#    "D",
+    "D212", # Multi-line docstring summary should start at the first line
+    "D400", # First line should end with a period
+    "D415", # First line should end with a period, question mark, or exclamation point
+]
 
 exclude = []
 
