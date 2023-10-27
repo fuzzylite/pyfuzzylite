@@ -26,7 +26,7 @@ nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
 def check(session: nox.Session) -> None:
     """Check the `pyproject.toml` is valid."""
     session.run(*"poetry check".split(), external=True)
-    session.run(*"poetry lock --check".split(), external=True)
+    session.run(*"poetry check --lock".split(), external=True)
 
 
 @nox.session(python=False)
