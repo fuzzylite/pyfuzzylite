@@ -34,12 +34,14 @@ from .types import Scalar, ScalarArray
 
 
 class Benchmark:
-    """The Benchmark class evaluates the performance of an Engine on a given dataset.
-    The performance time is measured in seconds and the error is measured as the mean squared error
-    over the differences between the expected dataset outputs and the obtained output values.
+    """Evaluate the performance of an engine on a dataset.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @since 8.0
+    The performance time is measured in seconds and the error is measured as the mean squared error
+    over the differences between the expected dataset output values and the obtained output values.
+
+    info: related
+        - [fuzzylite.engine.Engine][]
+        - [fuzzylite.library.Settings][]
     """
 
     def __init__(
@@ -52,12 +54,14 @@ class Benchmark:
         shuffle: bool = True,
         seed: int | None = None,
     ) -> None:
-        """@param name is the name of the benchmark
-        @param engine is the engine to benchmark
-        @param data is the data to benchmark the engine on
-        @param rows is the number (int) or ratio (float) of rows to use from the data
-        @param shuffle whether to shuffle the data
-        @param seed is the seed to shuffle the data.
+        """
+        Args:
+            name: name of the benchmark
+            engine: engine to benchmark
+            data: data to benchmark the engine on
+            rows: number (int) or ratio (float) of rows to use from the data
+            shuffle: shuffles the data
+            seed: seed to shuffle the data
         """
         self.name = name
         self.engine = engine
@@ -71,7 +75,10 @@ class Benchmark:
         self.error: list[float] = []
 
     def __repr__(self) -> str:
-        """@return Python code to construct the benchmark."""
+        """
+        Returns:
+            code to construct the benchmark in Python
+        """
         fields = vars(self).copy()
         for field in "test_data random time error".split():
             fields.pop(field)
@@ -86,11 +93,15 @@ class Benchmark:
         seed: int | None = None,
     ) -> Self:
         """Create benchmark for the example
-        @param example is the example to benchmark (eg, fuzzylite.examples.terms.arc)
-        @param rows is the number (int) or ratio (float) of rows to use from the data
-        @param shuffle whether to shuffle the data
-        @param seed is the seed to shuffle the data.
-        @return a benchmark ready for the example.
+
+        Args:
+            example: example to benchmark (eg, `fuzzylite.examples.terms.arc`)
+            rows: number (int) or ratio (float) of rows to use from the data
+            shuffle: whether to shuffle the data
+            seed: seed to shuffle the data
+
+        Returns:
+             a benchmark ready for the example
         """
         engine, data = cls.engine_and_data(example)
         return cls(
@@ -100,8 +111,12 @@ class Benchmark:
     @classmethod
     def engine_and_data(cls, example: ModuleType) -> tuple[Engine, ScalarArray]:
         """Create the engine and load the dataset for the example
-        @param example is the module to benchmark (eg, fuzzylite.examples.terms.arc)
-        @return tuple of engine and dataset.
+
+        Args:
+            example: is the module to benchmark (eg, fuzzylite.examples.terms.arc)
+
+        Returns:
+             tuple of engine and dataset
         """
         name_class, *_ = inspect.getmembers(example, predicate=inspect.isclass)
         name, engine_class = name_class
@@ -117,16 +132,16 @@ class Benchmark:
         return engine, data
 
     def prepare(self) -> None:
-        """Prepare the engine and dataset to benchmark."""
+        """Prepare the engine and dataset to benchmark"""
         self.prepare_engine()
         self.prepare_data()
 
     def prepare_engine(self) -> None:
-        """Prepare the engine to benchmark."""
+        """Prepare the engine to benchmark"""
         self.engine.restart()
 
     def prepare_data(self) -> None:
-        """Prepare the dataset to benchmark on."""
+        """Prepare the dataset to benchmark on"""
         data = self.data.view()
         if self.shuffle:
             rows = len(data)
@@ -141,7 +156,9 @@ class Benchmark:
 
     def measure(self, *, runs: int = 1) -> None:
         """Measure the performance of the engine on the dataset for a number of runs
-        @param runs is the number of runs to evaluate the engine on the test data.
+
+        Args:
+             runs: number of runs to evaluate the engine on the test data
         """
         from timeit import default_timer as timer
 
@@ -163,7 +180,7 @@ class Benchmark:
             )
 
     def run(self) -> None:
-        """Run the benchmark once (without computing statistics)."""
+        """Run the benchmark once (without computing statistics)"""
         self.engine.input_values = self.test_data[:, : len(self.engine.input_variables)]
         self.engine.process()
         np.testing.assert_allclose(
@@ -171,15 +188,17 @@ class Benchmark:
         )
 
     def reset(self) -> None:
-        """Reset the benchmark."""
+        """Reset the benchmark"""
         self.time = []
         self.error = []
         self.random = np.random.RandomState(seed=self.seed)
         self.test_data = self.data.view()
 
     def summary(self) -> dict[str, Any]:
-        """Summarize the benchmark results.
-        @return dictionary of statistics containing the performance time in seconds and the mean squared error.
+        """Summarize the benchmark results
+
+        Returns:
+             dictionary of statistics containing the performance time in seconds and the mean squared error
         """
         time = np.asarray(self.time or [nan])
         error = np.asarray(self.error or [nan])
@@ -198,8 +217,10 @@ class Benchmark:
         return result
 
     def summary_markdown(self, *, header: bool = False) -> str:
-        """Summarize the benchmark results and format them using markdown.
-        @param header whether to include table header in summary.
+        """Summarize the benchmark results and format them using markdown
+
+        Args:
+             header: whether to include table header in summary
         """
         markdown = []
         summary = self.summary()
