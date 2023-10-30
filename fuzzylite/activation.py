@@ -74,7 +74,7 @@ class Activation(ABC):
 
     @abstractmethod
     def activate(self, rule_block: RuleBlock) -> None:
-        """Implements the activation method of the rule block
+        """Implement the activation method of the rule block
 
         Args:
              rule_block: rule block to activate
@@ -90,7 +90,7 @@ class Activation(ABC):
     def configure(  # noqa: B027  empty method in an abstract base class
         self, parameters: str
     ) -> None:
-        """Configures the activation method with the parameters.
+        """Configure the activation method with the parameters.
 
         Args:
              parameters: list of space-separated parameter values
@@ -98,7 +98,7 @@ class Activation(ABC):
         pass
 
     def assert_is_float(self, activation_degree: Scalar) -> None:
-        """Asserts that the activation degree is not a vector.
+        """Assert that the activation degree is not a vector.
 
         Args:
             activation_degree: activation degree to assert
@@ -124,7 +124,7 @@ class General(Activation):
     """
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates every rule in the rule block in the order they were added.
+        """Activate every rule in the rule block in the order they were added.
 
         Args:
             rule_block: rule block to activate.
@@ -178,7 +178,7 @@ class First(Activation):
             self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates the first $n$ rules (in insertion order) whose activation degrees are greater than or equal to the
+        """Activate the first $n$ rules (in insertion order) whose activation degrees are greater than or equal to the
         threshold
 
         Args:
@@ -243,7 +243,7 @@ class Last(Activation):
             self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates the last $n$ rules (in reverse insertion order) whose activation degrees are greater than or equal
+        """Activate the last $n$ rules (in reverse insertion order) whose activation degrees are greater than or equal
         to the threshold.
 
         Args:
@@ -301,7 +301,7 @@ class Highest(Activation):
             self.rules = int(parameters)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates the rules with the highest activation degrees.
+        """Activate the rules with the highest activation degrees.
 
         Args:
             rule_block: rule block to activate.
@@ -357,7 +357,7 @@ class Lowest(Activation):
             self.rules = int(parameters)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates the rules with the lowest activation degrees.
+        """Activate the rules with the lowest activation degrees.
 
         Args:
             rule_block: rule block to activate.
@@ -396,7 +396,7 @@ class Proportional(Activation):
     """
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activates the rules utilizing normalized activation degrees.
+        """Activate the rules using normalized activation degrees.
 
         Args:
             rule_block: rule block to activate.
@@ -466,15 +466,17 @@ class Threshold(Activation):
         }
 
         def __repr__(self) -> str:
-            """Returns:
-            code to construct the comparator in Python.
+            """
+            Returns:
+                code to construct the comparator in Python.
             """
             return f"'{self.value}'"
 
         @property
         def operator(self) -> Callable[[Scalar, Scalar], bool | Array[np.bool_]]:
-            """Returns:
-            function reference for the operator.
+            """
+            Returns:
+                function reference for the operator.
             """
             return Threshold.Comparator.__operator__[self.value]
 
@@ -483,9 +485,10 @@ class Threshold(Activation):
         comparator: Comparator | str = Comparator.GreaterThan,
         threshold: float = 0.0,
     ) -> None:
-        """Args:
-        comparator: comparison operator
-        threshold: value for activation degrees.
+        """
+        Args:
+            comparator: comparison operator
+            threshold: value for activation degrees.
         """
         if isinstance(comparator, str):
             comparator = Threshold.Comparator(comparator)
@@ -493,14 +496,16 @@ class Threshold(Activation):
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """Returns:
-        comparator and threshold.
+        """
+        Returns:
+            comparator and threshold.
         """
         return f"{self.comparator.value} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
-        """Args:
-        parameters: comparator and threshold (eg, `> 0.5`).
+        """
+        Args:
+            parameters: comparator and threshold (eg, `> 0.5`).
         """
         if parameters:
             comparator, threshold = parameters.split()
