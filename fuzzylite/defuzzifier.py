@@ -131,9 +131,7 @@ class IntegralDefuzzifier(Defuzzifier):
         Args:
             resolution: number of divisions to discretize the range and compute the area under the curve
         """
-        self.resolution = (
-            resolution if resolution else IntegralDefuzzifier.default_resolution
-        )
+        self.resolution = resolution or IntegralDefuzzifier.default_resolution
 
     def __repr__(self) -> str:
         """
@@ -494,6 +492,9 @@ class WeightedAverage(WeightedDefuzzifier):
         r"""Computes the weighted average of the fuzzy set represented by an Aggregated Term as
         $y = \sum_i{w_iz_i}$, where $w_i$ is the activation degree of term $i$, and $z_i = \mu_i(w_i)$.
 
+        In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
+        term, which typically disregards the $w_i$ value.
+
         warning: change in version 8
             From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
@@ -552,6 +553,9 @@ class WeightedSum(WeightedDefuzzifier):
     ) -> Scalar:
         r"""Computes the weighted sum of the fuzzy set represented by Aggregated term as $y = \sum_i{w_iz_i}$,
         where $w_i$ is the activation degree of term $i$, and $z_i = \mu_i(w_i)$.
+
+        In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
+        term, which typically disregards the $w_i$ value.
 
         warning: change in version 8
             From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
