@@ -17,6 +17,7 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 from __future__ import annotations
 
 import shutil
+import unittest
 from pathlib import Path
 
 import fuzzylite as fl
@@ -39,7 +40,7 @@ def generate_documentation() -> str:
     mkdocs: dict[str, list[str]] = {}
     for module in modules:
         name = module.__name__.replace(".", "/")  # eg, fuzzylite/activation
-        target_module = Path(f"/tmp/fl/docs/{name}")
+        target_module = target / name
         target_module.mkdir(parents=True, exist_ok=True)
         if target_module.stem not in mkdocs:
             mkdocs[target_module.stem] = []
@@ -50,7 +51,21 @@ def generate_documentation() -> str:
                 documentation = target_module.joinpath("_" + component + ".md")
             documentation.write_text(f"::: {module.__name__}.{component}")
             mkdocs[target_module.stem].append(component)
+
+        all_module = target / "fuzzylite" / "__all__"
+        all_module.mkdir(parents=True, exist_ok=True)
+        all_module.joinpath(f"{target_module.stem}.md").write_text(
+            "\n".join(
+                f"::: {module.__name__}.{component}"
+                for component in sorted(module.__all__)
+            )
+        )
+
     result = []
+
+    result.append("- __all__:")
+    result.extend(f"  - {module}: fuzzylite/__all__/{module}.md" for module in mkdocs)
+
     for module_name, components in mkdocs.items():
         result.append(f"- {module_name}:")
         result.extend(
@@ -61,5 +76,10 @@ def generate_documentation() -> str:
     return mkdocs_yaml
 
 
+class GenerateDocumentation(unittest.TestCase):
+    def test_generate_documentation(self) -> None:
+        print(generate_documentation())
+
+
 if __name__ == "__main__":
-    print(generate_documentation())
+    unittest.main()

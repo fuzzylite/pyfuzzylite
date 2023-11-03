@@ -1,0 +1,12 @@
+::: fuzzylite.library.Information
+::: fuzzylite.library.Representation
+::: fuzzylite.library.Settings
+::: fuzzylite.library.array
+::: fuzzylite.library.inf
+::: fuzzylite.library.information
+::: fuzzylite.library.nan
+::: fuzzylite.library.repr
+::: fuzzylite.library.representation
+::: fuzzylite.library.scalar
+::: fuzzylite.library.settings
+::: fuzzylite.library.to_float

@@ -104,137 +104,153 @@ plugins:
 nav:
   - Home: index.md
   - Modules:
-      - activation:
-          - Activation: fuzzylite/activation/Activation.md
-          - First: fuzzylite/activation/First.md
-          - General: fuzzylite/activation/General.md
-          - Highest: fuzzylite/activation/Highest.md
-          - Last: fuzzylite/activation/Last.md
-          - Lowest: fuzzylite/activation/Lowest.md
-          - Proportional: fuzzylite/activation/Proportional.md
-          - Threshold: fuzzylite/activation/Threshold.md
-      - benchmark:
-          - Benchmark: fuzzylite/benchmark/Benchmark.md
-      - defuzzifier:
-          - Bisector: fuzzylite/defuzzifier/Bisector.md
-          - Centroid: fuzzylite/defuzzifier/Centroid.md
-          - Defuzzifier: fuzzylite/defuzzifier/Defuzzifier.md
-          - IntegralDefuzzifier: fuzzylite/defuzzifier/IntegralDefuzzifier.md
-          - LargestOfMaximum: fuzzylite/defuzzifier/LargestOfMaximum.md
-          - MeanOfMaximum: fuzzylite/defuzzifier/MeanOfMaximum.md
-          - SmallestOfMaximum: fuzzylite/defuzzifier/SmallestOfMaximum.md
-          - WeightedAverage: fuzzylite/defuzzifier/WeightedAverage.md
-          - WeightedDefuzzifier: fuzzylite/defuzzifier/WeightedDefuzzifier.md
-          - WeightedSum: fuzzylite/defuzzifier/WeightedSum.md
-      - engine:
-          - Engine: fuzzylite/engine/Engine.md
-      - exporter:
-          - Exporter: fuzzylite/exporter/Exporter.md
-          - FldExporter: fuzzylite/exporter/FldExporter.md
-          - FllExporter: fuzzylite/exporter/FllExporter.md
-          - PythonExporter: fuzzylite/exporter/PythonExporter.md
-      - factory:
-          - ActivationFactory: fuzzylite/factory/ActivationFactory.md
-          - CloningFactory: fuzzylite/factory/CloningFactory.md
-          - ConstructionFactory: fuzzylite/factory/ConstructionFactory.md
-          - DefuzzifierFactory: fuzzylite/factory/DefuzzifierFactory.md
-          - FactoryManager: fuzzylite/factory/FactoryManager.md
-          - FunctionFactory: fuzzylite/factory/FunctionFactory.md
-          - HedgeFactory: fuzzylite/factory/HedgeFactory.md
-          - SNormFactory: fuzzylite/factory/SNormFactory.md
-          - TNormFactory: fuzzylite/factory/TNormFactory.md
-          - TermFactory: fuzzylite/factory/TermFactory.md
-      - hedge:
-          - Any: fuzzylite/hedge/Any.md
-          - Extremely: fuzzylite/hedge/Extremely.md
-          - Hedge: fuzzylite/hedge/Hedge.md
-          - HedgeFunction: fuzzylite/hedge/HedgeFunction.md
-          - HedgeLambda: fuzzylite/hedge/HedgeLambda.md
-          - Not: fuzzylite/hedge/Not.md
-          - Seldom: fuzzylite/hedge/Seldom.md
-          - Somewhat: fuzzylite/hedge/Somewhat.md
-          - Very: fuzzylite/hedge/Very.md
-      - importer:
-          - FllImporter: fuzzylite/importer/FllImporter.md
-          - Importer: fuzzylite/importer/Importer.md
-      - library:
-          - Information: fuzzylite/library/Information.md
-          - Representation: fuzzylite/library/Representation.md
-          - Settings: fuzzylite/library/Settings.md
-          - array: fuzzylite/library/array.md
-          - inf: fuzzylite/library/inf.md
-          - information: fuzzylite/library/_information.md
-          - nan: fuzzylite/library/nan.md
-          - repr: fuzzylite/library/repr.md
-          - representation: fuzzylite/library/_representation.md
-          - scalar: fuzzylite/library/scalar.md
-          - settings: fuzzylite/library/_settings.md
-          - to_float: fuzzylite/library/to_float.md
-      - norm:
-          - AlgebraicProduct: fuzzylite/norm/AlgebraicProduct.md
-          - AlgebraicSum: fuzzylite/norm/AlgebraicSum.md
-          - BoundedDifference: fuzzylite/norm/BoundedDifference.md
-          - BoundedSum: fuzzylite/norm/BoundedSum.md
-          - DrasticProduct: fuzzylite/norm/DrasticProduct.md
-          - DrasticSum: fuzzylite/norm/DrasticSum.md
-          - EinsteinProduct: fuzzylite/norm/EinsteinProduct.md
-          - EinsteinSum: fuzzylite/norm/EinsteinSum.md
-          - HamacherProduct: fuzzylite/norm/HamacherProduct.md
-          - HamacherSum: fuzzylite/norm/HamacherSum.md
-          - Maximum: fuzzylite/norm/Maximum.md
-          - Minimum: fuzzylite/norm/Minimum.md
-          - NilpotentMaximum: fuzzylite/norm/NilpotentMaximum.md
-          - NilpotentMinimum: fuzzylite/norm/NilpotentMinimum.md
-          - Norm: fuzzylite/norm/Norm.md
-          - NormFunction: fuzzylite/norm/NormFunction.md
-          - NormLambda: fuzzylite/norm/NormLambda.md
-          - NormalizedSum: fuzzylite/norm/NormalizedSum.md
-          - SNorm: fuzzylite/norm/SNorm.md
-          - TNorm: fuzzylite/norm/TNorm.md
-          - UnboundedSum: fuzzylite/norm/UnboundedSum.md
-      - operation:
-          - Op: fuzzylite/operation/Op.md
-          - Operation: fuzzylite/operation/Operation.md
-      - rule:
-          - Antecedent: fuzzylite/rule/Antecedent.md
-          - Consequent: fuzzylite/rule/Consequent.md
-          - Expression: fuzzylite/rule/Expression.md
-          - Operator: fuzzylite/rule/Operator.md
-          - Proposition: fuzzylite/rule/Proposition.md
-          - Rule: fuzzylite/rule/Rule.md
-          - RuleBlock: fuzzylite/rule/RuleBlock.md
-      - term:
-          - Activated: fuzzylite/term/Activated.md
-          - Aggregated: fuzzylite/term/Aggregated.md
-          - Arc: fuzzylite/term/Arc.md
-          - Bell: fuzzylite/term/Bell.md
-          - Binary: fuzzylite/term/Binary.md
-          - Concave: fuzzylite/term/Concave.md
-          - Constant: fuzzylite/term/Constant.md
-          - Cosine: fuzzylite/term/Cosine.md
-          - Discrete: fuzzylite/term/Discrete.md
-          - Function: fuzzylite/term/Function.md
-          - Gaussian: fuzzylite/term/Gaussian.md
-          - GaussianProduct: fuzzylite/term/GaussianProduct.md
-          - Linear: fuzzylite/term/Linear.md
-          - PiShape: fuzzylite/term/PiShape.md
-          - Ramp: fuzzylite/term/Ramp.md
-          - Rectangle: fuzzylite/term/Rectangle.md
-          - SShape: fuzzylite/term/SShape.md
-          - SemiEllipse: fuzzylite/term/SemiEllipse.md
-          - Sigmoid: fuzzylite/term/Sigmoid.md
-          - SigmoidDifference: fuzzylite/term/SigmoidDifference.md
-          - SigmoidProduct: fuzzylite/term/SigmoidProduct.md
-          - Spike: fuzzylite/term/Spike.md
-          - Term: fuzzylite/term/Term.md
-          - Trapezoid: fuzzylite/term/Trapezoid.md
-          - Triangle: fuzzylite/term/Triangle.md
-          - ZShape: fuzzylite/term/ZShape.md
-      - types:
-          - Array: fuzzylite/types/Array.md
-          - Scalar: fuzzylite/types/Scalar.md
-          - ScalarArray: fuzzylite/types/ScalarArray.md
-      - variable:
-          - InputVariable: fuzzylite/variable/InputVariable.md
-          - OutputVariable: fuzzylite/variable/OutputVariable.md
-          - Variable: fuzzylite/variable/Variable.md
+      - __all__:
+          - activation: fuzzylite/__all__/activation.md
+          - benchmark: fuzzylite/__all__/benchmark.md
+          - defuzzifier: fuzzylite/__all__/defuzzifier.md
+          - engine: fuzzylite/__all__/engine.md
+          - exporter: fuzzylite/__all__/exporter.md
+          - factory: fuzzylite/__all__/factory.md
+          - hedge: fuzzylite/__all__/hedge.md
+          - importer: fuzzylite/__all__/importer.md
+          - library: fuzzylite/__all__/library.md
+          - norm: fuzzylite/__all__/norm.md
+          - operation: fuzzylite/__all__/operation.md
+          - rule: fuzzylite/__all__/rule.md
+          - term: fuzzylite/__all__/term.md
+          - types: fuzzylite/__all__/types.md
+          - variable: fuzzylite/__all__/variable.md
+#      - activation:
+#          - Activation: fuzzylite/activation/Activation.md
+#          - First: fuzzylite/activation/First.md
+#          - General: fuzzylite/activation/General.md
+#          - Highest: fuzzylite/activation/Highest.md
+#          - Last: fuzzylite/activation/Last.md
+#          - Lowest: fuzzylite/activation/Lowest.md
+#          - Proportional: fuzzylite/activation/Proportional.md
+#          - Threshold: fuzzylite/activation/Threshold.md
+#      - benchmark:
+#          - Benchmark: fuzzylite/benchmark/Benchmark.md
+#      - defuzzifier:
+#          - Bisector: fuzzylite/defuzzifier/Bisector.md
+#          - Centroid: fuzzylite/defuzzifier/Centroid.md
+#          - Defuzzifier: fuzzylite/defuzzifier/Defuzzifier.md
+#          - IntegralDefuzzifier: fuzzylite/defuzzifier/IntegralDefuzzifier.md
+#          - LargestOfMaximum: fuzzylite/defuzzifier/LargestOfMaximum.md
+#          - MeanOfMaximum: fuzzylite/defuzzifier/MeanOfMaximum.md
+#          - SmallestOfMaximum: fuzzylite/defuzzifier/SmallestOfMaximum.md
+#          - WeightedAverage: fuzzylite/defuzzifier/WeightedAverage.md
+#          - WeightedDefuzzifier: fuzzylite/defuzzifier/WeightedDefuzzifier.md
+#          - WeightedSum: fuzzylite/defuzzifier/WeightedSum.md
+#      - engine:
+#          - Engine: fuzzylite/engine/Engine.md
+#      - exporter:
+#          - Exporter: fuzzylite/exporter/Exporter.md
+#          - FldExporter: fuzzylite/exporter/FldExporter.md
+#          - FllExporter: fuzzylite/exporter/FllExporter.md
+#          - PythonExporter: fuzzylite/exporter/PythonExporter.md
+#      - factory:
+#          - ActivationFactory: fuzzylite/factory/ActivationFactory.md
+#          - CloningFactory: fuzzylite/factory/CloningFactory.md
+#          - ConstructionFactory: fuzzylite/factory/ConstructionFactory.md
+#          - DefuzzifierFactory: fuzzylite/factory/DefuzzifierFactory.md
+#          - FactoryManager: fuzzylite/factory/FactoryManager.md
+#          - FunctionFactory: fuzzylite/factory/FunctionFactory.md
+#          - HedgeFactory: fuzzylite/factory/HedgeFactory.md
+#          - SNormFactory: fuzzylite/factory/SNormFactory.md
+#          - TNormFactory: fuzzylite/factory/TNormFactory.md
+#          - TermFactory: fuzzylite/factory/TermFactory.md
+#      - hedge:
+#          - Any: fuzzylite/hedge/Any.md
+#          - Extremely: fuzzylite/hedge/Extremely.md
+#          - Hedge: fuzzylite/hedge/Hedge.md
+#          - HedgeFunction: fuzzylite/hedge/HedgeFunction.md
+#          - HedgeLambda: fuzzylite/hedge/HedgeLambda.md
+#          - Not: fuzzylite/hedge/Not.md
+#          - Seldom: fuzzylite/hedge/Seldom.md
+#          - Somewhat: fuzzylite/hedge/Somewhat.md
+#          - Very: fuzzylite/hedge/Very.md
+#      - importer:
+#          - FllImporter: fuzzylite/importer/FllImporter.md
+#          - Importer: fuzzylite/importer/Importer.md
+#      - library:
+#          - Information: fuzzylite/library/Information.md
+#          - Representation: fuzzylite/library/Representation.md
+#          - Settings: fuzzylite/library/Settings.md
+#          - array: fuzzylite/library/array.md
+#          - inf: fuzzylite/library/inf.md
+#          - information: fuzzylite/library/_information.md
+#          - nan: fuzzylite/library/nan.md
+#          - repr: fuzzylite/library/repr.md
+#          - representation: fuzzylite/library/_representation.md
+#          - scalar: fuzzylite/library/scalar.md
+#          - settings: fuzzylite/library/_settings.md
+#          - to_float: fuzzylite/library/to_float.md
+#      - norm:
+#          - AlgebraicProduct: fuzzylite/norm/AlgebraicProduct.md
+#          - AlgebraicSum: fuzzylite/norm/AlgebraicSum.md
+#          - BoundedDifference: fuzzylite/norm/BoundedDifference.md
+#          - BoundedSum: fuzzylite/norm/BoundedSum.md
+#          - DrasticProduct: fuzzylite/norm/DrasticProduct.md
+#          - DrasticSum: fuzzylite/norm/DrasticSum.md
+#          - EinsteinProduct: fuzzylite/norm/EinsteinProduct.md
+#          - EinsteinSum: fuzzylite/norm/EinsteinSum.md
+#          - HamacherProduct: fuzzylite/norm/HamacherProduct.md
+#          - HamacherSum: fuzzylite/norm/HamacherSum.md
+#          - Maximum: fuzzylite/norm/Maximum.md
+#          - Minimum: fuzzylite/norm/Minimum.md
+#          - NilpotentMaximum: fuzzylite/norm/NilpotentMaximum.md
+#          - NilpotentMinimum: fuzzylite/norm/NilpotentMinimum.md
+#          - Norm: fuzzylite/norm/Norm.md
+#          - NormFunction: fuzzylite/norm/NormFunction.md
+#          - NormLambda: fuzzylite/norm/NormLambda.md
+#          - NormalizedSum: fuzzylite/norm/NormalizedSum.md
+#          - SNorm: fuzzylite/norm/SNorm.md
+#          - TNorm: fuzzylite/norm/TNorm.md
+#          - UnboundedSum: fuzzylite/norm/UnboundedSum.md
+#      - operation:
+#          - Op: fuzzylite/operation/Op.md
+#          - Operation: fuzzylite/operation/Operation.md
+#      - rule:
+#          - Antecedent: fuzzylite/rule/Antecedent.md
+#          - Consequent: fuzzylite/rule/Consequent.md
+#          - Expression: fuzzylite/rule/Expression.md
+#          - Operator: fuzzylite/rule/Operator.md
+#          - Proposition: fuzzylite/rule/Proposition.md
+#          - Rule: fuzzylite/rule/Rule.md
+#          - RuleBlock: fuzzylite/rule/RuleBlock.md
+#      - term:
+#          - Activated: fuzzylite/term/Activated.md
+#          - Aggregated: fuzzylite/term/Aggregated.md
+#          - Arc: fuzzylite/term/Arc.md
+#          - Bell: fuzzylite/term/Bell.md
+#          - Binary: fuzzylite/term/Binary.md
+#          - Concave: fuzzylite/term/Concave.md
+#          - Constant: fuzzylite/term/Constant.md
+#          - Cosine: fuzzylite/term/Cosine.md
+#          - Discrete: fuzzylite/term/Discrete.md
+#          - Function: fuzzylite/term/Function.md
+#          - Gaussian: fuzzylite/term/Gaussian.md
+#          - GaussianProduct: fuzzylite/term/GaussianProduct.md
+#          - Linear: fuzzylite/term/Linear.md
+#          - PiShape: fuzzylite/term/PiShape.md
+#          - Ramp: fuzzylite/term/Ramp.md
+#          - Rectangle: fuzzylite/term/Rectangle.md
+#          - SShape: fuzzylite/term/SShape.md
+#          - SemiEllipse: fuzzylite/term/SemiEllipse.md
+#          - Sigmoid: fuzzylite/term/Sigmoid.md
+#          - SigmoidDifference: fuzzylite/term/SigmoidDifference.md
+#          - SigmoidProduct: fuzzylite/term/SigmoidProduct.md
+#          - Spike: fuzzylite/term/Spike.md
+#          - Term: fuzzylite/term/Term.md
+#          - Trapezoid: fuzzylite/term/Trapezoid.md
+#          - Triangle: fuzzylite/term/Triangle.md
+#          - ZShape: fuzzylite/term/ZShape.md
+#      - types:
+#          - Array: fuzzylite/types/Array.md
+#          - Scalar: fuzzylite/types/Scalar.md
+#          - ScalarArray: fuzzylite/types/ScalarArray.md
+#      - variable:
+#          - InputVariable: fuzzylite/variable/InputVariable.md
+#          - OutputVariable: fuzzylite/variable/OutputVariable.md
+#          - Variable: fuzzylite/variable/Variable.md

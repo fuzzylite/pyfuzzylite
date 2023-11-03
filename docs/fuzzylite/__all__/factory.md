@@ -1,0 +1,10 @@
+::: fuzzylite.factory.ActivationFactory
+::: fuzzylite.factory.CloningFactory
+::: fuzzylite.factory.ConstructionFactory
+::: fuzzylite.factory.DefuzzifierFactory
+::: fuzzylite.factory.FactoryManager
+::: fuzzylite.factory.FunctionFactory
+::: fuzzylite.factory.HedgeFactory
+::: fuzzylite.factory.SNormFactory
+::: fuzzylite.factory.TNormFactory
+::: fuzzylite.factory.TermFactory
