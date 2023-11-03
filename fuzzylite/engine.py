@@ -22,7 +22,6 @@ import enum
 from collections.abc import Iterable
 
 import numpy as np
-from typing_extensions import Self
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier, IntegralDefuzzifier, WeightedDefuzzifier
@@ -34,14 +33,12 @@ from .variable import InputVariable, OutputVariable, Variable
 
 
 class Engine:
-    """The Engine class is the core class of the library as it groups the
-    necessary components of a fuzzy logic controller.
+    """Core class of the library that groups the necessary components of a fuzzy logic controller.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see InputVariable
-    @see OutputVariable
-    @see RuleBlock
-    @since 4.0
+    info: related
+        - [fuzzylite.variable.InputVariable][]
+        - [fuzzylite.variable.OutputVariable][]
+        - [fuzzylite.rule.RuleBlock][]
     """
 
     @enum.unique
@@ -79,20 +76,20 @@ class Engine:
         rule_blocks: Iterable[RuleBlock] | None = None,
         load: bool = True,
     ) -> None:
-        """Creates an Engine with the parameters given.
-
-        @param name is the name of the engine
-        @param description is the description of the engine
-        @param input_variables a list of input variables
-        @param output_variables a list of output variables
-        @param rule_blocks a list of rule blocks
-        @param load whether to automatically update references to this engine and load the rules in the rule blocks
+        """
+        Args:
+            name: name of the engine
+            description: description of the engine
+            input_variables: list of input variables
+            output_variables: list of output variables
+            rule_blocks: list of rule blocks
+            load: whether to automatically update references to this engine and load the rules in the rule blocks
         """
         self.name = name
         self.description = description
-        self.input_variables = list(input_variables) if input_variables else []
-        self.output_variables = list(output_variables) if output_variables else []
-        self.rule_blocks = list(rule_blocks) if rule_blocks else []
+        self.input_variables = list(input_variables or [])
+        self.output_variables = list(output_variables or [])
+        self.rule_blocks = list(rule_blocks or [])
         if load:
             for variable in self.variables:
                 for term in variable.terms:
@@ -113,8 +110,14 @@ class Engine:
     #         ) from None
 
     def __getitem__(self, item: str) -> InputVariable | OutputVariable | RuleBlock:
-        """@return the component with the given name in input variables, output variables, or rule blocks,
-        so it can be used like `engine["power"].value`.
+        """
+        Allow operation of engines as `engine["power"].value`.
+
+        Args:
+            item: name of the component to find in input variables, output variables, or rule blocks
+
+        Returns:
+            first component found with the name
         """
         components = [self.input_variable, self.output_variable, self.rule_block]
         for component in components:
@@ -127,11 +130,17 @@ class Engine:
         )
 
     def __str__(self) -> str:
-        """@return engine in the FuzzyLite Language."""
+        """
+        Returns:
+            code to construct the engine in the FuzzyLite Language
+        """
         return representation.fll.engine(self)
 
     def __repr__(self) -> str:
-        """@return Python code to construct the engine."""
+        """
+        Returns:
+            code to construct the engine in Python
+        """
         fields = vars(self).copy()
         if not self.description:
             fields.pop("description")
@@ -146,14 +155,15 @@ class Engine:
         defuzzifier: Defuzzifier | str | None = None,
         activation: Activation | str | None = None,
     ) -> None:
-        """Configures the engine with the given operators.
+        """Configure the engine with the given operators.
 
-        @param conjunction is a TNorm registered in the TNormFactory
-        @param disjunction is an SNorm registered in the SNormFactory
-        @param implication is an TNorm registered in the TNormFactory
-        @param aggregation is an SNorm registered in the SNormFactory
-        @param defuzzifier is a defuzzifier registered in the DefuzzifierFactory
-        @param activation is an activation method registered in the ActivationFactory
+        Args:
+            conjunction: object or name of TNorm registered in the TNormFactory
+            disjunction: object or name of SNorm registered in the SNormFactory
+            implication: object or name of TNorm registered in the TNormFactory
+            aggregation: object or name of SNorm registered in the SNormFactory
+            defuzzifier: object or name of defuzzifier registered in the DefuzzifierFactory
+            activation: object or name of activation method registered in the ActivationFactory
         """
         factory = settings.factory_manager
         if isinstance(conjunction, str):
@@ -181,22 +191,27 @@ class Engine:
 
     @property
     def variables(self) -> list[InputVariable | OutputVariable]:
-        """Returns a list that contains the input variables followed by the
-        output variables in the order of insertion.
-
-        @return a list that contains the input variables followed by the
-        output variables in the order of insertion
+        """
+        Returns:
+            list of input and output variables
         """
         return self.input_variables + self.output_variables
 
     def variable(self, name: str) -> Variable:
-        """Gets the first variable of the given name after iterating the input
-        variables and the output variables. The cost of this method is O(n),
-        where n is the number of variables in the engine. For performance,
-        please get the variables by index.
-        @param name is the name of the input variable
-        @return variable of the given name
-        @throws ValueError if there is no variable with the given name.
+        """Find the variable by the name, iterating first over the input
+        variables and then over the output variables.
+
+        The cost of this method is $O(n)$, where $n$ is the number of variables in the engine.
+        For better performance, get the variables by index.
+
+        Args:
+            name: name of the input or output variable
+
+        Returns:
+             variable of the given name
+
+        Raises:
+            ValueError: when there is no variable by the given name.
         """
         for variable in self.variables:
             if variable.name == name:
@@ -206,13 +221,20 @@ class Engine:
         )
 
     def input_variable(self, name_or_index: str | int, /) -> InputVariable:
-        """Gets the input variable of the given name after iterating the input
-        variables. The cost of this method is O(n), where n is the number of
-        input variables in the engine. For performance, please get the
-        variables by index.
-        @param name_or_index is the name or index of the input variable
-        @return input variable of the given name
-        @raise ValueError if there is no variable with the given name.
+        """Find the input variable of the given name or at the given index.
+
+        The best performance is $O(1)$ when using indices,
+        and the worst performance is $O(n)$ when using names, where $n$ is the number of input variables.
+
+        Args:
+            name_or_index: name or index of the input variable
+
+        Returns:
+            input variable by the given name or at the given index
+
+        Raises:
+             ValueError: when there is no variable with the given name.
+             IndexError: when the index is out of range
         """
         if isinstance(name_or_index, int):
             return self.input_variables[name_or_index]
@@ -225,13 +247,20 @@ class Engine:
         )
 
     def output_variable(self, name_or_index: str | int, /) -> OutputVariable:
-        """Gets the output variable of the given name after iterating the output
-        variables. The cost of this method is O(n), where n is the number of
-        output variables in the engine. For performance, please get the
-        variables by index.
-        @param name_or_index is the name or index of the output variable
-        @return output variable of the given name
-        @raise ValueError if there is no variable with the given name.
+        """Find the output variable of the given name or at the given index.
+
+        The best performance is $O(1)$ when using indices,
+        and the worst performance is $O(n)$ when using names, where $n$ is the number of output variables.
+
+        Args:
+            name_or_index: name or index of the output variable
+
+        Returns:
+            output variable by the given name or at the given index
+
+        Raises:
+             ValueError: when there is no variable with the given name.
+             IndexError: when the index is out of range
         """
         if isinstance(name_or_index, int):
             return self.output_variables[name_or_index]
@@ -244,13 +273,20 @@ class Engine:
         )
 
     def rule_block(self, name_or_index: str | int, /) -> RuleBlock:
-        """Gets the rule block of the given name after iterating the rule blocks.
-        The cost of this method is O(n), where n is the number of
-        rule blocks in the engine. For performance, please get the rule blocks
-        by index.
-        @param name_or_index is the name or index of the rule block
-        @return rule block of the given name
-        @raise ValueError if there is no block with the given name.
+        """Find the rule block of the given name or at the given index.
+
+        The best performance is $O(1)$ when using indices,
+        and the worst performance is $O(n)$ when using names, where $n$ is the number of rule blocks.
+
+        Args:
+            name_or_index: name or index of the rule block
+
+        Returns:
+            rule block by the given name or at the given index
+
+        Raises:
+             ValueError: when there is no variable with the given name.
+             IndexError: when the index is out of range
         """
         if isinstance(name_or_index, int):
             return self.rule_blocks[name_or_index]
@@ -263,9 +299,31 @@ class Engine:
 
     @property
     def input_values(self) -> ScalarArray:
-        """Returns a matrix containing the input values of the engine,
-        where columns represent variables and rows represent input values
-        @return the input values of the engine.
+        """
+        Get/Set 2D array where columns represent input variables and rows their input values
+
+        # Getter
+
+        Returns:
+            2D array of input values (rows) for each input variable (columns)
+
+        # Setter
+
+        Args:
+            values (ScalarArray): input values of the engine.
+
+        Tip:
+            | when `values` is a: | the result: |
+            |---------------------|-------------|
+            | single scalar value  | sets the values of all input variables |
+            | 1D array on an engine with a single variable | sets the values for the input variable |
+            | 1D array on an engine with multiple variables | sets each value to each input variable |
+            | 2D array | sets each column of values to each input variable |
+
+        Raises:
+            RuntimeError: when there are no input variables
+            ValueError: when the dimensionality of values is greater than 2
+            ValueError: when the number of columns in the values is different from the number of input variables
         """
         return np.atleast_2d(  # type:ignore
             np.array([v.value for v in self.input_variables])
@@ -273,8 +331,23 @@ class Engine:
 
     @input_values.setter
     def input_values(self, values: ScalarArray) -> None:
-        """Sets the input values of the engine
-        @param values the input values of the engine.
+        """Sets the input values of the engine.
+
+        Args:
+            values: input values of the engine.
+
+        Tip:
+            | when `values` is a: | the result: |
+            |---------------------|-------------|
+            | single scalar value  | sets the values of all input variables |
+            | 1D array on an engine with a single variable | sets the values for the input variable |
+            | 1D array on an engine with multiple variables | sets each value to each input variable |
+            | 2D array | sets each column of values to each input variable |
+
+        Raises:
+            RuntimeError: when there are no input variables
+            ValueError: when the dimensionality of values is greater than 2
+            ValueError: when the number of columns in the values is different from the number of input variables
         """
         if not self.input_variables:
             raise RuntimeError(
@@ -304,24 +377,33 @@ class Engine:
 
     @property
     def output_values(self) -> ScalarArray:
-        """Returns a matrix containing the output values of the engine,
-        where columns represent variables and rows represent output values
-        @return the output values of the engine.
         """
+        Returns:
+            2D array of output values (rows) for each output variable (columns)
+        """
+        # TODO: Maybe a property setter like input_values.
         return np.atleast_2d(  # type:ignore
             np.array([v.value for v in self.output_variables])
         ).T
 
     @property
     def values(self) -> ScalarArray:
-        """Return array of current input and output values."""
+        """
+        Returns:
+            2D array of current input and output values.
+        """
         return np.hstack((self.input_values, self.output_values))
 
     def restart(self) -> None:
-        """Restarts the engine by setting the values of the input variables to
-        fl::nan and clearing the output variables
-        @see Variable::setValue()
-        @see OutputVariable::clear().
+        """Restart the engine as follows.
+
+        1. setting the values of the input variables to nan,
+        2. reloading the rules of the rule blocks, and
+        3. clearing the output variables
+
+        info: related
+            - [fuzzylite.variable.Variable.value][]
+            - [fuzzylite.variable.OutputVariable.clear][]
         """
         for input_variable in self.input_variables:
             input_variable.value = nan
@@ -333,12 +415,16 @@ class Engine:
             output_variable.clear()
 
     def process(self) -> None:
-        """Processes the engine in its current state as follows: (a) Clears the
-        aggregated fuzzy output variables, (b) Activates the rule blocks, and
-        (c) Defuzzifies the output variables
-        @see Aggregated::clear()
-        @see RuleBlock::activate()
-        @see OutputVariable::defuzzify().
+        """Process the engine in its current state as follows.
+
+        1. clear the aggregated fuzzy output variables,
+        2. activate the rule blocks, and
+        3. defuzzify the output variables
+
+        info: related
+            - [fuzzylite.term.Aggregated.clear][]
+            - [fuzzylite.rule.RuleBlock.activate][]
+            - [fuzzylite.variable.OutputVariable.defuzzify][]
         """
         for variable in self.output_variables:
             variable.fuzzy.clear()
@@ -351,12 +437,17 @@ class Engine:
             variable.defuzzify()
 
     def is_ready(self, errors: list[str] | None = None) -> bool:
-        """Indicates whether the engine has been configured correctly and is
-        ready for operation. In more advanced engines, the result of this
-        method should be taken as a suggestion and not as a prerequisite to
-        operate the engine.
-        @param errors an optional output list to store the errors found if the engine is not ready
-        @return whether the engine is ready.
+        """Determine whether the engine is configured correctly and ready for operation.
+
+        Note:
+            In advanced engines, the result of this method should be taken as a suggestion and not as a prerequisite to
+            operate the engine.
+
+        Args:
+            errors: optional output list that stores the errors found if the engine is not ready
+
+        Returns:
+            whether the engine is ready.
         """
         if errors is None:
             errors = []
@@ -435,9 +526,13 @@ class Engine:
         return not errors
 
     def infer_type(self, reasons: list[str] | None = None) -> Engine.Type:
-        """Infers the type of the engine based on its configuration.
-        @param reasons is an optional output list explaining the reasons for the inferred type
-        @return the type of engine inferred from its configuration.
+        """Infer the type of the engine based on its configuration.
+
+        Args:
+            reasons: optional output list explaining the reasons for the inferred type
+
+        Returns:
+             type of engine inferred from its configuration.
         """
         if reasons is None:
             reasons = []
@@ -528,8 +623,12 @@ class Engine:
         reasons.append("One or more output variables do not have a defuzzifier")
         return Engine.Type.Unknown
 
-    def copy(self) -> Self:
-        """Creates a deep copy of the engine."""
+    def copy(self) -> Engine:
+        """Create a deep copy of the engine.
+
+        Returns:
+            deep copy of the engine
+        """
         import copy
 
         engine = copy.deepcopy(self)

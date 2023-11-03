@@ -77,7 +77,10 @@ def generate_documentation() -> str:
 
 
 class GenerateDocumentation(unittest.TestCase):
+    """Generate the documentation using `mkdocs` and `mkdocstrings`"""
+
     def test_generate_documentation(self) -> None:
+        """Generate the documentation in /tmp/fl/docs and print the mkdocs index"""
         print(generate_documentation())
 
 

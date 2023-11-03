@@ -83,7 +83,7 @@ plugins:
             # Members options:
             inherited_members: true
             members: true
-            members_order: alphabetical # source
+            members_order: source # alphabetical
             group_by_category: true
             show_submodules: true
             # Docstrings options:
@@ -105,21 +105,21 @@ nav:
   - Home: index.md
   - Modules:
       - __all__:
-          - activation: fuzzylite/__all__/activation.md
-          - benchmark: fuzzylite/__all__/benchmark.md
-          - defuzzifier: fuzzylite/__all__/defuzzifier.md
+#          - activation: fuzzylite/__all__/activation.md
+#          - benchmark: fuzzylite/__all__/benchmark.md
+#          - defuzzifier: fuzzylite/__all__/defuzzifier.md
           - engine: fuzzylite/__all__/engine.md
-          - exporter: fuzzylite/__all__/exporter.md
-          - factory: fuzzylite/__all__/factory.md
-          - hedge: fuzzylite/__all__/hedge.md
-          - importer: fuzzylite/__all__/importer.md
-          - library: fuzzylite/__all__/library.md
-          - norm: fuzzylite/__all__/norm.md
-          - operation: fuzzylite/__all__/operation.md
-          - rule: fuzzylite/__all__/rule.md
-          - term: fuzzylite/__all__/term.md
-          - types: fuzzylite/__all__/types.md
-          - variable: fuzzylite/__all__/variable.md
+#          - exporter: fuzzylite/__all__/exporter.md
+#          - factory: fuzzylite/__all__/factory.md
+#          - hedge: fuzzylite/__all__/hedge.md
+#          - importer: fuzzylite/__all__/importer.md
+#          - library: fuzzylite/__all__/library.md
+#          - norm: fuzzylite/__all__/norm.md
+#          - operation: fuzzylite/__all__/operation.md
+#          - rule: fuzzylite/__all__/rule.md
+#          - term: fuzzylite/__all__/term.md
+#          - types: fuzzylite/__all__/types.md
+#          - variable: fuzzylite/__all__/variable.md
 #      - activation:
 #          - Activation: fuzzylite/activation/Activation.md
 #          - First: fuzzylite/activation/First.md
