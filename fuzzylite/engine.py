@@ -76,14 +76,15 @@ class Engine:
         rule_blocks: Iterable[RuleBlock] | None = None,
         load: bool = True,
     ) -> None:
-        """
+        """Constructor.
+
         Args:
             name: name of the engine
             description: description of the engine
             input_variables: list of input variables
             output_variables: list of output variables
             rule_blocks: list of rule blocks
-            load: whether to automatically update references to this engine and load the rules in the rule blocks
+            load: whether to automatically update references to this engine and load the rules in the rule blocks.
         """
         self.name = name
         self.description = description
@@ -110,8 +111,7 @@ class Engine:
     #         ) from None
 
     def __getitem__(self, item: str) -> InputVariable | OutputVariable | RuleBlock:
-        """
-        Allow operation of engines as `engine["power"].value`.
+        """Allow operation of engines as `engine["power"].value`.
 
         Args:
             item: name of the component to find in input variables, output variables, or rule blocks
@@ -130,16 +130,18 @@ class Engine:
         )
 
     def __str__(self) -> str:
-        """
+        """Return the code to construct the engine in the FuzzyLite Language.
+
         Returns:
-            code to construct the engine in the FuzzyLite Language
+            code to construct the engine in the FuzzyLite Language.
         """
         return representation.fll.engine(self)
 
     def __repr__(self) -> str:
-        """
+        """Return the code to construct the engine in Python.
+
         Returns:
-            code to construct the engine in Python
+            code to construct the engine in Python.
         """
         fields = vars(self).copy()
         if not self.description:
@@ -191,15 +193,15 @@ class Engine:
 
     @property
     def variables(self) -> list[InputVariable | OutputVariable]:
-        """
+        """Return the list of input and output variables.
+
         Returns:
-            list of input and output variables
+            list of input and output variables.
         """
         return self.input_variables + self.output_variables
 
     def variable(self, name: str) -> Variable:
-        """Find the variable by the name, iterating first over the input
-        variables and then over the output variables.
+        """Find the variable by the name, iterating first over the input variables and then over the output variables.
 
         The cost of this method is $O(n)$, where $n$ is the number of variables in the engine.
         For better performance, get the variables by index.
@@ -299,8 +301,7 @@ class Engine:
 
     @property
     def input_values(self) -> ScalarArray:
-        """
-        Get/Set 2D array where columns represent input variables and rows their input values
+        """Get/Set 2D array where columns represent input variables and rows their input values.
 
         # Getter
 
@@ -377,9 +378,10 @@ class Engine:
 
     @property
     def output_values(self) -> ScalarArray:
-        """
+        """Return a 2D array of output values (rows) for each output variable (columns).
+
         Returns:
-            2D array of output values (rows) for each output variable (columns)
+            2D array of output values (rows) for each output variable (columns).
         """
         # TODO: Maybe a property setter like input_values.
         return np.atleast_2d(  # type:ignore
@@ -388,7 +390,8 @@ class Engine:
 
     @property
     def values(self) -> ScalarArray:
-        """
+        """Return a 2D array of current input and output values.
+
         Returns:
             2D array of current input and output values.
         """
