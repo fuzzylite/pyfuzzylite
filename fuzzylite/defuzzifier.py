@@ -65,23 +65,25 @@ class Defuzzifier(ABC):
     """
 
     def __str__(self) -> str:
-        """
+        """Return the code to construct the defuzzifier in the FuzzyLite Language.
+
         Returns:
-            code to construct the defuzzifier in the FuzzyLite Language
+            code to construct the defuzzifier in the FuzzyLite Language.
         """
         return representation.fll.defuzzifier(self)
 
     def __repr__(self) -> str:
-        """
+        """Return the code to construct the defuzzifier in Python.
+
         Returns:
-            code to construct the defuzzifier in Python
+            code to construct the defuzzifier in Python.
         """
         return representation.as_constructor(self)
 
     def configure(  # noqa: B027 empty method in an abstract base class
         self, parameters: str
     ) -> None:
-        """Configure the defuzzifier with the parameters
+        """Configure the defuzzifier with the parameters.
 
         Args:
             parameters: space-separated parameter values
@@ -89,9 +91,10 @@ class Defuzzifier(ABC):
         pass
 
     def parameters(self) -> str:
-        """
+        """Return the space-separated parameters of the defuzzifier.
+
         Returns:
-            space-separated parameters of the defuzzifier
+            space-separated parameters of the defuzzifier.
         """
         return ""
 
@@ -99,7 +102,7 @@ class Defuzzifier(ABC):
     def defuzzify(  # noqa: B027 empty method in an abstract base class
         self, term: Term, minimum: float, maximum: float
     ) -> Scalar:
-        """Defuzzify the term using the range `[minimum,maximum]`
+        """Defuzzify the term using the range `[minimum,maximum]`.
 
         Args:
             term: term to defuzzify, typically an Aggregated term
@@ -127,16 +130,18 @@ class IntegralDefuzzifier(Defuzzifier):
     default_resolution: Final[int] = 1000
 
     def __init__(self, resolution: int | None = None) -> None:
-        """
+        """Constructor.
+
         Args:
-            resolution: number of divisions to discretize the range and compute the area under the curve
+            resolution: number of divisions to discretize the range and compute the area under the curve.
         """
         self.resolution = resolution or IntegralDefuzzifier.default_resolution
 
     def __repr__(self) -> str:
-        """
+        """Return the code to construct the defuzzifier in Python.
+
         Returns:
-            code to construct the defuzzifier in Python
+            code to construct the defuzzifier in Python.
         """
         fields = vars(self).copy()
         if self.resolution == IntegralDefuzzifier.default_resolution:
@@ -144,16 +149,17 @@ class IntegralDefuzzifier(Defuzzifier):
         return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:
-        """
+        """Return the parameters to configure the defuzzifier.
+
         Returns:
-            parameters to configure the defuzzifier
+            parameters to configure the defuzzifier.
         """
         if self.resolution != IntegralDefuzzifier.default_resolution:
             return Op.str(self.resolution)
         return ""
 
     def configure(self, parameters: str) -> None:
-        """Configure the defuzzifier with the parameters
+        """Configure the defuzzifier with the parameters.
 
         Args:
              parameters: list of space-separated parameter values
@@ -186,8 +192,7 @@ class Bisector(IntegralDefuzzifier):
     """
 
     def defuzzify(self, term: Term, minimum: float, maximum: float) -> Scalar:
-        """Compute the bisector of a fuzzy set, that is, the x-coordinate such that
-        the area to its left is approximately equal to the area to its right.
+        """Compute the bisector of a fuzzy set, that is, the x-coordinate such that the area to its left is approximately equal to the area to its right.
 
         The defuzzification process integrates over the fuzzy set using the given range.
         The integration algorithm is the midpoint rectangle method (https://en.wikipedia.org/wiki/Rectangle_method).
@@ -346,8 +351,7 @@ class SmallestOfMaximum(IntegralDefuzzifier):
 
 
 class WeightedDefuzzifier(Defuzzifier):
-    """
-    Abstract class for defuzzifiers that compute a weighted function on the fuzzy set.
+    """Abstract class for defuzzifiers that compute a weighted function on the fuzzy set.
 
     info: related
         - [fuzzylite.defuzzifier.Defuzzifier][]
@@ -369,9 +373,10 @@ class WeightedDefuzzifier(Defuzzifier):
         Tsukamoto = enum.auto()
 
         def __repr__(self) -> str:
-            """
+            """Return the code to identify the type of defuzzifier in Python.
+
             Returns:
-                code to identify the type of defuzzifier in Python
+                code to identify the type of defuzzifier in Python.
             """
             return f"'{self.name}'"
 
@@ -379,7 +384,8 @@ class WeightedDefuzzifier(Defuzzifier):
         self,
         type: str | WeightedDefuzzifier.Type = Type.Automatic,
     ) -> None:
-        """
+        """Constructor.
+
         Args:
             type: name or type of the weighted defuzzifier.
         """
@@ -389,9 +395,10 @@ class WeightedDefuzzifier(Defuzzifier):
             self.type = type
 
     def __repr__(self) -> str:
-        """
+        """Return the code to construct the defuzzifier in Python.
+
         Returns:
-            code to construct the defuzzifier in Python
+            code to construct the defuzzifier in Python.
         """
         fields = vars(self).copy()
         if self.type == WeightedDefuzzifier.Type.Automatic:
@@ -399,16 +406,17 @@ class WeightedDefuzzifier(Defuzzifier):
         return representation.as_constructor(self, fields)
 
     def parameters(self) -> str:
-        """
+        """Return the parameters to configure the defuzzifier.
+
         Returns:
-            parameters to configure the defuzzifier
+            parameters to configure the defuzzifier.
         """
         if self.type == WeightedDefuzzifier.Type.Automatic:
             return ""
         return self.type.name
 
     def configure(self, parameters: str) -> None:
-        """Configure the defuzzifier with the parameters
+        """Configure the defuzzifier with the parameters.
 
         Args:
              parameters: list of space-separated parameter values
@@ -489,8 +497,10 @@ class WeightedAverage(WeightedDefuzzifier):
         minimum: float = nan,
         maximum: float = nan,
     ) -> Scalar:
-        r"""Computes the weighted average of the fuzzy set represented by an Aggregated Term as
-        $y = \sum_i{w_iz_i}$, where $w_i$ is the activation degree of term $i$, and $z_i = \mu_i(w_i)$.
+        r"""Computes the weighted average of the fuzzy set.
+
+        The fuzzy set is represented by an Aggregated Term as $y = \sum_i{w_iz_i}$,
+        where $w_i$ is the activation degree of term $i$, and $z_i = \mu_i(w_i)$.
 
         In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
         term, which typically disregards the $w_i$ value.
@@ -551,7 +561,9 @@ class WeightedSum(WeightedDefuzzifier):
         minimum: float = nan,
         maximum: float = nan,
     ) -> Scalar:
-        r"""Computes the weighted sum of the fuzzy set represented by Aggregated term as $y = \sum_i{w_iz_i}$,
+        r"""Computes the weighted sum of the fuzzy set.
+
+        The fuzzy set is represented by Aggregated term as $y = \sum_i{w_iz_i}$,
         where $w_i$ is the activation degree of term $i$, and $z_i = \mu_i(w_i)$.
 
         In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
