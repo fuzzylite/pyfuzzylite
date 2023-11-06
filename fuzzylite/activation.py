@@ -59,31 +59,34 @@ class Activation(ABC):
     """
 
     def __str__(self) -> str:
-        """
+        """Return the code to construct the activation method in the FuzzyLite Language.
+
         Returns:
-            code to construct the activation method in the FuzzyLite Language
+            code to construct the activation method in the FuzzyLite Language.
         """
         return representation.fll.activation(self)
 
     def __repr__(self) -> str:
-        """
+        """Returns the code to construct the activation method in Python.
+
         Returns:
-            code to construct the activation method in Python
+            code to construct the activation method in Python.
         """
         return representation.as_constructor(self)
 
     @abstractmethod
     def activate(self, rule_block: RuleBlock) -> None:
-        """Implement the activation method of the rule block
+        """Implement the activation method of the rule block.
 
         Args:
              rule_block: rule block to activate
         """
 
     def parameters(self) -> str:
-        """
+        """Return the parameters of the activation method.
+
         Returns:
-            parameters of the activation method
+            parameters of the activation method.
         """
         return ""
 
@@ -141,8 +144,7 @@ class General(Activation):
 
 
 class First(Activation):
-    r"""Activation method that activates the first $n$ rules (in insertion order) whose activation degrees are greater
-    than or equal to the threshold.
+    """Activate the first $n$ rules (in insertion order) whose activation degrees are greater than or equal to the threshold.
 
     info: related
         - [fuzzylite.activation.Activation][]
@@ -152,7 +154,8 @@ class First(Activation):
     """
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
-        """
+        """Constructor.
+
         Args:
             rules: maximum number of rules to activate
             threshold: minimum activation degree required to activate the rule.
@@ -161,14 +164,16 @@ class First(Activation):
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
+        """Return the number of rules and threshold.
+
         Returns:
             number of rules and threshold.
         """
         return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
-        """
+        """Configure the activation method with the parameters.
+
         Args:
             parameters: number of rules and threshold (eg, `3 0.5`).
         """
@@ -178,8 +183,7 @@ class First(Activation):
             self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activate the first $n$ rules (in insertion order) whose activation degrees are greater than or equal to the
-        threshold
+        """Activate the first $n$ rules (in insertion order) whose activation degrees are greater than or equal to the threshold.
 
         Args:
             rule_block: rule block to activate.
@@ -206,8 +210,7 @@ class First(Activation):
 
 
 class Last(Activation):
-    """Activation method that activates the first $n$ rules (in reverse insertion order)
-    whose activation degrees are greater than or equal to the threshold.
+    """Activation method that activates the first $n$ rules (in reverse insertion order) whose activation degrees are greater than or equal to the threshold.
 
     info: related
         - [fuzzylite.activation.Activation][]
@@ -217,7 +220,8 @@ class Last(Activation):
     """
 
     def __init__(self, rules: int = 1, threshold: float = 0.0) -> None:
-        """
+        """Constructor.
+
         Args:
             rules: maximum number of rules to activate
             threshold: minimum activation degree required to activate the rule.
@@ -226,14 +230,16 @@ class Last(Activation):
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
+        """Return the number of rules and threshold.
+
         Returns:
             number of rules and threshold.
         """
         return f"{Op.str(self.rules)} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
-        """
+        """Configure the activation method with the parameters.
+
         Args:
             parameters: number of rules and threshold (eg, `3 0.5`).
         """
@@ -243,8 +249,7 @@ class Last(Activation):
             self.threshold = to_float(threshold)
 
     def activate(self, rule_block: RuleBlock) -> None:
-        """Activate the last $n$ rules (in reverse insertion order) whose activation degrees are greater than or equal
-        to the threshold.
+        """Activate the last $n$ rules (in reverse insertion order) whose activation degrees are greater than or equal to the threshold.
 
         Args:
             rule_block: rule block to activate.
@@ -281,21 +286,26 @@ class Highest(Activation):
     """
 
     def __init__(self, rules: int = 1) -> None:
-        """
+        """Constructor.
+
         Args:
             rules: number of rules to activate.
         """
         self.rules = rules
 
     def parameters(self) -> str:
-        """Returns:
-        number of rules.
+        """Return the number of rules.
+
+        Returns:
+            number of rules.
         """
         return str(self.rules)
 
     def configure(self, parameters: str) -> None:
-        """Args:
-        parameters: number of rules (eg, `3`).
+        """Configure the activation method with the parameters.
+
+        Args:
+            parameters: number of rules (eg, `3`).
         """
         if parameters:
             self.rules = int(parameters)
@@ -338,20 +348,26 @@ class Lowest(Activation):
     """
 
     def __init__(self, rules: int = 1) -> None:
-        """Args:
-        rules: number of rules to activate.
+        """Constructor.
+
+        Args:
+            rules: number of rules to activate.
         """
         self.rules = rules
 
     def parameters(self) -> str:
-        """Returns:
-        number of rules.
+        """Return the number of rules.
+
+        Returns:
+            number of rules.
         """
         return str(self.rules)
 
     def configure(self, parameters: str) -> None:
-        """Args:
-        parameters: number of rules (eg, `3`).
+        """Configure the activation method with the parameters.
+
+        Args:
+            parameters: number of rules (eg, `3`).
         """
         if parameters:
             self.rules = int(parameters)
@@ -384,8 +400,7 @@ class Lowest(Activation):
 
 
 class Proportional(Activation):
-    """Activation method that activates the rules utilizing normalized activation degrees,
-    thus the sum of the activation degrees is equal to one.
+    """Activation method that activates the rules utilizing normalized activation degrees, thus the sum of the activation degrees is equal to one.
 
     info: related
         - [fuzzylite.activation.Activation][]
@@ -423,8 +438,7 @@ class Proportional(Activation):
 
 
 class Threshold(Activation):
-    """Activation method that activates the rules whose activation degrees satisfy the comparison operator and the
-    threshold, and deactivates the rest.
+    """Activation method that activates the rules whose activation degrees satisfy the comparison operator and the threshold, and deactivates the rest.
 
     info: related
         - [fuzzylite.activation.Activation][]
@@ -436,9 +450,7 @@ class Threshold(Activation):
 
     @enum.unique
     class Comparator(enum.Enum):
-        r"""Enumerator that provides six comparison operators between the activation degree $a$ and the threshold
-        $\theta$.
-        """
+        r"""Six comparison operators between the activation degree $a$ and the threshold $\theta$."""
 
         # $a < \theta$
         LessThan = "<"
@@ -466,7 +478,8 @@ class Threshold(Activation):
         }
 
         def __repr__(self) -> str:
-            """
+            """Return the code to construct the comparator in Python.
+
             Returns:
                 code to construct the comparator in Python.
             """
@@ -474,7 +487,8 @@ class Threshold(Activation):
 
         @property
         def operator(self) -> Callable[[Scalar, Scalar], bool | Array[np.bool_]]:
-            """
+            """Return the function reference for the operator.
+
             Returns:
                 function reference for the operator.
             """
@@ -485,7 +499,8 @@ class Threshold(Activation):
         comparator: Comparator | str = Comparator.GreaterThan,
         threshold: float = 0.0,
     ) -> None:
-        """
+        """Constructor.
+
         Args:
             comparator: comparison operator
             threshold: value for activation degrees.
@@ -496,14 +511,16 @@ class Threshold(Activation):
         self.threshold = threshold
 
     def parameters(self) -> str:
-        """
+        """Return the comparator and threshold.
+
         Returns:
             comparator and threshold.
         """
         return f"{self.comparator.value} {Op.str(self.threshold)}"
 
     def configure(self, parameters: str) -> None:
-        """
+        """Configure the activation method with the parameters.
+
         Args:
             parameters: comparator and threshold (eg, `> 0.5`).
         """
