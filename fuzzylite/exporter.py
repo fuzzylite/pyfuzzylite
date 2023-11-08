@@ -555,7 +555,12 @@ class FldExporter(Exporter):
 
     @enum.unique
     class ScopeOfValues(enum.Enum):
-        """Scope of the equally-distributed values to generate."""
+        r"""Scope of the equally-distributed values to generate.
+
+        - `EachVariable`: Generates $v$ values for each variable, resulting in a total resolution of
+        $-1 + \max(1, v^{\frac{1}{|I|})$ from all combinations, where $I$ refers to the input variables.
+        - `AllVariables`: Generates values for each variable such that the total resolution is $v$.
+        """
 
         # /**Generates $n$ values for each variable*/
         EachVariable = enum.auto()
