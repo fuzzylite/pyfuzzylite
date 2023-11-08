@@ -39,58 +39,93 @@ from .types import Scalar
 
 
 class Hedge(ABC):
-    """The Hedge class is the abstract class for hedges. Hedges are utilized
-    within the Antecedent and Consequent of a Rule in order to modify the
-    membership function of a linguistic Term.
+    """Abstract class for hedges.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Antecedent
-    @see Consequent
-    @see Rule
-    @see HedgeFactory
-    @since 4.0
+    Hedges are used in the antecedent and consequent of a rule to modify the membership function of the term it precedes.
+
+    The hedges in the library can be ordered based on the closeness of the result and the membership function value
+    as follows:
+
+    1. [fuzzylite.hedge.Not][],
+    2. [fuzzylite.hedge.Seldom][],
+    3. [fuzzylite.hedge.Somewhat][],
+    4. [fuzzylite.hedge.Very][],
+    5. [fuzzylite.hedge.Extremely][], and
+    6. [fuzzylite.hedge.Any][], being this a special case
+
+    info: related
+        - [fuzzylite.hedge.Not][]
+        - [fuzzylite.hedge.Seldom][]
+        - [fuzzylite.hedge.Somewhat][]
+        - [fuzzylite.hedge.Very][]
+        - [fuzzylite.hedge.Extremely][]
+        - [fuzzylite.hedge.Any][]
+        - [fuzzylite.rule.Antecedent][]
+        - [fuzzylite.rule.Consequent][]
+        - [fuzzylite.rule.Rule][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def __str__(self) -> str:
-        """@return name of the hedge."""
-        return self.__class__.__name__.lower()
+        """Return the name of the hedge.
+
+        Returns:
+            name of the hedge.
+        """
+        return self.name
 
     def __repr__(self) -> str:
-        """@return Python code to construct the hedge."""
+        """Return the Python code to construct the hedge.
+
+        Returns:
+            Python code to construct the hedge.
+        """
         return representation.as_constructor(self)
 
     @property
     def name(self) -> str:
-        """@return the name of the hedge."""
+        """Return the name of the hedge.
+
+        Returns:
+            name of the hedge.
+        """
         return self.__class__.__name__.lower()
 
     @abstractmethod
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return the hedge of $x$.
+        """Implement the hedge for the membership function value $x$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+           hedge of $x$.
         """
-        raise NotImplementedError()
+        pass
 
 
 class Any(Hedge):
-    """The Any class is a special Hedge that always returns `1.0`. Its
-    position with respect to the other hedges is last in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any). The Antecedent of a Rule
-    considers Any to be a syntactically special hedge because it is not
-    followed by a Term (e.g., `if Variable is any then...`). Amongst hedges,
-    only Any has virtual methods to be overridden due to its particular case.
+    """Special hedge that always returns `1.0`.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    The antecedent of a rule considers `Any` to be a syntactically special hedge because it is not
+    followed by a term (e.g., `if Variable is any then...` vs `if Variable is very term then...`)
+
+    The hedge is useful for better documenting rules.
+
+    info: related
+        - [fuzzylite.rule.Antecedent][]
+        - [fuzzylite.rule.Rule][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the given value
-        @param x is irrelevant
-        @return `1.0`.
+        """Return scalar of same shape of `x` filled with `1.0`.
+
+        Args:
+            x: irrelevant except for its shape
+
+        Returns:
+            scalar of same shape of `x` filled with `1.0`
         """
         x = scalar(x)
         y = np.full_like(x, 1.0)
@@ -98,23 +133,28 @@ class Any(Hedge):
 
 
 class Extremely(Hedge):
-    """The Extremely class is a Hedge located fifth in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term as follows.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    $$
+    \begin{cases}
+        2x^2 & \mbox{if $x \le 0.5$} \cr
+        1-2(1-x)^2 & \mbox{otherwise} \cr
+    \end{cases}
+    $$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $
-        \begin{cases}
-        2x^2 & \mbox{if $x \le 0.5$} \cr
-        1-2(1-x)^2 & \mbox{otherwise} \cr
-        \end{cases}$.
+        r"""Compute $\text{Extremely}(x)$.
+
+        Args:
+             x: membership function value
+
+        Returns:
+            $$\begin{cases} 2x^2 & \mbox{if $x \le 0.5$} \cr 1-2(1-x)^2 & \mbox{otherwise} \cr \end{cases}$$
         """
         x = scalar(x)
         y = np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)
@@ -122,19 +162,21 @@ class Extremely(Hedge):
 
 
 class Not(Hedge):
-    """The Not class is a Hedge located first in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    """Hedge that modifies the membership function value of a term by $1-x$.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $1-x$.
+        r"""Compute $\text{Not}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+             $1-x$.
         """
         x = scalar(x)
         y = 1 - x
@@ -142,24 +184,29 @@ class Not(Hedge):
 
 
 class Seldom(Hedge):
-    """The Seldom class is a Hedge located second in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term as follows.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    $$
+    \begin{cases}
+        \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr
+        1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr
+    \end{cases}
+    $$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
+
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $
-        \begin{cases}
-        \sqrt{0.5x} & \mbox{if $x \le 0.5$} \cr
-        1-\sqrt{0.5(1-x)} & \mbox{otherwise}\cr
-        \end{cases}
-        $.
+        r"""Compute $\text{Seldom(x)}$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $$\begin{cases} \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr 1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr \end{cases}$$
         """
         x = scalar(x)
         y = np.where(x <= 0.5, np.sqrt(0.5 * x), 1 - np.sqrt(0.5 * (1 - x)))
@@ -167,19 +214,21 @@ class Seldom(Hedge):
 
 
 class Somewhat(Hedge):
-    """The Somewhat class is a Hedge located third in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term by $\sqrt{x}$.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $\sqrt{x}$.
+        r"""Compute $\text{Somewhat}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $\sqrt{x}$
         """
         x = scalar(x)
         y = np.sqrt(x)
@@ -187,19 +236,21 @@ class Somewhat(Hedge):
 
 
 class Very(Hedge):
-    """The Very class is a Hedge located fourth in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term by $x^2$.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $x^2$.
+        r"""Compute $\text{Very}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+             $x^2$.
         """
         x = scalar(x)
         y = x**2
@@ -207,71 +258,82 @@ class Very(Hedge):
 
 
 class HedgeLambda(Hedge):
-    """The HedgeLambda class is a customizable Hedge via Lambda, which
-    computes any function based on the $x$ value. This hedge is not
-    registered with the HedgeFactory due to issues configuring the formula
-    within. To register the hedge, a static method with the
-    constructor needs to be manually created and registered.
+    r"""Hedge that modifies the membership function value of a term according to a $\lambda$ function.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Hedge
-    @see HedgeFactory
-    @since 7.0
+    This hedge is not registered with the HedgeFactory because the $\lambda$ function cannot be easily configured.
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.hedge.HedgeFunction][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def __init__(self, name: str, function: Callable[[Scalar], Scalar]) -> None:
-        """Create the hedge.
-        @param name is the name of the hedge
-        @param function is the lambda function.
+        r"""Constructor.
+
+        Args:
+            name: name of the hedge
+            function: $\lambda$ function.
         """
         self._name = name
         self.function = function
 
     @property
     def name(self) -> str:
-        """Gets the name of the hedge."""
+        """Get the name of the hedge.
+
+        Returns:
+            name of the hedge
+        """
         return self._name
 
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the membership function value $x$ utilizing
-        the HedgeFunction::function
-        @param x is a membership function value
-        @return the evaluation of the function.
+        r"""Compute $\lambda(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $\lambda(x)$
         """
         return self.function(x)
 
 
 class HedgeFunction(Hedge):
-    """The HedgeFunction class is a customizable Hedge via Function, which
-    computes any function based on the $x$ value. This hedge is not
-    registered with the HedgeFactory due to issues configuring the formula
-    within. To register the hedge, a static method with the
-    constructor needs to be manually created and registered. Please, check the
-    file `test/hedge/HedgeFunction.cpp` for further details.
+    r"""Hedge that modifies the membership function value of a term according to the term Function.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Hedge
-    @see HedgeFactory
-    @since 6.0
+    This hedge is not registered with the HedgeFactory because the Function cannot be easily configured.
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.hedge.HedgeLambda][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
     def __init__(self, function: Function) -> None:
-        """Create the hedge.
-        @param function is the function.
+        """Constructor.
+
+        Args:
+            function: function $f$.
         """
         self.function = function
 
     @property
     def name(self) -> str:
-        """Gets the name of the function."""
+        """Get the name of the hedge.
+
+        Returns:
+            name of the hedge
+        """
         return self.function.name
 
     def hedge(self, x: Scalar) -> Scalar:
-        """Computes the hedge for the membership function value $x$ utilizing
-        the HedgeFunction::function
-        @param x is a membership function value
-        @return the evaluation of the function.
+        r"""Compute $\f(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $\f(x)$
         """
         return self.function.membership(x)
