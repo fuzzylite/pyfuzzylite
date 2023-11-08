@@ -90,7 +90,7 @@ class Exporter(ABC):
         """
         if isinstance(path, str):
             path = Path(path)
-        with path.open(mode="w", encoding="UTF8") as fll:
+        with path.open(mode="w", encoding="utf-8") as fll:
             fll.write(self.to_string(instance))
 
 
@@ -100,6 +100,7 @@ class FllExporter(Exporter):
     info: related
         - [fuzzylite.exporter.Exporter][]
         - [fuzzylite.importer.FllImporter][]
+        - [FuzzyLite Language (FLL)](https://fuzzylite.com/fll-fld/)
     """
 
     def __init__(self, indent: str = "  ", separator: str = "\n") -> None:
