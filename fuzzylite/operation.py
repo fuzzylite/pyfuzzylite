@@ -38,11 +38,9 @@ if typing.TYPE_CHECKING:
 
 
 class Operation:
-    """The Operation class contains methods for numeric operations, string
-    manipulation, and other functions, all of which are also accessible via
-    fl.Op.
-    @author Juan Rada-Vilela, Ph.D.
-    @since 4.0.
+    """Methods for numeric operations, string manipulation, and other functions.
+
+    `fl.Op` is a shortcut to this class.
     """
 
     isinf = np.isinf
@@ -53,10 +51,14 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is equal to $b$, considering nan == nan is True
-        @param a
-        @param b
-        @return whether $a$ is equal to $b$.
+        r"""Return $a = b$ (with NaN's as equal).
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a=b$
         """
         return np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
@@ -65,11 +67,14 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is not equal to $b$
-        @param a
-        @param b
-        @return whether $a$ is equal to $b$.
+        r"""Return $a \not= b$ (with NaN's as equal).
 
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a\not=b$
         """
         return ~np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
@@ -78,10 +83,14 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is greater than $b$ at the given tolerance
-        @param a
-        @param b
-        @return whether $a$ is greater than $b$.
+        """Return $a > b$.
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a>b$
         """
         return scalar(a > b)
 
@@ -90,11 +99,14 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is greater than or equal to $b$ at the
-        given tolerance
-        @param a
-        @param b
-        @return whether $a$ is greater than or equal to $b$.
+        r"""Return $a \ge b$ (with NaN's as equal).
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a \ge b$
         """
         return (a >= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
@@ -103,11 +115,14 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is less than or equal to $b$ at the given
-        tolerance
-        @param a
-        @param b
-        @return whether $a$ is less than or equal to $b$.
+        r"""Return $a \le b$ (with NaN's as equal).
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a \le b$
         """
         return (a <= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
@@ -116,53 +131,43 @@ class Operation:
         a: Scalar,
         b: Scalar,
     ) -> Scalar:
-        """Returns whether $a$ is less than $b$ at the given tolerance
-        @param a
-        @param b
-        floating-point values are considered equivalent
-        @return whether $a$ is less than $b$ at the given tolerance.
+        r"""Return $a < b$.
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a < b$
         """
         return scalar(a < b)
 
     @staticmethod
-    def logical_and(a: Scalar, b: Scalar) -> Scalar:
-        r"""Computes the logical AND
-        @param a
-        @param b
-        @return $
-        \begin{cases}
-        1.0 & \mbox{if $a=1 \wedge b=1$}\cr
-        0.0 & \mbox{otherwise}
-        \end{cases}
-        $.
-        """
-        return np.logical_and(a, b)
-
-    @staticmethod
-    def logical_or(a: Scalar, b: Scalar) -> Scalar:
-        r"""Computes the logical OR
-        @param a
-        @param b
-        @return $
-        \begin{cases}
-        1.0 & \mbox{if $a=1 \vee b=1$}\cr
-        0.0 & \mbox{otherwise}
-        \end{cases}
-        $.
-        """
-        return np.logical_or(a, b)
-
-    @staticmethod
     def is_close(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
-        """Return whether a and b are close within the library's absolute and relative tolerances."""
+        r"""Return $a \approx b$ (with NaN's as equal) using the absolute and relative tolerances of the library.
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a \approx b$
+
+        info: related
+            - [fuzzylite.library.Settings][]
+        """
         z = np.isclose(a, b, atol=settings.atol, rtol=settings.rtol, equal_nan=True)
         return z
 
     @staticmethod
     def as_identifier(name: str) -> str:
-        """Convert the name into a valid FuzzyLite identifier
-        @param name is the name to convert
-        @returns the name as a valid identifier.
+        """Convert the name into a valid FuzzyLite and Python identifier by removing non-alphanumeric characters and prepending `_` to names starting with a number.
+
+        Args:
+            name: name to convert
+
+        Returns:
+             name as a valid identifier.
         """
         name = "".join([x for x in name if x.isalnum() or x == "_"]) or "_"
         if name[0].isnumeric():
@@ -171,7 +176,14 @@ class Operation:
 
     @staticmethod
     def snake_case(text: str) -> str:
-        """Converts the string to snake_case."""
+        """Converts the string to snake_case.
+
+        Args:
+            text: any string
+
+        Returns:
+            text in `snake_case`
+        """
         result = [" "]
         for character in text:
             if character.isalpha() and character.isupper():
@@ -187,7 +199,14 @@ class Operation:
 
     @staticmethod
     def pascal_case(text: str) -> str:
-        """Converts the string to PascalCase."""
+        """Converts the string to PascalCase.
+
+        Args:
+            text: any string
+
+        Returns:
+            text in `PascalCase`
+        """
         result = Op.snake_case(text)
         cc_text = "".join(word.capitalize() for word in result.split("_"))
         return cc_text
@@ -195,49 +214,49 @@ class Operation:
     @staticmethod
     def scale(
         x: Scalar,
-        from_minimum: float,
-        from_maximum: float,
-        to_minimum: float,
-        to_maximum: float,
+        x_min: float,
+        x_max: float,
+        y_min: float,
+        y_max: float,
     ) -> Scalar:
-        r"""Linearly interpolates the parameter $x$ in range
-        `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
-        truncated to the range `[toMin,toMax]` if bounded is `true`.
-        @param x is the source value to interpolate
-        @param from_minimum is the minimum value of the source range
-        @param from_maximum is the maximum value of the source range
-        @param to_minimum is the minimum value of the target range
-        @param to_maximum is the maximum value of the target range
-        @return the x value linearly interpolated to the target range:
-        $ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} $.
+        r"""Linearly interpolates $x$ from the source range `[from_minimum, from_maximum]` to its new value in the target range `[to_minimum, to_maximum]`.
+
+        Args:
+            x: value to interpolate
+            x_min: minimum value of the source range
+            x_max: maximum value of the source range
+            y_min: minimum value of the target range
+            y_max: maximum value of the target range
+
+        Returns:
+             $x$ linearly interpolated to the target range as: $y = \dfrac{y_\max - y_\min}{x_\max-x_\min} (x-x_\min) + y_\min$
         """
         x = scalar(x)
-        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
-            x - from_minimum
-        ) + to_minimum
+        return (y_max - y_min) / (x_max - x_min) * (x - x_min) + y_min
 
     @staticmethod
     def bound(x: Scalar, minimum: float, maximum: float) -> Scalar:
-        r"""Returns $x$ bounded in $[\min,\max]$
-        @param x is the value to be bounded
-        @param minimum is the minimum value of the range
-        @param maximum is the maximum value of the range
-        @return $
-        \begin{cases}
-        \min & \mbox{if $x < \min$} \cr
-        \max & \mbox{if $x > \max$} \cr
-        x & \mbox{otherwise}
-        \end{cases}
-        $.
+        r"""Return $x$ clipped between `[minimum, maximum]`.
+
+        Args:
+           x: value to be clipped
+           minimum: minimum value of the range
+           maximum: maximum value of the range
+
+        Returns:
+             $$\begin{cases} \min & \mbox{if $x < \min$} \cr \max & \mbox{if $x > \max$} \cr x & \mbox{otherwise} \end{cases}$$
         """
         return np.clip(scalar(x), minimum, maximum)
 
     @staticmethod
     def arity_of(method: Callable) -> int:  # type: ignore
-        """Gets the arity of the given method.
-        @param method is the method to get the arity from
-        @returns the arity of the method.
+        """Gets the arity of the method.
 
+        Args:
+            method: method to get the arity from
+
+        Returns:
+            arity of the method.
         """
         signature = inspect.signature(method)
         required_parameters = [
@@ -253,12 +272,15 @@ class Operation:
         variables: bool = True,
         class_hierarchy: bool = False,
     ) -> str:
-        """Describes the instance in terms of its slots, variables, and class hierarchy.
-        @param instance is the instance to describe
-        @param variables whether to include variables in the description
-        @param class_hierarchy whether to include class hierarchy in the description.
+        """Describe the instance based on its variables and class hierarchy.
 
-        @return the description of the instance
+        Args:
+            instance: instance to describe
+            variables: include variables in the description
+            class_hierarchy: include class hierarchy in the description.
+
+        Returns:
+             description of the instance
         """
         if not instance:
             return str(None)
@@ -279,12 +301,16 @@ class Operation:
 
     @staticmethod
     def strip_comments(fll: str, /, delimiter: str = "#") -> str:
-        """Removes the comments from the text.
-        @param fll is the text to strip comments from
-        @param delimiter is the start delimiter to denote a comment.
+        """Remove the comments from the text.
 
-        @returns the text with comments stripped out.
+        Args:
+            fll: text to strip comments from
+            delimiter: delimiter that indicates the start of a comment.
+
+        Returns:
+            text with comments stripped out.
         """
+        # todo: Move to FllImporter
         lines: list[str] = []
         for line in fll.split("\n"):
             ignore = line.find(delimiter)
@@ -297,7 +323,16 @@ class Operation:
 
     @staticmethod
     def midpoints(start: float, end: float, resolution: int = 1000) -> ScalarArray:
-        """Returns a list of values from start to end with the given resolution using midpoint method."""
+        """Return the list of values in the range at the given resolution using the [midpoint rule](https://en.wikipedia.org/wiki/Rectangle_method).
+
+        Args:
+            start: start of range
+            end: end of range
+            resolution: number of divisions to discretize the range
+
+        Returns:
+            list of values in the range at the given resolution using the [midpoint rule](https://en.wikipedia.org/wiki/Rectangle_method)
+        """
         # dx = ((end - start) / resolution)
         # result = start + (i + 0.5) * dx
         return start + (np.array(range(resolution)) + 0.5) * (
@@ -311,12 +346,16 @@ class Operation:
         maximum: list[int],
         position: int | None = None,
     ) -> bool:
-        """Increments the list by the unit.
-        @param x is the list to increment
-        @param minimum is the list of minimum values for each element in the list
-        @param maximum is the list of maximum values for each element in the list
-        @param position is the position in the list to increment
-        @returns boolean whether it was incremented.
+        """Increment the list by the unit.
+
+        Args:
+            x: list to increment
+            minimum: list of minimum values for each element in the list
+            maximum: list of maximum values for each element in the list
+            position: position in the list to increment
+
+        Returns:
+             whether the list was incremented.
         """
         if position is None:
             position = len(x) - 1
@@ -336,10 +375,14 @@ class Operation:
 
     @staticmethod
     def class_name(x: Any, /, qualname: bool = False) -> str:
-        """Returns the class name of the given object.
-        @param x is the object
-        @param qualname whether to use fully qualified classes
-        @return the class name of the given object.
+        """Return the class name of the object.
+
+        Args:
+            x: object to get the class name
+            qualname: use fully qualified classes
+
+        Returns:
+            class name of the given object.
         """
         package = ""
         if qualname:
@@ -353,7 +396,14 @@ class Operation:
 
     @staticmethod
     def to_fll(x: Any, /) -> str:
-        """Returns a string representation of the given value."""
+        """Return the string representation of the object in the FuzzyLite Language.
+
+        Args:
+            x: object
+
+        Returns:
+            string representation of the object in the FuzzyLite Language.
+        """
         from .library import representation
 
         return representation.fll.to_string(x)
@@ -415,11 +465,15 @@ class Operation:
         module: ModuleType | None = None,
         recursive: bool = True,
     ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:
-        """Glob the examples (alphabetically in ascending order) returning the specified type.
-        @param return_type is the type to return, one of {engine, dataset (or fld), language (or fll), files}
-        @param module is the package (eg, fuzzylite.examples) or module (eg, fuzzylite.examples.terms.arc) to glob
-        @param recursive whether to glob subdirectories
-        @return generator of the specified type.
+        """Glob the examples (alphabetically and in ascending order) returning the specified type.
+
+        Args:
+            return_type: type of objects to return
+            module: package (eg, `fuzzylite.examples`) or module (eg, `fuzzylite.examples.terms.arc`) to glob
+            recursive: recursively glob into subdirectories
+
+        Yields:
+            Iterable of the specified type.
         """
         if module is None:
             import fuzzylite.examples
@@ -491,10 +545,14 @@ class Operation:
 
     @staticmethod
     def str(x: Any, /, delimiter: str = " ") -> builtins.str:
-        """Returns a string representation of the given value
-        @param x is the value
-        @param delimiter is the delimiter used in case of x being a list
-        @return a string representation of the given value.
+        """Returns a string representation of the value.
+
+        Args:
+            x: value
+            delimiter: delimiter to use when `x` is a `Sequence` or `ScalarArray`
+
+        Returns:
+             string representation of the value.
         """
         if isinstance(x, str):
             return x
