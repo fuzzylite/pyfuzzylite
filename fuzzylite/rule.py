@@ -47,18 +47,17 @@ if typing.TYPE_CHECKING:
 
 
 class Expression(ABC):
-    """The Expression class is the base class to build an expression tree.
-    @author Juan Rada-Vilela, Ph.D.
-    @see Antecedent
-    @see Consequent
-    @see Rule
-    @since 4.0.
+    """Base class to build an expression tree.
+
+    info: related
+        - [fuzzylite.rule.Antecedent][]
+        - [fuzzylite.rule.Consequent][]
+        - [fuzzylite.rule.Rule][]
     """
 
     @abstractmethod
     def __init__(self) -> None:
-        """Create the expression."""
-        pass
+        """Constructor"""
 
 
 class Proposition(Expression):

@@ -167,7 +167,6 @@ class Term(ABC):
         :param x
         :return the has_membership function value $\mu(x)$.
         """
-        raise NotImplementedError()
 
     def update_reference(  # noqa: B027  empty method in an abstract base class
         self, engine: Engine | None

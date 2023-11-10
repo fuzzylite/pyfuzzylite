@@ -112,7 +112,6 @@ class Defuzzifier(ABC):
         Returns:
             defuzzified value of the term.
         """
-        pass
 
 
 class IntegralDefuzzifier(Defuzzifier):
@@ -179,7 +178,6 @@ class IntegralDefuzzifier(Defuzzifier):
         Returns:
             defuzzified value.
         """
-        pass
 
 
 class Bisector(IntegralDefuzzifier):
@@ -478,7 +476,6 @@ class WeightedDefuzzifier(Defuzzifier):
         Returns:
             defuzzified value
         """
-        pass
 
 
 class WeightedAverage(WeightedDefuzzifier):

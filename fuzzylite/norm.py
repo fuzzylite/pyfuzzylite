@@ -92,7 +92,6 @@ class Norm(ABC):
         Returns:
              norm between $a$ and $b$.
         """
-        pass
 
 
 class TNorm(Norm):

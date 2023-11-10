@@ -101,7 +101,6 @@ class Hedge(ABC):
         Returns:
            hedge of $x$.
         """
-        pass
 
 
 class Any(Hedge):

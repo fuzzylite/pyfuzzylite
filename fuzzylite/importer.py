@@ -68,7 +68,6 @@ class Importer(ABC):
         Returns:
             engine described in the text representation
         """
-        pass
 
     def from_file(self, path: Path | str, /) -> Engine:
         """Read from the file the text representation of an engine.

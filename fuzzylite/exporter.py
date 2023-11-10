@@ -79,7 +79,6 @@ class Exporter(ABC):
         Returns:
             string representation of the object
         """
-        pass
 
     def to_file(self, path: str | Path, instance: object) -> None:
         """Write the string representation of the instance into the file.
