@@ -134,12 +134,11 @@ class Any(Hedge):
 class Extremely(Hedge):
     r"""Hedge that modifies the membership function value of a term as follows.
 
-    $$
-    \begin{cases}
-        2x^2 & \mbox{if $x \le 0.5$} \cr
-        1-2(1-x)^2 & \mbox{otherwise} \cr
-    \end{cases}
-    $$
+    Note: Equation
+        $h(x) = \begin{cases}
+            2x^2 & \mbox{if } x \le 0.5 \cr
+            1-2(1-x)^2 & \mbox{otherwise} \cr
+            \end{cases}$
 
     info: related
         - [fuzzylite.hedge.Hedge][]
@@ -153,7 +152,7 @@ class Extremely(Hedge):
              x: membership function value
 
         Returns:
-            $$\begin{cases} 2x^2 & \mbox{if $x \le 0.5$} \cr 1-2(1-x)^2 & \mbox{otherwise} \cr \end{cases}$$
+            $h(x) = \begin{cases} 2x^2 & \mbox{if } x \le 0.5 \cr 1-2(1-x)^2 & \mbox{otherwise} \cr \end{cases}$
         """
         x = scalar(x)
         y = np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)
@@ -161,7 +160,10 @@ class Extremely(Hedge):
 
 
 class Not(Hedge):
-    """Hedge that modifies the membership function value of a term by $1-x$.
+    """Hedge that modifies the membership function value of a term by
+
+    Note: Equation
+        $h(x) = 1-x$
 
     info: related
         - [fuzzylite.hedge.Hedge][]
@@ -175,7 +177,7 @@ class Not(Hedge):
             x: membership function value
 
         Returns:
-             $1-x$.
+             $h(x) = 1-x$
         """
         x = scalar(x)
         y = 1 - x
@@ -185,17 +187,15 @@ class Not(Hedge):
 class Seldom(Hedge):
     r"""Hedge that modifies the membership function value of a term as follows.
 
-    $$
-    \begin{cases}
-        \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr
-        1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr
-    \end{cases}
-    $$
+    Note: Equation
+        $h(x) = \begin{cases}
+            \sqrt{\dfrac{x}{2}} & \mbox{if } x \le 0.5 \cr
+            1-\sqrt{\dfrac{1-x}{2}} & \mbox{otherwise}
+        \end{cases}$
 
     info: related
         - [fuzzylite.hedge.Hedge][]
         - [fuzzylite.factory.HedgeFactory][]
-
     """
 
     def hedge(self, x: Scalar) -> Scalar:
@@ -205,7 +205,7 @@ class Seldom(Hedge):
             x: membership function value
 
         Returns:
-            $$\begin{cases} \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr 1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr \end{cases}$$
+            $h(x) = \begin{cases} \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr 1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr \end{cases}$
         """
         x = scalar(x)
         y = np.where(x <= 0.5, np.sqrt(0.5 * x), 1 - np.sqrt(0.5 * (1 - x)))
@@ -213,7 +213,10 @@ class Seldom(Hedge):
 
 
 class Somewhat(Hedge):
-    r"""Hedge that modifies the membership function value of a term by $\sqrt{x}$.
+    r"""Hedge that modifies the membership function value of a term by
+
+    Note: Equation
+        $h(x) = \sqrt{x}$
 
     info: related
         - [fuzzylite.hedge.Hedge][]
@@ -227,7 +230,7 @@ class Somewhat(Hedge):
             x: membership function value
 
         Returns:
-            $\sqrt{x}$
+            $h(x) = \sqrt{x}$
         """
         x = scalar(x)
         y = np.sqrt(x)
@@ -235,7 +238,10 @@ class Somewhat(Hedge):
 
 
 class Very(Hedge):
-    r"""Hedge that modifies the membership function value of a term by $x^2$.
+    r"""Hedge that modifies the membership function value of a term by
+
+    Note: Equation
+        $h(x) = x^2$
 
     info: related
         - [fuzzylite.hedge.Hedge][]
@@ -249,7 +255,7 @@ class Very(Hedge):
             x: membership function value
 
         Returns:
-             $x^2$.
+             $h(x) = x^2$
         """
         x = scalar(x)
         y = x**2
@@ -293,7 +299,7 @@ class HedgeLambda(Hedge):
             x: membership function value
 
         Returns:
-            $\lambda(x)$
+            $h(x) = \lambda(x)$
         """
         return self.function(x)
 
@@ -327,12 +333,12 @@ class HedgeFunction(Hedge):
         return self.function.name
 
     def hedge(self, x: Scalar) -> Scalar:
-        r"""Compute $\f(x)$.
+        r"""Compute $f(x)$.
 
         Args:
             x: membership function value
 
         Returns:
-            $\f(x)$
+            $h(x) = f(x)$
         """
         return self.function.membership(x)
