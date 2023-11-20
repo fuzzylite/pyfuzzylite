@@ -137,10 +137,10 @@ ignore = [
     "B007", # [*] Loop control variable `x` not used within loop body
     "D100", # Missing docstring in public module
     "D104", # Missing docstring in public package
-    "D212", # Multi-line docstring summary should start at the first line
-    "D400", # First line should end with a period
-    "D415", # First line should end with a period, question mark, or exclamation point
-    "D205", # 1 blank line required between summary line and description"
+    # "D212", # Multi-line docstring summary should start at the first line
+    # "D400", # First line should end with a period
+    # "D415", # First line should end with a period, question mark, or exclamation point
+    # "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     # "D417", # Missing argument descriptions in the docstring
     "E501", # Line too long (handled by black)
@@ -157,13 +157,16 @@ ignore = [
     "SIM102", # Use a single `if` statement instead of nested `if` statements
     "SIM300", # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
+    # "W291", # Trailing whitespace # hinders markdown
 ]
 
 unfixable = [
-#    "D",
-    "D212", # Multi-line docstring summary should start at the first line
-    "D400", # First line should end with a period
-    "D415", # First line should end with a period, question mark, or exclamation point
+    #    "D",
+    #    "D212", # Multi-line docstring summary should start at the first line
+    "D301", # Use `r"""` if any backslashes in a docstring # do not escape `\`
+    #    "D400", # First line should end with a period
+    #    "D415", # First line should end with a period, question mark, or exclamation point
+    #    "W291", # Trailing whitespace # hinders markdown
 ]
 
 exclude = []
