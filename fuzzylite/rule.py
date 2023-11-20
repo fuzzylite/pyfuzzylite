@@ -70,10 +70,10 @@ class Proposition(Expression):
     """
 
     def __init__(
-            self,
-            variable: Variable | None = None,
-            hedges: Iterable[Hedge] | None = None,
-            term: Term | None = None,
+        self,
+        variable: Variable | None = None,
+        hedges: Iterable[Hedge] | None = None,
+        term: Term | None = None,
     ) -> None:
         """Constructor.
 
@@ -120,10 +120,10 @@ class Operator(Expression):
     """
 
     def __init__(
-            self,
-            name: str = "",
-            right: Expression | None = None,
-            left: Expression | None = None,
+        self,
+        name: str = "",
+        right: Expression | None = None,
+        left: Expression | None = None,
     ) -> None:
         """Constructor.
 
@@ -206,10 +206,10 @@ class Antecedent:
         self.expression = None
 
     def activation_degree(
-            self,
-            conjunction: TNorm | None = None,
-            disjunction: SNorm | None = None,
-            node: Expression | None = None,
+        self,
+        conjunction: TNorm | None = None,
+        disjunction: SNorm | None = None,
+        node: Expression | None = None,
     ) -> Scalar:
         """Compute the activation degree of the antecedent on the expression tree from the given node.
 
@@ -320,7 +320,7 @@ class Antecedent:
         # (4) After a term comes a variable or an operator
 
         # TODO: replace with enum.Flag("State", "VARIABLE IS HEDGE TERM AND_OR".split())
-        s_variable, s_is, s_hedge, s_term, s_and_or = (2 ** i for i in range(5))
+        s_variable, s_is, s_hedge, s_term, s_and_or = (2**i for i in range(5))
         state = s_variable
 
         stack: deque[Expression] = deque()
@@ -614,7 +614,7 @@ class Consequent:
         #  (5) After operator 'and' comes a variable
         #  (6) After operator 'with' comes a scalar
 
-        s_variable, s_is, s_hedge, s_term, s_and, s_with = (2 ** i for i in range(6))
+        s_variable, s_is, s_hedge, s_term, s_and, s_with = (2**i for i in range(6))
         state = s_variable
 
         proposition: Proposition | None = None
@@ -732,16 +732,16 @@ class Rule:
     WITH = "with"
 
     def __init__(
-            self,
-            enabled: bool = True,
-            weight: float = 1.0,
-            antecedent: Antecedent | None = None,
-            consequent: Consequent | None = None,
+        self,
+        enabled: bool = True,
+        weight: float = 1.0,
+        antecedent: Antecedent | None = None,
+        consequent: Consequent | None = None,
     ) -> None:
         """Constructor.
 
         Args:
-            enabled: whether the rule is enabled
+            enabled: enable the rule
             weight: weight of the rule
             antecedent: antecedent of the rule
             consequent: consequent of the rule
@@ -862,7 +862,7 @@ class Rule:
         self.triggered = array(False)
 
     def activate_with(
-            self, conjunction: TNorm | None, disjunction: SNorm | None
+        self, conjunction: TNorm | None, disjunction: SNorm | None
     ) -> Scalar:
         """Compute and set activation degree of the rule with the conjunction and disjunction operators.
 
@@ -947,22 +947,22 @@ class RuleBlock:
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            conjunction: TNorm | None = None,
-            disjunction: SNorm | None = None,
-            implication: TNorm | None = None,
-            activation: Activation | None = None,
-            rules: Iterable[Rule] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        conjunction: TNorm | None = None,
+        disjunction: SNorm | None = None,
+        implication: TNorm | None = None,
+        activation: Activation | None = None,
+        rules: Iterable[Rule] | None = None,
     ) -> None:
         """Constructor.
 
         Args:
             name: name of the rule block
             description: description of the rule block
-            enabled: whether the rule block is enabled
+            enabled: enable the rule block
             conjunction: conjunction operator
             disjunction: disjunction operator
             implication: implication operator

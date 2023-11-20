@@ -124,7 +124,7 @@ class Any(Hedge):
             x: irrelevant except for its shape
 
         Returns:
-            scalar of same shape of `x` filled with `1.0`
+            $h(x)=1.0$
         """
         x = scalar(x)
         y = np.full_like(x, 1.0)
@@ -160,7 +160,7 @@ class Extremely(Hedge):
 
 
 class Not(Hedge):
-    """Hedge that modifies the membership function value of a term by
+    """Hedge that modifies the membership function value of a term by.
 
     Note: Equation
         $h(x) = 1-x$
@@ -213,7 +213,7 @@ class Seldom(Hedge):
 
 
 class Somewhat(Hedge):
-    r"""Hedge that modifies the membership function value of a term by
+    r"""Hedge that modifies the membership function value of a term by.
 
     Note: Equation
         $h(x) = \sqrt{x}$
@@ -238,7 +238,7 @@ class Somewhat(Hedge):
 
 
 class Very(Hedge):
-    r"""Hedge that modifies the membership function value of a term by
+    r"""Hedge that modifies the membership function value of a term by.
 
     Note: Equation
         $h(x) = x^2$

@@ -463,7 +463,7 @@ class WeightedDefuzzifier(Defuzzifier):
     ) -> Scalar:
         """Implement the defuzzification of the term.
 
-        warning: change in version 8
+        Warning:
             From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
             In previous versions, the implication and aggregation operators are not used for weighted defuzzification.
@@ -502,7 +502,7 @@ class WeightedAverage(WeightedDefuzzifier):
         In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
         term, which typically disregards the $w_i$ value.
 
-        warning: change in version 8
+        Warning:
             From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
             In previous versions, the implication and aggregation operators are not used for weighted defuzzification.
@@ -566,7 +566,7 @@ class WeightedSum(WeightedDefuzzifier):
         In Takagi-Sugeno controllers, the membership function $\mu_i(w_i)$ is generally a Constant, Linear, or Function
         term, which typically disregards the $w_i$ value.
 
-        warning: change in version 8
+        Warning:
             From version 8, the aggregation operator is used to aggregate multiple activations of the same term.
 
             In previous versions, the implication and aggregation operators are not used for weighted defuzzification.

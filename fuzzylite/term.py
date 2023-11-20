@@ -50,7 +50,7 @@ import re
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
-from typing import Any, Callable, Literal, SupportsFloat, Union
+from typing import Any, Callable, SupportsFloat, Union
 
 import numpy as np
 
@@ -722,7 +722,7 @@ class Binary(Term):
         self,
         name: str = "",
         start: float = nan,
-        direction: Literal[nan] | Literal[inf] | Literal[-inf] = nan,
+        direction: float = nan,
         height: float = 1.0,
     ) -> None:
         """Constructor.
@@ -730,7 +730,7 @@ class Binary(Term):
         Args:
             name: name of the Term
             start: start of the Binary
-            direction: direction of the Binary
+            direction: direction of the Binary (-inf, inf)
             height: height of the Term
         """
         super().__init__(name, height)
@@ -1536,7 +1536,7 @@ class PiShape(Term):
         s_shape = SShape(start=self.bottom_left, end=self.top_left).membership(x)
         z_shape = ZShape(start=self.top_right, end=self.bottom_right).membership(x)
         y = self.height * np.where(np.isnan(x), np.nan, 1.0) * s_shape * z_shape
-        return y  # type: ignore
+        return y
 
     def parameters(self) -> str:
         """Return the parameters of the term.

@@ -223,7 +223,7 @@ class Engine:
         )
 
     def input_variable(self, name_or_index: str | int, /) -> InputVariable:
-        """Find the input variable of the given name or at the given index.
+        """Find the input variable by the name or index.
 
         The best performance is $O(1)$ when using indices,
         and the worst performance is $O(n)$ when using names, where $n$ is the number of input variables.
@@ -232,10 +232,10 @@ class Engine:
             name_or_index: name or index of the input variable
 
         Returns:
-            input variable by the given name or at the given index
+            input variable by the name or index
 
         Raises:
-             ValueError: when there is no variable with the given name.
+             ValueError: when there is no variable by the given name.
              IndexError: when the index is out of range
         """
         if isinstance(name_or_index, int):

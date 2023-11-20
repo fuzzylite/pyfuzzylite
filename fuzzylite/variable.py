@@ -41,14 +41,14 @@ class Variable:
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -290,14 +290,14 @@ class InputVariable(Variable):
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -358,18 +358,18 @@ class OutputVariable(Variable):
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            lock_previous: bool = False,
-            default_value: float = nan,
-            aggregation: SNorm | None = None,
-            defuzzifier: Defuzzifier | None = None,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        lock_previous: bool = False,
+        default_value: float = nan,
+        aggregation: SNorm | None = None,
+        defuzzifier: Defuzzifier | None = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
