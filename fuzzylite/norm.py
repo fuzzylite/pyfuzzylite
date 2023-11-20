@@ -83,7 +83,7 @@ class Norm(ABC):
 
     @abstractmethod
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
-        """Implement the norm $\nu(a,b)$.
+        r"""Implement the norm $\nu(a,b)$.
 
         Args:
             a: membership function value
