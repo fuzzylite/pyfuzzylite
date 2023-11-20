@@ -26,10 +26,10 @@ import fuzzylite as fl
 
 
 def generate_tests(package: ModuleType) -> str:
-    """Automatically generate benchmark tests for every example in the package
+    """Automatically generate benchmark tests for every example in the package.
+
     @param package is the package containing the examples (eg, fuzzylite.examples.terms)
     @return Python code containing the tests
-    .
     """
     tests = [
         f"""\
@@ -62,7 +62,8 @@ class CodspeedBenchmark(fl.Benchmark):
     def start(
         self, benchmark: BenchmarkFixture, rows: int | float, shuffle: bool
     ) -> None:
-        """Start the benchmark
+        """Start the benchmark.
+
         @param benchmark is the fixture from the pytest-codspeed library
         @param rows is the number (int) or ratio (float) of rows to use from the data
         @param shuffle whether to shuffle the data.

@@ -29,7 +29,9 @@ class AssertIntegration:
     """Asserts integration of a Mamdani or Takagi-Sugeno system with a defuzzifier."""
 
     def __init__(self, engine: fl.Engine, vectorize: bool = True) -> None:
-        """@param engine is the engine to test on.
+        """Constructor.
+
+        @param engine is the engine to test on.
         @param vectorize is whether to test vectorization.
         """
         self.engine = copy.deepcopy(engine)

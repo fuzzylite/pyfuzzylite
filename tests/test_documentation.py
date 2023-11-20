@@ -25,6 +25,7 @@ import fuzzylite as fl
 
 def generate_documentation() -> str:
     """Generate markdown files in `/tmp/fl/docs` from the modules and exports of fuzzylite.
+
     @return mkdocs configuration linking to generated markdown files.
     """
     modules = [
@@ -77,10 +78,10 @@ def generate_documentation() -> str:
 
 
 class GenerateDocumentation(unittest.TestCase):
-    """Generate the documentation using `mkdocs` and `mkdocstrings`"""
+    """Generate the documentation using `mkdocs` and `mkdocstrings`."""
 
     def test_generate_documentation(self) -> None:
-        """Generate the documentation in /tmp/fl/docs and print the mkdocs index"""
+        """Generate the documentation in /tmp/fl/docs and print the mkdocs index."""
         print(generate_documentation())
 
 

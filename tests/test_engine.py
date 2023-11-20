@@ -831,8 +831,9 @@ RuleBlock:
     @unittest.expectedFailure
     def test_copy_takagi_sugeno(self) -> None:
         """Test engine can do shallow copy of a Mamdani engine.
-        Expected failure because a shallow copy of an engine
-        will contain internal references to the original engine (eg, Linear terms referencing original engine).
+
+        Expected failure because a shallow copy of an engine will contain internal references to the original engine
+        (eg, Linear terms referencing original engine).
         """
         import copy
 

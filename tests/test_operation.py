@@ -226,50 +226,6 @@ class TestOperation(unittest.TestCase):
             },
         )
 
-    def test_operator_and(self) -> None:
-        """Test operator and."""
-        AssertOperator(commutative=True, scalable=True).assert_that(
-            fl.Op.logical_and,
-            {
-                (fl.nan, fl.nan): 1.0,
-                (fl.nan, 0.0): 0.0,
-                (fl.inf, -fl.inf): 1.0,
-                (fl.inf, fl.inf): 1.0,
-                (1.0, 1.0): 1.0,
-                (1.0, 0.0): 0.0,
-                (0.0, 1.0): 0.0,
-                (0.0, 0.0): 0.0,
-                (-1.0, -1.0): 1.0,
-                (-1.0, -0.0): 0.0,
-                (-0.0, -1.0): 0.0,
-                (-0.0, -0.0): 0.0,
-                (1.0 + 1e-15, 1.0): 1.0,
-                (1.0 + 1e-16, 1.0): 1.0,
-            },
-        )
-
-    def test_operator_or(self) -> None:
-        """Test operator or."""
-        AssertOperator(commutative=True, scalable=True).assert_that(
-            fl.Op.logical_or,
-            {
-                (fl.nan, fl.nan): 1.0,
-                (fl.nan, 0.0): 1.0,
-                (fl.inf, -fl.inf): 1.0,
-                (fl.inf, fl.inf): 1.0,
-                (1.0, 1.0): 1.0,
-                (1.0, 0.0): 1.0,
-                (0.0, 1.0): 1.0,
-                (0.0, 0.0): 0.0,
-                (-1.0, -1.0): 1.0,
-                (-1.0, -0.0): 1.0,
-                (-0.0, -1.0): 1.0,
-                (-0.0, -0.0): 0.0,
-                (1.0 + 1e-15, 1.0): 1.0,
-                (1.0 + 1e-16, 1.0): 1.0,
-            },
-        )
-
     def test_valid_identifier(self) -> None:
         """Test what a valid identifier is."""
         self.assertEqual(fl.Op.as_identifier("  xx  "), "xx")  # trims

@@ -32,6 +32,7 @@ class BaseAssert(Generic[T]):
 
     def __init__(self, test: unittest.TestCase, actual: T) -> None:
         """Create the assert.
+
         @param test is the test instance
         @param actual is the obtained value
         #TODO rename actual to obtained or others to expected?
@@ -63,6 +64,7 @@ class BaseAssert(Generic[T]):
 
     def exports_fll(self, fll: str) -> Self:
         """Asserts that the given fll is equal to the obtained fll.
+
         @param fll is the expected fll.
         """
         self.test.assertEqual(fll, fl.Op.to_fll(self.actual))
@@ -71,6 +73,7 @@ class BaseAssert(Generic[T]):
 
     def has_name(self, name: str) -> Self:
         """Asserts that the obtained object's name is equal to the expected name.
+
         @param name is the expected name.
         """
         self.test.assertTrue(
@@ -82,6 +85,7 @@ class BaseAssert(Generic[T]):
 
     def has_description(self, description: str) -> Self:
         """Asserts that the obtained object's description is equal to the expected description.
+
         @param description is the expected description.
         """
         self.test.assertTrue(
