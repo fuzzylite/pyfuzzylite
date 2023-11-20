@@ -83,14 +83,14 @@ class Norm(ABC):
 
     @abstractmethod
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
-        """Implement the norm between $a$ and $b$.
+        """Implement the norm $\nu(a,b)$.
 
         Args:
             a: membership function value
             b: membership function value
 
         Returns:
-             norm between $a$ and $b$.
+             $\nu(a,b)$
         """
 
 
@@ -139,7 +139,10 @@ class SNorm(Norm):
 
 
 class AlgebraicProduct(TNorm):
-    """TNorm to compute the algebraic product of any two values.
+    r"""TNorm to compute the algebraic product of any two values.
+
+    Note: Equation
+        $\nu(a,b)=a\times b$
 
     info: related
         - [fuzzylite.norm.AlgebraicSum][]
@@ -156,7 +159,7 @@ class AlgebraicProduct(TNorm):
             b: membership function value
 
         Returns:
-            $a\times b$
+            $\nu(a,b)=a\times b$
         """
         a = scalar(a)
         b = scalar(b)
@@ -164,7 +167,10 @@ class AlgebraicProduct(TNorm):
 
 
 class BoundedDifference(TNorm):
-    """TNorm to compute the bounded difference between any two values.
+    r"""TNorm to compute the bounded difference between any two values.
+
+    Note: Equation
+        $\nu(a,b)=\max(0, a + b - 1)$
 
     info: related
         - [fuzzylite.norm.BoundedSum][]
@@ -181,7 +187,7 @@ class BoundedDifference(TNorm):
             b: membership function value
 
         Returns:
-            $\max(0, a + b - 1)$
+            $\nu(a,b)=\max(0, a + b - 1)$
         """
         a = scalar(a)
         b = scalar(b)
@@ -190,6 +196,12 @@ class BoundedDifference(TNorm):
 
 class DrasticProduct(TNorm):
     r"""TNorm to compute the drastic product of any two values.
+
+    Note: Equation
+        $\nu(a,b) = \begin{cases}
+            \min(a,b) & \mbox{if } \max(a,b)=1 \cr
+            0 & \mbox{otherwise}
+        \end{cases}$
 
     info: related
         - [fuzzylite.norm.DrasticSum][]
@@ -206,7 +218,7 @@ class DrasticProduct(TNorm):
             b: membership function value.
 
         Returns:
-             $$\begin{cases} \min(a,b) & \mbox{if $\max(a,b)=1$} \cr  0 & \mbox{otherwise} \end{cases}$$
+            $\nu(a,b) = \begin{cases} \min(a,b) & \mbox{if } \max(a,b)=1 \cr 0 & \mbox{otherwise} \end{cases}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -214,7 +226,10 @@ class DrasticProduct(TNorm):
 
 
 class EinsteinProduct(TNorm):
-    """TNorm to compute the Einstein product of any two values.
+    r"""TNorm to compute the Einstein product of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\dfrac{a\times b}{2-(a+b-a\times b)}$
 
     info: related
         - [fuzzylite.norm.EinsteinSum][]
@@ -231,7 +246,7 @@ class EinsteinProduct(TNorm):
             b: membership function value
 
         Returns:
-             $\dfrac{a\times b}{2-(a+b-a\times b)}$
+             $\nu(a,b)=\dfrac{a\times b}{2-(a+b-a\times b)}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -239,8 +254,10 @@ class EinsteinProduct(TNorm):
 
 
 class HamacherProduct(TNorm):
-    """TNorm to compute the Hamacher product of any two values.
+    r"""TNorm to compute the Hamacher product of any two values.
 
+    Note: Equation
+        $\nu(a,b)=\dfrac{a \times b}{a+b- a \times b}$
     info: related
         - [fuzzylite.norm.HamacherSum][]
         - [fuzzylite.norm.TNorm][]
@@ -256,7 +273,7 @@ class HamacherProduct(TNorm):
             b: membership function value
 
         Returns:
-            $\dfrac{a \times b}{a+b- a \times b}$
+            $\nu(a,b)=\dfrac{a \times b}{a+b- a \times b}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -264,7 +281,10 @@ class HamacherProduct(TNorm):
 
 
 class Minimum(TNorm):
-    """TNorm that computes the minimum of any two values.
+    r"""TNorm that computes the minimum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\min(a,b)$
 
     info: related
         - [fuzzylite.norm.Maximum][]
@@ -281,7 +301,7 @@ class Minimum(TNorm):
             b: membership function value
 
         Returns:
-             $\min(a,b)$
+             $\nu(a,b)=\min(a,b)$
         """
         a = scalar(a)
         b = scalar(b)
@@ -289,7 +309,13 @@ class Minimum(TNorm):
 
 
 class NilpotentMinimum(TNorm):
-    """TNorm to compute the nilpotent minimum of any two values.
+    r"""TNorm to compute the nilpotent minimum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\begin{cases}
+            \min(a,b) & \mbox{if }a+b>1 \cr
+            0 & \mbox{otherwise}
+        \end{cases}$
 
     info: related
         - [fuzzylite.norm.NilpotentMaximum][]
@@ -306,7 +332,7 @@ class NilpotentMinimum(TNorm):
             b: membership function value
 
         Returns:
-            $$\begin{cases} \min(a,b) & \mbox{if $a+b>1$} \cr 0 & \mbox{otherwise} \end{cases}$$
+            $\nu(a,b)=\begin{cases}  \min(a,b) & \mbox{if }a+b>1 \cr  0 & \mbox{otherwise}  \end{cases}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -314,7 +340,10 @@ class NilpotentMinimum(TNorm):
 
 
 class AlgebraicSum(SNorm):
-    """SNorm to compute the algebraic sum of values any two values.
+    r"""SNorm to compute the algebraic sum of values any two values.
+
+    Note: Equation
+        $\nu(a,b)=a+b-(a \times b)$
 
     info: related
         - [fuzzylite.norm.AlgebraicProduct][]
@@ -331,7 +360,7 @@ class AlgebraicSum(SNorm):
             b: membership function value
 
         Returns:
-             $a+b-(a \times b)$
+             $\nu(a,b)=a+b-(a \times b)$
         """
         a = scalar(a)
         b = scalar(b)
@@ -339,7 +368,10 @@ class AlgebraicSum(SNorm):
 
 
 class BoundedSum(SNorm):
-    """SNorm to compute the bounded sum of any two values.
+    r"""SNorm to compute the bounded sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\min(1, a+b)$
 
     info: related
         - [fuzzylite.norm.BoundedDifference][]
@@ -356,7 +388,7 @@ class BoundedSum(SNorm):
             b: membership function value
 
         Returns:
-            $\min(1, a+b)$
+            $\nu(a,b)=\min(1, a+b)$
         """
         a = scalar(a)
         b = scalar(b)
@@ -364,7 +396,13 @@ class BoundedSum(SNorm):
 
 
 class DrasticSum(SNorm):
-    """SNorm to compute the drastic sum of any two values.
+    r"""SNorm to compute the drastic sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\begin{cases}
+            \max(a,b) & \mbox{if } \min(a,b)=0 \cr
+             1 & \mbox{otherwise}
+        \end{cases}$
 
     info: related
         - [fuzzylite.norm.DrasticProduct][]
@@ -381,7 +419,7 @@ class DrasticSum(SNorm):
             b: membership function value
 
         Returns:
-            $$\begin{cases} \max(a,b) & \mbox{if $\min(a,b)=0$} \cr 1 & \mbox{otherwise} \end{cases}$$
+            $\nu(a,b)=\begin{cases}  \max(a,b) & \mbox{if } \min(a,b)=0 \cr  1 & \mbox{otherwise}  \end{cases}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -389,7 +427,10 @@ class DrasticSum(SNorm):
 
 
 class EinsteinSum(SNorm):
-    """SNorm to compute the einstein sum of any two values.
+    r"""SNorm to compute the einstein sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\dfrac{a+b}{1+a \times b}$
 
     info: related
         - [fuzzylite.norm.EinsteinProduct][]
@@ -406,7 +447,7 @@ class EinsteinSum(SNorm):
             b: membership function value
 
         Returns:
-            $\dfrac{a+b}{1+a \times b}$
+            $\nu(a,b)=\dfrac{a+b}{1+a \times b}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -414,7 +455,10 @@ class EinsteinSum(SNorm):
 
 
 class HamacherSum(SNorm):
-    """SNorm to compute the Hamacher sum of any two values.
+    r"""SNorm to compute the Hamacher sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\dfrac{a+b-(2\times a \times b)}{1-a\times b}$
 
     info: related
         - [fuzzylite.norm.HamacherProduct][]
@@ -431,7 +475,7 @@ class HamacherSum(SNorm):
             b: membership function value
 
         Returns:
-            $\dfrac{a+b-(2\times a \times b)}{1-a\times b}$
+            $\nu(a,b)=\dfrac{a+b-(2\times a \times b)}{1-a\times b}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -439,7 +483,10 @@ class HamacherSum(SNorm):
 
 
 class Maximum(SNorm):
-    """SNorm to compute the maximum of any two values.
+    r"""SNorm to compute the maximum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\max(a,b)$
 
     info: related
        - [fuzzylite.norm.Minimum][]
@@ -457,7 +504,7 @@ class Maximum(SNorm):
             b: membership function value
 
         Returns:
-            $\max(a,b)$
+            $\nu(a,b)=\max(a,b)$
         """
         a = scalar(a)
         b = scalar(b)
@@ -465,7 +512,13 @@ class Maximum(SNorm):
 
 
 class NilpotentMaximum(SNorm):
-    """SNorm to compute the nilpotent maximum of any two values.
+    r"""SNorm to compute the nilpotent maximum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\begin{cases}
+        \max(a,b) & \mbox{if } a+b<0 \cr
+        1 & \mbox{otherwise}
+        \end{cases}$
 
     info: related
        - [fuzzylite.norm.NilpotentMinimum][]
@@ -482,7 +535,7 @@ class NilpotentMaximum(SNorm):
             b: membership function value
 
         Returns:
-            $$\begin{cases} \max(a,b) & \mbox{if $a+b<0$} \cr 1 & \mbox{otherwise} \end{cases}$$
+            $\nu(a,b)=\begin{cases} \max(a,b) & \mbox{if } a+b<0 \cr 1 & \mbox{otherwise} \end{cases}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -490,7 +543,10 @@ class NilpotentMaximum(SNorm):
 
 
 class NormalizedSum(SNorm):
-    """SNorm to compute the normalized sum of any two values.
+    r"""SNorm to compute the normalized sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=\dfrac{a+b}{\max(1, a + b)}$
 
     info: related
         - [fuzzylite.norm.SNorm][]
@@ -506,7 +562,7 @@ class NormalizedSum(SNorm):
             b: membership function value
 
         Returns:
-             $\dfrac{a+b}{\max(1, a + b)}$
+             $\nu(a,b)=\dfrac{a+b}{\max(1, a + b)}$
         """
         a = scalar(a)
         b = scalar(b)
@@ -514,7 +570,10 @@ class NormalizedSum(SNorm):
 
 
 class UnboundedSum(SNorm):
-    """SNorm to compute the sum of any two values.
+    r"""SNorm to compute the sum of any two values.
+
+    Note: Equation
+        $\nu(a,b)=a+b$
 
     info: related
         - [fuzzylite.norm.BoundedSum][]
@@ -531,7 +590,7 @@ class UnboundedSum(SNorm):
             b: membership function value
 
         Returns:
-            $a+b$
+            $\nu(a,b)=a+b$
         """
         a = scalar(a)
         b = scalar(b)
@@ -540,6 +599,9 @@ class UnboundedSum(SNorm):
 
 class NormLambda(TNorm, SNorm):
     r"""TNorm or SNorm based on a $\lambda$ function on any two values.
+
+    Note: Equation
+        $\nu(a,b)=\lambda(a,b)$
 
     This Norm is not registered in the SNormFactory or TNormFactory.
 
@@ -576,13 +638,16 @@ class NormLambda(TNorm, SNorm):
             b: membership function value
 
         Returns:
-            $\lambda(a,b)$
+            $\nu(a,b)=\lambda(a,b)$
         """
         return self.function(a, b)
 
 
 class NormFunction(TNorm, SNorm):
-    """TNorm or SNorm based on a term function on any two values.
+    r"""TNorm or SNorm based on a term function on any two values.
+
+    Note: Equation
+        $\nu(a,b)=f(a,b)$
 
     This Norm is not registered in the SNormFactory or TNormFactory.
 
@@ -612,14 +677,13 @@ class NormFunction(TNorm, SNorm):
         return representation.as_constructor(self, positional=True)
 
     def compute(self, a: Scalar, b: Scalar) -> Scalar:
-        """Compute the Norm using $f(a,b)$.
+        r"""Compute the Norm using $f(a,b)$.
 
         Args:
             a: membership function value
             b: membership function value
 
         Returns:
-            $f(a,b)$
-
+            $\nu(a,b)=f(a,b)$
         """
         return self.function.evaluate({"a": a, "b": b})
