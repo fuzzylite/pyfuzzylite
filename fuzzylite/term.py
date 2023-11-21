@@ -69,24 +69,31 @@ class Term(ABC):
 
     The linguistic terms in this library can be divided into four groups, namely `basic`, `extended`, `edge`, and `function`.
 
-    | `basic`                       	| `extended`                           	| `edge`                     	| `function`                   	|
-    |-------------------------------	|--------------------------------------	|----------------------------	|------------------------------	|
-    | [fuzzylite.term.SemiEllipse][] 	| [fuzzylite.term.Bell][]           	| [fuzzylite.term.Arc][] 	    | [fuzzylite.term.Constant][]  	|
-    | [fuzzylite.term.Triangle][]   	| [fuzzylite.term.Binary][]            	| [fuzzylite.term.Concave][] 	| [fuzzylite.term.Linear][]    	|
-    | [fuzzylite.term.Trapezoid][]  	| [fuzzylite.term.Cosine][]            	| [fuzzylite.term.Ramp][]    	| [fuzzylite.term.Function][] 	|
-    | [fuzzylite.term.Rectangle][]  	| [fuzzylite.term.Gaussian][]          	| [fuzzylite.term.Sigmoid][] 	|                              	|
-    | [fuzzylite.term.Discrete][]   	| [fuzzylite.term.GaussianProduct][]   	| [fuzzylite.term.SShape][]  	|                              	|
-    |                               	| [fuzzylite.term.PiShape][]           	| [fuzzylite.term.ZShape][]     |                           	|                              	|
-    |                               	| [fuzzylite.term.SigmoidDifference][] 	|                            	|                              	|
-    |                               	| [fuzzylite.term.SigmoidProduct][]    	|                            	|                              	|
-    |                               	| [fuzzylite.term.Spike][]             	|                            	|                              	|
+    | `basic/function`                       	| `extended`                                  	| `edge`                                               	|
+    |----------------------------------------	|---------------------------------------------	|------------------------------------------------------	|
+    | [fuzzylite.term.Discrete][]            	| [fuzzylite.term.Bell][]                     	| [fuzzylite.term.Arc][]                               	|
+    | ![](../../image/term/Discrete.svg )    	| ![](../../image/term/Bell.svg)              	| ![](../../image/term/Arc.svg)                        	|
+    | [fuzzylite.term.Rectangle][]           	| [fuzzylite.term.Cosine][]                   	| [fuzzylite.term.Binary][]                            	|
+    | ![](../../image/term/Rectangle.svg)    	| ![](../../image/term/Cosine.svg)            	| ![](../../image/term/Binary.svg)                     	|
+    | [fuzzylite.term.SemiEllipse][]         	| [fuzzylite.term.Gaussian][]                 	| [fuzzylite.term.Concave][]                           	|
+    | ![](../../image/term/SemiEllipse.svg ) 	| ![](../../image/term/Gaussian.svg)          	| ![](../../image/term/Concave.svg)                    	|
+    | [fuzzylite.term.Triangle][]            	| [fuzzylite.term.GaussianProduct][]          	| [fuzzylite.term.Ramp][]                              	|
+    | ![](../../image/term/Triangle.svg )    	| ![](../../image/term/GaussianProduct.svg)   	| ![](../../image/term/Ramp.svg)                       	|
+    | [fuzzylite.term.Trapezoid][]           	| [fuzzylite.term.PiShape][]                  	| [fuzzylite.term.Sigmoid][]                           	|
+    | ![](../../image/term/Trapezoid.svg)    	| ![](../../image/term/PiShape.svg)           	| ![](../../image/term/Sigmoid.svg)                    	|
+    | [fuzzylite.term.Constant][]            	| [fuzzylite.term.SigmoidDifference][]        	| [fuzzylite.term.SShape][]	- [fuzzylite.term.ZShape][] 	|
+    | ![](../../image/term/Constant.svg)     	| ![](../../image/term/SigmoidDifference.svg) 	| ![](../../image/term/ZShape - SShape.svg)            	|
+    | [fuzzylite.term.Linear][]              	| [fuzzylite.term.SigmoidProduct][]           	| [fuzzylite.term.SShape][]                            	|
+    | ![](../../image/term/Linear.svg)       	| ![](../../image/term/SigmoidProduct.svg)    	| ![](../../image/term/SShape.svg)                     	|
+    | [fuzzylite.term.Function][]            	| [fuzzylite.term.Spike][]                    	| [fuzzylite.term.ZShape][]                            	|
+    | ![](../../image/term/Function.svg)     	| ![](../../image/term/Spike.svg)             	| ![](../../image/term/ZShape.svg)                     	|
+    |                                        	|                                             	|                                                      	|
+
 
     info: related
         - [fuzzylite.variable.Variable][]
         - [fuzzylite.variable.InputVariable][]
         - [fuzzylite.variable.OutputVariable][]
-
-    ![Terms](../../image/term/Terms.svg)
     """
 
     def __init__(self, name: str = "", height: float = 1.0) -> None:
@@ -521,6 +528,8 @@ class Aggregated(Term):
 class Arc(Term):
     r"""Edge term that represents the arc-shaped membership function.
 
+    ![](../../image/term/Arc.svg)
+
     Note: Equation
         $\mu(x)=\dfrac{h\sqrt{r^2 - (x-c)^2}}{|r|}$
 
@@ -632,6 +641,8 @@ class Arc(Term):
 class Bell(Term):
     r"""Extended term that represents the generalized bell curve membership function.
 
+    ![](../../image/term/Bell.svg)
+
     Note: Equation
         $\mu(x)=\dfrac{h}{1 + \left(\dfrac{|x-c|}{w}\right)^{2s}}$
 
@@ -705,6 +716,8 @@ class Bell(Term):
 class Binary(Term):
     r"""Edge Term that represents the binary membership function.
 
+    ![](../../image/term/Binary.svg)
+
     Note: Equation
         $\mu(x) = \begin{cases}
             h & \mbox{if } (d=\infty \wedge x \ge s) \vee (d=-\infty \wedge x \le s) \cr
@@ -775,6 +788,8 @@ class Binary(Term):
 
 class Concave(Term):
     r"""Edge Term that represents the concave membership function.
+
+    ![](../../image/term/Concave.svg)
 
     Note: Equation
         $\mu(x) = \begin{cases}
@@ -888,6 +903,8 @@ class Concave(Term):
 class Constant(Term):
     r"""Zero polynomial term $k$ that represents a constant value.
 
+    ![](../../image/term/Constant.svg)
+
     Note: Equation
         $\mu(x) = k$
 
@@ -947,6 +964,8 @@ class Constant(Term):
 
 class Cosine(Term):
     r"""Extended term that represents the cosine membership function.
+
+    ![](../../image/term/Cosine.svg)
 
     Note: Equation
         $\mu(x) = \begin{cases}
@@ -1024,6 +1043,8 @@ class Cosine(Term):
 
 class Discrete(Term):
     r"""Basic term that represents a discrete membership function.
+
+    ![](../../image/term/Discrete.svg)
 
     Note: Equation
         $\mu(x) = h\dfrac{(y_\max - y_\min)}{(x_\max - x_\min)}  (x - x_\min) + y_\min$
@@ -1213,6 +1234,8 @@ class Discrete(Term):
 class Gaussian(Term):
     r"""Extended term that represents the gaussian curve membership function.
 
+    ![](../../image/term/Gaussian.svg)
+
     Note: Equation
         $\mu(x) = h \exp\left(-\dfrac{(x-\mu)^2}{2\sigma^2}\right)$
 
@@ -1280,6 +1303,8 @@ class Gaussian(Term):
 
 class GaussianProduct(Term):
     r"""Extended term that represents the two-sided gaussian membership function.
+
+    ![](../../image/term/GaussianProduct.svg)
 
     Note: Equation
         $a = \begin{cases}
@@ -1384,6 +1409,8 @@ class GaussianProduct(Term):
 class Linear(Term):
     r"""Linear polynomial term.
 
+    ![](../../image/term/Linear.svg)
+
     Note: Equation
         $\mu(x)= \mathbf{c}\mathbf{v}+k = \sum_i c_iv_i + k$
 
@@ -1485,6 +1512,8 @@ class Linear(Term):
 class PiShape(Term):
     r"""Extended term that represents the Pi-shaped membership function.
 
+    ![](../../image/term/PiShape.svg)
+
     Note: Equation
         $\mu(x) = h \left(\mbox{SShape}_{a}^{b}(x) \times \mbox{ZShape}_{c}^{d}(x)\right)$
 
@@ -1565,6 +1594,8 @@ class PiShape(Term):
 
 class Ramp(Term):
     r"""Edge term that represents the ramp membership function.
+
+    ![](../../image/term/Ramp.svg)
 
     Note: Equation
         $\mu(x) =  \begin{cases}
@@ -1679,6 +1710,8 @@ class Ramp(Term):
 class Rectangle(Term):
     r"""Basic term that represents the rectangle membership function.
 
+    ![](../../image/term/Rectangle.svg)
+
     Note: Equation
         $\mu(x) = \begin{cases}
             h & \mbox{if } s \le x \le e \cr
@@ -1745,6 +1778,8 @@ class Rectangle(Term):
 
 class SemiEllipse(Term):
     r"""Basic term that represents the semi-ellipse membership function.
+
+    ![](../../image/term/SemiEllipse.svg)
 
     Note: Equation
         $\mu(x) = h \dfrac{\sqrt{r^2- (x-c)^2}}{r}$
@@ -1819,6 +1854,8 @@ class SemiEllipse(Term):
 
 class Sigmoid(Term):
     r"""Edge Term that represents the sigmoid membership function.
+
+    ![](../../image/term/Sigmoid.svg)
 
     Note: Equation
         $\mu(x) = \dfrac{h}{1 + \exp(-s(x-i))}$
@@ -1920,6 +1957,8 @@ class Sigmoid(Term):
 class SigmoidDifference(Term):
     r"""Extended Term that represents the difference between two sigmoid membership functions.
 
+    ![](../../image/term/SigmoidDifference.svg)
+
     Note: Equation
         $a = \mbox{Sigmoid}_\mbox{left}^\mbox{rise}(x)$
 
@@ -1998,6 +2037,8 @@ class SigmoidDifference(Term):
 
 class SigmoidProduct(Term):
     r"""Extended Term that represents the product of two sigmoid membership functions.
+
+    ![](../../image/term/SigmoidProduct.svg)
 
     Note: Equation
         $a = \mbox{Sigmoid}_\mbox{left}^\mbox{rise}(x)$
@@ -2078,6 +2119,8 @@ class SigmoidProduct(Term):
 class Spike(Term):
     r"""Extended Term that represents the spike membership function.
 
+    ![](../../image/term/Spike.svg)
+
     Note: Equation
         $\mu(x)=h \exp\left(-\left|\dfrac{10}{w} (x - c)\right|\right)$
 
@@ -2145,6 +2188,8 @@ class Spike(Term):
 
 class SShape(Term):
     r"""Edge Term that represents the S-shaped membership function.
+
+    ![](../../image/term/SShape.svg)
 
     Note: Equation:
         $\mu(x) = \begin{cases}
@@ -2267,6 +2312,8 @@ class SShape(Term):
 class Trapezoid(Term):
     r"""Basic Term that represents the trapezoid membership function.
 
+    ![](../../image/term/Trapezoid.svg)
+
     Note: Equation
         $\mu(x)= \begin{cases}
             0 & \mbox{if } x < a \vee x > d\cr
@@ -2382,6 +2429,8 @@ class Trapezoid(Term):
 class Triangle(Term):
     r"""Basic Term that represents the triangle membership function.
 
+    ![](../../image/term/Triangle.svg)
+
     Note: Equation
         $\mu(x)= \begin{cases}
             0 & \mbox{if } x < a \vee x > c \cr
@@ -2478,6 +2527,8 @@ class Triangle(Term):
 
 class ZShape(Term):
     r"""Edge Term that represents the ZShape membership function.
+
+    ![](../../image/term/ZShape.svg)
 
     Note: Equation
         $\mu(x) = \begin{cases}
@@ -2599,6 +2650,8 @@ class ZShape(Term):
 
 class Function(Term):
     r"""Polynomial term that represents a generic function.
+
+    ![](../../image/term/Function.svg)
 
     Note: Equation
         $f : x \mapsto f(x)$
