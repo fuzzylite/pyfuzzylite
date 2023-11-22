@@ -833,6 +833,7 @@ class Concave(Term):
         Returns:
             $\mu(x) = \begin{cases} h  \dfrac{e - i} {2e - i - x} & \mbox{if } i \leq e \wedge x < e \mbox{ (increasing concave)} \cr h  \dfrac{i - e} {-2e + i + x} & \mbox{if } i > e \wedge x > e \mbox{ (decreasing concave)} \cr h & \mbox{otherwise} \cr \end{cases}$
         """
+        # TODO: Check when e=i and compare with QtFuzzyLite
         x = scalar(x)
         i = self.inflection
         e = self.end
