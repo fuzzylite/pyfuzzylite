@@ -2704,7 +2704,7 @@ class Function(Term):
                 type: type of the element
                 method: reference to the function (only supports unary or binary)
                 arity: number of operands required
-                precedence: precedence of operators, where higher precedence comes first (see [Order of operations]((https://en.wikipedia.org/wiki/Order_of_operations))
+                precedence: precedence of operators, where higher precedence comes first (see [Order of operations](https://en.wikipedia.org/wiki/Order_of_operations))
                 associativity: precedence of grouping operators in the absence of parentheses (see [Operator associativity](https://en.wikipedia.org/wiki/Operator_associativity))
             """
             self.name = name

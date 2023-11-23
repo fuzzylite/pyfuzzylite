@@ -35,7 +35,7 @@ extra:
       link: https://pypi.org/project/pyfuzzylite
 
 markdown_extensions:
-  - admonition # Render blocks (eg, todo, note, info): https://squidfunk.github.io/mkdocs-material/reference/admonitions/
+  - admonition # Render blocks (eg, todo, note, info)
   - pymdownx.arithmatex: # Render LaTeX via MathJax
       generic: true
   - pymdownx.highlight:

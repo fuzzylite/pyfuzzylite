@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
@@ -122,7 +123,7 @@ def lint_qodana(session: nox.Session) -> None:
 
 @nox.session(python=False)
 def lint_markdown(session: nox.Session) -> None:
-    """Run mypy linter."""
+    """Run markdown linter."""
     files = ["README.md", "docs/"]
     session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
 
