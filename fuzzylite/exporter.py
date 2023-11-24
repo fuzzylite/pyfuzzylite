@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -42,65 +43,95 @@ if typing.TYPE_CHECKING:
 
 
 class Exporter(ABC):
-    """The Exporter class is the abstract class for exporters to translate an
-    Engine into different formats.
-    @author Juan Rada-Vilela, Ph.D.
-    @see Importer
-    @since 4.0.
+    """Abstract class to export engines and its components to different formats.
+
+    info: related
+        - [fuzzylite.exporter.FldExporter][]
+        - [fuzzylite.exporter.FllExporter][]
+        - [fuzzylite.exporter.PythonExporter][]
+        - [fuzzylite.engine.Engine][]
     """
 
     def __str__(self) -> str:
-        """@return class name of the exporter."""
+        """Return the class name of the exporter.
+
+        Returns:
+            class name of the exporter
+        """
         return Op.class_name(self)
 
     def __repr__(self) -> str:
-        """@return Python code to construct the exporter."""
+        """Return code to construct the exporter in Python.
+
+        Returns:
+            code to construct the exporter in Python
+        """
         from .library import representation
 
         return representation.as_constructor(self)
 
     @abstractmethod
     def to_string(self, instance: object) -> str:
-        """Returns a string representation of the FuzzyLite component
-        @param instance is the FuzzyLite component
-        @return a string representation of the FuzzyLite component.
+        """Return string representation of the instance.
+
+        Args:
+             instance: a fuzzylite object
+
+        Returns:
+            string representation of the object
         """
-        raise NotImplementedError()
 
     def to_file(self, path: str | Path, instance: object) -> None:
-        """Stores the string representation of the FuzzyLite component into the specified file
-        @param path is the full path of the file to export the component to
-        @param instance is the component to export.
+        """Write the string representation of the instance into the file.
 
-        TODO: change instance: object to engine: Engine
+        Args:
+            path: file path to export the instance.
+            instance: a fuzzylite object.
         """
         if isinstance(path, str):
             path = Path(path)
-        with path.open(mode="w", encoding="UTF8") as fll:
+        with path.open(mode="w", encoding="utf-8") as fll:
             fll.write(self.to_string(instance))
 
 
 class FllExporter(Exporter):
-    """The FllExporter class is an Exporter that translates an Engine and its
-    components to the FuzzyLite Language (FLL), see
-    [https://fuzzylite.com/fll-fld](https://fuzzylite.com/fll-fld) for
-    more information.
+    """Export an engine and its components to the FuzzyLite Language.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FllImporter
-    @see Exporter
-    @since 4.0
+    info: related
+        - [fuzzylite.exporter.Exporter][]
+        - [fuzzylite.importer.FllImporter][]
+        - [FuzzyLite Language (FLL)](https://fuzzylite.com/fll-fld/)
     """
 
     def __init__(self, indent: str = "  ", separator: str = "\n") -> None:
-        """@param indent is the indent string of the FuzzyLite Language
-        @param separator of the FuzzyLite Language.
+        """Constructor.
+
+        Args:
+            indent: indentation of the FuzzyLite Language.
+            separator: separation between components of the FuzzyLite Language.
         """
         self.indent = indent
         self.separator = separator
 
     def format(self, key: str | None, value: Any) -> str:
-        """Formats the arguments to produce a valid FLL from them."""
+        """Format the arguments according to the FuzzyLite Language.
+
+        info: formatting table
+            | value | formatted |
+            |-------|-----------|
+            | `None`  | `none`    |
+            | `bool` | `true`, `false` |
+            | `float` | `0.999` using [fuzzylite.library.Settings.decimals][] |
+            | `list|set|tuple` | space-separated values, each formatted with this method |
+            | object | anything else uses the object's `__str__()` method |
+
+        Args:
+            key: name of the property
+            value: value to format
+
+        Returns:
+            formatted (key and) value according to the FuzzyLite Language
+        """
         result = []
         if key:
             result.append(f"{key}:")
@@ -121,10 +152,14 @@ class FllExporter(Exporter):
             result.append(str(value))
         return " ".join(result)
 
-    def to_string(self, obj: Any, /) -> str:
-        """Returns a string representation of the FuzzyLite component
-        @param obj is the FuzzyLite component
-        @return a string representation of the FuzzyLite component.
+    def to_string(self, instance: Any, /) -> str:
+        """Return the object in the FuzzyLite Language.
+
+        Args:
+            instance: fuzzylite object.
+
+        Returns:
+            object in the FuzzyLite Language.
         """
         from . import (
             Activation,
@@ -139,37 +174,41 @@ class FllExporter(Exporter):
             Variable,
         )
 
-        if isinstance(obj, Engine):
-            return self.engine(obj)
+        if isinstance(instance, Engine):
+            return self.engine(instance)
 
-        if isinstance(obj, InputVariable):
-            return self.input_variable(obj)
-        if isinstance(obj, OutputVariable):
-            return self.output_variable(obj)
-        if isinstance(obj, Variable):
-            return self.variable(obj)
+        if isinstance(instance, InputVariable):
+            return self.input_variable(instance)
+        if isinstance(instance, OutputVariable):
+            return self.output_variable(instance)
+        if isinstance(instance, Variable):
+            return self.variable(instance)
 
-        if isinstance(obj, Term):
-            return self.term(obj)
+        if isinstance(instance, Term):
+            return self.term(instance)
 
-        if isinstance(obj, Activation):
-            return self.activation(obj)
-        if isinstance(obj, Defuzzifier):
-            return self.defuzzifier(obj)
-        if isinstance(obj, Norm):
-            return self.norm(obj)
+        if isinstance(instance, Activation):
+            return self.activation(instance)
+        if isinstance(instance, Defuzzifier):
+            return self.defuzzifier(instance)
+        if isinstance(instance, Norm):
+            return self.norm(instance)
 
-        if isinstance(obj, RuleBlock):
-            return self.rule_block(obj)
-        if isinstance(obj, Rule):
-            return self.rule(obj)
+        if isinstance(instance, RuleBlock):
+            return self.rule_block(instance)
+        if isinstance(instance, Rule):
+            return self.rule(instance)
 
-        raise TypeError(f"expected a fuzzylite object, but got {type(obj)}")
+        raise TypeError(f"expected a fuzzylite object, but got {type(instance)}")
 
     def engine(self, engine: Engine, /) -> str:
-        """Returns a string representation of the engine
-        @param engine is the engine
-        @return a string representation of the engine.
+        """Return the engine in the FuzzyLite Language.
+
+        Args:
+             engine: engine to export
+
+        Returns:
+             engine in the FuzzyLite Language
         """
         result = [self.format(Op.class_name(engine), engine.name)]
         if engine.description:
@@ -180,11 +219,17 @@ class FllExporter(Exporter):
         result += [""]
         return self.separator.join(result)
 
-    def variable(self, variable: Variable, /, terms: bool = True) -> str:
-        """Returns a string representation of the variable
-        @param variable is the variable
-        @param terms whether to export the terms
-        @return a string representation of the variable.
+    def variable(  # noqa: D417 # Missing argument description in the docstring: `self`
+        self, variable: Variable, /, terms: bool = True
+    ) -> str:
+        """Return the variable in the FuzzyLite Language.
+
+        Args:
+            variable: variable to export
+            terms: whether to export the terms
+
+        Returns:
+             variable in the FuzzyLite Language
         """
         result = [self.format(Op.class_name(variable), variable.name)]
         if variable.description:
@@ -199,16 +244,24 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def input_variable(self, variable: InputVariable, /) -> str:
-        """Returns a string representation of the input variable
-        @param variable is the input variable
-        @return a string representation of the input variable.
+        """Return the input variable in the FuzzyLite Language.
+
+        Args:
+            variable: input variable to export
+
+        Returns:
+        input variable in the FuzzyLite Language
         """
         return self.variable(variable)
 
     def output_variable(self, variable: OutputVariable, /) -> str:
-        """Returns a string representation of the output variable
-        @param variable is the variable
-        @return a string representation of the output variable.
+        """Return the output variable in the FuzzyLite Language.
+
+        Args:
+            variable: output variable to export
+
+        Returns:
+             output variable in the FuzzyLite Language
         """
         result = [self.variable(variable, terms=False)]
         result += [
@@ -223,9 +276,13 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def rule_block(self, rule_block: RuleBlock, /) -> str:
-        """Returns a string representation of the rule block
-        @param rule_block is the rule block
-        @return a string representation of the rule block.
+        """Return the rule block in the FuzzyLite Language.
+
+        Args:
+            rule_block: rule block to export
+
+        Returns:
+             rule block in the FuzzyLite Language
         """
         result = [self.format(Op.class_name(rule_block), rule_block.name)]
         if rule_block.description:
@@ -243,9 +300,13 @@ class FllExporter(Exporter):
         return self.separator.join(result)
 
     def term(self, term: Term, /) -> str:
-        """Returns a string representation of the linguistic term
-        @param term is the linguistic term
-        @return a string representation of the linguistic term.
+        """Return the term in the FuzzyLite Language.
+
+        Args:
+            term: term to export
+
+        Returns:
+             term in the FuzzyLite Language
         """
         return self.format(
             "term",
@@ -253,16 +314,24 @@ class FllExporter(Exporter):
         )
 
     def norm(self, norm: Norm | None, /) -> str:
-        """Returns a string representation of the norm
-        @param norm is the norm
-        @return a string representation of the norm.
+        """Return the norm in the FuzzyLite Language.
+
+        Args:
+            norm: norm to export
+
+        Returns:
+             norm in the FuzzyLite Language
         """
         return Op.class_name(norm) if norm else "none"
 
     def activation(self, activation: Activation | None, /) -> str:
-        """Returns a string representation of the activation method
-        @param activation is the activation method
-        @return a string representation of the activation method.
+        """Return the activation method in the FuzzyLite Language.
+
+        Args:
+            activation: activation method to export
+
+        Returns:
+             activation method in the FuzzyLite Language
         """
         if not activation:
             return "none"
@@ -271,9 +340,13 @@ class FllExporter(Exporter):
         )
 
     def defuzzifier(self, defuzzifier: Defuzzifier | None, /) -> str:
-        """Returns a string representation of the defuzzifier
-        @param defuzzifier is the defuzzifier
-        @return a string representation of the defuzzifier.
+        """Return the defuzzifier in the FuzzyLite Language.
+
+        Args:
+            defuzzifier: defuzzifier to export
+
+        Returns:
+             defuzzifier in the FuzzyLite Language
         """
         if not defuzzifier:
             return "none"
@@ -282,38 +355,47 @@ class FllExporter(Exporter):
         )
 
     def rule(self, rule: Rule, /) -> str:
-        """Returns a string representation of the rule
-        @param rule is the rule
-        @return a string representation of the rule.
+        """Return the rule in the FuzzyLite Language.
+
+        Args:
+            rule: rule to export
+
+        Returns:
+             rule in the FuzzyLite Language
         """
         return self.format("rule", rule.text)
 
 
 class PythonExporter(Exporter):
-    """The PythonExporter class is an Exporter that translates an Engine and its
-    components to the `Python` programming language using the `pyfuzzylite`
-    library.
+    """Export an engine and its components to Python.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see CppExporter
-    @see JavaExporter
-    @see Exporter
-    @since 7.0
+    info: related
+        - [fuzzylite.exporter.Exporter][]
     """
 
     def __init__(self, formatted: bool = True, encapsulated: bool = False) -> None:
-        """@param formatted: whether to attempt to format the code using `black` if it is installed."""
+        """Constructor.
+
+        Args:
+            formatted: try to format the code using `black` if it is installed
+            encapsulated: whether to encapsulate the code (using classes for engines and methods for other components).
+        """
         self.formatted = formatted
         self.encapsulated = encapsulated
 
     def format(self, code: str) -> str:
-        """Try to format the code using the `black` formatter if it is installed, otherwise returns the code as is.
-        @param code: code to format.
+        """Format the code using the `black` formatter if it is installed, otherwise no effects on the code.
+
+        Args:
+            code: code to format.
+
+        Returns:
+            code formatted if `black` is installed, otherwise the code without format
         """
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode())  # type: ignore
+            return black.format_str(code, mode=black.Mode())
         except ModuleNotFoundError:
             settings.logger.error(
                 "expected `black` module to be installed, but could not be found"
@@ -323,7 +405,15 @@ class PythonExporter(Exporter):
         return code
 
     def encapsulate(self, instance: Any) -> str:
-        """Encapsulate the instance in a new class if it is an engine, or in a create method otherwise."""
+        """Encapsulate the instance in a new class if it is an engine, or in a create method otherwise.
+
+        Args:
+            instance: object to encapsulate
+
+        Returns:
+            if the instance is an engine, then the class constructing the engine during initialization;
+            otherwise a method constructing the object
+        """
         from .engine import Engine
         from .library import representation
 
@@ -343,7 +433,14 @@ def create() -> {Op.class_name(instance, qualname=True)}:
         return code
 
     def to_string(self, instance: Any, /) -> str:
-        """@return Python code to construct the given instance."""
+        """Return the code to construct the instance in Python.
+
+        Args:
+            instance: fuzzylite object
+
+        Returns:
+             code to construct the instance in Python
+        """
         code = self.encapsulate(instance) if self.encapsulated else repr(instance)
 
         if self.formatted:
@@ -351,58 +448,119 @@ def create() -> {Op.class_name(instance, qualname=True)}:
         return code
 
     def engine(self, engine: Engine, /) -> str:
-        """@return Python code to construct the engine."""
+        """Return the code to construct the engine in Python.
+
+        Args:
+            engine: engine to export
+
+        Returns:
+             code to construct the engine in Python
+        """
         return self.to_string(engine)
 
     def input_variable(self, input_variable: InputVariable, /) -> str:
-        """@return Python code to construct the variable."""
+        """Return the code to construct the input variable in Python.
+
+        Args:
+            input_variable: input variable to export
+
+        Returns:
+             code to construct the input variable in Python
+        """
         return self.to_string(input_variable)
 
     def output_variable(self, output_variable: OutputVariable, /) -> str:
-        """@return Python code to construct the variable."""
+        """Return the code to construct the output variable in Python.
+
+        Args:
+            output_variable: output variable to export
+
+        Returns:
+             code to construct the output variable in Python
+        """
         return self.to_string(output_variable)
 
     def rule_block(self, rule_block: RuleBlock, /) -> str:
-        """@return Python code to construct the rule block."""
+        """Return the code to construct the rule block in Python.
+
+        Args:
+            rule_block: rule block variable to export
+
+        Returns:
+             code to construct the rule block in Python
+        """
         return self.to_string(rule_block)
 
     def term(self, term: Term, /) -> str:
-        """@return Python code to construct the term."""
+        """Return the code to construct the term in Python.
+
+        Args:
+            term: term to export
+
+        Returns:
+             code to construct the term in Python
+        """
         return self.to_string(term)
 
     def norm(self, norm: Norm | None, /) -> str:
-        """@return Python code to construct the norm."""
+        """Return the code to construct the norm in Python.
+
+        Args:
+            norm: norm to export
+
+        Returns:
+             code to construct the norm in Python
+        """
         return self.to_string(norm) if norm else "None"
 
     def activation(self, activation: Activation | None, /) -> str:
-        """@return Python code to construct the activation method."""
+        """Return the code to construct the activation method in Python.
+
+        Args:
+            activation: activation method to export
+
+        Returns:
+             code to construct the activation method in Python
+        """
         return self.to_string(activation) if activation else "None"
 
     def defuzzifier(self, defuzzifier: Defuzzifier | None, /) -> str:
-        """@return Python code to construct the defuzzifier."""
+        """Return the code to construct the defuzzifier in Python.
+
+        Args:
+            defuzzifier: defuzzifier to export
+
+        Returns:
+             code to construct the defuzzifier in Python
+        """
         return self.to_string(defuzzifier) if defuzzifier else "None"
 
     def rule(self, rule: Rule, /) -> str:
-        """@return Python code to construct the rule."""
+        """Return the code to construct the rule in Python.
+
+        Args:
+            rule: rule to export
+
+        Returns:
+             code to construct the rule in Python
+        """
         return self.to_string(rule)
 
 
 class FldExporter(Exporter):
-    """The FldExporter class is an Exporter that evaluates an Engine and exports
-    its input values and output values to the FuzzyLite Dataset (FLD) format,
-    see [https://fuzzylite.com/fll-fld](https://fuzzylite.com/fll-fld)
-    for more information.
+    """Export the input values and output values of an engine to the FuzzyLite Dataset (FLD) format.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FllExporter
-    @see Exporter
-    @since 4.0
+    info: related
+        - [fuzzylite.exporter.Exporter][]
     """
 
     @enum.unique
     class ScopeOfValues(enum.Enum):
-        """The ScopeOfValues refers to the scope of the equally-distributed values
-        to generate.
+        r"""Scope of the equally-distributed values to generate.
+
+        - `EachVariable`: Generates $v$ values for each variable, resulting in a total resolution of
+        $-1 + \max(1, v^{\frac{1}{|I|})$ from all combinations, where $I$ refers to the input variables.
+        - `AllVariables`: Generates values for each variable such that the total resolution is $v$.
         """
 
         # /**Generates $n$ values for each variable*/
@@ -417,11 +575,13 @@ class FldExporter(Exporter):
         input_values: bool = True,
         output_values: bool = True,
     ) -> None:
-        """Creates a FuzzyLite Dataset exporter
-        @param separator is the separator of the dataset columns
-        @param headers indicates whether the header of the dataset is to be exported
-        @param input_values indicates whether the values of the input variables are to be exported
-        @param output_values indicates whether the values of the output variables are to be exported.
+        """Constructor.
+
+        Args:
+            separator: separator of the dataset columns
+            headers: whether to export the header of the dataset
+            input_values: whether to export the input values
+            output_values: whether to export the output values.
         """
         self.separator = separator
         self.headers = headers
@@ -429,9 +589,13 @@ class FldExporter(Exporter):
         self.output_values = output_values
 
     def header(self, engine: Engine) -> str:
-        """Gets the header of the dataset for the given engine
-        @param engine is the engine to be exported
-        @return the header of the dataset for the given engine.
+        """Return the header of the dataset for the engine.
+
+        Args:
+            engine: engine to export
+
+        Returns:
+            header of the dataset for the engine.
         """
         result: list[str] = []
         if self.input_values:
@@ -441,10 +605,16 @@ class FldExporter(Exporter):
         return self.separator.join(result)
 
     def to_string(self, instance: object) -> str:
-        """Returns a FuzzyLite Dataset from the engine.
-        @param instance is the engine to export
-        @return a FuzzyLite Dataset from the engine
-        @throws ValueError if the instance is not an Engine.
+        """Return a FuzzyLite Dataset from the engine using 1024 input values for all variables.
+
+        Args:
+            instance: engine to export
+
+        Returns:
+             FuzzyLite Dataset from the engine
+
+        Raises:
+            ValueError: if the instance is not an Engine.
         """
         from .engine import Engine
 
@@ -459,15 +629,18 @@ class FldExporter(Exporter):
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
         active_variables: set[InputVariable] | None = None,
     ) -> str:
-        """Returns a FuzzyLite Dataset from the engine.
-        @param engine is the engine to export
-        @param values is the number of values to export
-        @param scope indicates the scope of the values
-        @param active_variables is the set of input variables to set values for
-        @return a FuzzyLite Dataset from the engine.
+        """Return a FuzzyLite Dataset from the engine using the input values and their scope.
 
-        # TODO: Remove active_variables?
+        Args:
+            engine: engine to export
+            values: number of values to export
+            scope: scope of the values
+            active_variables: input variables to set values for
+
+        Returns:
+             FuzzyLite Dataset from the engine.
         """
+        # TODO: Remove active_variables?
         writer = io.StringIO()
         self.write_from_scope(engine, writer, values, scope, active_variables)
         return writer.getvalue()
@@ -480,12 +653,14 @@ class FldExporter(Exporter):
         scope: ScopeOfValues = ScopeOfValues.AllVariables,
         active_variables: set[InputVariable] | None = None,
     ) -> None:
-        """Saves the engine as a FuzzyLite Dataset into the specified file
-        @param path is the full path of the file
-        @param engine is the engine to export
-        @param values is the number of values to export
-        @param scope indicates the scope of the values
-        @param active_variables is the set of input variables to set values for.
+        """Write the FuzzyLite Dataset from the engine to the file using the input values and their scope.
+
+        Args:
+            path: file path
+            engine: engine to export
+            values: number of values to export
+            scope: scope of the values
+            active_variables: set of input variables to set values for
         """
         with path.open("w") as writer:
             self.write_from_scope(engine, writer, values, scope, active_variables)
@@ -498,15 +673,16 @@ class FldExporter(Exporter):
         scope: ScopeOfValues,
         active_variables: set[InputVariable] | None = None,
     ) -> None:
-        """Writes the engine into the given writer
-        @param engine is the engine to export
-        @param writer is the output where the engine will be written to
-        @param values is the number of values to export
-        @param scope indicates the scope of the values
-        @param active_variables contains the input variables to generate values for.
+        """Write a FuzzyLite dataset from the engine to the writer.
 
-        # TODO: improve handling of active_variables?
+        Args:
+            engine: engine to export
+            writer: output to write the engine
+            values: number of values to export
+            scope:  scope of the values
+            active_variables: input variables to generate values for.
         """
+        # TODO: improve handling of active_variables?
         if active_variables is None:
             active_variables = set(engine.input_variables)
 
@@ -543,12 +719,15 @@ class FldExporter(Exporter):
     def to_string_from_reader(
         self, engine: Engine, reader: IO[str], skip_lines: int = 0
     ) -> str:
-        """Returns a FuzzyLite Dataset from the engine.
-        @param engine is the engine to export
-        @param reader is the reader of a set of lines containing space-separated
-        input values
-        @param skip_lines is the number of lines to initially skip
-        @return a FuzzyLite Dataset from the engine.
+        """Return a FuzzyLite Dataset from the engine using the input values from the reader.
+
+        Args:
+            engine: engine to export
+            reader: reader of a set of lines containing space-separated input values
+            skip_lines: number of lines to skip from the beginning
+
+        Returns:
+             FuzzyLite Dataset from the engine.
         """
         writer = io.StringIO()
         self.write_from_reader(engine, writer, reader, skip_lines)
@@ -557,13 +736,16 @@ class FldExporter(Exporter):
     def to_file_from_reader(
         self, path: Path, engine: Engine, reader: IO[str], skip_lines: int = 0
     ) -> None:
-        """Saves the engine as a FuzzyLite Dataset into the specified file
-        @param path is the path to the output file
-        @param engine is the engine to export
-        @param reader is the reader of a set of lines containing space-separated
-        input values
-        @param skip_lines is the number of lines to initially skip
-        @return a FuzzyLite Dataset from the engine.
+        """Write the FuzzyLite Dataset to the file using the input values from the engine.
+
+        Args:
+            path: path to the output file
+            engine: engine to export
+            reader: reader of a set of lines containing space-separated input values
+            skip_lines: number of lines to skip from the beginning.
+
+        Returns:
+            FuzzyLite Dataset from the engine.
         """
         with path.open("w") as writer:
             self.write_from_reader(engine, writer, reader, skip_lines)
@@ -571,11 +753,13 @@ class FldExporter(Exporter):
     def write_from_reader(
         self, engine: Engine, writer: IO[str], reader: IO[str], skip_lines: int = 0
     ) -> None:
-        """Writes the engine into the given writer
-        @param engine is the engine to export
-        @param writer is the output where the engine will be written to
-        @param reader is the reader of a set of lines containing space-separated input values
-        @param skip_lines is the number of lines to initially skip.
+        """Write the FuzzyLite Dataset from the engine to the writer using the input values from the reader.
+
+        Args:
+            engine: engine to export
+            writer: output to write the engine
+            reader: reader of a set of lines containing space-separated input values
+            skip_lines: number of lines to skip from the beginning.
         """
         input_values: list[list[float]] = []
         for i, line in enumerate(reader.readlines()):
@@ -594,10 +778,12 @@ class FldExporter(Exporter):
         writer: IO[str],
         input_values: Scalar,
     ) -> None:
-        """Writes the engine into the given writer
-        @param engine is the engine to export
-        @param writer is the output where the engine will be written to
-        @param input_values is a matrix of input values.
+        """Write a FuzzyLite Dataset line from the engine to the writer using the input values.
+
+        Args:
+            engine: engine to export
+            writer: output where the engine will be written to
+            input_values: matrix of input values.
         """
         input_values = np.atleast_2d(input_values)
         if input_values.shape[1] < len(engine.input_variables):

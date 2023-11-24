@@ -1,1 +1,3 @@
-::: numpy.typing.NDArray
+# Array
+
+Alias to [numpy.typing.NDArray][]

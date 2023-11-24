@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -327,7 +328,7 @@ class TestPythonExporter(unittest.TestCase):
         exporter = fl.PythonExporter()
         obtained = exporter.to_string(instance)
         self.assertEqual(
-            black.format_str(expected, mode=black.Mode()),  # type:ignore
+            black.format_str(expected, mode=black.Mode()),
             obtained,
         )
 
@@ -338,13 +339,13 @@ import fuzzylite as fl
 def create() -> {return_type}:
     return {code}
     """,
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             )
 
         obtained_encapsulated = fl.PythonExporter(encapsulated=True).to_string(instance)
         if encapsulated is not None:
             self.assertEqual(
-                black.format_str(encapsulated, mode=black.Mode()),  # type:ignore
+                black.format_str(encapsulated, mode=black.Mode()),
                 obtained_encapsulated,
             )
         else:

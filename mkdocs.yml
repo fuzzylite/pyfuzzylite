@@ -35,17 +35,20 @@ extra:
       link: https://pypi.org/project/pyfuzzylite
 
 markdown_extensions:
+  - admonition # Render blocks (eg, todo, note, info)
   - pymdownx.arithmatex: # Render LaTeX via MathJax
       generic: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+  - attr_list
+  - md_in_html # align images
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
   - pymdownx.magiclink # Convert URLs into links
-  - pymdownx.details # Collapsable blocks
+  - pymdownx.details # Collapsible blocks
   - pymdownx.b64 # Insert images from relative paths
   - toc:
       permalink: true # "¤"  # Adds a clickable permalink to each section heading
@@ -68,7 +71,7 @@ plugins:
           options:
             # https://mkdocstrings.github.io/python/usage/
             # General options:
-            #show_source: true
+            show_source: false
             # Headings options:
             heading_level: 2
             show_root_heading: true
@@ -80,17 +83,17 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             # Members options:
-            inherited_members: true
+            inherited_members: false # true
             members: true
             members_order: alphabetical
             group_by_category: true
             show_submodules: true
             # Docstrings options:
-            #docstring_style: google
-            merge_init_into_class: true
+            docstring_style: google
+            merge_init_into_class: false
             show_if_no_docstring: true
             # Signatures/annotations options:
-            #annotations_path: brief
+            annotations_path: brief
             line_length: 120
             show_signature_annotations: true
             signature_crossrefs: true
@@ -103,6 +106,22 @@ plugins:
 nav:
   - Home: index.md
   - Modules:
+      - __all__:
+          - activation: fuzzylite/__all__/activation.md
+          - benchmark: fuzzylite/__all__/benchmark.md
+          - defuzzifier: fuzzylite/__all__/defuzzifier.md
+          - engine: fuzzylite/__all__/engine.md
+          - exporter: fuzzylite/__all__/exporter.md
+          - factory: fuzzylite/__all__/factory.md
+          - hedge: fuzzylite/__all__/hedge.md
+          - importer: fuzzylite/__all__/importer.md
+          - library: fuzzylite/__all__/library.md
+          - norm: fuzzylite/__all__/norm.md
+          - operation: fuzzylite/__all__/operation.md
+          - rule: fuzzylite/__all__/rule.md
+          - term: fuzzylite/__all__/term.md
+          - types: fuzzylite/__all__/types.md
+          - variable: fuzzylite/__all__/variable.md
       - activation:
           - Activation: fuzzylite/activation/Activation.md
           - First: fuzzylite/activation/First.md

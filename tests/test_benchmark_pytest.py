@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
@@ -27,10 +28,10 @@ import fuzzylite as fl
 
 
 def generate_tests(package: ModuleType) -> str:
-    """Automatically generate benchmark tests for every example in the package
+    """Automatically generate benchmark tests for every example in the package.
+
     @param package is the package containing the examples (eg, fuzzylite.examples.terms)
     @return Python code containing the tests
-    .
     """
     tests = [
         f"""\
@@ -71,7 +72,8 @@ class PytestBenchmark(fl.Benchmark):
         iterations: int,
         warmup_rounds: int = 0,
     ) -> None:
-        """Start the benchmark
+        """Start the benchmark.
+
         @param benchmark is the fixture from the pytest-benchmark library
         @param rows is the number (int) or ratio (float) of rows to use from the data
         @param shuffle whether to shuffle the data

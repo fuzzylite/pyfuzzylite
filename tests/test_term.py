@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -182,8 +183,10 @@ class TestTerm(unittest.TestCase):
             0.8: nan,
             1.0: nan,
         }
-        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
-        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
+        np.testing.assert_allclose(discrete_base.x(), fl.array([x for x in xy]))
+        np.testing.assert_allclose(
+            discrete_base.y(), fl.array([y for y in xy.values()])
+        )
 
         discrete_base = BaseTerm().discretize(-1, 1, 10, midpoints=True)
         xy = {
@@ -198,8 +201,10 @@ class TestTerm(unittest.TestCase):
             0.7: nan,
             0.9: nan,
         }
-        np.testing.assert_allclose(discrete_base.x(), [x for x in xy])
-        np.testing.assert_allclose(discrete_base.y(), [y for y in xy.values()])
+        np.testing.assert_allclose(discrete_base.x(), fl.array([x for x in xy]))
+        np.testing.assert_allclose(
+            discrete_base.y(), fl.array([y for y in xy.values()])
+        )
 
     def test_activated(self) -> None:
         """Test the activated term."""

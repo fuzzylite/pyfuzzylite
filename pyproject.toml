@@ -55,22 +55,35 @@ Documentation = "https://fuzzylite.com/documentation"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.20"               # Numeric manipulation and vectorisation
+numpy = "^1.20" # Numeric manipulation and vectorisation
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.3.0"             # Code formatting
-coverage = "^7.2.3"           # Code coverage
-mkdocs-material = "^9.1.21"   # Documentation with material theme for mkdocs
-mkdocstrings = {extras = ["python"], version = "^0.22.0"} # Source code documentation for mkdocs
-mypy = "^1.2.0"               # Static code analysis
+black = { extras = [
+    "jupyter",
+], version = "^23.11.0" } # Use static charts with plotly
+coverage = "^7.2.3" # Code coverage
+jupyter-contrib-nbextensions = "^0.7.0" # Extensions for Jupyter Notebooks
+kaleido = "0.2.1" # Use static charts with plotly
+mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
+mkdocstrings = { extras = [
+    "python",
+], version = "^0.22.0" } # Source code documentation for mkdocs
+mypy = "^1.2.0" # Static code analysis
+notebook = "6.5.6" # Jupyter Notebooks
+plotly = "^5.18.0" # Interactive plots
 poetry-bumpversion = "^0.3.0" # Version management
-pymarkdownlnt = "^0.9.12"     # Markdown linter
-pyright = "^1.1.305"          # Static code analysis
-pytest = "^7.3.1"             # Test driven development
-pytest-benchmark = "^4.0.0"   # Local benchmarks
-pytest-codspeed = "^2.0.1"    # Cloud benchmarks
-ruff = "^0.0.256"             # Code formatting
-twine = "^4.0.2"              # Publish package
+pymarkdownlnt = "^0.9.12" # Markdown linter
+pyright = "^1.1.305" # Static code analysis
+pytest = "^7.3.1" # Test driven development
+pytest-benchmark = "^4.0.0" # Local benchmarks
+pytest-codspeed = "^2.0.1" # Cloud benchmarks
+ruff = "^0.0.256" # Code formatting
+twine = "^4.0.2" # Publish package
+
+# Packages below are ground truth for version management. See requirements.txt.
+poetry = "^1.7.1" # Build management
+nox = "^2023.4.22" # Command-line build management
+
 
 [tool.black]
 target-version = ["py39"]
@@ -137,7 +150,10 @@ ignore = [
     "B007", # [*] Loop control variable `x` not used within loop body
     "D100", # Missing docstring in public module
     "D104", # Missing docstring in public package
-    "D205", # 1 blank line required between summary line and description"
+    # "D212", # Multi-line docstring summary should start at the first line
+    # "D400", # First line should end with a period
+    # "D415", # First line should end with a period, question mark, or exclamation point
+    # "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
     # "D417", # Missing argument descriptions in the docstring
     "E501", # Line too long (handled by black)
@@ -154,9 +170,17 @@ ignore = [
     "SIM102", # Use a single `if` statement instead of nested `if` statements
     "SIM300", # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
+    # "W291", # Trailing whitespace # hinders markdown
 ]
 
-unfixable = []
+unfixable = [
+    #    "D",
+    #    "D212", # Multi-line docstring summary should start at the first line
+    "D301", # Use `r"""` if any backslashes in a docstring # do not escape `\`
+    #    "D400", # First line should end with a period
+    #    "D415", # First line should end with a period, question mark, or exclamation point
+    #    "W291", # Trailing whitespace # hinders markdown
+]
 
 exclude = []
 

@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -64,8 +65,13 @@ nan: Final = np.nan
 
 
 def to_float(x: Any, /) -> float:
-    """Convert the value into a floating point defined by the library
-    @param x is the value to convert.
+    """Convert the value into a floating point defined by the library.
+
+    Args:
+        x: value to convert.
+
+    Returns:
+        converted value
     """
     return settings.float_type(x)  # type: ignore
 
@@ -83,8 +89,15 @@ def scalar(x: Any, /) -> Scalar:
 def scalar(
     x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any
 ) -> ScalarArray | Scalar:
-    """Convert the values into a floating point value  defined by the library
-    @param x is the value to convert.
+    """Convert the values into a floating point value defined by the library.
+
+    Args:
+        x: value to convert.
+        **kwargs: keyword arguments to pass to [numpy.asarray][]
+
+    Returns:
+        array of converted values
+
     """
     return np.asarray(x, dtype=settings.float_type, **kwargs)
 
@@ -102,18 +115,20 @@ class Settings:
         logger: logging.Logger | None = None,
         factory_manager: FactoryManager | None = None,
     ) -> None:
-        """@param float_type is the floating point type to use.
-        @param decimals is the number of decimals to use.
-        @param atol is the absolute tolerance.
-        @param rtol is the relative tolerance.
-        @param alias is the alias for the library used when representing objects (ie, repr).
-        Cases:
-            - fully qualified package when alias == "" (eg, `fuzzylite.term.Constant(name="A", height=1.0)`)
-            - no prefixes when alias == "*" (eg, `Constant(name="A", height=1.0)`)
-            - alias otherwise (eg, `{alias}.Constant(name="A", height=1.0)`
-        @param logger is the logger to use.
-        @param factory_manager is the factory manager to use.
-        @return the settings.
+        """Constructor.
+
+        Args:
+            float_type: floating point type.
+            decimals: number of decimals.
+            atol: absolute tolerance.
+            rtol: relative tolerance.
+            alias: alias to use when representing objects (ie, `__repr__()`).
+                Cases:
+                    - fully qualified package when alias == "" (eg, `fuzzylite.term.Constant(name="A", height=1.0)`)
+                    - no prefixes when alias == "*" (eg, `Constant(name="A", height=1.0)`)
+                    - alias otherwise (eg, `{alias}.Constant(name="A", height=1.0)`
+            logger: logger.
+            factory_manager: factory manager.
         """
         self.float_type = float_type
         self.decimals = decimals
@@ -124,14 +139,29 @@ class Settings:
         self._factory_manager = factory_manager
 
     def __repr__(self) -> str:
-        """@return Python code to construct the settings."""
+        """Return code to construct the settings in Python.
+
+        Returns:
+            code to construct the settings in Python
+        """
         fields = vars(self).copy()
         fields["factory_manager"] = fields.pop("_factory_manager")
         return representation.as_constructor(self, fields)
 
     @property
     def factory_manager(self) -> FactoryManager:
-        """Get the factory manager."""
+        """Get/Set the factory manager.
+
+        # Getter
+
+        Returns:
+            factory manager
+
+        # Setter
+
+        Args:
+            value (FactoryManager): factory manager
+        """
         if self._factory_manager is None:
             # done here to avoid partially initialised class during __init__ using setter
             from .factory import FactoryManager
@@ -141,17 +171,36 @@ class Settings:
 
     @factory_manager.setter
     def factory_manager(self, value: FactoryManager) -> None:
-        """Set the factory manager."""
+        """Set the factory manager.
+
+        Args:
+            value: factory manager
+        """
         self._factory_manager = value
 
     @property
     def debugging(self) -> bool:
-        """Whether the library is in debug mode."""
+        """Get/Set the library in debug mode.
+
+        # Getter
+
+        Returns:
+            whether the library is in debug mode
+
+        # Setter
+
+        Args:
+            value (bool): set logging level to `DEBUG` if `true`, and to `ERROR` otherwise
+        """
         return self.logger.level == logging.DEBUG
 
     @debugging.setter
     def debugging(self, value: bool) -> None:
-        """Set the library debugging mode."""
+        """Set the library debugging mode.
+
+        Args:
+            value: set logging level to `DEBUG` if `true`, and to `ERROR` otherwise
+        """
         self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
 
     @contextmanager
@@ -166,14 +215,19 @@ class Settings:
         logger: logging.Logger | None = None,
         factory_manager: FactoryManager | None = None,
     ) -> Generator[None, None, None]:
-        """Creates a context with the given settings.
-        @param float_type is the floating point type to use.
-        @param decimals is the number of decimals to use.
-        @param atol is the absolute tolerance.
-        @param rtol is the relative tolerance.
-        @param alias is the alias for the library.
-        @param logger is the logger to use.
-        @param factory_manager is the factory manager to use.
+        """Create a context with specific settings.
+
+        Args:
+            float_type: floating point type
+            decimals: number of decimals.
+            atol: absolute tolerance.
+            rtol: relative tolerance.
+            alias: alias for the library.
+            logger: logger.
+            factory_manager: factory manager.
+
+        Returns:
+            context with specific settings.
         """
         context_settings = {
             key: value
@@ -201,23 +255,31 @@ settings: Final = Settings()
 class Information:
     """Information about the library."""
 
-    name: str = "fuzzylite"
-    description: str = "a fuzzy logic control library in Python"
-    license: str = "FuzzyLite License"
-    author: str = "Juan Rada-Vilela, Ph.D."
-    author_email: str = "jcrada@fuzzylite.com"
-    company: str = "FuzzyLite Limited"
-    website: str = "https://fuzzylite.com/"
+    name: Final[str] = "fuzzylite"
+    description: Final[str] = "a fuzzy logic control library in Python"
+    license: Final[str] = "FuzzyLite License"
+    author: Final[str] = "Juan Rada-Vilela, Ph.D."
+    author_email: Final[str] = "jcrada@fuzzylite.com"
+    company: Final[str] = "FuzzyLite Limited"
+    website: Final[str] = "https://fuzzylite.com/"
 
     def __repr__(self) -> str:
-        """@return Python code to construct the information."""
+        """Return code to construct the information in Python.
+
+        Returns:
+            code to construct the information in Python
+        """
         fields = vars(self).copy()
         fields["version"] = self.version
         return representation.as_constructor(self, fields)
 
     @property
     def version(self) -> str:
-        """The version of the library."""
+        """Automatic version of the library handled by poetry using `[tool.poetry_bumpversion.file."fuzzylite/library.py"]`.
+
+        Returns:
+            version of the library
+        """
         __version__ = "8.0.0"
         return __version__
 
@@ -231,7 +293,7 @@ class Representation(reprlib.Repr):
     T = typing.TypeVar("T")
 
     def __init__(self) -> None:
-        """Initialize the representation class."""
+        """Constructor."""
         super().__init__()
         limits = {k: v for k, v in vars(self).items()}
         increase_factor = int(1e9)  # virtually limitless
@@ -243,13 +305,21 @@ class Representation(reprlib.Repr):
         self.fll: Final = FllExporter()
 
     def __repr__(self) -> str:
-        """@return Python code to construct the representation."""
+        """Return code to construct the representation in Python.
+
+        Returns:
+            code to construct the representation in Python
+        """
         return representation.as_constructor(self)
 
     def package_of(self, x: Any, /) -> str:
-        """Returns the qualified class name of the given object.
-        @param x is the object
-        @return the qualified class name of the given object.
+        """Return the qualified class name of the object.
+
+        Args:
+            x: object to get package of
+
+        Returns:
+             qualified class name of the object.
         """
         package = ""
         module = inspect.getmodule(x)
@@ -270,7 +340,14 @@ class Representation(reprlib.Repr):
         return package
 
     def import_statement(self) -> str:
-        """@return fuzzylite import statement based on the alias in the settings."""
+        """Return the library's import statement based on the alias in the settings.
+
+        info: related
+            - [fuzzylite.library.Settings.alias][]
+
+        Returns:
+            library's import statement based on the alias in the settings.
+        """
         if not settings.alias:
             return "import fuzzylite"
         elif settings.alias == "*":
@@ -278,7 +355,7 @@ class Representation(reprlib.Repr):
         else:
             return f"import fuzzylite as {settings.alias}"
 
-    def as_constructor(
+    def as_constructor(  # noqa: D417 # Missing argument description in the docstring: `self`
         self,
         x: T,
         /,
@@ -287,19 +364,23 @@ class Representation(reprlib.Repr):
         positional: bool = False,
         cast_as: type[T] | None = None,
     ) -> str:
-        """Returns the Python code representing the constructor of the given object using its signature.
-        @param x is the object to construct
-        @param fields overrides the parameters and arguments to use in the constructor
-        @param positional indicates whether to use positional parameters or keyword parameters
-        @param cast_as indicates the type to upcast the object (useful in inheritance approaches)
-        @return the Python code representing the constructor of the given object.
+        """Return the Python code to use the constructor of the object.
+
+        Args:
+            x: object to construct
+            fields: override the parameters and arguments to use in the constructor
+            positional: use positional parameters if `true`, and keyword parameters otherwise
+            cast_as: type to upcast the object (useful in inheritance approaches)
+
+        Returns:
+            Python code to use the constructor of the object.
         """
         arguments = self.construction_arguments(
             x, fields=fields, positional=positional, cast_as=cast_as
         )
         return f"{self.package_of((cast_as or x))}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
 
-    def construction_arguments(
+    def construction_arguments(  # noqa: D417 # Missing argument description in the docstring: `self`
         self,
         x: T,
         /,
@@ -308,12 +389,16 @@ class Representation(reprlib.Repr):
         positional: bool = False,
         cast_as: type[T] | None = None,
     ) -> list[str]:
-        """Returns the list of parameters and arguments for the constructor of the given object using its signature.
-        @param x is the object to construct
-        @param fields overrides the parameters and arguments to use in the constructor
-        @param positional indicates whether to use positional parameters or keyword parameters
-        @param cast_as indicates the type to upcast the object (useful in inheritance approaches)
-        @return the list of parameters and arguments for the constructor of the given object.
+        """Return the list of parameters and arguments for the constructor of the object.
+
+        Args:
+            x: object to construct
+            fields: override the parameters and arguments to use in the constructor
+            positional: use positional parameters if `true`, and keyword parameters otherwise
+            cast_as: type to upcast the object (useful in inheritance approaches)
+
+        Returns:
+             list of parameters and arguments for the constructor of the object.
         """
         if fields is None:
             fields = vars(x) or {}
@@ -345,16 +430,24 @@ class Representation(reprlib.Repr):
                     )
         return arguments
 
-    def repr_float(self, obj: float | np.floating[Any], level: int) -> Any:
-        """Returns the representation of floats in fuzzylite."""
+    def repr_float(self, x: float | np.floating[Any], level: int) -> str:
+        """Return the string representation of the floating-point value in Python.
+
+        Args:
+            x: float to represent
+            level: irrelevant
+
+        Returns:
+            string representation of the floating-point value in Python.
+        """
         from .operation import Op
 
-        if Op.isinf(obj):
-            infinity = f"{self.package_of(settings)}{np.abs(obj)!r}"
-            return infinity if obj > 0 else f"-{infinity}"
-        if Op.isnan(obj):
-            return f"{self.package_of(settings)}{obj!r}"
-        return builtins.repr(obj)
+        if Op.isinf(x):
+            infinity = f"{self.package_of(settings)}{np.abs(x)!r}"
+            return infinity if x > 0 else f"-{infinity}"
+        if Op.isnan(x):
+            return f"{self.package_of(settings)}{x!r}"
+        return builtins.repr(x)
 
     repr_float16 = repr_float
     repr_float32 = repr_float
@@ -362,7 +455,15 @@ class Representation(reprlib.Repr):
     repr_float128 = repr_float
 
     def repr_ndarray(self, x: Array[Any], level: int) -> str:
-        """Returns the representation of numpy arrays in fuzzylite."""
+        """Return the string representation of the numpy array in Python.
+
+        Args:
+            x: numpy array to represent
+            level: level for recursion control
+
+        Returns:
+            string representation of the numpy array in Python
+        """
         if x.ndim == 0:
             return self.repr1(x.item(), level)
         elements = ", ".join(self.repr1(y, level) for y in x)

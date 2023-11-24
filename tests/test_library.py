@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -174,11 +175,11 @@ variable InputVariable OutputVariable Variable
         )
         rows = ...
         column = 0
-        np.testing.assert_allclose([1, -1], x[rows, column])
-        np.testing.assert_allclose([2, -2], x[rows, column + 1])
-        np.testing.assert_allclose([3, -3], x.sum(axis=1))
-        np.testing.assert_allclose([0, 0], x.sum(axis=0))
-        np.testing.assert_allclose([3, -3], x.sum(axis=-1))
+        np.testing.assert_allclose(fl.array([1, -1]), x[rows, column])
+        np.testing.assert_allclose(fl.array([2, -2]), x[rows, column + 1])
+        np.testing.assert_allclose(fl.array([3, -3]), x.sum(axis=1))
+        np.testing.assert_allclose(fl.array([0, 0]), x.sum(axis=0))
+        np.testing.assert_allclose(fl.array([3, -3]), x.sum(axis=-1))
 
     def test_repr_with_takagi_sugeno_referencing_engines(self) -> None:
         """Tests the repr with terms referencing engines."""
@@ -194,8 +195,8 @@ variable InputVariable OutputVariable Variable
                 [8, 10],
             ]
         )
-        np.testing.assert_allclose([1, 4, 8], engine.input_variable(0).value)
-        np.testing.assert_allclose([2, 6, 10], engine.input_variable(1).value)
+        np.testing.assert_allclose(fl.array([1, 4, 8]), engine.input_variable(0).value)
+        np.testing.assert_allclose(fl.array([2, 6, 10]), engine.input_variable(1).value)
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 
@@ -207,8 +208,8 @@ variable InputVariable OutputVariable Variable
                 [8, 10],
             ]
         )
-        np.testing.assert_allclose([1, 4, 8], engine.input_variable(0).value)
-        np.testing.assert_allclose([2, 6, 10], engine.input_variable(1).value)
+        np.testing.assert_allclose(fl.array([1, 4, 8]), engine.input_variable(0).value)
+        np.testing.assert_allclose(fl.array([2, 6, 10]), engine.input_variable(1).value)
         engine.process()
         np.testing.assert_allclose(engine.output_values, fl.array([[10, 15, 20]]).T)
 

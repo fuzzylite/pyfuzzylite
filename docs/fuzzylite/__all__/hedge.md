@@ -1,0 +1,9 @@
+::: fuzzylite.hedge.Any
+::: fuzzylite.hedge.Extremely
+::: fuzzylite.hedge.Hedge
+::: fuzzylite.hedge.HedgeFunction
+::: fuzzylite.hedge.HedgeLambda
+::: fuzzylite.hedge.Not
+::: fuzzylite.hedge.Seldom
+::: fuzzylite.hedge.Somewhat
+::: fuzzylite.hedge.Very

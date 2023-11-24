@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -831,8 +832,9 @@ RuleBlock:
     @unittest.expectedFailure
     def test_copy_takagi_sugeno(self) -> None:
         """Test engine can do shallow copy of a Mamdani engine.
-        Expected failure because a shallow copy of an engine
-        will contain internal references to the original engine (eg, Linear terms referencing original engine).
+
+        Expected failure because a shallow copy of an engine will contain internal references to the original engine
+        (eg, Linear terms referencing original engine).
         """
         import copy
 
@@ -889,7 +891,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -899,7 +901,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine_copy),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -973,7 +975,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 
@@ -983,7 +985,7 @@ RuleBlock:
             expected,
             black.format_str(
                 repr(engine_copy),
-                mode=black.Mode(),  # type: ignore
+                mode=black.Mode(),
             ),
         )
 

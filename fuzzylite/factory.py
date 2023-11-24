@@ -11,7 +11,8 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
@@ -50,47 +51,88 @@ T = TypeVar("T")
 
 
 class ConstructionFactory(Generic[T]):
-    """The ConstructionFactory class is the base class for a factory whose
-    objects are created from a registered ConstructionFactory::Constructor.
+    """Base class for a factory whose objects are created from a registered constructor.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.ActivationFactory][]
+        - [fuzzylite.factory.DefuzzifierFactory][]
+        - [fuzzylite.factory.HedgeFactory][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.TermFactory][]
+        - [fuzzylite.factory.TNormFactory][]
+        - [fuzzylite.factory.FactoryManager][]
+        - [fuzzylite.factory.CloningFactory][]
     """
 
     def __init__(self, constructors: dict[str, type[T]] | None = None) -> None:
-        """Create the construction factory."""
+        """Constructor.
+
+        Args:
+            constructors: dictionary of constructors
+        """
         self.constructors = constructors or {}
 
     def __iter__(self) -> Iterator[str]:
-        """Gets the iterator of constructors."""
+        """Return the iterator of the factory.
+
+        Returns:
+             iterator of the factory.
+        """
         return iter(self.constructors)
 
     def __getitem__(self, key: str) -> type[T]:
-        """Get type by 'key'."""
+        """Return the type by the key.
+
+        Returns:
+            type by the key.
+
+        Raises:
+            KeyError: when the key is not in the constructors
+        """
         return self.constructors[key]
 
     def __setitem__(self, key: str, value: type[T]) -> None:
-        """Add (or replace) the key with the given value."""
+        """Set the value for the key.
+
+        Args:
+            key: name of the constructor
+            value: type of the constructor
+        """
         self.constructors[key] = value
 
     def __len__(self) -> int:
-        """@return number of constructors."""
+        """Return the number of constructors in the factory.
+
+        Returns:
+            number of constructors in the factory.
+        """
         return len(self.constructors)
 
     def __str__(self) -> str:
-        """@return class name of the factory."""
+        """Return the class name of the factory.
+
+        Returns:
+            class name of the factory.
+        """
         return Op.class_name(self)
 
     def __repr__(self) -> str:
-        """@return Python code to construct the factory."""
+        """Return the Python code to construct the factory.
+
+        Returns:
+            Python code to construct the factory.
+        """
         return representation.as_constructor(self)
 
     def import_from(self, module: ModuleType, cls: type[T]) -> list[type[T]]:
-        """Imports constructors from a module.
-        @param module is the module from which constructors are imported
-        @param cls is the class of the constructors to be imported
-        @return a list of constructors imported from the module.
+        """Import constructors from the module.
+
+        Args:
+            module: module to import constructors
+            cls: class of constructors to import
+
+        Returns:
+             list of constructors imported from the module.
         """
 
         def constructable(obj: type[T]) -> bool:
@@ -108,10 +150,17 @@ class ConstructionFactory(Generic[T]):
         return constructors
 
     def construct(self, key: str, **kwargs: Any) -> T:
-        """Creates an object by executing the constructor associated to the given key
-        @param key is the unique name by which constructors are registered
-        @return an object by executing the constructor associated to the given key
-        @throws ValueError if the key is not in the registered constructors.
+        """Create an object from the constructor registered by the key.
+
+        Args:
+            key: name of the constructor
+            **kwargs: parameters to pass to the constructor
+
+        Returns:
+             object created from the constructor registered by the key
+
+        Raises:
+            ValueError: when the key is not registered
         """
         if key in self.constructors:
             return self.constructors[key](**kwargs)
@@ -119,47 +168,81 @@ class ConstructionFactory(Generic[T]):
 
 
 class CloningFactory(Generic[T]):
-    """The CloningFactory class is the base class for a factory whose objects
-    are created from a registered object by creating a deep copy.
+    """Base class for a factory whose objects are created by a deep copy of registered instances.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.FunctionFactory][]
+        - [fuzzylite.factory.FactoryManager][]
+        - [fuzzylite.factory.ConstructionFactory][]
     """
 
     def __init__(self, objects: dict[str, T] | None = None) -> None:
-        """Create cloning factory."""
+        """Constructor."""
         self.objects = objects or {}
 
     def __iter__(self) -> Iterator[str]:
-        """Get iterator of objects."""
+        """Return the iterator of the factory.
+
+        Returns:
+             iterator of the factory.
+        """
         return iter(self.objects)
 
     def __getitem__(self, key: str) -> T:
-        """Get object by 'key'."""
+        """Return the object by the key.
+
+        Returns:
+            object by the key.
+
+        Raises:
+        KeyError: when the key is not in the factory
+        """
         return self.objects[key]
 
     def __setitem__(self, key: str, value: T) -> None:
-        """Add (or replace) key with the given value."""
+        """Set the value for the key.
+
+        Args:
+            key: name of the object
+            value: instance to be deep copied
+        """
         self.objects[key] = value
 
     def __len__(self) -> int:
-        """@return number of objects in factory."""
+        """Return the number of objects in the factory.
+
+        Returns:
+            number of objects in the factory.
+        """
         return len(self.objects)
 
     def __str__(self) -> str:
-        """@return class name of the factory."""
+        """Return the class name of the factory.
+
+        Returns:
+            class name of the factory.
+        """
         return Op.class_name(self)
 
     def __repr__(self) -> str:
-        """@return Python code to construct the factory."""
+        """Return the Python code to construct the factory.
+
+        Returns:
+            Python code to construct the factory.
+        """
         return representation.as_constructor(self)
 
     def copy(self, key: str) -> T:
-        """Creates a deep copy of the registered object
-        @param key is the unique name by which the object is registered
-        @return a deep copy of the registered object
-        @throws ValueError if the key is not in the registered objected.
+        """Create a deep copy of the object registered by the key.
+
+        Args:
+            key: name of the object
+
+        Returns:
+             deep copy of the object registered by the key
+
+        Raises:
+            ValueError: when the key is not registered.
         """
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
@@ -167,19 +250,17 @@ class CloningFactory(Generic[T]):
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
-    """e ActivationFactory class is a ConstructionFactory of Activation
-    methods for RuleBlock%s.
+    """Construction factory of activation methods for rule blocks.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Activation
-    @see RuleBlock
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 6.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.activation.Activation][]
+        - [fuzzylite.rule.RuleBlock][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import activation
 
         activations = {
@@ -189,17 +270,16 @@ class ActivationFactory(ConstructionFactory[Activation]):
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
-    """The DefuzzifierFactory class is a ConstructionFactory of Defuzzifier%s.
+    """Factory of defuzzifiers.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Defuzzifier
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.defuzzifier.Defuzzifier][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import defuzzifier
 
         defuzzifiers = {
@@ -209,17 +289,16 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):
-    """The HedgeFactory class is a ConstructionFactory of Hedge%s.
+    """Factory of hedges.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import hedge
 
         hedges = {h().name: h for h in self.import_from(hedge, Hedge)}
@@ -227,17 +306,16 @@ class HedgeFactory(ConstructionFactory[Hedge]):
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
-    """The SNormFactory class is a ConstructionFactory of SNorm%s.
+    """Factory of SNorms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see SNorm
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import norm as norm
 
         snorms = {Op.class_name(n): n for n in self.import_from(norm, SNorm)}
@@ -245,17 +323,16 @@ class SNormFactory(ConstructionFactory[SNorm]):
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
-    """The TNormFactory class is a ConstructionFactory of TNorm%s.
+    """Factory of TNorms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see TNorm
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import norm as norm
 
         tnorms = {Op.class_name(n): n for n in self.import_from(norm, TNorm)}
@@ -263,17 +340,16 @@ class TNormFactory(ConstructionFactory[TNorm]):
 
 
 class TermFactory(ConstructionFactory[Term]):
-    """The TermFactory class is a ConstructionFactory of Term%s.
+    """Factory of terms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Term
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.term.Term][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         from . import term as term
 
         terms = {
@@ -285,19 +361,17 @@ class TermFactory(ConstructionFactory[Term]):
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
-    """The FunctionFactory class is a CloningFactory of operators and functions
-    utilized by the Function term.
+    """Factory of operators and functions used by the Function term.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Element
-    @see CloningFactory
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.CloningFactory][]
+        - [fuzzylite.term.Function.Element][]
+        - [fuzzylite.term.Function][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
+        """Constructor."""
         elements = {
             element.name: element
             for element in self._create_operators() + self._create_functions()
@@ -305,11 +379,24 @@ class FunctionFactory(CloningFactory[Function.Element]):
         super().__init__(objects=elements)
 
     def _precedence(self, importance: int) -> int:
+        """Inverts the priority of precedence of operations, mapping 0-10 in ascending order to 100-0 in descending order.
+
+        Args:
+            importance: value between 0 and 10, where 0 is the most important
+
+        Returns:
+             precedence between 100 and 0, where 100 is the most important
+        """
         maximum = 100
         step = 10
         return maximum - importance * step
 
     def _create_operators(self) -> list[Function.Element]:
+        """Return the list of function operators.
+
+        Returns:
+            list of function operators
+        """
         operator_type = Function.Element.Type.Operator
         p: Callable[[int], int] = self._precedence
         operators = [
@@ -433,6 +520,11 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return operators
 
     def _create_functions(self) -> list[Function.Element]:
+        """Return the list of functions.
+
+        Returns:
+            list of functions
+        """
         function_type = Function.Element.Type.Function
         p: Callable[[int], int] = self._precedence
         functions = [
@@ -712,8 +804,10 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return functions
 
     def operators(self) -> dict[str, Function.Element]:
-        """Returns a dictionary of the operators available
-        @return a dictionary of the operators available.
+        """Return a dictionary of the operators available.
+
+        Returns:
+             dictionary of the operators available.
         """
         result = {
             key: prototype
@@ -723,8 +817,10 @@ class FunctionFactory(CloningFactory[Function.Element]):
         return result
 
     def functions(self) -> dict[str, Function.Element]:
-        """Returns a dictionary of the functions available
-        @return a dictionary of the functions available.
+        """Return a dictionary of the functions available.
+
+        Returns:
+            dictionary of the functions available.
         """
         result = {
             key: prototype
@@ -735,19 +831,18 @@ class FunctionFactory(CloningFactory[Function.Element]):
 
 
 class FactoryManager:
-    """The FactoryManager class is a central class grouping different factories
-    of objects, together with a singleton instance to access each of the
-    factories throughout the library.
+    """Manager that groups different factories to facilitate access across the library.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see TermFactory
-    @see TNormFactory
-    @see SNormFactory
-    @see HedgeFactory
-    @see ActivationFactory
-    @see DefuzzifierFactory
-    @see FunctionFactory
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.factory.CloningFactory][]
+        - [fuzzylite.factory.TermFactory][]
+        - [fuzzylite.factory.TNormFactory][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.HedgeFactory][]
+        - [fuzzylite.factory.ActivationFactory][]
+        - [fuzzylite.factory.DefuzzifierFactory][]
+        - [fuzzylite.factory.FunctionFactory][]
     """
 
     def __init__(
@@ -760,19 +855,21 @@ class FactoryManager:
         hedge: HedgeFactory | None = None,
         function: FunctionFactory | None = None,
     ) -> None:
-        """Creates a factory manager with the given factories (or default factories if none supplied)
-        @param tnorm is the factory of TNorm%s
-        @param snorm is the factory of SNorm%s
-        @param activation is the factory of Activation methods
-        @param defuzzifier is the factory of Defuzzifier%s
-        @param term is the factory of Term%s
-        @param hedge is the factory of Hedge%s
-        @param function is the factory of Function Element%s.
+        """Constructor.
+
+        Args:
+            tnorm: factory of TNorms
+            snorm: factory of SNorms
+            activation: factory of activation methods
+            defuzzifier: factory of defuzzifiers
+            term: factory of terms
+            hedge: factory of hedges
+            function: factory of functions
         """
-        self.tnorm = tnorm if tnorm else TNormFactory()
-        self.snorm = snorm if snorm else SNormFactory()
-        self.activation = activation if activation else ActivationFactory()
-        self.defuzzifier = defuzzifier if defuzzifier else DefuzzifierFactory()
-        self.term = term if term else TermFactory()
-        self.hedge = hedge if hedge else HedgeFactory()
-        self.function = function if function else FunctionFactory()
+        self.tnorm = tnorm or TNormFactory()
+        self.snorm = snorm or SNormFactory()
+        self.activation = activation or ActivationFactory()
+        self.defuzzifier = defuzzifier or DefuzzifierFactory()
+        self.term = term or TermFactory()
+        self.hedge = hedge or HedgeFactory()
+        self.function = function or FunctionFactory()
