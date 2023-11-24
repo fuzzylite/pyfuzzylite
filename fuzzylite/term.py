@@ -343,6 +343,7 @@ class Activated(Term):
         Returns:
             `degree * term` if not implication else `implication(degree, term)`
         """
+        # TODO: fix vectorisation
         name = self.term.name if self.term else "none"
         if self.implication:
             result = f"{self.implication}({Op.str(self.degree)},{name})"

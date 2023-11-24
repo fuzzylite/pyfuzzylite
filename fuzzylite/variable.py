@@ -42,14 +42,14 @@ class Variable:
     """
 
     def __init__(
-        self,
-        name: str = "",
-        description: str = "",
-        enabled: bool = True,
-        minimum: float = -inf,
-        maximum: float = inf,
-        lock_range: bool = False,
-        terms: Iterable[Term] | None = None,
+            self,
+            name: str = "",
+            description: str = "",
+            enabled: bool = True,
+            minimum: float = -inf,
+            maximum: float = inf,
+            lock_range: bool = False,
+            terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -245,6 +245,7 @@ class Variable:
         Returns:
             fuzzy value expressed as $\sum_i{\mu_i(x)/i}$.
         """
+        # TODO: fix vectorisation
         result: list[str] = []
         for term in self.terms:
             fx = scalar(nan)
@@ -267,6 +268,7 @@ class Variable:
         Returns:
              term $i$ that maximimizes $\mu_i(x)$.
         """
+        # TODO: fix vectorisation
         result: tuple[Scalar, Term | None] = (0.0, None)
         for term in self.terms:
             y = scalar(nan)
@@ -287,14 +289,14 @@ class InputVariable(Variable):
     """
 
     def __init__(
-        self,
-        name: str = "",
-        description: str = "",
-        enabled: bool = True,
-        minimum: float = -inf,
-        maximum: float = inf,
-        lock_range: bool = False,
-        terms: Iterable[Term] | None = None,
+            self,
+            name: str = "",
+            description: str = "",
+            enabled: bool = True,
+            minimum: float = -inf,
+            maximum: float = inf,
+            lock_range: bool = False,
+            terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -355,18 +357,18 @@ class OutputVariable(Variable):
     """
 
     def __init__(
-        self,
-        name: str = "",
-        description: str = "",
-        enabled: bool = True,
-        minimum: float = -inf,
-        maximum: float = inf,
-        lock_range: bool = False,
-        lock_previous: bool = False,
-        default_value: float = nan,
-        aggregation: SNorm | None = None,
-        defuzzifier: Defuzzifier | None = None,
-        terms: Iterable[Term] | None = None,
+            self,
+            name: str = "",
+            description: str = "",
+            enabled: bool = True,
+            minimum: float = -inf,
+            maximum: float = inf,
+            lock_range: bool = False,
+            lock_previous: bool = False,
+            default_value: float = nan,
+            aggregation: SNorm | None = None,
+            defuzzifier: Defuzzifier | None = None,
+            terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
