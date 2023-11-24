@@ -80,6 +80,11 @@ pytest-codspeed = "^2.0.1" # Cloud benchmarks
 ruff = "^0.0.256" # Code formatting
 twine = "^4.0.2" # Publish package
 
+# Packages below are ground truth for version management. See requirements.txt.
+poetry = "^1.7.1" # Build management
+nox = "^2023.4.22" # Command-line build management
+
+
 [tool.black]
 target-version = ["py39"]
 
