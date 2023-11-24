@@ -518,9 +518,7 @@ class WeightedAverage(WeightedDefuzzifier):
         """
         fuzzy_output = term
         if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(
-                f"expected an Aggregated term, but found {type(fuzzy_output)}"
-            )
+            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:
@@ -582,9 +580,7 @@ class WeightedSum(WeightedDefuzzifier):
         """
         fuzzy_output = term
         if not isinstance(fuzzy_output, Aggregated):
-            raise ValueError(
-                f"expected an Aggregated term, but found {type(fuzzy_output)}"
-            )
+            raise ValueError(f"expected an Aggregated term, but found {type(fuzzy_output)}")
 
         this_type = self.type
         if self.type == WeightedDefuzzifier.Type.Automatic:

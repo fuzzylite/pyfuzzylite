@@ -38,9 +38,7 @@ class AssertIntegration:
         self.engine = copy.deepcopy(engine)
         self.vectorize = vectorize
 
-    def assert_that(
-        self, defuzzifier: fl.Defuzzifier, input_expected: dict[float, float]
-    ) -> None:
+    def assert_that(self, defuzzifier: fl.Defuzzifier, input_expected: dict[float, float]) -> None:
         """Asserts integration of a Mamdani or Takagi-Sugeno system with a defuzzifier."""
         for output in self.engine.output_variables:
             output.defuzzifier = defuzzifier
@@ -162,9 +160,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_takagisugeno_avg_integration(self) -> None:
         """Test a simple integration with WeightedAverage."""
-        AssertIntegration(
-            takagi_sugeno.simple_dimmer.SimpleDimmer().engine
-        ).assert_that(
+        AssertIntegration(takagi_sugeno.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.WeightedAverage(),
             {
                 0.0: fl.nan,
@@ -180,9 +176,7 @@ class TestWeightedDefuzzifier(unittest.TestCase):
 
     def test_simple_takagisugeno_sum_integration(self) -> None:
         """Test a simple integration with WeightedSum."""
-        AssertIntegration(
-            takagi_sugeno.simple_dimmer.SimpleDimmer().engine
-        ).assert_that(
+        AssertIntegration(takagi_sugeno.simple_dimmer.SimpleDimmer().engine).assert_that(
             fl.WeightedSum(),
             {
                 0.0: np.nan,

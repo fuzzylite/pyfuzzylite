@@ -292,9 +292,7 @@ class Antecedent:
                     self.activation_degree(conjunction, disjunction, node.right),
                 )
 
-            raise ValueError(
-                f"operator '{node}' not recognized in antecedent: '{self.text}'"
-            )
+            raise ValueError(f"operator '{node}' not recognized in antecedent: '{self.text}'")
 
         raise RuntimeError(f"unexpected type of node '{node}': {type(node)}")
 
@@ -350,10 +348,7 @@ class Antecedent:
                 if token in factory:
                     hedge = factory.construct(token)
                     proposition.hedges.append(hedge)  # type: ignore
-                    if isinstance(hedge, Any):
-                        state = s_variable | s_and_or
-                    else:
-                        state = s_hedge | s_term
+                    state = s_variable | s_and_or if isinstance(hedge, Any) else s_hedge | s_term
                     settings.logger.debug(f"token '{token} is hedge")
                     continue
 
@@ -370,24 +365,19 @@ class Antecedent:
                 if token in {Rule.AND, Rule.OR}:
                     if len(stack) < 2:
                         raise SyntaxError(
-                            f"operator '{token}' expects 2 operands, "
-                            f"but found {len(stack)}"
+                            f"operator '{token}' expects 2 operands, but found {len(stack)}"
                         )
                     operator = Operator(token)
                     operator.right = stack.pop()
                     operator.left = stack.pop()
                     stack.append(operator)
                     state = s_variable | s_and_or
-                    settings.logger.debug(
-                        f"token '{token} is logical operator '{operator}'"
-                    )
+                    settings.logger.debug(f"token '{token} is logical operator '{operator}'")
                     continue
 
             # if reached this point, there was an error in the current state
             if state & (s_variable | s_and_or):
-                raise SyntaxError(
-                    f"expected variable or logical operator, but found '{token}'"
-                )
+                raise SyntaxError(f"expected variable or logical operator, but found '{token}'")
 
             if state & s_is:
                 raise SyntaxError(f"expected keyword '{Rule.IS}', but found '{token}'")
@@ -570,8 +560,7 @@ class Consequent:
         for proposition in self.conclusions:
             if not proposition.variable:
                 raise ValueError(
-                    f"expected a variable in '{proposition}', "
-                    f"but found none in consequent"
+                    f"expected a variable in '{proposition}', but found none in consequent"
                 )
             if proposition.variable.enabled:
                 for hedge in reversed(proposition.hedges):
@@ -579,18 +568,14 @@ class Consequent:
 
                 if not proposition.term:
                     raise ValueError(
-                        f"expected a term in proposition '{proposition}', "
-                        f"but found none"
+                        f"expected a term in proposition '{proposition}', but found none"
                     )
-                activated_term = Activated(
-                    proposition.term, activation_degree, implication
-                )
+                activated_term = Activated(proposition.term, activation_degree, implication)
                 if isinstance(proposition.variable, OutputVariable):
                     proposition.variable.fuzzy.terms.append(activated_term)
                 else:
                     raise RuntimeError(
-                        f"expected an output variable, but found "
-                        f"'{type(proposition.variable)}'"
+                        f"expected an output variable, but found '{type(proposition.variable)}'"
                     )
 
     def load(self, engine: Engine) -> None:
@@ -657,30 +642,20 @@ class Consequent:
 
             # if reached this point, there was an error:
             if state & s_variable:
-                raise SyntaxError(
-                    f"consequent expected an output variable, but found '{token}'"
-                )
+                raise SyntaxError(f"consequent expected an output variable, but found '{token}'")
             if state & s_is:
-                raise SyntaxError(
-                    f"consequent expected keyword '{Rule.IS}', but found '{token}'"
-                )
+                raise SyntaxError(f"consequent expected keyword '{Rule.IS}', but found '{token}'")
             if state & (s_hedge | s_term):
-                raise SyntaxError(
-                    f"consequent expected a hedge or term, but found '{token}'"
-                )
+                raise SyntaxError(f"consequent expected a hedge or term, but found '{token}'")
 
             raise SyntaxError(f"unexpected token '{token}'")
 
         # final states
         if not state & (s_and | s_with):
             if state & s_variable:
-                raise SyntaxError(
-                    f"consequent expected output variable after '{token}'"
-                )
+                raise SyntaxError(f"consequent expected output variable after '{token}'")
             if state & s_is:
-                raise SyntaxError(
-                    f"consequent expected keyword '{Rule.IS}' after '{token}'"
-                )
+                raise SyntaxError(f"consequent expected keyword '{Rule.IS}' after '{token}'")
             if state & (s_hedge | s_term):
                 raise SyntaxError(f"consequent expected hedge or term after '{token}' ")
 
@@ -820,8 +795,7 @@ class Rule:
                     state = s_if
                 else:
                     raise SyntaxError(
-                        f"expected keyword '{Rule.IF}', "
-                        f"but found '{token}' in rule '{text}'"
+                        f"expected keyword '{Rule.IF}', but found '{token}' in rule '{text}'"
                     )
             elif state == s_if:
                 if token == Rule.THEN:
@@ -862,9 +836,7 @@ class Rule:
         self.activation_degree = scalar(0.0)
         self.triggered = array(False)
 
-    def activate_with(
-        self, conjunction: TNorm | None, disjunction: SNorm | None
-    ) -> Scalar:
+    def activate_with(self, conjunction: TNorm | None, disjunction: SNorm | None) -> Scalar:
         """Compute and set activation degree of the rule with the conjunction and disjunction operators.
 
         Args:
@@ -1039,8 +1011,7 @@ class RuleBlock:
         """Activate the rule block."""
         if not self.activation:
             raise ValueError(
-                f"expected an activation method, "
-                f"but found none in rule block:\n{str(self)}"
+                f"expected an activation method, but found none in rule block:\n{str(self)}"
             )
         return self.activation.activate(self)
 
@@ -1063,9 +1034,7 @@ class RuleBlock:
             except Exception as ex:
                 exceptions.append(f"['{str(rule)}']: {str(ex)}")
         if exceptions:
-            raise RuntimeError(
-                "failed to load the following rules:\n" + "\n".join(exceptions)
-            )
+            raise RuntimeError("failed to load the following rules:\n" + "\n".join(exceptions))
 
     def reload_rules(self, engine: Engine) -> None:
         """Reload all the rules in the rule block.

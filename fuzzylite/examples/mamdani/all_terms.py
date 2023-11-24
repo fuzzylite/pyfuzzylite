@@ -99,66 +99,26 @@ class AllTerms:
                     implication=fl.Minimum(),
                     activation=fl.General(),
                     rules=[
-                        fl.Rule.create(
-                            "if AllInputTerms is A then AllOutputTerms is T"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is B then AllOutputTerms is S"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is C then AllOutputTerms is R"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is D then AllOutputTerms is Q"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is E then AllOutputTerms is P"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is F then AllOutputTerms is O"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is G then AllOutputTerms is N"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is H then AllOutputTerms is M"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is I then AllOutputTerms is L"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is J then AllOutputTerms is K"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is K then AllOutputTerms is J"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is L then AllOutputTerms is I"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is M then AllOutputTerms is H"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is N then AllOutputTerms is G"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is O then AllOutputTerms is F"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is P then AllOutputTerms is E"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is Q then AllOutputTerms is D"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is R then AllOutputTerms is C"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is S then AllOutputTerms is B"
-                        ),
-                        fl.Rule.create(
-                            "if AllInputTerms is T then AllOutputTerms is A"
-                        ),
+                        fl.Rule.create("if AllInputTerms is A then AllOutputTerms is T"),
+                        fl.Rule.create("if AllInputTerms is B then AllOutputTerms is S"),
+                        fl.Rule.create("if AllInputTerms is C then AllOutputTerms is R"),
+                        fl.Rule.create("if AllInputTerms is D then AllOutputTerms is Q"),
+                        fl.Rule.create("if AllInputTerms is E then AllOutputTerms is P"),
+                        fl.Rule.create("if AllInputTerms is F then AllOutputTerms is O"),
+                        fl.Rule.create("if AllInputTerms is G then AllOutputTerms is N"),
+                        fl.Rule.create("if AllInputTerms is H then AllOutputTerms is M"),
+                        fl.Rule.create("if AllInputTerms is I then AllOutputTerms is L"),
+                        fl.Rule.create("if AllInputTerms is J then AllOutputTerms is K"),
+                        fl.Rule.create("if AllInputTerms is K then AllOutputTerms is J"),
+                        fl.Rule.create("if AllInputTerms is L then AllOutputTerms is I"),
+                        fl.Rule.create("if AllInputTerms is M then AllOutputTerms is H"),
+                        fl.Rule.create("if AllInputTerms is N then AllOutputTerms is G"),
+                        fl.Rule.create("if AllInputTerms is O then AllOutputTerms is F"),
+                        fl.Rule.create("if AllInputTerms is P then AllOutputTerms is E"),
+                        fl.Rule.create("if AllInputTerms is Q then AllOutputTerms is D"),
+                        fl.Rule.create("if AllInputTerms is R then AllOutputTerms is C"),
+                        fl.Rule.create("if AllInputTerms is S then AllOutputTerms is B"),
+                        fl.Rule.create("if AllInputTerms is T then AllOutputTerms is A"),
                     ],
                 )
             ],

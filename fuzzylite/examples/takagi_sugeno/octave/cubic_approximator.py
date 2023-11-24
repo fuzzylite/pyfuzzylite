@@ -68,30 +68,14 @@ class CubicApproximator:
                         fl.Rule.create(
                             "if X is AboutNegThree then ApproxXCubed is TangentatNegThree"
                         ),
-                        fl.Rule.create(
-                            "if X is AboutNegTwo then ApproxXCubed is TangentatNegTwo"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutNegOne then ApproxXCubed is TangentatNegOne"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutZero then ApproxXCubed is TangentatZero"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutOne then ApproxXCubed is TangentatOne"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutTwo then ApproxXCubed is TangentatTwo"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutThree then ApproxXCubed is TangentatThree"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutFour then ApproxXCubed is TangentatFour"
-                        ),
-                        fl.Rule.create(
-                            "if X is AboutFive then ApproxXCubed is TangentatFive"
-                        ),
+                        fl.Rule.create("if X is AboutNegTwo then ApproxXCubed is TangentatNegTwo"),
+                        fl.Rule.create("if X is AboutNegOne then ApproxXCubed is TangentatNegOne"),
+                        fl.Rule.create("if X is AboutZero then ApproxXCubed is TangentatZero"),
+                        fl.Rule.create("if X is AboutOne then ApproxXCubed is TangentatOne"),
+                        fl.Rule.create("if X is AboutTwo then ApproxXCubed is TangentatTwo"),
+                        fl.Rule.create("if X is AboutThree then ApproxXCubed is TangentatThree"),
+                        fl.Rule.create("if X is AboutFour then ApproxXCubed is TangentatFour"),
+                        fl.Rule.create("if X is AboutFive then ApproxXCubed is TangentatFive"),
                     ],
                 )
             ],

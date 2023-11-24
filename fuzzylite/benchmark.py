@@ -107,9 +107,7 @@ class Benchmark:
              a benchmark ready for the example
         """
         engine, data = cls.engine_and_data(example)
-        return cls(
-            example.__name__, engine, data, rows=rows, shuffle=shuffle, seed=seed
-        )
+        return cls(example.__name__, engine, data, rows=rows, shuffle=shuffle, seed=seed)
 
     @classmethod
     def engine_and_data(cls, example: ModuleType) -> tuple[Engine, ScalarArray]:

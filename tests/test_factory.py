@@ -32,9 +32,7 @@ import fuzzylite as fl
 from tests.assert_component import BaseAssert
 
 
-class FactoryAssert(
-    BaseAssert[Union[fl.ConstructionFactory[Any], fl.CloningFactory[Any]]]
-):
+class FactoryAssert(BaseAssert[Union[fl.ConstructionFactory[Any], fl.CloningFactory[Any]]]):
     """Factory assert."""
 
     def has_class_name(self, name: str) -> FactoryAssert:
@@ -42,9 +40,7 @@ class FactoryAssert(
         self.test.assertEqual(fl.Op.class_name(self.actual), name)
         return self
 
-    def contains(
-        self, name: str | Iterable[str], contains: bool = True
-    ) -> FactoryAssert:
+    def contains(self, name: str | Iterable[str], contains: bool = True) -> FactoryAssert:
         """Asserts whether the factory contains specific class names."""
         if isinstance(name, str):
             name = [name]
@@ -67,8 +63,7 @@ class FactoryAssert(
         """Asserts the factory constructs expected types from the names."""
         if not isinstance(self.actual, fl.ConstructionFactory):
             raise ValueError(
-                f"expected an instance of {fl.ConstructionFactory}, "
-                f"but got {self.actual}"
+                f"expected an instance of {fl.ConstructionFactory}, but got {self.actual}"
             )
         self.test.assertDictEqual(name_type, self.actual.constructors)
         for name, clazz in name_type.items():
@@ -78,13 +73,8 @@ class FactoryAssert(
     def copies_exactly(self, name_instance: dict[str, object]) -> FactoryAssert:
         """Assert the factory clones the objects from the class names."""
         if not isinstance(self.actual, fl.CloningFactory):
-            raise ValueError(
-                f"expected an instance of {fl.CloningFactory}, "
-                f"but got {self.actual}"
-            )
-        self.test.assertSetEqual(
-            set(self.actual.objects.keys()), set(name_instance.keys())
-        )
+            raise ValueError(f"expected an instance of {fl.CloningFactory}, but got {self.actual}")
+        self.test.assertSetEqual(set(self.actual.objects.keys()), set(name_instance.keys()))
         for name, instance in name_instance.items():
             self.test.assertEqual(str(self.actual.copy(name)), str(instance))
             self.test.assertNotEqual(repr(self.actual.copy(name)), repr(instance))
@@ -110,9 +100,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
             # self.test.assertEqual(key, element.method.__name__)
         return self
 
-    def operation_is(
-        self, operation_value: dict[tuple[str, Sequence[float]], float]
-    ) -> Self:
+    def operation_is(self, operation_value: dict[tuple[str, Sequence[float]], float]) -> Self:
         """Assert the operation on the sequence of values results in the expected value."""
         for operation, expected in operation_value.items():
             name = operation[0]
@@ -172,11 +160,7 @@ class TestFactory(unittest.TestCase):
         ).constructs_exactly({"example": Example})
 
         self.assertEqual(
-            str(
-                fl.ConstructionFactory(constructors={"example": Example}).construct(
-                    "example"
-                )
-            ),
+            str(fl.ConstructionFactory(constructors={"example": Example}).construct("example")),
             "instance of Example",
         )
 
@@ -212,11 +196,9 @@ class TestFactory(unittest.TestCase):
 
     def test_activation_factory(self) -> None:
         """Test the activation factory."""
-        FactoryAssert(self, fl.ActivationFactory()).has_class_name(
-            "ActivationFactory"
-        ).contains(["First", "Last", "Threshold"]).contains(
-            ["Second", "Third"], False
-        ).constructs_exactly(
+        FactoryAssert(self, fl.ActivationFactory()).has_class_name("ActivationFactory").contains(
+            ["First", "Last", "Threshold"]
+        ).contains(["Second", "Third"], False).constructs_exactly(
             {
                 "First": fl.First,
                 "General": fl.General,
@@ -230,11 +212,9 @@ class TestFactory(unittest.TestCase):
 
     def test_defuzzifier_factory(self) -> None:
         """Test the defuzzifier factory."""
-        FactoryAssert(self, fl.DefuzzifierFactory()).has_class_name(
-            "DefuzzifierFactory"
-        ).contains(["Bisector", "MeanOfMaximum", "WeightedSum"]).contains(
-            ["Something", "Else"], False
-        ).constructs_exactly(
+        FactoryAssert(self, fl.DefuzzifierFactory()).has_class_name("DefuzzifierFactory").contains(
+            ["Bisector", "MeanOfMaximum", "WeightedSum"]
+        ).contains(["Something", "Else"], False).constructs_exactly(
             {
                 "Bisector": fl.Bisector,
                 "Centroid": fl.Centroid,
@@ -285,9 +265,7 @@ class TestFactory(unittest.TestCase):
         """Test the T-Norm factory."""
         FactoryAssert(self, fl.TNormFactory()).has_class_name("TNormFactory").contains(
             ["AlgebraicProduct", "EinsteinProduct", "NilpotentMinimum"]
-        ).contains(
-            ["AlgebraicSum", "EinsteinSum", "UnboundedSum"], False
-        ).constructs_exactly(
+        ).contains(["AlgebraicSum", "EinsteinSum", "UnboundedSum"], False).constructs_exactly(
             {
                 "AlgebraicProduct": fl.AlgebraicProduct,
                 "BoundedDifference": fl.BoundedDifference,
@@ -333,9 +311,7 @@ class TestFactory(unittest.TestCase):
 
     def test_cloning_factory(self) -> None:
         """Test the cloning factory."""
-        FactoryAssert(self, fl.CloningFactory()).has_class_name(
-            "CloningFactory"
-        ).copies_exactly({})
+        FactoryAssert(self, fl.CloningFactory()).has_class_name("CloningFactory").copies_exactly({})
 
         class Example:
             def __init__(self, value: str) -> None:

@@ -62,9 +62,7 @@ class Mam21:
                         fl.Rule.create(
                             "if angle is big and velocity is small then force is posSmall"
                         ),
-                        fl.Rule.create(
-                            "if angle is big and velocity is big then force is posBig"
-                        ),
+                        fl.Rule.create("if angle is big and velocity is big then force is posBig"),
                     ],
                 )
             ],

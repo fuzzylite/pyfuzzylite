@@ -69,54 +69,22 @@ class Fpeaks:
                     implication=None,
                     activation=fl.General(),
                     rules=[
-                        fl.Rule.create(
-                            "if in1 is in1mf1 and in2 is in1mf1 then out1 is out1mf1"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf1 and in2 is in1mf2 then out1 is out1mf2"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf1 and in2 is in1mf3 then out1 is out1mf3"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf1 and in2 is in1mf4 then out1 is out1mf4"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf2 and in2 is in1mf1 then out1 is out1mf5"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf2 and in2 is in1mf2 then out1 is out1mf6"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf2 and in2 is in1mf3 then out1 is out1mf7"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf2 and in2 is in1mf4 then out1 is out1mf8"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf3 and in2 is in1mf1 then out1 is out1mf9"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf3 and in2 is in1mf2 then out1 is out1mf10"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf3 and in2 is in1mf3 then out1 is out1mf11"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf3 and in2 is in1mf4 then out1 is out1mf12"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf4 and in2 is in1mf1 then out1 is out1mf13"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf4 and in2 is in1mf2 then out1 is out1mf14"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf4 and in2 is in1mf3 then out1 is out1mf15"
-                        ),
-                        fl.Rule.create(
-                            "if in1 is in1mf4 and in2 is in1mf4 then out1 is out1mf16"
-                        ),
+                        fl.Rule.create("if in1 is in1mf1 and in2 is in1mf1 then out1 is out1mf1"),
+                        fl.Rule.create("if in1 is in1mf1 and in2 is in1mf2 then out1 is out1mf2"),
+                        fl.Rule.create("if in1 is in1mf1 and in2 is in1mf3 then out1 is out1mf3"),
+                        fl.Rule.create("if in1 is in1mf1 and in2 is in1mf4 then out1 is out1mf4"),
+                        fl.Rule.create("if in1 is in1mf2 and in2 is in1mf1 then out1 is out1mf5"),
+                        fl.Rule.create("if in1 is in1mf2 and in2 is in1mf2 then out1 is out1mf6"),
+                        fl.Rule.create("if in1 is in1mf2 and in2 is in1mf3 then out1 is out1mf7"),
+                        fl.Rule.create("if in1 is in1mf2 and in2 is in1mf4 then out1 is out1mf8"),
+                        fl.Rule.create("if in1 is in1mf3 and in2 is in1mf1 then out1 is out1mf9"),
+                        fl.Rule.create("if in1 is in1mf3 and in2 is in1mf2 then out1 is out1mf10"),
+                        fl.Rule.create("if in1 is in1mf3 and in2 is in1mf3 then out1 is out1mf11"),
+                        fl.Rule.create("if in1 is in1mf3 and in2 is in1mf4 then out1 is out1mf12"),
+                        fl.Rule.create("if in1 is in1mf4 and in2 is in1mf1 then out1 is out1mf13"),
+                        fl.Rule.create("if in1 is in1mf4 and in2 is in1mf2 then out1 is out1mf14"),
+                        fl.Rule.create("if in1 is in1mf4 and in2 is in1mf3 then out1 is out1mf15"),
+                        fl.Rule.create("if in1 is in1mf4 and in2 is in1mf4 then out1 is out1mf16"),
                     ],
                 )
             ],

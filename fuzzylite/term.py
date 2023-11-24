@@ -163,9 +163,7 @@ class Term(ABC):
         """
         pass
 
-    def _parse(
-        self, required: int, parameters: str, *, height: bool = True
-    ) -> list[float]:
+    def _parse(self, required: int, parameters: str, *, height: bool = True) -> list[float]:
         """Parse the required values from the parameters.
 
         Args:
@@ -280,9 +278,7 @@ class Activated(Term):
         - [fuzzylite.defuzzifier.WeightedDefuzzifier][]
     """
 
-    def __init__(
-        self, term: Term, degree: Scalar = 1.0, implication: TNorm | None = None
-    ) -> None:
+    def __init__(self, term: Term, degree: Scalar = 1.0, implication: TNorm | None = None) -> None:
         """Constructor.
 
         Args:
@@ -435,9 +431,7 @@ class Aggregated(Term):
         result = []
         activated = [term.parameters() for term in self.terms]
         if self.aggregation:
-            result.append(
-                f"{FllExporter().norm(self.aggregation)}[{','.join(activated)}]"
-            )
+            result.append(f"{FllExporter().norm(self.aggregation)}[{','.join(activated)}]")
         else:
             result.append(f"[{'+'.join(activated)}]")
 
@@ -487,9 +481,7 @@ class Aggregated(Term):
                 )
                 continue
             aggregated_term = groups[activated.term.name]
-            aggregated_term.degree = aggregation.compute(
-                aggregated_term.degree, activated.degree
-            )
+            aggregated_term.degree = aggregation.compute(aggregated_term.degree, activated.degree)
         return list(groups.values())
 
     def activation_degree(self, term: Term) -> Scalar:
@@ -763,11 +755,7 @@ class Binary(Term):
         x = scalar(x)
         right = (self.direction > self.start) & (x >= self.start)
         left = (self.direction < self.start) & (x <= self.start)
-        y = (
-            self.height
-            * np.where(np.isnan(x), np.nan, 1.0)
-            * np.where(right | left, 1.0, 0.0)
-        )
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * np.where(right | left, 1.0, 0.0)
         return y  # type: ignore
 
     def parameters(self) -> str:
@@ -1365,16 +1353,12 @@ class GaussianProduct(Term):
         x = scalar(x)
         a = np.where(
             x < self.mean_a,
-            Gaussian(
-                mean=self.mean_a, standard_deviation=self.standard_deviation_a
-            ).membership(x),
+            Gaussian(mean=self.mean_a, standard_deviation=self.standard_deviation_a).membership(x),
             1.0,
         )
         b = np.where(
             x > self.mean_b,
-            Gaussian(
-                mean=self.mean_b, standard_deviation=self.standard_deviation_b
-            ).membership(x),
+            Gaussian(mean=self.mean_b, standard_deviation=self.standard_deviation_b).membership(x),
             1.0,
         )
         y = self.height * np.where(np.isnan(x), np.nan, 1.0) * a * b
@@ -1900,11 +1884,7 @@ class Sigmoid(Term):
         x = scalar(x)
         i = self.inflection
         s = self.slope
-        y = (
-            self.height
-            * np.where(np.isnan(x), np.nan, 1.0)
-            / (1.0 + np.exp(-s * (x - i)))
-        )
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) / (1.0 + np.exp(-s * (x - i)))
         return y
 
     def tsukamoto(
@@ -2164,11 +2144,7 @@ class Spike(Term):
         x = scalar(x)
         c = self.center
         w = self.width
-        y = (
-            self.height
-            * np.where(np.isnan(x), np.nan, 1.0)
-            * np.exp(-np.abs(10.0 / w * (x - c)))
-        )
+        y = self.height * np.where(np.isnan(x), np.nan, 1.0) * np.exp(-np.abs(10.0 / w * (x - c)))
         return y  # type: ignore
 
     def parameters(self) -> str:
@@ -2385,9 +2361,7 @@ class Trapezoid(Term):
                 ((x < a) | (x > d)),
                 0.0,
                 np.where(
-                    ((b <= x) & (x <= c))
-                    | ((a == -inf) & (x < b))
-                    | ((d == inf) & (x > c)),
+                    ((b <= x) & (x <= c)) | ((a == -inf) & (x < b)) | ((d == inf) & (x > c)),
                     1.0,
                     np.where(
                         x < b,
@@ -2710,9 +2684,7 @@ class Function(Term):
             self.name = name
             self.description = description
             self.type = (
-                type
-                if isinstance(type, Function.Element.Type)
-                else Function.Element.Type[type]
+                type if isinstance(type, Function.Element.Type) else Function.Element.Type[type]
             )
             self.method = method
             self.arity = arity
@@ -2895,9 +2867,7 @@ class Function(Term):
             if node.right:
                 children.append(self.infix(node.right))
 
-            is_function = (
-                node.element and node.element.type == Function.Element.Type.Function
-            )
+            is_function = node.element and node.element.type == Function.Element.Type.Function
 
             if is_function:
                 result = node.value() + f" ( {' '.join(children)} )"
@@ -3167,12 +3137,8 @@ class Function(Term):
             elif element and element.is_operator():
                 while stack and stack[-1] in factory.objects:
                     top = factory.objects[stack[-1]]
-                    if (
-                        element.associativity < 0
-                        and element.precedence <= top.precedence
-                    ) or (
-                        element.associativity > 0
-                        and element.precedence < top.precedence
+                    if (element.associativity < 0 and element.precedence <= top.precedence) or (
+                        element.associativity > 0 and element.precedence < top.precedence
                     ):
                         queue.append(stack.pop())
                     else:

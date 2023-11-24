@@ -141,9 +141,7 @@ class Laundry:
                         fl.Rule.create(
                             "if Load is small and Dirt is not high then Detergent is less_than_usual"
                         ),
-                        fl.Rule.create(
-                            "if Load is small and Dirt is high then Detergent is usual"
-                        ),
+                        fl.Rule.create("if Load is small and Dirt is high then Detergent is usual"),
                         fl.Rule.create(
                             "if Load is normal and Dirt is low then Detergent is less_than_usual"
                         ),
@@ -153,9 +151,7 @@ class Laundry:
                         fl.Rule.create(
                             "if Detergent is usual or Detergent is less_than_usual then Cycle is short"
                         ),
-                        fl.Rule.create(
-                            "if Detergent is more_than_usual then Cycle is long"
-                        ),
+                        fl.Rule.create("if Detergent is more_than_usual then Cycle is long"),
                     ],
                 )
             ],

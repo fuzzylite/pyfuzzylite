@@ -57,10 +57,7 @@ def generate_documentation() -> str:
         all_module = target / "fuzzylite" / "__all__"
         all_module.mkdir(parents=True, exist_ok=True)
         all_module.joinpath(f"{target_module.stem}.md").write_text(
-            "\n".join(
-                f"::: {module.__name__}.{component}"
-                for component in sorted(module.__all__)
-            )
+            "\n".join(f"::: {module.__name__}.{component}" for component in sorted(module.__all__))
         )
 
     result = []
@@ -71,8 +68,7 @@ def generate_documentation() -> str:
     for module_name, components in mkdocs.items():
         result.append(f"- {module_name}:")
         result.extend(
-            f"  - {component}: fuzzylite/{module_name}/{component}.md"
-            for component in components
+            f"  - {component}: fuzzylite/{module_name}/{component}.md" for component in components
         )
     mkdocs_yaml = "\n".join(result)
     return mkdocs_yaml

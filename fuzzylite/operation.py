@@ -293,8 +293,7 @@ class Operation:
 
             if class_hierarchy:
                 key_values["__hierarchy__"] = ", ".join(
-                    f"{cls.__module__}.{cls.__name__}"
-                    for cls in inspect.getmro(instance.__class__)
+                    f"{cls.__module__}.{cls.__name__}" for cls in inspect.getmro(instance.__class__)
                 )
 
         sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
@@ -336,9 +335,7 @@ class Operation:
         """
         # dx = ((end - start) / resolution)
         # result = start + (i + 0.5) * dx
-        return start + (np.array(range(resolution)) + 0.5) * (
-            (end - start) / resolution
-        )
+        return start + (np.array(range(resolution)) + 0.5) * ((end - start) / resolution)
 
     @staticmethod
     def increment(
@@ -504,9 +501,7 @@ class Operation:
                         for part in file.with_suffix("").relative_to(package).parts
                     )
                     import_name = (
-                        f"{module.__name__}.{submodule}"
-                        if is_package
-                        else module.__name__
+                        f"{module.__name__}.{submodule}" if is_package else module.__name__
                     )
                     example_module = importlib.import_module(import_name)
                     if return_type == "module":
@@ -532,10 +527,7 @@ class Operation:
         elif return_type == "files":
             pattern += ".*"
             for file in sorted(package.glob(pattern)):
-                if (
-                    file.suffix in {".py", ".fll", ".fld"}
-                    and file.name != "__init__.py"
-                ):
+                if file.suffix in {".py", ".fll", ".fld"} and file.name != "__init__.py":
                     yield file
 
         else:

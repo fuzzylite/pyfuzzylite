@@ -62,9 +62,7 @@ class SimpleDimmerInverse:
                         fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM"),
                         fl.Rule.create("if Ambient is BRIGHT then Power is LOW"),
                         fl.Rule.create("if Power is LOW then InversePower is HIGH"),
-                        fl.Rule.create(
-                            "if Power is MEDIUM then InversePower is MEDIUM"
-                        ),
+                        fl.Rule.create("if Power is MEDIUM then InversePower is MEDIUM"),
                         fl.Rule.create("if Power is HIGH then InversePower is LOW"),
                     ],
                 )

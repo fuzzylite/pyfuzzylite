@@ -36,19 +36,13 @@ class VariableAssert(BaseAssert[fl.Variable]):
     def fuzzy_values(self, fuzzification: dict[float, str]) -> Self:
         """Test the fuzzification of the given keys result in their expected values."""
         for x in fuzzification:
-            self.test.assertEqual(
-                self.actual.fuzzify(x), fuzzification[x], f"when x={x}"
-            )
+            self.test.assertEqual(self.actual.fuzzify(x), fuzzification[x], f"when x={x}")
         return self
 
-    def highest_memberships(
-        self, x_mf: dict[float, tuple[float, fl.Term | None]]
-    ) -> Self:
+    def highest_memberships(self, x_mf: dict[float, tuple[float, fl.Term | None]]) -> Self:
         """Test the highest memberships for the given keys result in the expected activation values and terms."""
         for x in x_mf:
-            self.test.assertEqual(
-                self.actual.highest_membership(x), x_mf[x], f"when x={x}"
-            )
+            self.test.assertEqual(self.actual.highest_membership(x), x_mf[x], f"when x={x}")
         return self
 
 
@@ -135,9 +129,7 @@ class TestVariable(unittest.TestCase):
         """Test the variable can be deeply copied."""
         import copy
 
-        variable = fl.Variable(
-            "name", "description", terms=[fl.Triangle("a"), fl.Triangle("b")]
-        )
+        variable = fl.Variable("name", "description", terms=[fl.Triangle("a"), fl.Triangle("b")])
         variable_copy = copy.deepcopy(variable)
 
         self.assertNotEqual(variable, variable_copy)
@@ -262,9 +254,7 @@ class InputVariableAssert(BaseAssert[fl.InputVariable]):
         """Assert the fuzzification of the given keys result in their expected fuzzy values."""
         for x in fuzzification:
             self.actual.value = x
-            self.test.assertEqual(
-                self.actual.fuzzy_value(), fuzzification[x], f"when x={x}"
-            )
+            self.test.assertEqual(self.actual.fuzzy_value(), fuzzification[x], f"when x={x}")
         return self
 
 
@@ -347,9 +337,7 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
         self.actual.clear()
         return self
 
-    def when_fuzzy_output(
-        self, *, is_empty: bool, implication: fl.TNorm | None = None
-    ) -> Self:
+    def when_fuzzy_output(self, *, is_empty: bool, implication: fl.TNorm | None = None) -> Self:
         """Set the output variable to the given terms."""
         if is_empty:
             self.actual.fuzzy.terms = []
@@ -380,16 +368,12 @@ class OutputVariableAssert(BaseAssert[fl.OutputVariable]):
         self.test.assertEqual(fll, fl.FllExporter().output_variable(self.actual))
         return self
 
-    def activated_values(
-        self, fuzzification: dict[Sequence[fl.Activated], str]
-    ) -> Self:
+    def activated_values(self, fuzzification: dict[Sequence[fl.Activated], str]) -> Self:
         """Assert the list of activated terms results in the expected fuzzy value."""
         for x in fuzzification:
             self.actual.fuzzy.terms.clear()
             self.actual.fuzzy.terms.extend(x)
-            self.test.assertEqual(
-                self.actual.fuzzy_value(), fuzzification[x], f"when x={x}"
-            )
+            self.test.assertEqual(self.actual.fuzzy_value(), fuzzification[x], f"when x={x}")
         return self
 
 
@@ -425,9 +409,7 @@ class TestOutputVariable(unittest.TestCase):
 
     def test_constructor(self) -> None:
         """Test the constructor."""
-        OutputVariableAssert(
-            self, fl.OutputVariable("name", "description")
-        ).exports_fll(
+        OutputVariableAssert(self, fl.OutputVariable("name", "description")).exports_fll(
             "\n".join(
                 [
                     "OutputVariable: name",
@@ -480,9 +462,7 @@ class TestOutputVariable(unittest.TestCase):
         ).activated_values(
             {
                 tuple(): "0.000/Low + 0.000/Medium + 0.000/High",
-                tuple(
-                    [fl.Activated(low, 0.5)]
-                ): "0.500/Low + 0.000/Medium + 0.000/High",
+                tuple([fl.Activated(low, 0.5)]): "0.500/Low + 0.000/Medium + 0.000/High",
                 tuple(
                     [
                         fl.Activated(low, -1.0),
@@ -505,9 +485,7 @@ class TestOutputVariable(unittest.TestCase):
         )
         variable.value = 0.0
         variable.previous_value = -1.0
-        variable.fuzzy.terms.extend(
-            [fl.Activated(term, 0.5) for term in variable.terms]
-        )
+        variable.fuzzy.terms.extend([fl.Activated(term, 0.5) for term in variable.terms])
         OutputVariableAssert(self, variable).exports_fll(
             "\n".join(
                 [
@@ -564,9 +542,7 @@ class TestOutputVariable(unittest.TestCase):
             defuzzifier=None,
             default_value=0.123,
         ).defuzzify(
-            raises=ValueError(
-                "expected a defuzzifier in output variable 'Output', but found None"
-            )
+            raises=ValueError("expected a defuzzifier in output variable 'Output', but found None")
         ).then(
             value=1.0,
             previous_value=fl.nan,
@@ -677,9 +653,7 @@ class TestOutputVariable(unittest.TestCase):
             defuzzifier=None,
             default_value=0.123,
         ).defuzzify(
-            raises=ValueError(
-                "expected a defuzzifier in output variable 'Output', but found None"
-            )
+            raises=ValueError("expected a defuzzifier in output variable 'Output', but found None")
         ).then(
             value=fl.array([1.0, 2.0, 3.0]),
             previous_value=fl.nan,
@@ -789,9 +763,7 @@ class TestOutputVariable(unittest.TestCase):
         )
 
         def mock_defuzzify(*_: Any, **__: Any) -> fl.Scalar:
-            return fl.array(
-                [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
-            )
+            return fl.array([np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0])
 
         # When the fuzzy output is not empty
         mock_defuzzifier = fl.Centroid()
@@ -806,9 +778,7 @@ class TestOutputVariable(unittest.TestCase):
             previous_value=fl.nan,
             default_value=fl.nan,
         ).defuzzify().then(
-            value=fl.array(
-                [np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]
-            ),
+            value=fl.array([np.nan, 1.0, np.nan, 2.0, np.nan, 3.0, -np.inf, np.inf, 0.0]),
             previous_value=3.0,
         )
 

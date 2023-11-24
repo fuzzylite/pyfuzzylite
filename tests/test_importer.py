@@ -98,9 +98,7 @@ Engine: Bell
 
   description: obstacle avoidance for self-driving cars
 """
-        self.assertEqual(
-            engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine))
-        )
+        self.assertEqual(engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine)))
 
     def test_input_variable(self) -> None:
         """Test input variables can be imported."""
@@ -113,9 +111,7 @@ InputVariable: obstacle
 
   term: left Triangle 0.000 0.333 0.666
   term: right Triangle 0.333 0.666 1.000"""
-        self.assertEqual(
-            iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv))
-        )
+        self.assertEqual(iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv)))
 
     def test_output_variable(self) -> None:
         """Test output variables can be imported."""
@@ -132,9 +128,7 @@ OutputVariable: steer
 
   term: left Bell 0.333 0.167 3.000
   term: right Bell 0.666 0.167 3.000"""
-        self.assertEqual(
-            ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov))
-        )
+        self.assertEqual(ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov)))
 
     def test_rule_block(self) -> None:
         """Test rule blocks can be imported."""
@@ -159,15 +153,11 @@ RuleBlock: steer_away
         term = "term: function Function 1 + 1"
         self.assertEqual(term, str(fl.FllImporter().term(term)))
         self.assertEqual(None, cast(fl.Function, fl.FllImporter().term(term)).engine)
-        self.assertEqual(
-            engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine
-        )
+        self.assertEqual(engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine)
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected format 'term: name Term [parameters]', but got 'term: name'"
-            ),
+            re.escape("expected format 'term: name Term [parameters]', but got 'term: name'"),
         ):
             fl.FllImporter().term("term: name")
 
@@ -270,12 +260,8 @@ RuleBlock: steer_away
 
     def test_extract_key_value(self) -> None:
         """Test correct extraction of keys and values."""
-        self.assertEqual(
-            ("Key", "value"), fl.FllImporter().extract_key_value("Key: value")
-        )
-        self.assertEqual(
-            ("Key", "value"), fl.FllImporter().extract_key_value("Key : value")
-        )
+        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key: value"))
+        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key : value"))
         self.assertEqual(
             ("Key", "value1 : value2"),
             fl.FllImporter().extract_key_value("Key: value1 : value2", "Key"),
@@ -287,9 +273,7 @@ RuleBlock: steer_away
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'"
-            ),
+            re.escape("expected 'key: value' definition, but found 'key value1 value2'"),
         ):
             fl.FllImporter().extract_key_value("key value1 value2")
 
@@ -300,9 +284,7 @@ RuleBlock: steer_away
                 "but found 'description: value1 value2'"
             ),
         ):
-            fl.FllImporter().extract_key_value(
-                "description: value1 value2", "DESCRIPTION"
-            )
+            fl.FllImporter().extract_key_value("description: value1 value2", "DESCRIPTION")
 
     def test_extract_value(self) -> None:
         """Test correct extraction of values from a key-value."""
@@ -319,9 +301,7 @@ RuleBlock: steer_away
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'"
-            ),
+            re.escape("expected 'key: value' definition, but found 'key value1 value2'"),
         ):
             fl.FllImporter().extract_value("key value1 value2")
 
@@ -345,17 +325,13 @@ RuleBlock: steer_away
             SyntaxError,
             re.escape("'invalid' is not a valid component of 'InputVariable'"),
         ):
-            fl.FllImporter().input_variable(
-                """InputVariable: name\n  invalid: component"""
-            )
+            fl.FllImporter().input_variable("""InputVariable: name\n  invalid: component""")
 
         with self.assertRaisesRegex(
             SyntaxError,
             re.escape("'invalid' is not a valid component of 'OutputVariable'"),
         ):
-            fl.FllImporter().output_variable(
-                """OutputVariable: name\n  invalid: component"""
-            )
+            fl.FllImporter().output_variable("""OutputVariable: name\n  invalid: component""")
 
         with self.assertRaisesRegex(
             SyntaxError, re.escape("'invalid' is not a valid component of 'RuleBlock'")

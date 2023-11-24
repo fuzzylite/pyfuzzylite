@@ -134,9 +134,7 @@ class TestFllExporter(unittest.TestCase):
             ],
             load=False,
         )
-        self.assertEqual(
-            fl.FllExporter().to_string(engine), fl.FllExporter().engine(engine)
-        )
+        self.assertEqual(fl.FllExporter().to_string(engine), fl.FllExporter().engine(engine))
         self.assertEqual(
             fl.FllExporter().engine(engine),
             """\
@@ -178,9 +176,7 @@ RuleBlock: rb
             maximum=1,
             terms=[fl.Triangle("A")],
         )
-        self.assertEqual(
-            fl.FllExporter().to_string(variable), fl.FllExporter().variable(variable)
-        )
+        self.assertEqual(fl.FllExporter().to_string(variable), fl.FllExporter().variable(variable))
         self.assertEqual(
             fl.FllExporter().variable(variable),
             """\
@@ -249,9 +245,7 @@ OutputVariable: output_variable
         rb = fl.RuleBlock(
             name="rb", description="a rule block", rules=[fl.Rule.create("if a then z")]
         )
-        self.assertEqual(
-            fl.FllExporter().to_string(rb), fl.FllExporter().rule_block(rb)
-        )
+        self.assertEqual(fl.FllExporter().to_string(rb), fl.FllExporter().rule_block(rb))
         self.assertEqual(
             fl.FllExporter().rule_block(rb),
             """\
@@ -269,9 +263,7 @@ RuleBlock: rb
         """Test terms are exported."""
         term = fl.Triangle("A", 0.0, 1.0, 2.0, 0.5)
         self.assertEqual(fl.FllExporter().to_string(term), fl.FllExporter().term(term))
-        self.assertEqual(
-            fl.FllExporter().term(term), "term: A Triangle 0.000 1.000 2.000 0.500"
-        )
+        self.assertEqual(fl.FllExporter().term(term), "term: A Triangle 0.000 1.000 2.000 0.500")
 
     def test_rule(self) -> None:
         """Test rules are exported."""
@@ -321,9 +313,7 @@ class TestPythonExporter(unittest.TestCase):
         """Display the entire diff in tests."""
         self.maxDiff = None
 
-    def assert_that(
-        self, instance: Any, expected: str, encapsulated: str | None = None
-    ) -> None:
+    def assert_that(self, instance: Any, expected: str, encapsulated: str | None = None) -> None:
         """Assert helper to compare the Python code of the instance against what is expected, plus other tests."""
         exporter = fl.PythonExporter()
         obtained = exporter.to_string(instance)
@@ -363,17 +353,13 @@ def create() -> {return_type}:
             elif isinstance(instance, fl.InputVariable):
                 self.assertEqual(expected, exporter.input_variable(instance))
                 self.assertEqual(
-                    expected_encapsulated(
-                        return_type="fl.InputVariable", code=expected
-                    ),
+                    expected_encapsulated(return_type="fl.InputVariable", code=expected),
                     obtained_encapsulated,
                 )
             elif isinstance(instance, fl.OutputVariable):
                 self.assertEqual(expected, exporter.output_variable(instance))
                 self.assertEqual(
-                    expected_encapsulated(
-                        return_type="fl.OutputVariable", code=expected
-                    ),
+                    expected_encapsulated(return_type="fl.OutputVariable", code=expected),
                     obtained_encapsulated,
                 )
             elif isinstance(instance, fl.RuleBlock):
@@ -480,9 +466,7 @@ class ChooChoo:
     def test_engine(self) -> None:
         """Test a basic engine is exported."""
         engine = mamdani.simple_dimmer.SimpleDimmer().engine
-        self.assertEqual(
-            fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine)
-        )
+        self.assertEqual(fl.PythonExporter().to_string(engine), fl.PythonExporter().engine(engine))
         constructor = """\
 fl.Engine(
     name="SimpleDimmer",
@@ -678,9 +662,7 @@ fl.RuleBlock(
         self.assert_that(fl.Centroid(), "fl.Centroid()\n")
         self.assert_that(fl.Centroid(resolution=100), "fl.Centroid(resolution=100)\n")
         self.assert_that(fl.WeightedSum(), "fl.WeightedSum()\n")
-        self.assert_that(
-            fl.WeightedSum("TakagiSugeno"), 'fl.WeightedSum(type="TakagiSugeno")\n'
-        )
+        self.assert_that(fl.WeightedSum("TakagiSugeno"), 'fl.WeightedSum(type="TakagiSugeno")\n')
 
     def test_object(self) -> None:
         """Test objects are exported with `repr`."""
@@ -689,9 +671,7 @@ fl.RuleBlock(
         with self.assertRaises(ValueError) as error:
             fl.PythonExporter().to_string(object())
         self.assertEqual(error.exception.__class__, InvalidInput)
-        self.assertTrue(
-            str(error.exception).startswith("Cannot parse: 1:0: <object object at ")
-        )
+        self.assertTrue(str(error.exception).startswith("Cannot parse: 1:0: <object object at "))
 
 
 class TestFldExporter(unittest.TestCase):
@@ -739,9 +719,7 @@ class TestFldExporter(unittest.TestCase):
 
         # input and output values
         writer = io.StringIO()
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         fl.FldExporter(input_values=True, output_values=True, headers=False).write(
             engine,
             writer,
@@ -827,9 +805,7 @@ class TestFldExporter(unittest.TestCase):
 
     def test_write_from_reader(self) -> None:
         """Test exporter can read an FLD and export it again."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         reader = """\
 Ambient Power
 0.000000000 nan
@@ -840,18 +816,14 @@ Ambient Power
 0.510742188 0.484743908
 """
         # Fails with headers
-        with self.assertRaisesRegex(
-            ValueError, r"could not convert string to float: 'Ambient'"
-        ):
+        with self.assertRaisesRegex(ValueError, r"could not convert string to float: 'Ambient'"):
             fl.FldExporter().write_from_reader(
                 engine, io.StringIO(), io.StringIO(reader), skip_lines=0
             )
 
         # Success skipping headers
         writer = io.StringIO()
-        fl.FldExporter().write_from_reader(
-            engine, writer, io.StringIO(reader), skip_lines=1
-        )
+        fl.FldExporter().write_from_reader(engine, writer, io.StringIO(reader), skip_lines=1)
         self.assertEqual(
             """\
 Ambient Power
@@ -864,9 +836,7 @@ Ambient Power
 
     def test_to_file_from_reader(self) -> None:
         """Test exporter can read file and export it using default decimals."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         reader = """\
     Ambient Power
     0.000000000 nan
@@ -878,9 +848,7 @@ Ambient Power
     """
 
         file_name = (
-            "file-"
-            + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
-            + ".fld"
+            "file-" + "".join(random.choice(string.ascii_lowercase) for _ in range(5)) + ".fld"
         )
         fl.FldExporter().to_file_from_reader(
             Path(file_name), engine, io.StringIO(reader), skip_lines=1
@@ -900,9 +868,7 @@ Ambient Power
 
     def test_to_string_from_reader(self) -> None:
         """Test exporter can read from a reader and export to a string."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         reader = """\
         Ambient Power
         0.000000000 nan
@@ -913,9 +879,7 @@ Ambient Power
         0.510742188 0.484743908
         """
 
-        obtained = fl.FldExporter().to_string_from_reader(
-            engine, io.StringIO(reader), skip_lines=1
-        )
+        obtained = fl.FldExporter().to_string_from_reader(engine, io.StringIO(reader), skip_lines=1)
         self.assertEqual(
             """\
 Ambient Power
@@ -928,9 +892,7 @@ Ambient Power
 
     def test_write_from_scope_each_variable_1(self) -> None:
         """Test exporter can write from a specific scope of specific variables."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -955,9 +917,7 @@ Ambient Power
         """Test the exporter cannot export an empty engine."""
         engine = fl.Engine()
         writer = io.StringIO()
-        with self.assertRaisesRegex(
-            ValueError, "expected input variables in engine, but got none"
-        ):
+        with self.assertRaisesRegex(ValueError, "expected input variables in engine, but got none"):
             fl.FldExporter().write_from_scope(
                 engine,
                 writer,
@@ -968,9 +928,7 @@ Ambient Power
 
     def test_write_from_scope_all_variables_1(self) -> None:
         """Test the exporter can export the values of all variables in the AllVariables scope."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
         writer = io.StringIO()
         fl.FldExporter().write_from_scope(
             engine,
@@ -1121,14 +1079,10 @@ service food mTip tsTip
 
     def test_to_file_from_scope(self) -> None:
         """Test the exporter can export the values to a file from EachVariable scope."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
 
         file_name = (
-            "file-"
-            + "".join(random.choice(string.ascii_lowercase) for _ in range(5))
-            + ".fld"
+            "file-" + "".join(random.choice(string.ascii_lowercase) for _ in range(5)) + ".fld"
         )
 
         fl.FldExporter().to_file_from_scope(
@@ -1156,9 +1110,7 @@ Ambient Power
 
     def test_to_string_from_scope(self) -> None:
         """Test the exporter can export the values to a file from AllVariables scope."""
-        engine = fl.FllImporter().from_string(
-            str(mamdani.simple_dimmer.SimpleDimmer().engine)
-        )
+        engine = fl.FllImporter().from_string(str(mamdani.simple_dimmer.SimpleDimmer().engine))
 
         obtained = fl.FldExporter().to_string_from_scope(
             engine,
@@ -1180,9 +1132,7 @@ Ambient Power
 
     def test_to_string(self) -> None:
         """Test the exporter can export to string."""
-        with self.assertRaisesRegex(
-            ValueError, "expected an Engine, but got InputVariable"
-        ):
+        with self.assertRaisesRegex(ValueError, "expected an Engine, but got InputVariable"):
             fl.FldExporter().to_string(fl.InputVariable())
 
         engine = fl.FllImporter().from_string(
@@ -1214,12 +1164,8 @@ class TestExporters(unittest.TestCase):
         with fl.settings.context(decimals=9):
             modules = [module for module in fl.Op.glob_examples("module")]
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                threads = [
-                    executor.submit(TestExporters.export, module) for module in modules
-                ]
-            concurrent.futures.wait(
-                threads, return_when=concurrent.futures.FIRST_EXCEPTION
-            )
+                threads = [executor.submit(TestExporters.export, module) for module in modules]
+            concurrent.futures.wait(threads, return_when=concurrent.futures.FIRST_EXCEPTION)
             for t in threads:
                 print(t.result())
 
@@ -1257,9 +1203,7 @@ class TestExporters(unittest.TestCase):
             target_path.mkdir(parents=True, exist_ok=True)
             fl.settings.logger.info(str(package) + f" -> {fl.Op.class_name(exporter)}")
             if isinstance(exporter, fl.FldExporter):
-                exporter.to_file_from_scope(
-                    target_path / (file_name + ".fld"), engine, 1024
-                )
+                exporter.to_file_from_scope(target_path / (file_name + ".fld"), engine, 1024)
 
             elif isinstance(exporter, fl.FllExporter):
                 exporter.to_file(target_path / (file_name + ".fll"), engine)
@@ -1268,8 +1212,7 @@ class TestExporters(unittest.TestCase):
                 exporter.to_file(target_path / (file_name + ".py"), engine)
 
             fl.settings.logger.info(
-                str(package)
-                + f" -> {fl.Op.class_name(exporter)}\t{time.time() - start}"
+                str(package) + f" -> {fl.Op.class_name(exporter)}\t{time.time() - start}"
             )
 
 

@@ -6,18 +6,10 @@ class Slcp1:
         self.engine = fl.Engine(
             name="slcp1",
             input_variables=[
-                fl.InputVariable(
-                    name="in1", minimum=-0.3, maximum=0.3, lock_range=False, terms=[]
-                ),
-                fl.InputVariable(
-                    name="in2", minimum=-1.0, maximum=1.0, lock_range=False, terms=[]
-                ),
-                fl.InputVariable(
-                    name="in3", minimum=-3.0, maximum=3.0, lock_range=False, terms=[]
-                ),
-                fl.InputVariable(
-                    name="in4", minimum=-3.0, maximum=3.0, lock_range=False, terms=[]
-                ),
+                fl.InputVariable(name="in1", minimum=-0.3, maximum=0.3, lock_range=False, terms=[]),
+                fl.InputVariable(name="in2", minimum=-1.0, maximum=1.0, lock_range=False, terms=[]),
+                fl.InputVariable(name="in3", minimum=-3.0, maximum=3.0, lock_range=False, terms=[]),
+                fl.InputVariable(name="in4", minimum=-3.0, maximum=3.0, lock_range=False, terms=[]),
                 fl.InputVariable(
                     name="in5",
                     minimum=0.5,
