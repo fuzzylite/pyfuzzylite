@@ -377,19 +377,20 @@ class PythonExporter(Exporter):
         self.formatted = formatted
         self.encapsulated = encapsulated
 
-    def format(self, code: str) -> str:
+    def format(self, code: str, **kwargs: Any) -> str:
         """Format the code using the `black` formatter if it is installed, otherwise no effects on the code.
 
         Args:
             code: code to format.
-
+            **kwargs: keyword arguments to pass to `black.Mode`
         Returns:
             code formatted if `black` is installed, otherwise the code without format
         """
+        kwargs = {"line_length": 100} | kwargs
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode())
+            return black.format_str(code, mode=black.Mode(**kwargs))
         except ModuleNotFoundError:
             settings.logger.error("expected `black` module to be installed, but could not be found")
         except ValueError:  # black.parsing.InvalidInput
