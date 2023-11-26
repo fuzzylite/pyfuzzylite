@@ -146,9 +146,9 @@ class TestHedge(unittest.TestCase):
 
     def test_function(self) -> None:
         """Test the Function hedge."""
-        HedgeAssert(
-            self, fl.HedgeFunction(fl.Function.create("my_hedge", "x**2"))
-        ).has_name("my_hedge").evaluates(
+        HedgeAssert(self, fl.HedgeFunction(fl.Function.create("my_hedge", "x**2"))).has_name(
+            "my_hedge"
+        ).evaluates(
             {
                 -1.0: 1.0,
                 -0.5: 0.25,

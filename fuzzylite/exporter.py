@@ -266,8 +266,7 @@ class FllExporter(Exporter):
         result = [self.variable(variable, terms=False)]
         result += [
             self.indent + self.format("aggregation", self.norm(variable.aggregation)),
-            self.indent
-            + self.format("defuzzifier", self.defuzzifier(variable.defuzzifier)),
+            self.indent + self.format("defuzzifier", self.defuzzifier(variable.defuzzifier)),
             self.indent + self.format("default", variable.default_value),
             self.indent + self.format("lock-previous", variable.lock_previous),
         ]
@@ -292,8 +291,7 @@ class FllExporter(Exporter):
             self.indent + self.format("conjunction", self.norm(rule_block.conjunction)),
             self.indent + self.format("disjunction", self.norm(rule_block.disjunction)),
             self.indent + self.format("implication", self.norm(rule_block.implication)),
-            self.indent
-            + self.format("activation", self.activation(rule_block.activation)),
+            self.indent + self.format("activation", self.activation(rule_block.activation)),
         ]
         if rule_block.rules:
             result += [self.indent + self.rule(rule) for rule in rule_block.rules]
@@ -335,9 +333,7 @@ class FllExporter(Exporter):
         """
         if not activation:
             return "none"
-        return self.format(
-            key=None, value=(Op.class_name(activation), activation.parameters())
-        )
+        return self.format(key=None, value=(Op.class_name(activation), activation.parameters()))
 
     def defuzzifier(self, defuzzifier: Defuzzifier | None, /) -> str:
         """Return the defuzzifier in the FuzzyLite Language.
@@ -350,9 +346,7 @@ class FllExporter(Exporter):
         """
         if not defuzzifier:
             return "none"
-        return self.format(
-            key=None, value=(Op.class_name(defuzzifier), defuzzifier.parameters())
-        )
+        return self.format(key=None, value=(Op.class_name(defuzzifier), defuzzifier.parameters()))
 
     def rule(self, rule: Rule, /) -> str:
         """Return the rule in the FuzzyLite Language.
@@ -383,23 +377,22 @@ class PythonExporter(Exporter):
         self.formatted = formatted
         self.encapsulated = encapsulated
 
-    def format(self, code: str) -> str:
+    def format(self, code: str, **kwargs: Any) -> str:
         """Format the code using the `black` formatter if it is installed, otherwise no effects on the code.
 
         Args:
             code: code to format.
-
+            **kwargs: keyword arguments to pass to `black.Mode`
         Returns:
             code formatted if `black` is installed, otherwise the code without format
         """
+        kwargs = {"line_length": 100} | kwargs
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode())
+            return black.format_str(code, mode=black.Mode(**kwargs))
         except ModuleNotFoundError:
-            settings.logger.error(
-                "expected `black` module to be installed, but could not be found"
-            )
+            settings.logger.error("expected `black` module to be installed, but could not be found")
         except ValueError:  # black.parsing.InvalidInput
             raise
         return code
@@ -689,17 +682,13 @@ class FldExporter(Exporter):
         if scope == FldExporter.ScopeOfValues.AllVariables:
             if len(engine.input_variables) == 0:
                 raise ValueError("expected input variables in engine, but got none")
-            resolution = -1 + max(
-                1, int(pow(values, (1.0 / len(engine.input_variables))))
-            )
+            resolution = -1 + max(1, int(pow(values, (1.0 / len(engine.input_variables)))))
         else:
             resolution = values - 1
 
         sample_values = [0] * len(engine.input_variables)
         min_values = [0] * len(engine.input_variables)
-        max_values = [
-            resolution if iv in active_variables else 0 for iv in engine.input_variables
-        ]
+        max_values = [resolution if iv in active_variables else 0 for iv in engine.input_variables]
 
         input_values: list[list[float]] = []
         incremented = True
@@ -716,9 +705,7 @@ class FldExporter(Exporter):
             incremented = Op.increment(sample_values, min_values, max_values)
         self.write(engine, writer, np.array(input_values))
 
-    def to_string_from_reader(
-        self, engine: Engine, reader: IO[str], skip_lines: int = 0
-    ) -> str:
+    def to_string_from_reader(self, engine: Engine, reader: IO[str], skip_lines: int = 0) -> str:
         """Return a FuzzyLite Dataset from the engine using the input values from the reader.
 
         Args:

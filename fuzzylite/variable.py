@@ -168,9 +168,7 @@ class Variable:
         for term in self.terms:
             if term.name == name_or_index:
                 return term
-        raise ValueError(
-            f"term '{name_or_index}' not found in {[t.name for t in self.terms]}"
-        )
+        raise ValueError(f"term '{name_or_index}' not found in {[t.name for t in self.terms]}")
 
     @property
     def drange(self) -> float:
@@ -233,9 +231,7 @@ class Variable:
         Args:
             value: value of the variable
         """
-        self._value = (
-            np.clip(value, self.minimum, self.maximum) if self.lock_range else value
-        )
+        self._value = np.clip(value, self.minimum, self.maximum) if self.lock_range else value
 
     def fuzzify(self, x: Scalar) -> str:
         r"""Return the fuzzy representation of $x$.
@@ -531,8 +527,7 @@ class OutputVariable(Variable):
 
         if not self.defuzzifier:
             raise ValueError(
-                f"expected a defuzzifier in output variable '{self.name}', "
-                "but found None"
+                f"expected a defuzzifier in output variable '{self.name}', but found None"
             )
         # value at t+1
         value = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)

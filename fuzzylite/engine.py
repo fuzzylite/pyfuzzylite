@@ -126,9 +126,7 @@ class Engine:
                 return component(item)  # type: ignore
             except:  # noqa
                 pass
-        raise ValueError(
-            f"engine '{self.name}' does not have a component named '{item}'"
-        )
+        raise ValueError(f"engine '{self.name}' does not have a component named '{item}'")
 
     def __str__(self) -> str:
         """Return the code to construct the engine in the FuzzyLite Language.
@@ -219,9 +217,7 @@ class Engine:
         for variable in self.variables:
             if variable.name == name:
                 return variable
-        raise ValueError(
-            f"variable '{name}' not found in {[v.name for v in self.variables]}"
-        )
+        raise ValueError(f"variable '{name}' not found in {[v.name for v in self.variables]}")
 
     def input_variable(self, name_or_index: str | int, /) -> InputVariable:
         """Find the input variable by the name or index.
@@ -352,9 +348,7 @@ class Engine:
             ValueError: when the number of columns in the values is different from the number of input variables
         """
         if not self.input_variables:
-            raise RuntimeError(
-                "can't set input values to an engine without input variables"
-            )
+            raise RuntimeError("can't set input values to an engine without input variables")
         if values.ndim == 0:
             # all variables set their value to the same
             values = np.full((1, len(self.input_variables)), fill_value=values.item())
@@ -472,16 +466,10 @@ class Engine:
             errors.append(f"Engine '{self.name}' does not have any output variables")
         for variable in self.output_variables:
             if not variable.terms:
-                errors.append(
-                    f"Output variable '{variable.name}' does not have any terms"
-                )
+                errors.append(f"Output variable '{variable.name}' does not have any terms")
             if not variable.defuzzifier:
-                errors.append(
-                    f"Output variable '{variable.name}' does not have any defuzzifier"
-                )
-            if not variable.aggregation and isinstance(
-                variable.defuzzifier, IntegralDefuzzifier
-            ):
+                errors.append(f"Output variable '{variable.name}' does not have any defuzzifier")
+            if not variable.aggregation and isinstance(variable.defuzzifier, IntegralDefuzzifier):
                 errors.append(
                     f"Output variable '{variable.name}' does not have any aggregation operator"
                 )
@@ -504,9 +492,7 @@ class Engine:
                     for consequent in rule.consequent.conclusions:
                         mamdani_consequents += isinstance(
                             consequent.variable, OutputVariable
-                        ) and isinstance(
-                            consequent.variable.defuzzifier, IntegralDefuzzifier
-                        )
+                        ) and isinstance(consequent.variable.defuzzifier, IntegralDefuzzifier)
                     implication_needed += mamdani_consequents > 0
 
             if conjunction_needed and not rule_block.conjunction:
@@ -573,26 +559,18 @@ class Engine:
         # Takagi-Sugeno
         takagi_sugeno = all(
             isinstance(variable.defuzzifier, WeightedDefuzzifier)
-            and (
-                variable.defuzzifier.infer_type(variable)
-                == WeightedDefuzzifier.Type.TakagiSugeno
-            )
+            and (variable.defuzzifier.infer_type(variable) == WeightedDefuzzifier.Type.TakagiSugeno)
             for variable in self.output_variables
         )
         if takagi_sugeno:
             reasons.append("Output variables have weighted defuzzifiers")
-            reasons.append(
-                "Output variables only have Constant, Linear, or Function terms"
-            )
+            reasons.append("Output variables only have Constant, Linear, or Function terms")
             return Engine.Type.TakagiSugeno
 
         # Tsukamoto
         tsukamoto = all(
             isinstance(variable.defuzzifier, WeightedDefuzzifier)
-            and (
-                variable.defuzzifier.infer_type(variable)
-                == WeightedDefuzzifier.Type.Tsukamoto
-            )
+            and (variable.defuzzifier.infer_type(variable) == WeightedDefuzzifier.Type.Tsukamoto)
             for variable in self.output_variables
         )
         if tsukamoto:
@@ -603,10 +581,7 @@ class Engine:
         # Inverse Tsukamoto
         inverse_tsukamoto = all(
             isinstance(variable.defuzzifier, WeightedDefuzzifier)
-            and (
-                variable.defuzzifier.infer_type(variable)
-                == WeightedDefuzzifier.Type.Automatic
-            )
+            and (variable.defuzzifier.infer_type(variable) == WeightedDefuzzifier.Type.Automatic)
             for variable in self.output_variables
         )
         if inverse_tsukamoto:

@@ -137,15 +137,12 @@ class ConstructionFactory(Generic[T]):
 
         def constructable(obj: type[T]) -> bool:
             try:
-                return (
-                    issubclass(obj, cls) and not inspect.isabstract(obj) and bool(obj())
-                )
+                return issubclass(obj, cls) and not inspect.isabstract(obj) and bool(obj())
             except:  # noqa: E722
                 return False
 
         constructors = [
-            constructor
-            for _, constructor in inspect.getmembers(module, predicate=constructable)
+            constructor for _, constructor in inspect.getmembers(module, predicate=constructable)
         ]
         return constructors
 
@@ -263,9 +260,7 @@ class ActivationFactory(ConstructionFactory[Activation]):
         """Constructor."""
         from . import activation
 
-        activations = {
-            Op.class_name(a): a for a in self.import_from(activation, Activation)
-        }
+        activations = {Op.class_name(a): a for a in self.import_from(activation, Activation)}
         super().__init__(constructors=activations)
 
 
@@ -282,9 +277,7 @@ class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
         """Constructor."""
         from . import defuzzifier
 
-        defuzzifiers = {
-            Op.class_name(d): d for d in self.import_from(defuzzifier, Defuzzifier)
-        }
+        defuzzifiers = {Op.class_name(d): d for d in self.import_from(defuzzifier, Defuzzifier)}
         super().__init__(constructors=defuzzifiers)
 
 
@@ -373,8 +366,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
     def __init__(self) -> None:
         """Constructor."""
         elements = {
-            element.name: element
-            for element in self._create_operators() + self._create_functions()
+            element.name: element for element in self._create_operators() + self._create_functions()
         }
         super().__init__(objects=elements)
 
@@ -810,9 +802,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
              dictionary of the operators available.
         """
         result = {
-            key: prototype
-            for key, prototype in self.objects.items()
-            if prototype.is_operator()
+            key: prototype for key, prototype in self.objects.items() if prototype.is_operator()
         }
         return result
 
@@ -823,9 +813,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
             dictionary of the functions available.
         """
         result = {
-            key: prototype
-            for key, prototype in self.objects.items()
-            if prototype.is_function()
+            key: prototype for key, prototype in self.objects.items() if prototype.is_function()
         }
         return result
 

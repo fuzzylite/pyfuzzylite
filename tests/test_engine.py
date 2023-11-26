@@ -53,9 +53,7 @@ class EngineAssert(BaseAssert[fl.Engine]):
             self.test.assertEqual(obtained_reasons, reasons)
         return self
 
-    def is_ready(
-        self, expected: bool = True, /, reasons: list[str] | None = None
-    ) -> Self:
+    def is_ready(self, expected: bool = True, /, reasons: list[str] | None = None) -> Self:
         """Test engine is ready."""
         obtained_reasons: list[str] = []
         obtained = self.actual.is_ready(obtained_reasons)
@@ -67,51 +65,37 @@ class EngineAssert(BaseAssert[fl.Engine]):
     def has_n_inputs(self, n: int) -> Self:
         """Asserts the engine has the expected number of input variables."""
         n_inputs = len(self.actual.input_variables)
-        self.test.assertEqual(
-            n_inputs, n, f"expected {n} input variables, but found {n_inputs}"
-        )
+        self.test.assertEqual(n_inputs, n, f"expected {n} input variables, but found {n_inputs}")
         return self
 
     def has_inputs(self, names: list[str]) -> Self:
         """Asserts the engine has the expected input variables by name."""
-        self.test.assertSequenceEqual(
-            [iv.name for iv in self.actual.input_variables], names
-        )
+        self.test.assertSequenceEqual([iv.name for iv in self.actual.input_variables], names)
         return self
 
     def has_n_outputs(self, n: int) -> Self:
         """Asserts the engine has the expected number of output variables."""
         n_outputs = len(self.actual.output_variables)
-        self.test.assertEqual(
-            n_outputs, n, f"expected {n} output variables, but found {n_outputs}"
-        )
+        self.test.assertEqual(n_outputs, n, f"expected {n} output variables, but found {n_outputs}")
         return self
 
     def has_outputs(self, names: list[str]) -> Self:
         """Asserts the engine has the expected output variables by name."""
-        self.test.assertSequenceEqual(
-            [ov.name for ov in self.actual.output_variables], names
-        )
+        self.test.assertSequenceEqual([ov.name for ov in self.actual.output_variables], names)
         return self
 
     def has_n_blocks(self, n: int) -> Self:
         """Asserts the engine has the expected number of rule blocks."""
         n_blocks = len(self.actual.rule_blocks)
-        self.test.assertEqual(
-            n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}"
-        )
+        self.test.assertEqual(n_blocks, n, f"expected {n} rule blocks, but found {n_blocks}")
         return self
 
     def has_blocks(self, names: list[str]) -> Self:
         """Asserts the engine has the expected number of rule blocks by name."""
-        self.test.assertSequenceEqual(
-            [rb.name for rb in self.actual.rule_blocks], names
-        )
+        self.test.assertSequenceEqual([rb.name for rb in self.actual.rule_blocks], names)
         return self
 
-    def when_input_values(
-        self, x: fl.ScalarArray, /, raises: Exception | None = None
-    ) -> Self:
+    def when_input_values(self, x: fl.ScalarArray, /, raises: Exception | None = None) -> Self:
         """Sets the input values of the engine."""
         if raises:
             with self.test.assertRaises(type(raises)) as error:
@@ -171,13 +155,9 @@ class TestEngine(unittest.TestCase):
     def test_empty_engine(self) -> None:
         """Tests the empty engine."""
         flc = fl.Engine("name", "description")
-        EngineAssert(self, flc).has_name("name").has_description(
-            "description"
-        ).has_n_inputs(0).has_inputs([]).has_n_outputs(0).has_outputs([]).has_n_blocks(
+        EngineAssert(self, flc).has_name("name").has_description("description").has_n_inputs(
             0
-        ).has_blocks(
-            []
-        )
+        ).has_inputs([]).has_n_outputs(0).has_outputs([]).has_n_blocks(0).has_blocks([])
 
     def test_engine(self) -> None:
         """Tests a basic engine."""
@@ -245,13 +225,9 @@ class TestEngine(unittest.TestCase):
         mamdani.implication = fl.Minimum()
         mamdani.activation = fl.General()
         mamdani.rules.append(
-            fl.Rule.create(
-                "if service is poor or food is rancid then mTip is cheap", engine
-            )
+            fl.Rule.create("if service is poor or food is rancid then mTip is cheap", engine)
         )
-        mamdani.rules.append(
-            fl.Rule.create("if service is good then mTip is average", engine)
-        )
+        mamdani.rules.append(fl.Rule.create("if service is good then mTip is average", engine))
         mamdani.rules.append(
             fl.Rule.create(
                 "if service is excellent or food is delicious then mTip is generous with 0.5",
@@ -275,9 +251,7 @@ class TestEngine(unittest.TestCase):
         takagiSugeno.implication = None
         takagiSugeno.activation = fl.General()
         takagiSugeno.rules.append(
-            fl.Rule.create(
-                "if service is poor or food is rancid then tsTip is cheap", engine
-            )
+            fl.Rule.create("if service is poor or food is rancid then tsTip is cheap", engine)
         )
         takagiSugeno.rules.append(
             fl.Rule.create("if service is good then tsTip is average", engine)
@@ -334,12 +308,10 @@ class TestEngine(unittest.TestCase):
 
     def test_inputs(self) -> None:
         """Tests the input variables of an engine."""
-        flc = fl.Engine(
-            "name", "description", [fl.InputVariable("A"), fl.InputVariable("B")]
-        )
-        EngineAssert(self, flc).has_name("name").has_description(
-            "description"
-        ).has_n_inputs(2).has_inputs(["A", "B"])
+        flc = fl.Engine("name", "description", [fl.InputVariable("A"), fl.InputVariable("B")])
+        EngineAssert(self, flc).has_name("name").has_description("description").has_n_inputs(
+            2
+        ).has_inputs(["A", "B"])
 
         flc.input_variables = []
         EngineAssert(self, flc).has_n_inputs(0).has_inputs([])
@@ -357,12 +329,10 @@ class TestEngine(unittest.TestCase):
 
     def test_outputs(self) -> None:
         """Tests the output variables of an engine."""
-        flc = fl.Engine(
-            "name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")]
-        )
-        EngineAssert(self, flc).has_name("name").has_description(
-            "description"
-        ).has_n_outputs(2).has_outputs(["A", "B"])
+        flc = fl.Engine("name", "description", [], [fl.OutputVariable("A"), fl.OutputVariable("B")])
+        EngineAssert(self, flc).has_name("name").has_description("description").has_n_outputs(
+            2
+        ).has_outputs(["A", "B"])
 
         flc.output_variables = []
         EngineAssert(self, flc).has_n_outputs(0).has_outputs([])
@@ -405,9 +375,7 @@ class TestEngine(unittest.TestCase):
         """Tests the setter of input values through the engine."""
         EngineAssert(
             self, fl.Engine("1 input", input_variables=[fl.InputVariable("A")])
-        ).when_input_values(fl.array(1.0)).then_input_variables(
-            {"A": 1.0}
-        ).when_input_values(
+        ).when_input_values(fl.array(1.0)).then_input_variables({"A": 1.0}).when_input_values(
             fl.array([1, 2, 3, 4])
         ).then_input_variables(
             {"A": fl.array([1, 2, 3, 4])}
@@ -424,9 +392,7 @@ class TestEngine(unittest.TestCase):
         ## Single value
         e2.when_input_values(fl.array(1.0)).then_input_variables({"A": 1.0, "B": 1.0})
         ## 1D array
-        e2.when_input_values(fl.array([1, -1])).then_input_variables(
-            {"A": 1.0, "B": -1.0}
-        )
+        e2.when_input_values(fl.array([1, -1])).then_input_variables({"A": 1.0, "B": -1.0})
         ## 2D array
         e2.when_input_values(
             fl.array(
@@ -441,9 +407,7 @@ class TestEngine(unittest.TestCase):
         ## Errors:
         EngineAssert(self, fl.Engine()).when_input_values(
             fl.array(1.0),
-            raises=RuntimeError(
-                "can't set input values to an engine without input variables"
-            ),
+            raises=RuntimeError("can't set input values to an engine without input variables"),
         )
         e2.when_input_values(
             fl.array([[[1.0]]]),
@@ -515,9 +479,7 @@ RuleBlock:
         engine = fl.FllImporter().from_string(fll)
         engine.input_values = fl.array([0.75, 1.0, 0.75])
         engine.process()
-        self.assertEqual(
-            "1.000/negative + 1.000/positive", engine.output_variable(0).fuzzy_value()
-        )
+        self.assertEqual("1.000/negative + 1.000/positive", engine.output_variable(0).fuzzy_value())
         # new behaviour
         np.testing.assert_allclose(
             0,
@@ -547,9 +509,7 @@ RuleBlock:
         # Non-existing component by name
         with self.assertRaises(AttributeError) as error:
             engine.Variable  # type: ignore
-        self.assertEqual(
-            "'Engine' object has no attribute 'Variable'", str(error.exception)
-        )
+        self.assertEqual("'Engine' object has no attribute 'Variable'", str(error.exception))
 
         # engine's members are retrieved first
         engine.name = "Test my name"
@@ -624,9 +584,7 @@ RuleBlock:
                 "test",
                 input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
                 output_variables=[
-                    fl.OutputVariable(
-                        "Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.Centroid()
-                    ),
+                    fl.OutputVariable("Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.Centroid()),
                 ],
                 rule_blocks=[
                     fl.RuleBlock(
@@ -655,9 +613,7 @@ RuleBlock:
                 "test",
                 input_variables=[fl.InputVariable("A", terms=[fl.Arc("a", 1, 0)])],
                 output_variables=[
-                    fl.OutputVariable(
-                        "Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.WeightedSum()
-                    ),
+                    fl.OutputVariable("Z", terms=[fl.Arc("z", 0, 1)], defuzzifier=fl.WeightedSum()),
                 ],
                 rule_blocks=[
                     fl.RuleBlock(
@@ -685,9 +641,7 @@ RuleBlock:
             fl.Engine.Type.Unknown, ["Engine 'test' does not have any output variables"]
         )
 
-        EngineAssert(
-            self, fl.Engine("test", output_variables=[fl.OutputVariable("Z")])
-        ).has_type(
+        EngineAssert(self, fl.Engine("test", output_variables=[fl.OutputVariable("Z")])).has_type(
             fl.Engine.Type.Unknown,
             ["One or more output variables do not have a defuzzifier"],
         )
@@ -699,9 +653,7 @@ RuleBlock:
                 "test",
                 output_variables=[fl.OutputVariable("Z", defuzzifier=fl.Centroid())],
             ),
-        ).has_type(
-            fl.Engine.Type.Mamdani, ["Output variables have integral defuzzifiers"]
-        )
+        ).has_type(fl.Engine.Type.Mamdani, ["Output variables have integral defuzzifiers"])
 
         # Larsen
         EngineAssert(
@@ -794,9 +746,7 @@ RuleBlock:
                         terms=[fl.Triangle()],
                         defuzzifier=fl.Centroid(),
                     ),
-                    fl.OutputVariable(
-                        "Z2", terms=[fl.Linear()], defuzzifier=fl.WeightedAverage()
-                    ),
+                    fl.OutputVariable("Z2", terms=[fl.Linear()], defuzzifier=fl.WeightedAverage()),
                 ],
             ),
         ).has_type(
@@ -808,9 +758,7 @@ RuleBlock:
         """Test types of engines from examples."""
         # Mamdani
         for engine in fl.Op.glob_examples("engine", fl.examples.mamdani):
-            EngineAssert(self, engine).has_type(
-                {fl.Engine.Type.Mamdani, fl.Engine.Type.Larsen}
-            )
+            EngineAssert(self, engine).has_type({fl.Engine.Type.Mamdani, fl.Engine.Type.Larsen})
         # TakagiSugeno
         for engine in fl.Op.glob_examples("engine", fl.examples.takagi_sugeno):
             EngineAssert(self, engine).has_type(fl.Engine.Type.TakagiSugeno)
@@ -1006,9 +954,7 @@ RuleBlock:
             self.assertTrue(output_variable.fuzzy.terms)
             for index, activated in enumerate(output_variable.fuzzy.terms):
                 self.assertEqual(id(activated.term), id(output_variable.term(index)))
-                self.assertEqual(
-                    id(engine_copy), id(cast(fl.Linear, activated.term).engine)
-                )
+                self.assertEqual(id(engine_copy), id(cast(fl.Linear, activated.term).engine))
 
 
 if __name__ == "__main__":

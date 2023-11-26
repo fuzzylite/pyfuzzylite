@@ -87,6 +87,7 @@ nox = "~=2023.4.22" # Command-line build management
 
 [tool.black]
 target-version = ["py39"]
+line-length = 100
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
@@ -185,7 +186,7 @@ unfixable = [
 exclude = []
 
 # Same as Black.
-line-length = 88
+line-length = 100
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"

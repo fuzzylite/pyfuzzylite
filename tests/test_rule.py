@@ -66,9 +66,7 @@ class TestExpression(unittest.TestCase):
 
         self.assertEqual("variable is very term", str(proposition))
 
-        proposition = fl.Proposition(
-            fl.Variable("variable"), [fl.Very()], fl.Triangle("term")
-        )
+        proposition = fl.Proposition(fl.Variable("variable"), [fl.Very()], fl.Triangle("term"))
         self.assertEqual("variable is very term", str(proposition))
 
     def test_operator(self) -> None:
@@ -109,9 +107,7 @@ class AssertAntecedent:
         antecedent = fl.Antecedent(text)
         antecedent.load(self.engine)
         self.test.assertTrue(antecedent.is_loaded())
-        self.test.assertTrue(
-            postfix or prefix or infix, "expected one of {postfix, prefix, infix}"
-        )
+        self.test.assertTrue(postfix or prefix or infix, "expected one of {postfix, prefix, infix}")
         if postfix:
             self.test.assertEqual(postfix, antecedent.postfix(antecedent.expression))
         if prefix:
@@ -201,9 +197,7 @@ class TestAntecedent(unittest.TestCase):
             "Ambient is very DARK", infix="Ambient is very DARK"
         )
 
-        AssertAntecedent(self, engine).can_load_antecedent(
-            "Ambient is any", infix="Ambient is any"
-        )
+        AssertAntecedent(self, engine).can_load_antecedent("Ambient is any", infix="Ambient is any")
 
     def test_antecedent_load_input_variables_connectors(self) -> None:
         """Test antecedents can be loaded with input variables."""
@@ -567,9 +561,7 @@ class AssertConsequent:
         for variable in expected:
             expected_terms = {t.term.name: t.degree for t in expected[variable]}
             obtained_terms = {t.term.name: t.degree for t in variable.fuzzy.terms}
-            self.test.assertSetEqual(
-                set(expected_terms.keys()), set(obtained_terms.keys())
-            )
+            self.test.assertSetEqual(set(expected_terms.keys()), set(obtained_terms.keys()))
 
             for expected_term, expected_activation in expected_terms.items():
                 obtained_activation = obtained_terms[expected_term]
@@ -627,9 +619,7 @@ class TestConsequent(unittest.TestCase):
         """Test the consequent can have `and` connectors."""
         engine = fl.FllImporter().from_string(SimpleDimmer)
 
-        AssertConsequent(self, engine).can_load_consequent(
-            "Power is HIGH and Power is HIGH"
-        )
+        AssertConsequent(self, engine).can_load_consequent("Power is HIGH and Power is HIGH")
 
         AssertConsequent(self, engine).can_load_consequent(
             "Power is very HIGH and Power is very HIGH"
@@ -811,18 +801,14 @@ class TestRule(unittest.TestCase):
         """Test that rules can be parsed."""
         RuleAssert(self).can_parse_rule("if a then b")
         RuleAssert(self).can_parse_rule("if a then b with 1.0", as_text="if a then b")
-        RuleAssert(self).can_parse_rule(
-            "if antecedent1 antecedent2 then consequent1 consequent2"
-        )
+        RuleAssert(self).can_parse_rule("if antecedent1 antecedent2 then consequent1 consequent2")
 
     def test_parser_exceptions(self) -> None:
         """Test that rules cannot be parsed in expected cases."""
         RuleAssert(self).cannot_parse_rule("", SyntaxError, "expected an if-then rule")
         RuleAssert(self).cannot_parse_rule("then", SyntaxError, "expected keyword 'if'")
         RuleAssert(self).cannot_parse_rule("if", SyntaxError, "expected keyword 'then'")
-        RuleAssert(self).cannot_parse_rule(
-            "if then", SyntaxError, "expected an antecedent in rule"
-        )
+        RuleAssert(self).cannot_parse_rule("if then", SyntaxError, "expected an antecedent in rule")
         RuleAssert(self).cannot_parse_rule(
             "if antecedent then", SyntaxError, "expected a consequent in rule"
         )
@@ -842,9 +828,7 @@ class TestRule(unittest.TestCase):
         engine = fl.FllImporter().from_string(SimpleDimmer)
 
         RuleAssert(self).can_load_rule("if Ambient is DARK then Power is HIGH", engine)
-        RuleAssert(self).can_load_rule(
-            "if Ambient is MEDIUM then Power is MEDIUM", engine
-        )
+        RuleAssert(self).can_load_rule("if Ambient is MEDIUM then Power is MEDIUM", engine)
         RuleAssert(self).can_load_rule("if Ambient is BRIGHT then Power is LOW", engine)
 
     def test_deactivate(self) -> None:
@@ -1050,9 +1034,7 @@ class TestRuleBlock(unittest.TestCase):
         activation.activate.assert_called_once_with(rb)
 
         rb.activation = None
-        with self.assertRaisesRegex(
-            ValueError, "expected an activation method, but found none"
-        ):
+        with self.assertRaisesRegex(ValueError, "expected an activation method, but found none"):
             rb.activate()
 
     def test_unload_rules(self) -> None:
@@ -1087,14 +1069,10 @@ class TestRuleBlock(unittest.TestCase):
         rule1 = fl.Rule.create("if X then Y", engine=None)
         self.assertFalse(rule1.is_loaded())
 
-        rule2 = fl.Rule.create(
-            "if Ambient is MEDIUM then Power is MEDIUM", engine=engine
-        )
+        rule2 = fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine=engine)
         self.assertTrue(rule2.is_loaded())
 
-        rule3 = fl.Rule.create(
-            "if Ambient is BRIGHT then Power is Invalid", engine=None
-        )
+        rule3 = fl.Rule.create("if Ambient is BRIGHT then Power is Invalid", engine=None)
         self.assertFalse(rule3.is_loaded())
 
         rb = fl.RuleBlock(rules=[rule1, rule2, rule3])

@@ -78,9 +78,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
 
             expected_vector = np.atleast_1d(fl.array([x for x in terms.values()]))
             obtained_vector = np.atleast_1d(
-                self.actual.defuzzify(
-                    StackTerm(terms=list(terms.keys())), minimum, maximum
-                )
+                self.actual.defuzzify(StackTerm(terms=list(terms.keys())), minimum, maximum)
             )
             np.testing.assert_allclose(
                 obtained_vector,
@@ -200,12 +198,8 @@ class TestDefuzzifier(unittest.TestCase):
                     1,
                     fl.Maximum(),
                     [
-                        fl.Activated(
-                            fl.Triangle("Medium", 0.25, 0.5, 0.75), 0.2, fl.Minimum()
-                        ),
-                        fl.Activated(
-                            fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum()
-                        ),
+                        fl.Activated(fl.Triangle("Medium", 0.25, 0.5, 0.75), 0.2, fl.Minimum()),
+                        fl.Activated(fl.Triangle("High", 0.5, 0.75, 1.0), 0.8, fl.Minimum()),
                     ],
                 ): 0.6896552,
             },
@@ -220,9 +214,7 @@ class TestDefuzzifier(unittest.TestCase):
         """Test the Smallest of Maximum defuzzifier."""
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).exports_fll(
             "SmallestOfMaximum"
-        ).has_attribute(resolution=1000).configured_as("200").exports_fll(
-            "SmallestOfMaximum 200"
-        )
+        ).has_attribute(resolution=1000).configured_as("200").exports_fll("SmallestOfMaximum 200")
 
         # Test case:
         #            ______
@@ -292,9 +284,7 @@ class TestDefuzzifier(unittest.TestCase):
         """Test the Largest of Maximum defuzzifier."""
         DefuzzifierAssert(self, fl.LargestOfMaximum()).exports_fll(
             "LargestOfMaximum"
-        ).has_attribute(resolution=1000).configured_as("200").has_parameters(
-            "200"
-        ).exports_fll(
+        ).has_attribute(resolution=1000).configured_as("200").has_parameters("200").exports_fll(
             "LargestOfMaximum 200"
         )
 
@@ -364,13 +354,9 @@ class TestDefuzzifier(unittest.TestCase):
 
     def test_mom_defuzzifier(self) -> None:
         """Test the Largest of Maximum defuzzifier."""
-        DefuzzifierAssert(self, fl.MeanOfMaximum()).exports_fll(
-            "MeanOfMaximum"
-        ).has_attribute(resolution=1000).configured_as("200").has_parameters(
-            "200"
-        ).exports_fll(
-            "MeanOfMaximum 200"
-        )
+        DefuzzifierAssert(self, fl.MeanOfMaximum()).exports_fll("MeanOfMaximum").has_attribute(
+            resolution=1000
+        ).configured_as("200").has_parameters("200").exports_fll("MeanOfMaximum 200")
 
         # Test case:
         #            ______
@@ -466,9 +452,7 @@ class TestDefuzzifier(unittest.TestCase):
             fl.WeightedDefuzzifier.Type.Automatic,
         )
         with self.assertRaises(TypeError) as type_error:
-            defuzzifier.infer_type(
-                fl.OutputVariable(terms=[fl.Triangle(), fl.Constant()])
-            )
+            defuzzifier.infer_type(fl.OutputVariable(terms=[fl.Triangle(), fl.Constant()]))
         self.assertEqual(
             "cannot infer type of BaseWeightedDefuzzifier, got multiple types: "
             "['Type.Automatic', 'Type.TakagiSugeno']",
@@ -520,9 +504,7 @@ class TestDefuzzifier(unittest.TestCase):
         # Aggregated: TakagiSugeno
         self.assertEqual(
             fl.WeightedDefuzzifier.infer_type(
-                fl.Aggregated(
-                    terms=[fl.Activated(term) for term in takagi_sugeno_terms]
-                )
+                fl.Aggregated(terms=[fl.Activated(term) for term in takagi_sugeno_terms])
             ),
             fl.WeightedDefuzzifier.Type.TakagiSugeno,
         )
@@ -536,9 +518,7 @@ class TestDefuzzifier(unittest.TestCase):
         # Aggregated: Mixed
         with self.assertRaises(TypeError) as error:
             fl.WeightedDefuzzifier.infer_type(
-                fl.Aggregated(
-                    terms=[fl.Activated(term) for term in [fl.Constant(), fl.Concave()]]
-                )
+                fl.Aggregated(terms=[fl.Activated(term) for term in [fl.Constant(), fl.Concave()]])
             )
         self.assertEqual(
             str(error.exception),
@@ -551,18 +531,16 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.WeightedAverage()).has_attribute(
             type=fl.WeightedDefuzzifier.Type.Automatic
         ).exports_fll("WeightedAverage")
-        DefuzzifierAssert(self, fl.WeightedAverage()).configured_as(
-            "TakagiSugeno"
-        ).exports_fll("WeightedAverage TakagiSugeno")
+        DefuzzifierAssert(self, fl.WeightedAverage()).configured_as("TakagiSugeno").exports_fll(
+            "WeightedAverage TakagiSugeno"
+        )
         with self.assertRaises(KeyError):
             fl.WeightedAverage().configure("SugenoTakagi")
 
         defuzzifier = fl.WeightedAverage()
         with self.assertRaisesRegex(
             ValueError,
-            re.escape(
-                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
-            ),
+            re.escape("expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"),
         ):
             defuzzifier.defuzzify(fl.Triangle())
 
@@ -643,10 +621,7 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("C", -3.0), 0.5),
                     ],
                     aggregation=fl.AlgebraicSum(),
-                ): (
-                    (1 * 1 + 1 * -2 + (0.5 + 0.5 - (0.25)) * -3)
-                    / (1 + 1 + (0.5 + 0.5 - 0.25))
-                ),
+                ): ((1 * 1 + 1 * -2 + (0.5 + 0.5 - (0.25)) * -3) / (1 + 1 + (0.5 + 0.5 - 0.25))),
             },
             vectorized=False,
         )
@@ -654,12 +629,12 @@ class TestDefuzzifier(unittest.TestCase):
     def test_weighted_sum(self) -> None:
         """Test the weighted sum defuzzifier."""
         DefuzzifierAssert(self, fl.WeightedSum()).exports_fll("WeightedSum")
-        DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
-            "TakagiSugeno"
-        ).exports_fll("WeightedSum TakagiSugeno")
-        DefuzzifierAssert(self, fl.WeightedSum()).configured_as(
-            "Tsukamoto"
-        ).exports_fll("WeightedSum Tsukamoto")
+        DefuzzifierAssert(self, fl.WeightedSum()).configured_as("TakagiSugeno").exports_fll(
+            "WeightedSum TakagiSugeno"
+        )
+        DefuzzifierAssert(self, fl.WeightedSum()).configured_as("Tsukamoto").exports_fll(
+            "WeightedSum Tsukamoto"
+        )
         with self.assertRaises(KeyError):
             fl.WeightedSum().configure("SugenoTakagi")
 
@@ -667,9 +642,7 @@ class TestDefuzzifier(unittest.TestCase):
 
         with self.assertRaisesRegex(
             ValueError,
-            re.escape(
-                "expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"
-            ),
+            re.escape("expected an Aggregated term, but found <class 'fuzzylite.term.Triangle'>"),
         ):
             defuzzifier.defuzzify(fl.Triangle())
 

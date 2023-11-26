@@ -122,9 +122,7 @@ class FllImporter(Importer):
                 elif key == "description":
                     engine.description = value
                 else:
-                    raise SyntaxError(
-                        f"'{key}' is not a valid component of '{component}'"
-                    )
+                    raise SyntaxError(f"'{key}' is not a valid component of '{component}'")
         elif component == "InputVariable":
             input_variable = self.input_variable(self.separator.join(block), engine)
             engine.input_variables.append(input_variable)
@@ -205,9 +203,7 @@ class FllImporter(Importer):
             elif key == "term":
                 iv.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{iv.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{iv.__class__.__name__}'")
         iv.name = Op.as_identifier(iv.name)
         return iv
 
@@ -248,9 +244,7 @@ class FllImporter(Importer):
             elif key == "term":
                 ov.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{ov.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{ov.__class__.__name__}'")
         ov.name = Op.as_identifier(ov.name)
         return ov
 
@@ -289,9 +283,7 @@ class FllImporter(Importer):
                 if rule:
                     rb.rules.append(rule)
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{rb.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{rb.__class__.__name__}'")
         return rb
 
     def term(self, fll: str, engine: Engine | None = None) -> Term:
@@ -306,13 +298,9 @@ class FllImporter(Importer):
         """
         values = self.extract_value(fll, "term").split(maxsplit=2)
         if len(values) < 2:
-            raise SyntaxError(
-                f"expected format 'term: name Term [parameters]', but got '{fll}'"
-            )
+            raise SyntaxError(f"expected format 'term: name Term [parameters]', but got '{fll}'")
 
-        term = settings.factory_manager.term.construct(
-            values[1], name=Op.as_identifier(values[0])
-        )
+        term = settings.factory_manager.term.construct(values[1], name=Op.as_identifier(values[0]))
         if len(values) > 2:
             term.configure(values[2])
         term.update_reference(engine)
@@ -466,9 +454,7 @@ class FllImporter(Importer):
             return False
         raise SyntaxError(f"expected boolean in {['true', 'false']}, but got '{fll}'")
 
-    def extract_key_value(
-        self, fll: str, component: str | None = None
-    ) -> tuple[str, str]:
+    def extract_key_value(self, fll: str, component: str | None = None) -> tuple[str, str]:
         """Return key-value pair described using the FuzzyLite Language.
 
         Args:

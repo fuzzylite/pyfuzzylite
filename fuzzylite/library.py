@@ -54,9 +54,7 @@ np.seterr(invalid="ignore", divide="ignore")
 logging.basicConfig(
     level=logging.ERROR,
     datefmt="%Y-%m-%d %H:%M:%S",
-    format="%(asctime)s %(levelname)s "
-    "%(module)s::%(funcName)s()[%(lineno)d]"
-    "\n%(message)s",
+    format="%(asctime)s %(levelname)s %(module)s::%(funcName)s()[%(lineno)d]\n%(message)s",
 )
 
 array: Final = np.array
@@ -86,9 +84,7 @@ def scalar(x: Any, /) -> Scalar:
     ...
 
 
-def scalar(
-    x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any
-) -> ScalarArray | Scalar:
+def scalar(x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any) -> ScalarArray | Scalar:
     """Convert the values into a floating point value defined by the library.
 
     Args:
@@ -230,14 +226,10 @@ class Settings:
             context with specific settings.
         """
         context_settings = {
-            key: value
-            for key, value in locals().items()
-            if not (key == "self" or value is None)
+            key: value for key, value in locals().items() if not (key == "self" or value is None)
         }
         if "factory_manager" in context_settings:
-            context_settings["_factory_manager"] = context_settings.pop(
-                "factory_manager"
-            )
+            context_settings["_factory_manager"] = context_settings.pop("factory_manager")
         rollback_settings = vars(self).copy()
         for key, value in context_settings.items():
             setattr(self, key, value)

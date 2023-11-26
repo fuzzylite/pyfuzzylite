@@ -53,9 +53,7 @@ class Tipper:
                     implication=fl.Minimum(),
                     activation=fl.General(),
                     rules=[
-                        fl.Rule.create(
-                            "if service is poor or food is rancid then tip is cheap"
-                        ),
+                        fl.Rule.create("if service is poor or food is rancid then tip is cheap"),
                         fl.Rule.create("if service is good then tip is average"),
                         fl.Rule.create(
                             "if service is excellent or food is delicious then tip is generous"

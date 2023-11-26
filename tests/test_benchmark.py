@@ -58,9 +58,7 @@ class TestBenchmark(unittest.TestCase):
         """Test the creation of benchmarks from examples."""
         benchmark = fl.Benchmark.for_example(simple_dimmer, 0.5, False)
 
-        self.assertEqual(
-            repr(benchmark.engine), repr(simple_dimmer.SimpleDimmer().engine)
-        )
+        self.assertEqual(repr(benchmark.engine), repr(simple_dimmer.SimpleDimmer().engine))
         expected_data = fl.array(
             [
                 [0.000000000, fl.nan],
@@ -81,9 +79,7 @@ class TestBenchmark(unittest.TestCase):
         """Test the engine and dataset can be created from an example."""
         obtained_engine, obtained_data = fl.Benchmark.engine_and_data(simple_dimmer)
 
-        self.assertEqual(
-            repr(obtained_engine), repr(simple_dimmer.SimpleDimmer().engine)
-        )
+        self.assertEqual(repr(obtained_engine), repr(simple_dimmer.SimpleDimmer().engine))
 
         expected_data = fl.array(
             [
@@ -110,9 +106,7 @@ class TestBenchmark(unittest.TestCase):
 
         np.testing.assert_allclose(benchmark.engine.input_variable(0).value, fl.nan)
         np.testing.assert_allclose(benchmark.engine.output_variable(0).value, fl.nan)
-        np.testing.assert_allclose(
-            benchmark.engine.rule_block(0).rules[0].activation_degree, 0.0
-        )
+        np.testing.assert_allclose(benchmark.engine.rule_block(0).rules[0].activation_degree, 0.0)
 
     def test_prepare_data(self) -> None:
         """Test the preparation of the dataset."""
@@ -163,9 +157,7 @@ class TestBenchmark(unittest.TestCase):
     def test_run(self) -> None:
         """Test the run."""
         benchmark = fl.Benchmark.for_example(simple_dimmer, rows=2, shuffle=False)
-        np.testing.assert_allclose(
-            fl.array([[fl.nan, fl.nan]]), benchmark.engine.values
-        )
+        np.testing.assert_allclose(fl.array([[fl.nan, fl.nan]]), benchmark.engine.values)
 
         # without preparing, the whole dataset is used
         self.assertEqual(len(benchmark.test_data), 1024)
@@ -195,9 +187,7 @@ class TestBenchmark(unittest.TestCase):
 
     def test_reset(self) -> None:
         """Test the benchmark can be reset to an initial state."""
-        benchmark = fl.Benchmark.for_example(
-            simple_dimmer, rows=1, shuffle=True, seed=0
-        )
+        benchmark = fl.Benchmark.for_example(simple_dimmer, rows=1, shuffle=True, seed=0)
         benchmark.prepare()
         # benchmark.measure(runs=10)
         benchmark.time = list(float(x) for x in range(10 + 1))

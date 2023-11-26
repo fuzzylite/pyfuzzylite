@@ -86,9 +86,7 @@ class Approximation:
                         fl.Rule.create("if inputX is NEAR_7 then outputFx is f7"),
                         fl.Rule.create("if inputX is NEAR_8 then outputFx is f8"),
                         fl.Rule.create("if inputX is NEAR_9 then outputFx is f9"),
-                        fl.Rule.create(
-                            "if inputX is any then trueFx is fx and diffFx is diff"
-                        ),
+                        fl.Rule.create("if inputX is any then trueFx is fx and diffFx is diff"),
                     ],
                 )
             ],

@@ -139,9 +139,7 @@ class TestFuzzyliteExamplesTerms:
 
     def test_gaussian_product(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.gaussian_product."""
-        PytestBenchmark(fl.examples.terms.gaussian_product).start(
-            benchmark, **self.parameters
-        )
+        PytestBenchmark(fl.examples.terms.gaussian_product).start(benchmark, **self.parameters)
 
     def test_linear(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.linear."""
@@ -161,9 +159,7 @@ class TestFuzzyliteExamplesTerms:
 
     def test_semi_ellipse(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.semi_ellipse."""
-        PytestBenchmark(fl.examples.terms.semi_ellipse).start(
-            benchmark, **self.parameters
-        )
+        PytestBenchmark(fl.examples.terms.semi_ellipse).start(benchmark, **self.parameters)
 
     def test_sigmoid(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.sigmoid."""
@@ -171,15 +167,11 @@ class TestFuzzyliteExamplesTerms:
 
     def test_sigmoid_difference(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.sigmoid_difference."""
-        PytestBenchmark(fl.examples.terms.sigmoid_difference).start(
-            benchmark, **self.parameters
-        )
+        PytestBenchmark(fl.examples.terms.sigmoid_difference).start(benchmark, **self.parameters)
 
     def test_sigmoid_product(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.sigmoid_product."""
-        PytestBenchmark(fl.examples.terms.sigmoid_product).start(
-            benchmark, **self.parameters
-        )
+        PytestBenchmark(fl.examples.terms.sigmoid_product).start(benchmark, **self.parameters)
 
     def test_spike(self, benchmark: BenchmarkFixture) -> None:
         """Benchmark the fuzzylite.examples.terms.spike."""

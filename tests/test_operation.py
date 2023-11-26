@@ -277,9 +277,7 @@ class TestOperation(unittest.TestCase):
             self.assertEqual(fl.Op.str(0.3), "0")
 
         self.assertEqual("0.000 1.000 2.000 3.000", fl.Op.str([0.0, 1.0, 2.0, 3.0]))
-        self.assertEqual(
-            "0.000 1.000 2.000 3.000", fl.Op.str(fl.scalar([0.0, 1.0, 2.0, 3.0]))
-        )
+        self.assertEqual("0.000 1.000 2.000 3.000", fl.Op.str(fl.scalar([0.0, 1.0, 2.0, 3.0])))
         self.assertEqual(
             "0.000 0.000\n1.000 1.000\n2.000 2.000",
             fl.Op.str(fl.scalar([[0, 0], [1, 1], [2, 2]])),
@@ -324,9 +322,7 @@ class TestOperation(unittest.TestCase):
         modules = list(fl.Op.glob_examples("module", fl.examples, recursive=False))
         self.assertEqual(0, len(modules))
 
-        modules = list(
-            fl.Op.glob_examples("module", fl.examples.hybrid, recursive=False)
-        )
+        modules = list(fl.Op.glob_examples("module", fl.examples.hybrid, recursive=False))
         self.assertEqual(
             [
                 "fuzzylite.examples.hybrid.obstacle_avoidance",
@@ -336,9 +332,7 @@ class TestOperation(unittest.TestCase):
         )
 
         # Engines
-        engines = list(
-            fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False)
-        )
+        engines = list(fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False))
         self.assertEqual(
             [
                 "AllTerms",
@@ -355,9 +349,7 @@ class TestOperation(unittest.TestCase):
         self.assertEqual(61, len(engines))
         self.assertSetEqual({fl.Engine}, {e.__class__ for e in engines})
 
-        engines = list(
-            fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False)
-        )
+        engines = list(fl.Op.glob_examples("engine", module=fl.examples.mamdani, recursive=False))
         self.assertEqual(
             [
                 "AllTerms",
@@ -371,9 +363,7 @@ class TestOperation(unittest.TestCase):
         )
 
         # Datasets
-        datasets = fl.array(
-            [d for d in fl.Op.glob_examples("dataset", fl.examples.tsukamoto)]
-        )
+        datasets = fl.array([d for d in fl.Op.glob_examples("dataset", fl.examples.tsukamoto)])
         np.testing.assert_allclose(
             datasets,
             fl.array([d for d in fl.Op.glob_examples("fld", fl.examples.tsukamoto)]),

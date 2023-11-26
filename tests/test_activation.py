@@ -39,7 +39,9 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
     ) -> fl.Rule:
         """Mocks a rule with the given activation degree and weight."""
         rule = fl.Rule()
-        rule.text = f"if {id.upper()} is {id.lower()} then {id.upper()} is {id.lower()} with {weight}"
+        rule.text = (
+            f"if {id.upper()} is {id.lower()} then {id.upper()} is {id.lower()} with {weight}"
+        )
         rule.antecedent.activation_degree = MagicMock(return_value=activation_degree)  # type: ignore
         rule.consequent.modify = MagicMock()  # type: ignore
         rule.is_loaded = MagicMock(return_value=loaded)  # type: ignore
@@ -64,9 +66,7 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
         with self.test.assertRaises(TypeError) as error:
             method.activate(self.actual)
         self.test.assertTrue(
-            str(error.exception).startswith(
-                "expected activation degree to be a single scalar, "
-            )
+            str(error.exception).startswith("expected activation degree to be a single scalar, ")
         )
         return self
 
@@ -77,8 +77,7 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
             return f"if {rule_id.upper()} is {rule_id.lower()} then {rule_id.upper()} is {rule_id.lower()}"
 
         expected = {
-            rule_text(rule_id): np.array(activation)
-            for rule_id, activation in rules.items()
+            rule_text(rule_id): np.array(activation) for rule_id, activation in rules.items()
         }
         obtained = {rule.text: rule.triggered for rule in self.actual.rules}
 
@@ -99,8 +98,7 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
             return f"if {rule_id.upper()} is {rule_id.lower()} then {rule_id.upper()} is {rule_id.lower()}"
 
         expected = {
-            rule_text(rule_id): fl.array(activation)
-            for rule_id, activation in rules.items()
+            rule_text(rule_id): fl.array(activation) for rule_id, activation in rules.items()
         }
         obtained = {rule.text: rule.activation_degree for rule in self.actual.rules}
 
@@ -141,33 +139,21 @@ class TestActivation(unittest.TestCase):
         """Asserts the general activation is correct."""
         BaseAssert(self, fl.General()).repr_is("fl.General()").exports_fll("General")
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.General()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.General()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.General()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.General()).then_triggers(
             rules={"a": True, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.General()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.General()).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
@@ -180,9 +166,7 @@ class TestActivation(unittest.TestCase):
 
         ActivationAssert(self, fl.RuleBlock()).given(
             rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-        ).given(
-            rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
-        ).given(
+        ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
             rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
         ).activate(
             fl.General()
@@ -201,9 +185,7 @@ class TestActivation(unittest.TestCase):
         for activation in unsupported_activations:
             ActivationAssert(self, fl.RuleBlock()).given(
                 rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-            ).given(
-                rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)
-            ).given(
+            ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
                 rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
             ).activate_fails(
                 activation
@@ -211,97 +193,67 @@ class TestActivation(unittest.TestCase):
 
     def test_first_activation(self) -> None:
         """Asserts the first activation is correct."""
-        BaseAssert(self, fl.First()).repr_is(
-            "fl.First(rules=1, threshold=0.0)"
-        ).exports_fll("First 1 0.000")
+        BaseAssert(self, fl.First()).repr_is("fl.First(rules=1, threshold=0.0)").exports_fll(
+            "First 1 0.000"
+        )
         # Default activation
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.First()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.First()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.First()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.First()).then_triggers(
             rules={"a": True, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.First()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.First()).then_triggers(
             rules={"a": True, "b": False, "c": False}
         )
 
         # First two rules
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.First(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.First(rules=2)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.First(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.First(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.First(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.First(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
         # First two rules with threshold > 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(
             fl.First(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(
             fl.First(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5
-        ).given(rule="b", activation_degree=0.49).given(
-            rule="c", activation_degree=0.0
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5).given(
+            rule="b", activation_degree=0.49
+        ).given(rule="c", activation_degree=0.0).activate(
             fl.First(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": True, "b": False, "c": False}
@@ -309,97 +261,67 @@ class TestActivation(unittest.TestCase):
 
     def test_last_activation(self) -> None:
         """Asserts the last activation is correct."""
-        BaseAssert(self, fl.Last()).repr_is(
-            "fl.Last(rules=1, threshold=0.0)"
-        ).exports_fll("Last 1 0.000")
+        BaseAssert(self, fl.Last()).repr_is("fl.Last(rules=1, threshold=0.0)").exports_fll(
+            "Last 1 0.000"
+        )
         # Default activation
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Last()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Last()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Last()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Last()).then_triggers(
             rules={"a": False, "b": False, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Last()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Last()).then_triggers(
             rules={"a": False, "b": True, "c": False}
         )
 
         # Last two rules
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Last(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Last(rules=2)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Last(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Last(rules=2)).then_triggers(
             rules={"a": False, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Last(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Last(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
         # Last two rules with threshold > 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(
             fl.Last(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(
             fl.Last(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": False, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.49).given(
-            rule="c", activation_degree=0.5
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.49
+        ).given(rule="c", activation_degree=0.5).activate(
             fl.Last(rules=2, threshold=0.5)
         ).then_triggers(
             rules={"a": False, "b": False, "c": True}
@@ -407,173 +329,107 @@ class TestActivation(unittest.TestCase):
 
     def test_highest_activation(self) -> None:
         """Asserts the highest activation is correct."""
-        BaseAssert(self, fl.Highest()).repr_is("fl.Highest(rules=1)").exports_fll(
-            "Highest 1"
-        )
+        BaseAssert(self, fl.Highest()).repr_is("fl.Highest(rules=1)").exports_fll("Highest 1")
         # Default activation
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Highest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Highest()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Highest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Highest()).then_triggers(
             rules={"a": True, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5
-        ).given(rule="b", activation_degree=1).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Highest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5).given(
+            rule="b", activation_degree=1
+        ).given(rule="c", activation_degree=0.0).activate(fl.Highest()).then_triggers(
             rules={"a": False, "b": True, "c": False}
         )
 
         # Highest two rules
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Highest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Highest(rules=2)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Highest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Highest(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.25
-        ).activate(
-            fl.Highest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.25).activate(fl.Highest(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
     def test_lowest_activation(self) -> None:
         """Asserts the lowest activation is correct."""
-        BaseAssert(self, fl.Lowest()).repr_is("fl.Lowest(rules=1)").exports_fll(
-            "Lowest 1"
-        )
+        BaseAssert(self, fl.Lowest()).repr_is("fl.Lowest(rules=1)").exports_fll("Lowest 1")
         # Default activation
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Lowest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Lowest()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Lowest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Lowest()).then_triggers(
             rules={"a": True, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Lowest()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Lowest()).then_triggers(
             rules={"a": False, "b": True, "c": False}
         )
 
         # Lowest two rules
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Lowest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Lowest(rules=2)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Lowest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Lowest(rules=2)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.25
-        ).activate(
-            fl.Lowest(rules=2)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.25).activate(fl.Lowest(rules=2)).then_triggers(
             rules={"a": False, "b": True, "c": True}
         )
 
     def test_proportional_activation(self) -> None:
         """Asserts the proportional activation is correct."""
-        BaseAssert(self, fl.Proportional()).repr_is("fl.Proportional()").exports_fll(
-            "Proportional"
-        )
+        BaseAssert(self, fl.Proportional()).repr_is("fl.Proportional()").exports_fll("Proportional")
         # Default activation
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Proportional()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Proportional()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Proportional()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Proportional()).then_triggers(
             rules={"a": True, "b": True, "c": True}
         ).with_activation(
             {"a": 1 / 3, "b": 1 / 3, "c": 1 / 3}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Proportional()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Proportional()).then_triggers(
             rules={"a": True, "b": True, "c": False}
         ).with_activation(
             {"a": 2 / 3, "b": 1 / 3, "c": 0.0}
@@ -586,217 +442,137 @@ class TestActivation(unittest.TestCase):
             "fl.Threshold(comparator='>', threshold=0.0)"
         ).exports_fll("Threshold > 0.000")
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold()).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold()).then_triggers(
             rules={"a": True, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold()
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold()).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
         # > 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold(">", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold(">", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold(">", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold(">", 0.5)).then_triggers(
             rules={"a": True, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold(">", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold(">", 0.5)).then_triggers(
             rules={"a": True, "b": False, "c": False}
         )
 
         # >= 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold(">=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold(">=", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold(">=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold(">=", 0.5)).then_triggers(
             rules={"a": True, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold(">=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold(">=", 0.5)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
         # < 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("<", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("<", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold("<", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold("<", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5
-        ).given(rule="b", activation_degree=0.25).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("<", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5).given(
+            rule="b", activation_degree=0.25
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("<", 0.5)).then_triggers(
             rules={"a": False, "b": True, "c": False}
         )
 
         # <= 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("<=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("<=", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold("<=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold("<=", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5
-        ).given(rule="b", activation_degree=0.25).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("<=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5).given(
+            rule="b", activation_degree=0.25
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("<=", 0.5)).then_triggers(
             rules={"a": True, "b": True, "c": False}
         )
 
         # == 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("==", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("==", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold("==", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold("==", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5 - 1e-10
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.5 + 1e-10
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5 - 1e-10).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.5 + 1e-10).activate(
             fl.Threshold("==", 0.5)
         ).then_triggers(
             rules={"a": False, "b": True, "c": False}
         )
 
         # != 0.5
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.0
-        ).given(rule="b", activation_degree=0.0).given(
-            rule="c", activation_degree=0.0
-        ).activate(
-            fl.Threshold("!=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.0).given(
+            rule="b", activation_degree=0.0
+        ).given(rule="c", activation_degree=0.0).activate(fl.Threshold("!=", 0.5)).then_triggers(
             rules={"a": False, "b": False, "c": False}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=1.0
-        ).given(rule="b", activation_degree=1.0).given(
-            rule="c", activation_degree=1.0
-        ).activate(
-            fl.Threshold("!=", 0.5)
-        ).then_triggers(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=1.0).given(
+            rule="b", activation_degree=1.0
+        ).given(rule="c", activation_degree=1.0).activate(fl.Threshold("!=", 0.5)).then_triggers(
             rules={"a": True, "b": True, "c": True}
         )
 
-        ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=0.5 - 1e-10
-        ).given(rule="b", activation_degree=0.5).given(
-            rule="c", activation_degree=0.5 + 1e-10
-        ).activate(
+        ActivationAssert(self, fl.RuleBlock()).given(rule="a", activation_degree=0.5 - 1e-10).given(
+            rule="b", activation_degree=0.5
+        ).given(rule="c", activation_degree=0.5 + 1e-10).activate(
             fl.Threshold("!=", 0.5)
         ).then_triggers(
             rules={"a": True, "b": False, "c": True}
