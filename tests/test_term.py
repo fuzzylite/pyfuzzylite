@@ -259,8 +259,17 @@ class TestTerm(unittest.TestCase):
             }
         )
 
+        TermAssert(
+            self,
+            fl.Activated(
+                fl.Triangle("triangle", -0.400, 0.000, 0.400),
+                fl.array([0.0, 0.5, 1.0]),
+                fl.AlgebraicProduct(),
+            ),
+        ).exports_fll("term: _ Activated AlgebraicProduct([0.000, 0.500, 1.000],triangle)")
+
         activated = fl.Activated(fl.Triangle("x", 0, 1), degree=1.0)
-        with self.assertRaisesRegex(ValueError, "expected an implication operator, but none found"):
+        with self.assertRaisesRegex(ValueError, "expected an implication operator, but found none"):
             activated.membership(0.0)
 
     def test_aggregated(self) -> None:
@@ -268,12 +277,10 @@ class TestTerm(unittest.TestCase):
         aggregated = fl.Aggregated("fuzzy_output", -1.0, 1.0, fl.Maximum())
         low = fl.Triangle("LOW", -1.000, -0.500, 0.000)
         medium = fl.Triangle("MEDIUM", -0.500, 0.000, 0.500)
-        aggregated.terms.extend(
-            [
-                fl.Activated(low, 0.6, fl.Minimum()),
-                fl.Activated(medium, 0.4, fl.Minimum()),
-            ]
-        )
+        aggregated.terms = [
+            fl.Activated(low, 0.6, fl.Minimum()),
+            fl.Activated(medium, 0.4, fl.Minimum()),
+        ]
 
         TermAssert(self, aggregated).exports_fll(
             "term: fuzzy_output Aggregated Maximum[Minimum(0.600,LOW),Minimum(0.400,MEDIUM)]"
@@ -313,7 +320,7 @@ class TestTerm(unittest.TestCase):
                 "implication=None), fl.Activated(term=fl.Triangle('MEDIUM', -0.5, 0.0, 0.5), "
                 "degree=0.4, implication=None)]"
             ),
-            repr(aggregated.grouped_terms()),
+            repr(list(aggregated.grouped_terms().values())),
         )
 
         aggregated.terms.append(fl.Activated(low, 0.4))
@@ -324,7 +331,7 @@ class TestTerm(unittest.TestCase):
                 "implication=None), fl.Activated(term=fl.Triangle('MEDIUM', -0.5, 0.0, 0.5), "
                 "degree=0.4, implication=None)]"
             ),
-            repr(aggregated.grouped_terms()),
+            repr(list(aggregated.grouped_terms().values())),
         )
 
         aggregated.aggregation = fl.UnboundedSum()
@@ -335,7 +342,7 @@ class TestTerm(unittest.TestCase):
                 "implication=None), fl.Activated(term=fl.Triangle('MEDIUM', -0.5, 0.0, 0.5), "
                 "degree=0.4, implication=None)]"
             ),
-            repr(aggregated.grouped_terms()),
+            repr(list(aggregated.grouped_terms().values())),
         )
 
         aggregated.aggregation = None
@@ -343,10 +350,21 @@ class TestTerm(unittest.TestCase):
             "term: fuzzy_output Aggregated [Minimum(0.600,LOW)+Minimum(0.400,MEDIUM)+(0.400*LOW)]"
         )
 
-        with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but none found"):
+        with self.assertRaisesRegex(ValueError, "expected an aggregation operator, but found none"):
             aggregated.membership(0.0)
 
         self.assertEqual(aggregated.range(), 2.0)
+
+        aggregated.terms = [
+            fl.Activated(low, fl.array([0.6, 0.5]), fl.Minimum()),
+            fl.Activated(medium, fl.array([0.5, 0.6]), fl.Minimum()),
+        ]
+        with self.assertRaises(ValueError) as value_error:
+            aggregated.highest_activated_term()
+        self.assertEqual(
+            "expected a unit scalar, but got vector of size 2: activated.degree=array([0.6, 0.5])",
+            str(value_error.exception),
+        )
 
     def test_arc(self) -> None:
         """Test the concave term."""
@@ -2234,6 +2252,24 @@ class TestTerm(unittest.TestCase):
 
         fl.settings.float_type = default_float
         self.assertEqual(fl.settings.float_type, default_float)
+
+    def test_some_function(self) -> None:
+        """Test function results."""
+        f = fl.Function("X", "ge(x, 5)", load=True)
+        np.testing.assert_allclose(0.0, f.membership(4))
+        np.testing.assert_allclose(1.0, f.membership(5))
+
+        f = fl.Function("X", "1 / (x-5)", load=True)
+        np.testing.assert_allclose(fl.inf, f.membership(5))
+        np.testing.assert_allclose(-1.0, f.membership(4))
+
+        f = fl.Function("X", ".-1 / (x-5)", load=True)
+        np.testing.assert_allclose(-fl.inf, f.membership(5))
+        np.testing.assert_allclose(1.0, f.membership(4))
+
+        f = fl.Function("X", "0 / (x-5)", load=True)
+        np.testing.assert_allclose(fl.nan, f.membership(5))
+        np.testing.assert_allclose(0.0, f.membership(4))
 
 
 class FunctionNodeAssert(BaseAssert[fl.Function.Node]):

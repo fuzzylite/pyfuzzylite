@@ -26,11 +26,10 @@ from typing import overload
 import numpy as np
 
 from .defuzzifier import Defuzzifier
-from .library import inf, nan, representation, scalar
+from .library import array, inf, nan, representation, scalar
 from .norm import SNorm
-from .operation import Op
-from .term import Aggregated, Term
-from .types import Scalar
+from .term import Activated, Aggregated, Term
+from .types import Array, Scalar
 
 
 class Variable:
@@ -42,14 +41,14 @@ class Variable:
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -233,7 +232,7 @@ class Variable:
         """
         self._value = np.clip(value, self.minimum, self.maximum) if self.lock_range else value
 
-    def fuzzify(self, x: Scalar) -> str:
+    def fuzzify(self, x: Scalar) -> Array[np.str_]:
         r"""Return the fuzzy representation of $x$.
 
         The fuzzy representation is computed by evaluating the membership function of $x$ for each
@@ -245,38 +244,30 @@ class Variable:
         Returns:
             fuzzy value expressed as $\sum_i{\mu_i(x)/i}$.
         """
-        # TODO: fix vectorisation
-        result: list[str] = []
-        for term in self.terms:
-            fx = scalar(nan)
-            with contextlib.suppress(ValueError):
-                fx = term.membership(x)
-            if not result:
-                result.append(f"{Op.str(fx)}/{term.name}")
-            else:
-                pm = "+" if fx >= 0.0 or Op.isnan(fx) else "-"
-                result.append(f" {pm} {Op.str(fx)}/{term.name}")
+        fuzzy_value = array("", dtype=np.str_)
+        for index, term in enumerate(self.terms):
+            activated_term = Activated(term, term.membership(x))
+            fuzzy_value = np.char.add(fuzzy_value, activated_term.fuzzy_value(padding=index > 0))
+        return fuzzy_value
 
-        return "".join(result)
-
-    def highest_membership(self, x: Scalar) -> tuple[Scalar, Term | None]:
+    def highest_membership(self, x: float) -> Activated | None:
         r"""Return the term that has the highest membership function value for $x$.
 
         Args:
             x: value
 
         Returns:
-             term $i$ that maximimizes $\mu_i(x)$.
+            term $i$ that maximimizes $\mu_i(x)$
         """
-        # TODO: fix vectorisation
-        result: tuple[Scalar, Term | None] = (0.0, None)
+        highest: Activated | None = None
         for term in self.terms:
-            y = scalar(nan)
+            degree = scalar(nan)
             with contextlib.suppress(ValueError):
-                y = term.membership(x)
-            if y > result[0]:
-                result = (y, term)
-        return result
+                degree = term.membership(x)
+
+            if (highest is None and degree > 0.0) or (highest and degree > highest.degree):
+                highest = Activated(term, degree)
+        return highest
 
 
 class InputVariable(Variable):
@@ -289,14 +280,14 @@ class InputVariable(Variable):
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -327,7 +318,7 @@ class InputVariable(Variable):
         """
         return representation.fll.input_variable(self)
 
-    def fuzzy_value(self) -> str:
+    def fuzzy_value(self) -> Array[np.str_]:
         r"""Return the current fuzzy input value.
 
         The fuzzy value is computed by evaluating the membership function of the current input value $x$
@@ -357,18 +348,18 @@ class OutputVariable(Variable):
     """
 
     def __init__(
-            self,
-            name: str = "",
-            description: str = "",
-            enabled: bool = True,
-            minimum: float = -inf,
-            maximum: float = inf,
-            lock_range: bool = False,
-            lock_previous: bool = False,
-            default_value: float = nan,
-            aggregation: SNorm | None = None,
-            defuzzifier: Defuzzifier | None = None,
-            terms: Iterable[Term] | None = None,
+        self,
+        name: str = "",
+        description: str = "",
+        enabled: bool = True,
+        minimum: float = -inf,
+        maximum: float = inf,
+        lock_range: bool = False,
+        lock_previous: bool = False,
+        default_value: float = nan,
+        aggregation: SNorm | None = None,
+        defuzzifier: Defuzzifier | None = None,
+        terms: Iterable[Term] | None = None,
     ) -> None:
         """Constructor.
 
@@ -560,21 +551,15 @@ class OutputVariable(Variable):
         self.previous_value = nan
         self.value = nan
 
-    def fuzzy_value(self) -> str:
+    def fuzzy_value(self) -> Array[np.str_]:
         """Return the current fuzzy output value.
 
         Returns:
             current fuzzy output value.
         """
-        # TODO: fix for vectorisation
-        result: list[str] = []
-        for term in self.terms:
-            degree = self.fuzzy.activation_degree(term)
-
-            if not result:
-                result.append(f"{Op.str(degree)}/{term.name}")
-            else:
-                result.append(
-                    f" {'+' if Op.isnan(degree) or degree >= 0 else '-'} {Op.str(np.fabs(degree))}/{term.name}"
-                )
-        return "".join(result)
+        fuzzy_value = array("", dtype=np.str_)
+        grouped_terms = self.fuzzy.grouped_terms()
+        for index, term in enumerate(self.terms):
+            activated_term = grouped_terms.get(term.name, Activated(term, scalar(0.0)))
+            fuzzy_value = np.char.add(fuzzy_value, activated_term.fuzzy_value(padding=index > 0))
+        return fuzzy_value

@@ -63,10 +63,10 @@ class ActivationAssert(BaseAssert[fl.RuleBlock]):
 
     def activate_fails(self, method: fl.Activation) -> ActivationAssert:
         """Activates the actual rule block with the given method."""
-        with self.test.assertRaises(TypeError) as error:
+        with self.test.assertRaises(ValueError) as error:
             method.activate(self.actual)
         self.test.assertTrue(
-            str(error.exception).startswith("expected activation degree to be a single scalar, ")
+            str(error.exception).startswith("expected a unit scalar, but got vector of size ")
         )
         return self
 

@@ -90,7 +90,6 @@ class AssertOperator:
         return self
 
 
-# TODO: Complete tests.
 class TestOperation(unittest.TestCase):
     """Test operation."""
 
