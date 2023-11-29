@@ -56,8 +56,6 @@ class VariableAssert(BaseAssert[T_Variable]):
                 self.test.assertIsNone(obtained, msg=f"when x={x}")
             else:
                 self.test.assertEqual(str(expected), str(obtained), f"when x={x}")
-                # self.test.assertEqual(expected.term, obtained.term, f"when x={x}")
-                # self.test.assertEqual(expected.degree, obtained.degree, f"when x={x}")
         return self
 
 
