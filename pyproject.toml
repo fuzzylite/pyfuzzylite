@@ -247,9 +247,3 @@ plugins.line-length.line_length = 120
 plugins.MD033.enabled = false
 # MD034: Bare URL used (no-bare-urls)
 plugins.MD034.enabled = false
-
-[tool.coverage.run]
-branch = true
-# omit = ["fuzzylite/examples/**"]
-
-#[tool.coverage.report]
