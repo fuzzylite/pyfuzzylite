@@ -705,6 +705,13 @@ class TestFldExporter(unittest.TestCase):
         fl.FldExporter().write(fl.Engine(), writer, fl.array([]))
         self.assertEqual("", writer.getvalue())
 
+        # No values to write
+        writer = io.StringIO()
+        fl.FldExporter(input_values=False, output_values=False).write(
+            fl.Engine(), writer, fl.array([])
+        )
+        self.assertEqual("", writer.getvalue())
+
         # Not enough values
         with self.assertRaises(ValueError) as error:
             fl.FldExporter().write(

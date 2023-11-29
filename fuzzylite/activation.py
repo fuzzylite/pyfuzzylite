@@ -36,7 +36,7 @@ from typing import Callable
 
 import numpy as np
 
-from .library import array, representation, scalar, to_float
+from .library import representation, scalar, to_float
 from .operation import Op
 from .rule import Rule, RuleBlock
 from .types import Array, Scalar
@@ -101,20 +101,18 @@ class Activation(ABC):
         """
         pass
 
-    def assert_is_float(self, activation_degree: Scalar) -> None:
+    def assert_is_not_vector(self, activation_degree: Scalar) -> None:
         """Assert that the activation degree is not a vector.
 
         Args:
             activation_degree: activation degree to assert
 
         Raises:
-            TypeError: if the activation degree contains more than one element
+            ValueError: if the activation degree contains more than one element
         """
-        elements = array(activation_degree).size
-        if elements > 1:
-            raise TypeError(
-                "expected activation degree to be a single scalar, "
-                f"but got {elements} elements in '{activation_degree}'"
+        if (size := np.size(activation_degree)) > 1:
+            raise ValueError(
+                f"expected a unit scalar, but got vector of size {size}: {activation_degree=}"
             )
 
 
@@ -200,7 +198,7 @@ class First(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if (
                     activated < self.rules
                     and activation_degree > 0.0
@@ -266,7 +264,7 @@ class Last(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if (
                     activated < self.rules
                     and activation_degree > 0.0
@@ -327,7 +325,7 @@ class Highest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if activation_degree > 0.0:
                     heapq.heappush(activate, (-activation_degree, index))
 
@@ -389,7 +387,7 @@ class Lowest(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if activation_degree > 0.0:
                     heapq.heappush(activate, (activation_degree, index))
 
@@ -428,7 +426,7 @@ class Proportional(Activation):
 
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if activation_degree > 0.0:
                     activate.append(rule)
                     sum_degrees += activation_degree
@@ -544,6 +542,6 @@ class Threshold(Activation):
             rule.deactivate()
             if rule.is_loaded():
                 activation_degree = rule.activate_with(conjunction, disjunction)
-                self.assert_is_float(activation_degree)
+                self.assert_is_not_vector(activation_degree)
                 if self.comparator.operator(activation_degree, self.threshold):
                     rule.trigger(implication)

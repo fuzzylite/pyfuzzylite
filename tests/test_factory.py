@@ -96,8 +96,6 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
             self.test.assertSetEqual(set(self.actual.functions().keys()), elements)
         else:
             self.test.assertSetEqual(set(self.actual.objects.keys()), elements)
-
-            # self.test.assertEqual(key, element.method.__name__)
         return self
 
     def operation_is(self, operation_value: dict[tuple[str, Sequence[float]], float]) -> Self:
@@ -410,46 +408,18 @@ class TestFunctionFactory(unittest.TestCase):
 
     def test_factory_contains_exactly(self) -> None:
         """Test the factory contains all the operators and functions."""
+        expected_operators = "! % * ** + - .+ .- / ^ and or ~"
+        expected_functions = (
+            "abs acos acosh asin asinh atan atan2 atanh ceil cos "
+            "cosh eq exp fabs floor fmod ge gt le log "
+            "log10 log1p lt max min neq pi pow round sin "
+            "sinh sqrt tan tanh"
+        )
         FunctionFactoryAssert(self, fl.FunctionFactory()).contains_exactly(
-            {"!", "~", "^", "**", "*", "/", "%", "+", "-", ".+", ".-", "and", "or"},
+            set(expected_operators.split()),
             fl.Function.Element.Type.Operator,
         ).contains_exactly(
-            {
-                "abs",
-                "acos",
-                "acosh",
-                "asin",
-                "asinh",
-                "atan",
-                "atan2",
-                "atanh",
-                "ceil",
-                "cos",
-                "cosh",
-                "eq",
-                "exp",
-                "fabs",
-                "floor",
-                "fmod",
-                "ge",
-                "gt",
-                "le",
-                "log",
-                "log10",
-                "log1p",
-                "lt",
-                "max",
-                "min",
-                "neq",
-                "pi",
-                "pow",
-                "round",
-                "sin",
-                "sinh",
-                "sqrt",
-                "tan",
-                "tanh",
-            },
+            set(expected_functions.split()),
             fl.Function.Element.Type.Function,
         )
 

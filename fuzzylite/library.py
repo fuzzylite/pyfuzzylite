@@ -439,6 +439,7 @@ class Representation(reprlib.Repr):
             return infinity if x > 0 else f"-{infinity}"
         if Op.isnan(x):
             return f"{self.package_of(settings)}{x!r}"
+        # TODO: should it be `return Op.str(x)`?
         return builtins.repr(x)
 
     repr_float16 = repr_float

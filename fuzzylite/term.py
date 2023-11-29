@@ -59,7 +59,7 @@ from .exporter import FllExporter
 from .library import array, inf, nan, representation, scalar, settings, to_float
 from .norm import SNorm, TNorm, UnboundedSum
 from .operation import Op
-from .types import Scalar, ScalarArray
+from .types import Array, Scalar, ScalarArray
 
 if typing.TYPE_CHECKING:
     from .engine import Engine
@@ -304,6 +304,25 @@ class Activated(Term):
         }
         return representation.as_constructor(self, fields)
 
+    def fuzzy_value(self, padding: bool = False) -> Array[np.str_]:
+        """Return fuzzy value in the form `{degree}/{name}`.
+
+        Args:
+            padding: whether to pad the degree sign (eg, `" - "` when `True` and `"-"` otherwise)
+
+        Returns:
+            fuzzy value in the form `{degree}/{name}`
+        """
+        y = np.atleast_1d(self.degree)
+        sign = np.nan_to_num(np.sign(y), nan=0.0)
+        pad = " " if padding else ""
+        y_str = np.char.add(
+            np.where(sign >= 0, f"{pad}+{pad}" if pad else "", f"{pad}-{pad}"),
+            array(list(map(Op.str, np.absolute(y))), dtype=np.str_),
+        )
+        value = np.char.add(y_str, f"/{self.term.name}")
+        return value.squeeze()
+
     @property
     def degree(self) -> Scalar:
         """Get/Set the activation degree of the term.
@@ -316,7 +335,7 @@ class Activated(Term):
         # Setter
 
         Args:
-              value (Scalar): activation degree of the term, with replacements of `{nan: 0.0, -inf: 0.0, inf: 1.0}`
+            value (Scalar): activation degree of the term, with replacements of `{nan: 0.0, -inf: 0.0, inf: 1.0}`
 
         Note:
             replacements of `{nan: 0.0, -inf: 0.0, inf: 1.0}` are made to sensibly deal with non-finite activations (eg, `NaN` input values)
@@ -332,22 +351,26 @@ class Activated(Term):
 
         Warning:
             nan input values may result in nan activations, which result in nan defuzzifications,
-            so we replace nan with 0.0 to avoid activations, and sensibly replace infinity values if they were present.
+            so we replace nan with 0.0 to avoid activations, and sensibly replace infinity values if they are present.
         """
-        # TODO: Reconsider this.
         self._degree = np.nan_to_num(value, nan=0.0, neginf=0.0, posinf=1.0)
 
     def parameters(self) -> str:
-        """Return the space-separated parameters of the defuzzifier.
+        """Return the space-separated parameters of the term.
 
         Returns:
             `degree * term` if not implication else `implication(degree, term)`
         """
         name = self.term.name if self.term else "none"
+        degree = (
+            f"[{Op.str(self.degree, delimiter=', ')}]"
+            if np.size(self.degree) > 1
+            else Op.str(self.degree)
+        )
         if self.implication:
-            result = f"{self.implication}({Op.str(self.degree)},{name})"
+            result = f"{self.implication}({degree},{name})"
         else:
-            result = f"({Op.str(self.degree)}*{name})"
+            result = f"({degree}*{name})"
         return result
 
     def membership(self, x: Scalar) -> Scalar:
@@ -360,7 +383,7 @@ class Activated(Term):
             $\mu(x) = \alpha_a \otimes \mu_a(x)$
         """
         if not self.implication:
-            raise ValueError("expected an implication operator, but none found")
+            raise ValueError("expected an implication operator, but found none")
         y = self.implication.compute(
             np.atleast_2d(self.degree).T,
             self.term.membership(x),
@@ -455,18 +478,18 @@ class Aggregated(Term):
             $\mu(x)=\bigoplus_i^n\alpha_i\otimes\mu_i(x) = \alpha_1\otimes\mu_1(x) \oplus \ldots \oplus \alpha_n\otimes\mu_n(x)$
         """
         if self.terms and not self.aggregation:
-            raise ValueError("expected an aggregation operator, but none found")
+            raise ValueError("expected an aggregation operator, but found none")
 
         y = scalar(0.0)
         for term in self.terms:
             y = self.aggregation.compute(y, term.membership(x))  # type: ignore
         return y
 
-    def grouped_terms(self) -> list[Activated]:
+    def grouped_terms(self) -> dict[str, Activated]:
         """Group the activated terms and aggregate their activation degrees.
 
         Returns:
-             grouped activated terms with aggregated activation degrees.
+             grouped activated terms by name with aggregated activation degrees.
 
         info: related
             - [fuzzylite.defuzzifier.WeightedSum][]
@@ -482,7 +505,7 @@ class Aggregated(Term):
                 continue
             aggregated_term = groups[activated.term.name]
             aggregated_term.degree = aggregation.compute(aggregated_term.degree, activated.degree)
-        return list(groups.values())
+        return groups
 
     def activation_degree(self, term: Term) -> Scalar:
         """Compute the aggregated activation degree of the term.
@@ -493,20 +516,24 @@ class Aggregated(Term):
         Returns:
              aggregated activation degree for the term.
         """
-        for activated in self.grouped_terms():
-            if activated.term == term:
-                return activated.degree
-        return scalar(0.0)
+        activated = self.grouped_terms().get(term.name)
+        return activated.degree if activated else scalar(0.0)
 
     def highest_activated_term(self) -> Activated | None:
         """Find the term with the maximum aggregated activation degree.
 
         Returns:
-             term with the maximum aggregated activation degree.
+            term with the maximum aggregated activation degree.
+
+        Raises:
+            ValueError: when working with vectorization (eg, size(activation_degree) > 1)
         """
-        # TODO: fix for vectorization
         highest: Activated | None = None
-        for activated in self.grouped_terms():
+        for activated in self.grouped_terms().values():
+            if (size := np.size(activated.degree)) > 1:
+                raise ValueError(
+                    f"expected a unit scalar, but got vector of size {size}: {activated.degree=}"
+                )
             if (highest is None and activated.degree > 0.0) or (
                 highest and activated.degree > highest.degree
             ):
@@ -903,7 +930,7 @@ class Constant(Term):
         - $k$: value of the Constant
     """
 
-    def __init__(self, name: str = "", value: Scalar = nan) -> None:
+    def __init__(self, name: str = "", value: float = nan) -> None:
         """Constructor.
 
         Args:

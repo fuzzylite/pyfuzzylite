@@ -531,7 +531,7 @@ class WeightedAverage(WeightedDefuzzifier):
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
             else Term.membership.__name__
         )
-        for activated in fuzzy_output.grouped_terms():
+        for activated in fuzzy_output.grouped_terms().values():
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
             weighted_sum = weighted_sum + w * z
@@ -593,7 +593,7 @@ class WeightedSum(WeightedDefuzzifier):
             if this_type == WeightedDefuzzifier.Type.Tsukamoto
             else Term.membership.__name__
         )
-        for activated in fuzzy_output.grouped_terms():
+        for activated in fuzzy_output.grouped_terms().values():
             w = activated.degree
             z = activated.term.__getattribute__(membership)(w)
             weighted_sum = weighted_sum + w * z

@@ -479,7 +479,9 @@ RuleBlock:
         engine = fl.FllImporter().from_string(fll)
         engine.input_values = fl.array([0.75, 1.0, 0.75])
         engine.process()
-        self.assertEqual("1.000/negative + 1.000/positive", engine.output_variable(0).fuzzy_value())
+        self.assertEqual(
+            "1.000/negative + 1.000/positive", engine.output_variable(0).fuzzy_value().item()
+        )
         # new behaviour
         np.testing.assert_allclose(
             0,
