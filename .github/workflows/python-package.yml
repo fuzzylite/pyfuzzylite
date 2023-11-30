@@ -38,11 +38,10 @@ jobs:
         run: nox -e test
 
       - name: Documentation
-        if: github.ref != 'refs/heads/main'
         run: nox -e docs
 
       - name: Documentation deploy
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/development' && github.event.pull_request.merged
         run: nox -e docs -- deploy
 
       - name: Coverage
