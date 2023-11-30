@@ -134,14 +134,11 @@ def benchmark(session: nox.Session) -> None:
 
 @nox.session(python=False)
 def docs(session: nox.Session) -> None:
-    """Build the documentation."""
-    session.run(*"mkdocs build --strict".split(), external=True)
-
-
-@nox.session(python=False)
-def docs_deploy(session: nox.Session) -> None:
-    """Deploy the documentation in Github Pages."""
-    session.run(*"mkdocs gh-deploy".split(), external=True)
+    """Build the documentation and deploy if passed `deploy` in arguments."""
+    if "deploy" in session.posargs:
+        session.run(*"mkdocs gh-deploy --strict --clean".split(), external=True)
+    else:
+        session.run(*"mkdocs build --strict --clean".split(), external=True)
 
 
 @nox.session

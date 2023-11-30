@@ -2,9 +2,9 @@ name: Python package
 
 on:
   push:
-    branches: [main, development]
+    branches: [ main, development ]
   pull_request:
-    branches: [main, development, feature/*]
+    branches: [ main, development, feature/* ]
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"] #, "3.7", "3.8", "3.9", "3.10"]
+        python-version: [ "3.9" ] #, "3.7", "3.8", "3.9", "3.10"]
 
     steps:
       - uses: actions/checkout@v3
@@ -38,7 +38,12 @@ jobs:
         run: nox -e test
 
       - name: Documentation
+        if: github.ref != 'refs/heads/main'
         run: nox -e docs
+
+      - name: Documentation deploy
+        if: github.ref == 'refs/heads/main'
+        run: nox -e docs -- deploy
 
       - name: Coverage
         uses: coverallsapp/github-action@v2
