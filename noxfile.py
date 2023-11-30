@@ -16,8 +16,6 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 
-import os
-
 import nox
 
 nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
@@ -50,16 +48,11 @@ def lint(session: nox.Session) -> None:
         "ruff": "lint_ruff",
         "pyright": "lint_pyright",
         "mypy": "lint_mypy",
-        "qodana": "lint_qodana",
         "markdown": "lint_markdown",
     }
     # Case 1: posargs is empty, run all linters
-    # Case 2: posargs only contains -qodana, run all linters except qodana (cloud linting)
-    # Case 3: posargs is not empty, run only the specified linters
+    # Case 2: posargs is not empty, run only the specified linters
     posargs = list(session.posargs)
-    if "-qodana" in posargs:
-        posargs.remove("-qodana")
-        linters.pop("qodana")
     if not posargs:
         posargs = list(linters.keys())
     for linter in posargs:
@@ -95,30 +88,6 @@ def lint_mypy(session: nox.Session) -> None:
     files = ["fuzzylite/", "tests/", "noxfile.py"]
     session.run(*"mypy --version".split(), external=True)
     session.run("mypy", *files, external=True)
-
-
-@nox.session(python=False)
-def lint_qodana(session: nox.Session) -> None:
-    """Run qodana linter."""
-    if "QODANA_TOKEN" not in os.environ:
-        session.warn(
-            "Qodana linting failed to run because environment variable 'QODANA_TOKEN' is not present"
-        )
-    else:
-        token = os.environ["QODANA_TOKEN"] or ""
-        session.run(
-            *" ".join(
-                [
-                    "qodana scan",
-                    "--source-directory fuzzylite/",
-                    "--results-dir .qodana/",
-                    "--baseline .qodana/baseline/qodana.sarif.json",
-                    "--clear-cache",
-                ]
-            ).split(),
-            env={"QODANA_TOKEN": token},
-            external=True,
-        )
 
 
 @nox.session(python=False)
