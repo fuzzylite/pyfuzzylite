@@ -42,7 +42,7 @@ jobs:
           nox -e docs
 
       - name: Documentation Test
-        if: github.event.pull_request.base.ref  == 'development'
+        if: github.event.pull_request.base.ref  == 'feature/deploy-docs-main'
         run:
           echo "Test Success"
 
