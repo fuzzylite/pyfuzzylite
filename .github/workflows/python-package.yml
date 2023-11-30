@@ -41,13 +41,8 @@ jobs:
         run:
           nox -e docs
 
-      - name: Documentation Test
-        if: github.event.pull_request.base.ref  == 'feature/deploy-docs-main'
-        run:
-          echo "Test Success"
-
       - name: Documentation deploy
-        if: github.ref == 'refs/heads/deploy-docs-main' && github.event.pull_request.merged
+        if: github.event.pull_request.base.ref == 'development' && github.event.pull_request.merged
         run: nox -e docs -- deploy
 
       - name: Coverage
