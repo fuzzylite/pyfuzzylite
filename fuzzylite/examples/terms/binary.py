@@ -30,10 +30,7 @@ class Binary:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Binary("left", 0.666, -fl.inf),
-                        fl.Binary("right", 0.333, fl.inf),
-                    ],
+                    terms=[fl.Binary("left", 0.666, -fl.inf), fl.Binary("right", 0.333, fl.inf)],
                 )
             ],
             rule_blocks=[

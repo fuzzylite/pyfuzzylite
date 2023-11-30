@@ -30,10 +30,7 @@ class Gaussian:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Gaussian("left", 0.333, 0.143),
-                        fl.Gaussian("right", 0.666, 0.143),
-                    ],
+                    terms=[fl.Gaussian("left", 0.333, 0.143), fl.Gaussian("right", 0.666, 0.143)],
                 )
             ],
             rule_blocks=[

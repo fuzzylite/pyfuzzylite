@@ -11,20 +11,14 @@ class Mam21:
                     minimum=-5.0,
                     maximum=5.0,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("small", -5.0, 5.0, 8.0),
-                        fl.Bell("big", 5.0, 5.0, 8.0),
-                    ],
+                    terms=[fl.Bell("small", -5.0, 5.0, 8.0), fl.Bell("big", 5.0, 5.0, 8.0)],
                 ),
                 fl.InputVariable(
                     name="velocity",
                     minimum=-5.0,
                     maximum=5.0,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("small", -5.0, 5.0, 2.0),
-                        fl.Bell("big", 5.0, 5.0, 2.0),
-                    ],
+                    terms=[fl.Bell("small", -5.0, 5.0, 2.0), fl.Bell("big", 5.0, 5.0, 2.0)],
                 ),
             ],
             output_variables=[

@@ -30,10 +30,7 @@ class Cosine:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Cosine("left", 0.333, 0.666),
-                        fl.Cosine("right", 0.666, 0.666),
-                    ],
+                    terms=[fl.Cosine("left", 0.333, 0.666), fl.Cosine("right", 0.666, 0.666)],
                 )
             ],
             rule_blocks=[

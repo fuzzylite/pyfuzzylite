@@ -11,10 +11,7 @@ class InvestmentPortfolio:
                     minimum=20.0,
                     maximum=100.0,
                     lock_range=False,
-                    terms=[
-                        fl.ZShape("Young", 30.0, 90.0),
-                        fl.SShape("Old", 30.0, 90.0),
-                    ],
+                    terms=[fl.ZShape("Young", 30.0, 90.0), fl.SShape("Old", 30.0, 90.0)],
                 ),
                 fl.InputVariable(
                     name="RiskTolerance",
