@@ -30,10 +30,7 @@ class Bell:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Bell("left", 0.333, 0.167, 3.0),
-                        fl.Bell("right", 0.666, 0.167, 3.0),
-                    ],
+                    terms=[fl.Bell("left", 0.333, 0.167, 3.0), fl.Bell("right", 0.666, 0.167, 3.0)],
                 )
             ],
             rule_blocks=[

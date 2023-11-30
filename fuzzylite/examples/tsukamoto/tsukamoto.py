@@ -28,11 +28,7 @@ class Tsukamoto:
                     default_value=fl.nan,
                     aggregation=None,
                     defuzzifier=fl.WeightedAverage(),
-                    terms=[
-                        fl.Ramp("b", 0.6, 0.4),
-                        fl.Ramp("a", 0.0, 0.25),
-                        fl.Ramp("c", 0.7, 1.0),
-                    ],
+                    terms=[fl.Ramp("b", 0.6, 0.4), fl.Ramp("a", 0.0, 0.25), fl.Ramp("c", 0.7, 1.0)],
                 ),
                 fl.OutputVariable(
                     name="Sigmoids",

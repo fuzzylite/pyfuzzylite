@@ -14,18 +14,10 @@ class SltbuFl:
                     terms=[fl.ZShape("near", 1.0, 2.0), fl.SShape("far", 1.0, 2.0)],
                 ),
                 fl.InputVariable(
-                    name="control1",
-                    minimum=-0.785,
-                    maximum=0.785,
-                    lock_range=False,
-                    terms=[],
+                    name="control1", minimum=-0.785, maximum=0.785, lock_range=False, terms=[]
                 ),
                 fl.InputVariable(
-                    name="control2",
-                    minimum=-0.785,
-                    maximum=0.785,
-                    lock_range=False,
-                    terms=[],
+                    name="control2", minimum=-0.785, maximum=0.785, lock_range=False, terms=[]
                 ),
             ],
             output_variables=[

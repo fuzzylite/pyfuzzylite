@@ -11,40 +11,28 @@ class Slbb:
                     minimum=-1.5,
                     maximum=1.5,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in1mf1", -1.5, 1.5, 2.0),
-                        fl.Bell("in1mf2", 1.5, 1.5, 2.0),
-                    ],
+                    terms=[fl.Bell("in1mf1", -1.5, 1.5, 2.0), fl.Bell("in1mf2", 1.5, 1.5, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in2",
                     minimum=-1.5,
                     maximum=1.5,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in2mf1", -1.5, 1.5, 2.0),
-                        fl.Bell("in2mf2", 1.5, 1.5, 2.0),
-                    ],
+                    terms=[fl.Bell("in2mf1", -1.5, 1.5, 2.0), fl.Bell("in2mf2", 1.5, 1.5, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in3",
                     minimum=-0.2,
                     maximum=0.2,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in3mf1", -0.2, 0.2, 2.0),
-                        fl.Bell("in3mf2", 0.2, 0.2, 2.0),
-                    ],
+                    terms=[fl.Bell("in3mf1", -0.2, 0.2, 2.0), fl.Bell("in3mf2", 0.2, 0.2, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in4",
                     minimum=-0.4,
                     maximum=0.4,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in4mf1", -0.4, 0.4, 2.0),
-                        fl.Bell("in4mf2", 0.4, 0.4, 2.0),
-                    ],
+                    terms=[fl.Bell("in4mf1", -0.4, 0.4, 2.0), fl.Bell("in4mf2", 0.4, 0.4, 2.0)],
                 ),
             ],
             output_variables=[

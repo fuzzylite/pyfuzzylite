@@ -30,10 +30,7 @@ class Concave:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Concave("left", 0.333, 0.0),
-                        fl.Concave("right", 0.666, 1.0),
-                    ],
+                    terms=[fl.Concave("left", 0.333, 0.0), fl.Concave("right", 0.666, 1.0)],
                 )
             ],
             rule_blocks=[

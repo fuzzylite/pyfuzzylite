@@ -11,40 +11,28 @@ class Slcp:
                     minimum=-0.3,
                     maximum=0.3,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in1mf1", -0.3, 0.3, 2.0),
-                        fl.Bell("in1mf2", 0.3, 0.3, 2.0),
-                    ],
+                    terms=[fl.Bell("in1mf1", -0.3, 0.3, 2.0), fl.Bell("in1mf2", 0.3, 0.3, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in2",
                     minimum=-1.0,
                     maximum=1.0,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in2mf1", -1.0, 1.0, 2.0),
-                        fl.Bell("in2mf2", 1.0, 1.0, 2.0),
-                    ],
+                    terms=[fl.Bell("in2mf1", -1.0, 1.0, 2.0), fl.Bell("in2mf2", 1.0, 1.0, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in3",
                     minimum=-3.0,
                     maximum=3.0,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in3mf1", -3.0, 3.0, 2.0),
-                        fl.Bell("in3mf2", 3.0, 3.0, 2.0),
-                    ],
+                    terms=[fl.Bell("in3mf1", -3.0, 3.0, 2.0), fl.Bell("in3mf2", 3.0, 3.0, 2.0)],
                 ),
                 fl.InputVariable(
                     name="in4",
                     minimum=-3.0,
                     maximum=3.0,
                     lock_range=False,
-                    terms=[
-                        fl.Bell("in4mf1", -3.0, 3.0, 2.0),
-                        fl.Bell("in4mf2", 3.0, 3.0, 2.0),
-                    ],
+                    terms=[fl.Bell("in4mf1", -3.0, 3.0, 2.0), fl.Bell("in4mf2", 3.0, 3.0, 2.0)],
                 ),
             ],
             output_variables=[

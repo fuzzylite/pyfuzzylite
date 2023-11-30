@@ -11,10 +11,7 @@ class Sugeno1:
                     minimum=-5.0,
                     maximum=5.0,
                     lock_range=False,
-                    terms=[
-                        fl.Gaussian("low", -5.0, 4.0),
-                        fl.Gaussian("high", 5.0, 4.0),
-                    ],
+                    terms=[fl.Gaussian("low", -5.0, 4.0), fl.Gaussian("high", 5.0, 4.0)],
                 )
             ],
             output_variables=[
@@ -27,10 +24,7 @@ class Sugeno1:
                     default_value=fl.nan,
                     aggregation=None,
                     defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),
-                    terms=[
-                        fl.Linear("line1", [-1.0, -1.0]),
-                        fl.Linear("line2", [1.0, -1.0]),
-                    ],
+                    terms=[fl.Linear("line1", [-1.0, -1.0]), fl.Linear("line2", [1.0, -1.0])],
                 )
             ],
             rule_blocks=[

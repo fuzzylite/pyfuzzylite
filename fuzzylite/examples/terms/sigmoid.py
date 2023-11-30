@@ -30,10 +30,7 @@ class Sigmoid:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Sigmoid("left", 0.5, -30.0),
-                        fl.Sigmoid("right", 0.5, 30.0),
-                    ],
+                    terms=[fl.Sigmoid("left", 0.5, -30.0), fl.Sigmoid("right", 0.5, 30.0)],
                 )
             ],
             rule_blocks=[

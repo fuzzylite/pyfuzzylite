@@ -17,9 +17,11 @@ fuzzylite is a registered trademark of FuzzyLite Limited.
 """
 from __future__ import annotations
 
+import inspect
 import logging
 import pathlib
 import unittest
+from pathlib import Path
 
 logger = logging.getLogger()
 
@@ -120,6 +122,30 @@ fuzzylite.examples.tsukamoto.tsukamoto
 
         engines = [engine for engine in fl.Op.glob_examples("engine")]
         self.assertEqual(len(engines), len(obtained))
+
+    def test_examples_remain_the_same(self) -> None:
+        """Test that all the examples remain the same when exported in Python, FLL and FLD."""
+        import fuzzylite as fl
+
+        examples = set(fl.Op.glob_examples("module"))
+        self.assertTrue(bool(examples), msg="examples not found")
+
+        for example_module in examples:
+            example_class, *_ = inspect.getmembers(example_module, predicate=inspect.isclass)
+            engine = example_class[1]().engine
+
+            expected_python = Path(str(example_module.__file__)).read_text()
+            obtained_python = fl.PythonExporter(formatted=True, encapsulated=True).to_string(engine)
+            self.assertEqual(expected_python, obtained_python, msg=example_module.__name__)
+
+            expected_fll = Path(str(example_module.__file__)).with_suffix(".fll").read_text()
+            obtained_fll = fl.FllExporter().to_string(engine)
+            self.assertEqual(expected_fll, obtained_fll, msg=example_module.__name__)
+
+            expected_fld = Path(str(example_module.__file__)).with_suffix(".fld").read_text()
+            with fl.settings.context(decimals=9):
+                obtained_fld = fl.FldExporter().to_string(engine)
+            self.assertEqual(expected_fld, obtained_fld, msg=example_module.__name__)
 
 
 if __name__ == "__main__":

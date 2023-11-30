@@ -30,10 +30,7 @@ class Spike:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Spike("left", 0.333, 0.666),
-                        fl.Spike("right", 0.666, 0.666),
-                    ],
+                    terms=[fl.Spike("left", 0.333, 0.666), fl.Spike("right", 0.666, 0.666)],
                 )
             ],
             rule_blocks=[

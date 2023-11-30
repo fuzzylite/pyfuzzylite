@@ -30,10 +30,7 @@ class Rectangle:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.Rectangle("left", 0.0, 0.666),
-                        fl.Rectangle("right", 0.333, 1.0),
-                    ],
+                    terms=[fl.Rectangle("left", 0.0, 0.666), fl.Rectangle("right", 0.333, 1.0)],
                 )
             ],
             rule_blocks=[

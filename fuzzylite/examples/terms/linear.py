@@ -30,10 +30,7 @@ class Linear:
                     default_value=fl.nan,
                     aggregation=None,
                     defuzzifier=fl.WeightedAverage(type="TakagiSugeno"),
-                    terms=[
-                        fl.Linear("left", [0.0, 0.333]),
-                        fl.Linear("right", [0.0, 0.666]),
-                    ],
+                    terms=[fl.Linear("left", [0.0, 0.333]), fl.Linear("right", [0.0, 0.666])],
                 )
             ],
             rule_blocks=[

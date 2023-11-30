@@ -26,11 +26,7 @@ class Laundry:
                         fl.Discrete(
                             "normal",
                             fl.array(
-                                [
-                                    fl.array([3.0, 0.0]),
-                                    fl.array([4.0, 1.0]),
-                                    fl.array([6.0, 0.0]),
-                                ]
+                                [fl.array([3.0, 0.0]), fl.array([4.0, 1.0]), fl.array([6.0, 0.0])]
                             ),
                         ),
                     ],
@@ -44,11 +40,7 @@ class Laundry:
                         fl.Discrete(
                             "low",
                             fl.array(
-                                [
-                                    fl.array([0.0, 1.0]),
-                                    fl.array([2.0, 0.8]),
-                                    fl.array([5.0, 0.0]),
-                                ]
+                                [fl.array([0.0, 1.0]), fl.array([2.0, 0.8]), fl.array([5.0, 0.0])]
                             ),
                         ),
                         fl.Discrete(
@@ -116,16 +108,11 @@ class Laundry:
                         fl.Discrete(
                             "short",
                             fl.array(
-                                [
-                                    fl.array([0.0, 1.0]),
-                                    fl.array([10.0, 1.0]),
-                                    fl.array([20.0, 0.0]),
-                                ]
+                                [fl.array([0.0, 1.0]), fl.array([10.0, 1.0]), fl.array([20.0, 0.0])]
                             ),
                         ),
                         fl.Discrete(
-                            "long",
-                            fl.array([fl.array([10.0, 0.0]), fl.array([20.0, 1.0])]),
+                            "long", fl.array([fl.array([10.0, 0.0]), fl.array([20.0, 1.0])])
                         ),
                     ],
                 ),

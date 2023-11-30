@@ -30,10 +30,7 @@ class SemiEllipse:
                     default_value=fl.nan,
                     aggregation=fl.Maximum(),
                     defuzzifier=fl.Centroid(),
-                    terms=[
-                        fl.SemiEllipse("left", 0.0, 0.666),
-                        fl.SemiEllipse("right", 0.333, 1.0),
-                    ],
+                    terms=[fl.SemiEllipse("left", 0.0, 0.666), fl.SemiEllipse("right", 0.333, 1.0)],
                 )
             ],
             rule_blocks=[
