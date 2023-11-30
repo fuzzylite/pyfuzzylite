@@ -16,6 +16,7 @@ include = [
     "fuzzylite/",
     "tests/",
     "AUTHOR",
+    "CITATION.cff",
     "fuzzylite.png",
     "HISTORY",
     "LICENSE.FuzzyLite.txt",
@@ -24,6 +25,7 @@ include = [
     "poetry.toml",
     "pyproject.toml",
     "README.md",
+    "requirements.txt",
     "THANKS",
 ]
 
