@@ -38,7 +38,7 @@ jobs:
         run: nox -e test
 
       - name: Documentation
-        run:
+        run: |
           nox -e docs
           echo "============================"
           echo "github.ref=${{github.ref}}"
