@@ -42,7 +42,12 @@ jobs:
           nox -e docs
           echo "============================"
           echo "github.ref=${{github.ref}}"
+          echo "github.ref=$github.ref"
+          echo "github.event.pull_request.base.ref=${{github.event.pull_request.base.ref}}"
+          echo "github.event.pull_request.head.ref=${{github.event.pull_request.head.ref}}"
           echo "github.event.pull_request.merged=${{github.event.pull_request.merged}}"
+          
+          
 
       - name: Documentation deploy
         if: github.ref == 'refs/heads/deploy-docs-main' && github.event.pull_request.merged
