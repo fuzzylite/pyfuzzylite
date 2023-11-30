@@ -40,6 +40,7 @@ jobs:
       - name: Documentation
         run:
           nox -e docs
+          echo "============================"
           echo "github.ref=${{github.ref}}"
           echo "github.event.pull_request.merged=${{github.event.pull_request.merged}}"
 
