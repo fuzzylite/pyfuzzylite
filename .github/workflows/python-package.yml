@@ -38,8 +38,10 @@ jobs:
         run: nox -e test
 
       - name: Documentation
-        run:
+        run: |
           nox -e docs
+          echo "github.ref=${{github.ref}}"
+          echo "github.event.pull_request.merged=${{github.event.pull_request.merged}}"
 
       - name: Documentation deploy
         if: github.ref == 'refs/heads/development' && github.event.pull_request.merged
