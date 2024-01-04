@@ -32,13 +32,18 @@ jobs:
       - name: Build
         run: poetry build
 
-#      - name: Publish
-#        uses: pypa/gh-action-pypi-publish@v1.8.10
-#        with:
-#          repository-url: https://test.pypi.org/legacy/
+      #      - name: Publish
+      #        uses: pypa/gh-action-pypi-publish@v1.8.10
+      #        with:
+      #          repository-url: https://test.pypi.org/legacy/
 
       - name: Install development dependencies for documentation
         run: poetry install --only dev
+
+      - name: Configure Git Credentials  # https://squidfunk.github.io/mkdocs-material/publishing-your-site/
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Publish documentation
         run: nox -e docs -- publish
