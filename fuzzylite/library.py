@@ -272,7 +272,7 @@ class Information:
         Returns:
             version of the library
         """
-        __version__ = "8.0.0"
+        __version__ = "8.0.1"
         return __version__
 
 

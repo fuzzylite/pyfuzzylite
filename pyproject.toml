@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "8.0.0"
+version = "8.0.1"
 description = "a fuzzy logic control library in Python"
 license = "Proprietary"
 readme = "README.md"
