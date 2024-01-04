@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  release:
+    types:
+      - created
+  pull_request:
+    branches: [ main, development, feature/* ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Build
+        run: poetry build
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@v1.8.10
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish documentation
+        run: nox -e docs -- publish
