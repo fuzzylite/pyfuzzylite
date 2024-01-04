@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ main, development, feature/* ]
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -26,16 +29,13 @@ jobs:
       - name: Install requirements
         run: pip install -r requirements.txt
 
-      - name: Install
-        run: nox -e install
-        
       - name: Build
         run: poetry build
 
-      - name: Publish
-        uses: pypa/gh-action-pypi-publish@v1.8.10
-        with:
-          repository-url: https://test.pypi.org/legacy/
+#      - name: Publish
+#        uses: pypa/gh-action-pypi-publish@v1.8.10
+#        with:
+#          repository-url: https://test.pypi.org/legacy/
 
       - name: Publish documentation
         run: nox -e docs -- publish

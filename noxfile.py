@@ -136,7 +136,7 @@ def benchmark(session: nox.Session) -> None:
 def docs(session: nox.Session) -> None:
     """Build the documentation and deploy if passed `publish` in arguments."""
     if "publish" in session.posargs:
-        session.run(*"mkdocs gh-deploy --strict --clean".split(), external=True)
+        session.run(*"mkdocs gh-deploy --strict --clean --force".split(), external=True)
     else:
         session.run(*"mkdocs build --strict --clean".split(), external=True)
 
