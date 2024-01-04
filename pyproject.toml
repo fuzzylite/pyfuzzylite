@@ -66,10 +66,6 @@ black = { extras = [
 coverage = "^7.2.3" # Code coverage
 jupyter-contrib-nbextensions = "^0.7.0" # Extensions for Jupyter Notebooks
 kaleido = "0.2.1" # Use static charts with plotly
-mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
-mkdocstrings = { extras = [
-    "python",
-], version = "^0.22.0" } # Source code documentation for mkdocs
 mypy = "^1.2.0" # Static code analysis
 notebook = "6.5.6" # Jupyter Notebooks
 plotly = "^5.18.0" # Interactive plots
@@ -86,6 +82,11 @@ twine = "^4.0.2" # Publish package
 poetry = "~=1.7.1" # Build management
 nox = "~=2023.4.22" # Command-line build management
 
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
+mkdocstrings = { extras = [
+    "python",
+], version = "^0.22.0" } # Source code documentation for mkdocs
 
 [tool.black]
 target-version = ["py39"]

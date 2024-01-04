@@ -37,5 +37,8 @@ jobs:
 #        with:
 #          repository-url: https://test.pypi.org/legacy/
 
+      - name: Install documentation dependencies
+        run: poetry install --only docs
+
       - name: Publish documentation
         run: nox -e docs -- publish
