@@ -1,10 +1,9 @@
+.pypirc
+
 .idea/
-.qodana/
 .vscode/
 
 site/
-
-!.qodana/baseline
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,python,windows,pycharm,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,python,windows,pycharm,visualstudiocode
