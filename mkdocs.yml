@@ -5,7 +5,7 @@ site_author: Juan Rada-Vilela, Ph.D.
 repo_name: "fuzzylite/pyfuzzylite"
 repo_url: "https://github.com/fuzzylite/pyfuzzylite"
 edit_uri: "edit/development/docs/"
-copyright: Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
+copyright: Copyright&copy; 2010-<script>document.write(new Date().getFullYear())</script> FuzzyLite Limited. All rights reserved.
 
 watch: [ README.md, fuzzylite/, docs/ ]
 
@@ -14,8 +14,8 @@ theme:
   favicon: image/fuzzylite.svg
   logo: image/fuzzylite.svg
   palette:
-    primary: black
-    accent: red
+    primary: darkblue
+    accent: blue
   icon:
     repo: fontawesome/brands/github
   features:
@@ -25,7 +25,7 @@ theme:
     - navigation.top # "Back to top" when reaching bottom of page
     - toc.follow # follow content in TOC
     - toc.integrate # TOC integrated in left panel
-    - content.action.edit # Edit documentation
+    #- content.action.edit # Edit documentation
 
 validation:
   omitted_files: warn
@@ -34,10 +34,10 @@ validation:
 
 extra:
   social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/fuzzylite/pyfuzzylite
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/pyfuzzylite
+    - icon: fontawesome/brands/github
+      link: https://github.com/fuzzylite/
 
 markdown_extensions:
   - admonition # Render blocks (eg, todo, note, info)
@@ -55,6 +55,15 @@ markdown_extensions:
   - pymdownx.magiclink # Convert URLs into links
   - pymdownx.details # Collapsible blocks
   - pymdownx.b64 # Insert images from relative paths
+  - pymdownx.tabbed: # Content tabs
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
   - toc:
       permalink: true # "¤"  # Adds a clickable permalink to each section heading
       toc_depth: 4
@@ -107,26 +116,26 @@ plugins:
             - https://docs.python.org/3/objects.inv
             - https://numpy.org/doc/stable/objects.inv
 
+not_in_nav: |
+  fuzzylite/__all__/activation.md
+  fuzzylite/__all__/benchmark.md
+  fuzzylite/__all__/defuzzifier.md
+  fuzzylite/__all__/engine.md
+  fuzzylite/__all__/exporter.md
+  fuzzylite/__all__/factory.md
+  fuzzylite/__all__/hedge.md
+  fuzzylite/__all__/importer.md
+  fuzzylite/__all__/library.md
+  fuzzylite/__all__/norm.md
+  fuzzylite/__all__/operation.md
+  fuzzylite/__all__/rule.md
+  fuzzylite/__all__/term.md
+  fuzzylite/__all__/types.md
+  fuzzylite/__all__/variable.md
 
 nav:
-  - Home: index.md
-  - Modules:
-      - __all__:
-          - activation: fuzzylite/__all__/activation.md
-          - benchmark: fuzzylite/__all__/benchmark.md
-          - defuzzifier: fuzzylite/__all__/defuzzifier.md
-          - engine: fuzzylite/__all__/engine.md
-          - exporter: fuzzylite/__all__/exporter.md
-          - factory: fuzzylite/__all__/factory.md
-          - hedge: fuzzylite/__all__/hedge.md
-          - importer: fuzzylite/__all__/importer.md
-          - library: fuzzylite/__all__/library.md
-          - norm: fuzzylite/__all__/norm.md
-          - operation: fuzzylite/__all__/operation.md
-          - rule: fuzzylite/__all__/rule.md
-          - term: fuzzylite/__all__/term.md
-          - types: fuzzylite/__all__/types.md
-          - variable: fuzzylite/__all__/variable.md
+  - pyfuzzylite: index.md
+  - Documentation:
       - activation:
           - Activation: fuzzylite/activation/Activation.md
           - First: fuzzylite/activation/First.md

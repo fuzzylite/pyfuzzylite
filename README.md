@@ -6,7 +6,7 @@
 
 ## A Fuzzy Logic Control Library in Python
 
-by [Juan Rada-Vilela](https://fuzzylite.com/jcrada), Ph.D.
+by [**Juan Rada-Vilela, PhD** :fontawesome-solid-square-arrow-up-right:](https://fuzzylite.com/about)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
@@ -56,7 +56,7 @@ Please, download it and check it out for free at [fuzzylite.com/downloads](https
 
 ## <a name="features">Features</a>
 
-Documentation: [fuzzylite.github.io/pyfuzzylite/](https://fuzzylite.github.io/pyfuzzylite/)
+**Documentation**: [fuzzylite.github.io/pyfuzzylite/](https://fuzzylite.github.io/pyfuzzylite/)
 
 **(6) Controllers**: Mamdani, Takagi-Sugeno, Larsen, Tsukamoto, Inverse Tsukamoto, Hybrid
 
@@ -78,94 +78,100 @@ HamacherSum, NilpotentMaximum, NormalizedSum, UnboundedSum, LambdaNorm, Function
 
 **(7) Hedges**: Any, Not, Extremely, Seldom, Somewhat, Very, Function.
 
-**(3) Importers**: FuzzyLite Language `fll`. With `fuzzylite`: Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+**(3) Importers**: FuzzyLite Language `fll`. With `fuzzylite`: Fuzzy Inference System `fis`, Fuzzy Control
+Language `fcl`.
 
 **(7) Exporters**: `Python`, FuzzyLite Language `fll`, FuzzyLite Dataset `fld`. With `fuzzylite`: `C++`, `Java`,
-FuzzyLite Language `fll`, FuzzyLite Dataset `fld`, `R` script, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+FuzzyLite Language `fll`, FuzzyLite Dataset `fld`, `R` script, Fuzzy Inference System `fis`, Fuzzy Control
+Language `fcl`.
 
 **(30+) Examples**  of Mamdani, Takagi-Sugeno, Tsukamoto, and Hybrid controllers from `fuzzylite`, Octave, and Matlab,
 each included in the following formats: `py`, `fll`, `fld`. With `fuzzylite`: `C++`, `Java`, `R`, `fis`, and `fcl`.
 
 ## <a name="examples">Examples</a>
 
-### <a name="examples-py">pyfuzzylite</a>
+=== "FuzzyLite Language"
 
-```python title="pyfuzzylite"
-# File: fuzzylite/examples/mamdani/obstacle_avoidance.py
-import fuzzylite as fl
+    ```properties
+    # File: examples/mamdani/ObstacleAvoidance.fll
+    Engine: ObstacleAvoidance
+    InputVariable: obstacle
+      enabled: true
+      range: 0.000 1.000
+      lock-range: false
+      term: left Ramp 1.000 0.000
+      term: right Ramp 0.000 1.000
+    OutputVariable: mSteer
+      enabled: true
+      range: 0.000 1.000
+      lock-range: false
+      aggregation: Maximum
+      defuzzifier: Centroid 100
+      default: nan
+      lock-previous: false
+      term: left Ramp 1.000 0.000
+      term: right Ramp 0.000 1.000
+    RuleBlock: mamdani
+      enabled: true
+      conjunction: none
+      disjunction: none
+      implication: AlgebraicProduct
+      activation: General
+      rule: if obstacle is left then mSteer is right
+      rule: if obstacle is right then mSteer is left
+    ```
 
-engine = fl.Engine(
-    name="ObstacleAvoidance",
-    input_variables=[
-        fl.InputVariable(
-            name="obstacle",
-            minimum=0.0,
-            maximum=1.0,
-            lock_range=False,
-            terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
-        )
-    ],
-    output_variables=[
-        fl.OutputVariable(
-            name="mSteer",
-            minimum=0.0,
-            maximum=1.0,
-            lock_range=False,
-            lock_previous=False,
-            default_value=fl.nan,
-            aggregation=fl.Maximum(),
-            defuzzifier=fl.Centroid(resolution=100),
-            terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
-        )
-    ],
-    rule_blocks=[
-        fl.RuleBlock(
-            name="mamdani",
-            conjunction=None,
-            disjunction=None,
-            implication=fl.AlgebraicProduct(),
-            activation=fl.General(),
-            rules=[
-                fl.Rule.create("if obstacle is left then mSteer is right"),
-                fl.Rule.create("if obstacle is right then mSteer is left"),
-            ],
-        )
-    ],
-)
-```
+    ```python
+    # Python
+    import fuzzylite as fl
 
-### <a name="examples-fll">FuzzyLite Language</a>
+    engine = fl.FllImporter().from_file("examples/mamdani/ObstacleAvoidance.fll")
+    ```
 
-```properties title="FuzzyLite Language"
-#File: fuzzylite/examples/mamdani/obstacle_avoidance.fll
-Engine: ObstacleAvoidance
-InputVariable: obstacle
-  enabled: true
-  range: 0.000 1.000
-  lock-range: false
-  term: left Ramp 1.000 0.000
-  term: right Ramp 0.000 1.000
-OutputVariable: mSteer
-  enabled: true
-  range: 0.000 1.000
-  lock-range: false
-  aggregation: Maximum
-  defuzzifier: Centroid 100
-  default: nan
-  lock-previous: false
-  term: left Ramp 1.000 0.000
-  term: right Ramp 0.000 1.000
-RuleBlock: mamdani
-  enabled: true
-  conjunction: none
-  disjunction: none
-  implication: AlgebraicProduct
-  activation: General
-  rule: if obstacle is left then mSteer is right
-  rule: if obstacle is right then mSteer is left
-```
+=== "Python"
 
-***
+    ```python
+    import fuzzylite as fl
+
+    engine = fl.Engine(
+        name="ObstacleAvoidance",
+        input_variables=[
+            fl.InputVariable(
+                name="obstacle",
+                minimum=0.0,
+                maximum=1.0,
+                lock_range=False,
+                terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
+            )
+        ],
+        output_variables=[
+            fl.OutputVariable(
+                name="mSteer",
+                minimum=0.0,
+                maximum=1.0,
+                lock_range=False,
+                lock_previous=False,
+                default_value=fl.nan,
+                aggregation=fl.Maximum(),
+                defuzzifier=fl.Centroid(resolution=100),
+                terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
+            )
+        ],
+        rule_blocks=[
+            fl.RuleBlock(
+                name="mamdani",
+                conjunction=None,
+                disjunction=None,
+                implication=fl.AlgebraicProduct(),
+                activation=fl.General(),
+                rules=[
+                    fl.Rule.create("if obstacle is left then mSteer is right"),
+                    fl.Rule.create("if obstacle is right then mSteer is left"),
+                ],
+            )
+        ],
+    )
+    ```
 
 ## <a name="contributing">Contributing</a>
 
@@ -180,22 +186,22 @@ All contributions are welcome, provided they follow the following guidelines:
 
 If you are using the FuzzyLite Libraries, please cite the following reference in your article:
 
-Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL https://fuzzylite.com.
+> Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL https://fuzzylite.com.
 
-```bibtex title="bibtex"
- @misc{fl::fuzzylite,
-     author={Juan Rada-Vilela},
-     title={The FuzzyLite Libraries for Fuzzy Logic Control},
-     url={https://fuzzylite.com},
-     year={2018}
- }
+Or using `bibtex`:
+
+```bibtex
+@misc{fl::fuzzylite,
+    author={Juan Rada-Vilela},
+    title={The FuzzyLite Libraries for Fuzzy Logic Control},
+    url={https://fuzzylite.com},
+    year={2018}
+}
 ```
+
+***
 
 fuzzylite&reg; is a registered trademark of FuzzyLite Limited <br>
 jfuzzylite&trade; is a trademark of FuzzyLite Limited <br>
 pyfuzzylite&trade; is a trademark of FuzzyLite Limited <br>
 QtFuzzyLite&trade; is a trademark of FuzzyLite Limited <br>
-
-***
-
-Copyright &copy; 2010-2023 FuzzyLite Limited. All rights reserved.
