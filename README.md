@@ -1,4 +1,4 @@
-# pyfuzzylite&trade;
+# pyfuzzylite 8.0.0
 
 ***
 
