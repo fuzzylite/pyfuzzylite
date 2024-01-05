@@ -20,6 +20,9 @@ import nox
 
 nox.options.sessions = ["check", "freeze", "install", "lint", "test"]
 
+PYTHON_FILES = ["fuzzylite/", "tests/", "noxfile.py"]
+MARKDOWN_FILES = ["README.md", "THANKS.md", "docs/"]
+
 
 @nox.session(python=False)
 def check(session: nox.Session) -> None:
@@ -31,7 +34,7 @@ def check(session: nox.Session) -> None:
 @nox.session(python=False)
 def format(session: nox.Session) -> None:
     """Run code formatting."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = PYTHON_FILES
 
     session.run(*"black --version".split(), external=True)
     session.run("black", *files, external=True)
@@ -62,7 +65,7 @@ def lint(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_black(session: nox.Session) -> None:
     """Run black linter."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = PYTHON_FILES
     session.run(*"black --version".split(), external=True)
     session.run(*"black --check".split(), *files, external=True)
 
@@ -70,7 +73,7 @@ def lint_black(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_ruff(session: nox.Session) -> None:
     """Run ruff linter."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = PYTHON_FILES
     session.run(*"ruff check".split(), *files, external=True)
     session.run(*"ruff --version".split(), external=True)
 
@@ -85,7 +88,7 @@ def lint_pyright(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_mypy(session: nox.Session) -> None:
     """Run mypy linter."""
-    files = ["fuzzylite/", "tests/", "noxfile.py"]
+    files = PYTHON_FILES
     session.run(*"mypy --version".split(), external=True)
     session.run("mypy", *files, external=True)
 
@@ -93,7 +96,7 @@ def lint_mypy(session: nox.Session) -> None:
 @nox.session(python=False)
 def lint_markdown(session: nox.Session) -> None:
     """Run markdown linter."""
-    files = ["README.md", "docs/"]
+    files = MARKDOWN_FILES
     session.run(*f"pymarkdown scan {' '.join(files)}".split(), external=True)
 
 
