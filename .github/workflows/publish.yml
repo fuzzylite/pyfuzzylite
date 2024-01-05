@@ -5,15 +5,15 @@ on:
     types:
       - created
 
-  pull_request: # test-only
-    branches: [ main, development, feature/* ] # test-only
+    #pull_request: # test-only
+    #branches: [ main, development, feature/* ] # test-only
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment:
-      #name: release
-      name: test-release # test-only
+      name: release
+      #name: test-release # test-only
       url: https://pypi.org/p/pyfuzzylite
 
     permissions:
@@ -34,10 +34,10 @@ jobs:
       - name: Build
         run: poetry build
 
-#      - name: Publish
-#        uses: pypa/gh-action-pypi-publish@v1.8.10
-#        with:
-#          repository-url: https://test.pypi.org/legacy/ # test-only
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@v1.8.10
+        #with:
+        #  repository-url: https://test.pypi.org/legacy/ # test-only
 
       - name: Install development dependencies for documentation
         run: poetry install --only dev
