@@ -4,13 +4,13 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "8.0.1"
+version = "8.0.2"
 description = "a fuzzy logic control library in Python"
 license = "Proprietary"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
-authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
-maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
+authors = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
+maintainers = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
 repository = "https://github.com/fuzzylite/pyfuzzylite.git"
 include = [
     "fuzzylite/",
