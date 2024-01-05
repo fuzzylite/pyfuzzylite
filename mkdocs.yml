@@ -27,6 +27,11 @@ theme:
     - toc.integrate # TOC integrated in left panel
     - content.action.edit # Edit documentation
 
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
 extra:
   social:
     - icon: fontawesome/brands/github
