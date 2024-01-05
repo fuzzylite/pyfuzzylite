@@ -134,35 +134,21 @@ def benchmark(session: nox.Session) -> None:
 
 @nox.session(python=False)
 def docs(session: nox.Session) -> None:
-    """Build the documentation."""
-    session.run(*"mkdocs build --strict".split(), external=True)
-
-
-@nox.session(python=False)
-def docs_deploy(session: nox.Session) -> None:
-    """Deploy the documentation in Github Pages."""
-    session.run(*"mkdocs gh-deploy".split(), external=True)
-
-
-@nox.session
-def test_publish(session: nox.Session) -> None:
-    """Build the distributable and upload it to testpypi."""
-    session.run(*"rm -rf dist/".split(), external=True)
-    session.run(*"poetry build".split(), external=True)
-    session.run(*"twine check --strict dist/*".split(), external=True)
-    session.run(
-        *"twine upload --repository testpypi dist/* --config-file .pypirc --verbose".split(),
-        external=True,
-    )
+    """Build the documentation and deploy if passed `publish` in arguments."""
+    if "publish" in session.posargs:
+        session.run(*"mkdocs gh-deploy --strict --clean --force".split(), external=True)
+    else:
+        session.run(*"mkdocs build --strict --clean".split(), external=True)
 
 
 @nox.session
 def publish(session: nox.Session) -> None:
     """Build the distributable and upload it to pypi."""
+    repository = "testpypi" if "test" in session.posargs else "pypi"
     session.run(*"rm -rf dist/".split(), external=True)
     session.run(*"poetry build".split(), external=True)
     session.run(*"twine check --strict dist/*".split(), external=True)
     session.run(
-        *"twine upload --repository pypi dist/* --config-file .pypirc --verbose".split(),
+        *f"twine upload --repository {repository} dist/* --config-file .pypirc --verbose".split(),
         external=True,
     )

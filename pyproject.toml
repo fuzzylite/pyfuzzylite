@@ -9,8 +9,8 @@ description = "a fuzzy logic control library in Python"
 license = "Proprietary"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
-authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
-maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
+authors = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
+maintainers = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
 repository = "https://github.com/fuzzylite/pyfuzzylite.git"
 include = [
     "fuzzylite/",
@@ -45,6 +45,9 @@ classifiers = [
 
 [tool.poetry_bumpversion.file."fuzzylite/library.py"]
 [tool.poetry_bumpversion.file."tests/test_library.py"]
+[tool.poetry_bumpversion.file."docs/index.md"]
+search = "# pyfuzzylite {current_version}"
+replace = "# pyfuzzylite {new_version}"
 
 
 [[tool.poetry.packages]]
@@ -85,6 +88,7 @@ twine = "^4.0.2" # Publish package
 # Packages below are ground truth for version management. See requirements.txt.
 poetry = "~=1.7.1" # Build management
 nox = "~=2023.4.22" # Command-line build management
+
 
 
 [tool.black]

@@ -250,7 +250,7 @@ class Information:
     name: Final[str] = "fuzzylite"
     description: Final[str] = "a fuzzy logic control library in Python"
     license: Final[str] = "FuzzyLite License"
-    author: Final[str] = "Juan Rada-Vilela, Ph.D."
+    author: Final[str] = "Juan Rada-Vilela, PhD"
     author_email: Final[str] = "jcrada@fuzzylite.com"
     company: Final[str] = "FuzzyLite Limited"
     website: Final[str] = "https://fuzzylite.com/"
