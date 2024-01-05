@@ -71,7 +71,7 @@ class Exporter(ABC):
         return representation.as_constructor(self)
 
     @abstractmethod
-    def to_string(self, instance: object) -> str:
+    def to_string(self, instance: Any, /) -> str:
         """Return string representation of the instance.
 
         Args:
@@ -81,7 +81,7 @@ class Exporter(ABC):
             string representation of the object
         """
 
-    def to_file(self, path: str | Path, instance: object) -> None:
+    def to_file(self, path: str | Path, instance: Any) -> None:
         """Write the string representation of the instance into the file.
 
         Args:
