@@ -55,7 +55,7 @@ include = "fuzzylite"
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/fuzzylite/pyfuzzylite"
-Documentation = "https://fuzzylite.com/documentation"
+Documentation = "https://fuzzylite.github.io/pyfuzzylite/"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
