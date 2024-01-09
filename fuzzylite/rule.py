@@ -598,7 +598,7 @@ class Consequent:
         #  (3) After a hedge comes a hedge or a term
         #  (4) After a term comes operators 'and' or 'with'
         #  (5) After operator 'and' comes a variable
-        #  (6) After operator 'with' comes a scalar
+        #  (6) After operator 'with' comes a float
 
         s_variable, s_is, s_hedge, s_term, s_and, s_with = (2**i for i in range(6))
         state = s_variable
