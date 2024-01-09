@@ -545,6 +545,12 @@ class FldExporter(Exporter):
 
     info: related
         - [fuzzylite.exporter.Exporter][]
+
+    warning: warning
+        FldExporter uses vectorization so it only works with the [fuzzylite.activation.General][] activation method
+
+    todo: todo
+        include option for non-vectorized export so other activation methods can be used
     """
 
     @enum.unique
@@ -781,6 +787,7 @@ class FldExporter(Exporter):
 
         engine.restart()
 
+        # TODO: Vectorization here will not work for activation methods other than General
         for index, variable in enumerate(engine.input_variables):
             variable.value = input_values[:, index]
 
