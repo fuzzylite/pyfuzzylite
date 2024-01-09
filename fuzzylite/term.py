@@ -361,16 +361,15 @@ class Activated(Term):
         Returns:
             `degree * term` if not implication else `implication(degree, term)`
         """
-        name = self.term.name if self.term else "none"
         degree = (
             f"[{Op.str(self.degree, delimiter=', ')}]"
             if np.size(self.degree) > 1
             else Op.str(self.degree)
         )
         if self.implication:
-            result = f"{self.implication}({degree},{name})"
+            result = f"{self.implication}({degree},{self.term.name})"
         else:
-            result = f"({degree}*{name})"
+            result = f"({degree}*{self.term.name})"
         return result
 
     def membership(self, x: Scalar) -> Scalar:
@@ -2361,7 +2360,7 @@ class Trapezoid(Term):
         self.top_left = top_left
         self.top_right = top_right
         self.bottom_right = bottom_right
-        if Op.isnan(top_right) and Op.isnan(bottom_right):
+        if np.isnan(top_right) and np.isnan(bottom_right):
             self.bottom_right = top_left
             range_ = self.bottom_right - self.bottom_left
             self.top_left = self.bottom_left + range_ * 1.0 / 5.0
@@ -2471,7 +2470,7 @@ class Triangle(Term):
         self.left = left
         self.top = top
         self.right = right
-        if Op.isnan(right):
+        if np.isnan(right):
             self.top = 0.5 * (left + top)
             self.right = top
 
@@ -2859,7 +2858,7 @@ class Function(Term):
             if not node:
                 return self.prefix(self)
 
-            if not Op.isnan(node.constant):
+            if not np.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
@@ -2883,7 +2882,7 @@ class Function(Term):
             if not node:
                 return self.infix(self)
 
-            if not Op.isnan(node.constant):
+            if not np.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
@@ -2915,7 +2914,7 @@ class Function(Term):
             if not node:
                 return self.postfix(self)
 
-            if not Op.isnan(node.constant):
+            if not np.isnan(node.constant):
                 return Op.str(node.constant)
             if node.variable:
                 return node.variable
