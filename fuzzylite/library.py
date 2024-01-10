@@ -287,11 +287,19 @@ class Representation(reprlib.Repr):
     def __init__(self) -> None:
         """Constructor."""
         super().__init__()
-        limits = {k: v for k, v in vars(self).items()}
-        increase_factor = int(1e9)  # virtually limitless
-        for variable, value in limits.items():
-            setattr(self, variable, value * increase_factor)
+        increase_factor = int(1e6)  # very long in order to generate valid Python from large objects
         self.maxlevel = 10  # except for recursion level
+        self.maxtuple *= increase_factor
+        self.maxlist *= increase_factor
+        self.maxarray *= increase_factor
+        self.maxdict *= increase_factor
+        self.maxset *= increase_factor
+        self.maxfrozenset *= increase_factor
+        self.maxdeque *= increase_factor
+        self.maxstring *= increase_factor
+        self.maxlong *= increase_factor
+        self.maxother *= increase_factor
+
         from .exporter import FllExporter
 
         self.fll: Final = FllExporter()
