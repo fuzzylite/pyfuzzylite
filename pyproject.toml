@@ -63,19 +63,20 @@ python = "^3.9"
 numpy = "^1.20" # Numeric manipulation and vectorisation
 
 [tool.poetry.group.dev.dependencies]
-black = { extras = [
-    "jupyter",
-], version = "^23.11.0" } # Use static charts with plotly
+black = "^23.11.0" # Code formatting
+#black = { extras = [
+#    "jupyter",
+#], version = "^23.11.0" }
 coverage = "^7.2.3" # Code coverage
-jupyter-contrib-nbextensions = "^0.7.0" # Extensions for Jupyter Notebooks
-kaleido = "0.2.1" # Use static charts with plotly
+#jupyter-contrib-nbextensions = "^0.7.0" # Extensions for Jupyter Notebooks
+#kaleido = "0.2.1" # Use static charts with plotly
 mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
 mkdocstrings = { extras = [
     "python",
 ], version = "^0.22.0" } # Source code documentation for mkdocs
 mypy = "^1.2.0" # Static code analysis
-notebook = "6.5.6" # Jupyter Notebooks
-plotly = "^5.18.0" # Interactive plots
+#notebook = "6.5.6" # Jupyter Notebooks
+#plotly = "^5.18.0" # Interactive plots
 poetry-bumpversion = "^0.3.0" # Version management
 pymarkdownlnt = "^0.9.12" # Markdown linter
 pyright = "^1.1.305" # Static code analysis
@@ -83,7 +84,7 @@ pytest = "^7.3.1" # Test driven development
 pytest-benchmark = "^4.0.0" # Local benchmarks
 pytest-codspeed = "^2.0.1" # Cloud benchmarks
 ruff = "^0.0.256" # Code formatting
-twine = "^4.0.2" # Publish package
+#twine = "^4.0.2" # Publish package
 
 # Packages below are ground truth for version management. See requirements.txt.
 poetry = "~=1.7.1" # Build management
