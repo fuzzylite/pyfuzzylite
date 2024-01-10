@@ -1,3 +1,11 @@
+# Version 8.0.1
+
+### Bug fixes
+
+- On Python 3.10|3.11: Removed `Self` type annotation from `Benchmark` because it cannot the `typing_extensions` module
+  cannot be found
+- On Python 3.12: Explicitly increasing values of `fl.Representation` to avoid errors from new values
+
 # Version 8.0.0
 
 ## Summary
