@@ -6,7 +6,7 @@
 
 ## A Fuzzy Logic Control Library in Python
 
-by [**Juan Rada-Vilela, PhD** :fontawesome-solid-square-arrow-up-right:](https://fuzzylite.com/about)
+by [**Juan Rada-Vilela, PhD**](https://fuzzylite.com/about)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
@@ -14,17 +14,17 @@ by [**Juan Rada-Vilela, PhD** :fontawesome-solid-square-arrow-up-right:](https:/
 ***
 
 [main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
-[![Python package](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=main)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Build](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=main)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
 [![Coverage Status](
 https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
 https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
 
 [development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![Python package](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml/badge.svg?branch=development)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/python-package.yml)  
+[![Build](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=development)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
 [![Coverage Status](
 https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](
 https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
@@ -90,88 +90,88 @@ each included in the following formats: `py`, `fll`, `fld`. With `fuzzylite`: `C
 
 ## <a name="examples">Examples</a>
 
-=== "FuzzyLite Language"
+### FuzzyLite Language
 
-    ```properties
-    # File: examples/mamdani/ObstacleAvoidance.fll
-    Engine: ObstacleAvoidance
-    InputVariable: obstacle
-      enabled: true
-      range: 0.000 1.000
-      lock-range: false
-      term: left Ramp 1.000 0.000
-      term: right Ramp 0.000 1.000
-    OutputVariable: mSteer
-      enabled: true
-      range: 0.000 1.000
-      lock-range: false
-      aggregation: Maximum
-      defuzzifier: Centroid 100
-      default: nan
-      lock-previous: false
-      term: left Ramp 1.000 0.000
-      term: right Ramp 0.000 1.000
-    RuleBlock: mamdani
-      enabled: true
-      conjunction: none
-      disjunction: none
-      implication: AlgebraicProduct
-      activation: General
-      rule: if obstacle is left then mSteer is right
-      rule: if obstacle is right then mSteer is left
-    ```
+```properties
+# File: examples/mamdani/ObstacleAvoidance.fll
+Engine: ObstacleAvoidance
+InputVariable: obstacle
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: left Ramp 1.000 0.000
+  term: right Ramp 0.000 1.000
+OutputVariable: mSteer
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid 100
+  default: nan
+  lock-previous: false
+  term: left Ramp 1.000 0.000
+  term: right Ramp 0.000 1.000
+RuleBlock: mamdani
+  enabled: true
+  conjunction: none
+  disjunction: none
+  implication: AlgebraicProduct
+  activation: General
+  rule: if obstacle is left then mSteer is right
+  rule: if obstacle is right then mSteer is left
+```
 
-    ```python
-    # Python
-    import fuzzylite as fl
+```python
+# Python
+import fuzzylite as fl
 
-    engine = fl.FllImporter().from_file("examples/mamdani/ObstacleAvoidance.fll")
-    ```
+engine = fl.FllImporter().from_file("examples/mamdani/ObstacleAvoidance.fll")
+```
 
-=== "Python"
+### Python
 
-    ```python
-    import fuzzylite as fl
+```python
+import fuzzylite as fl
 
-    engine = fl.Engine(
-        name="ObstacleAvoidance",
-        input_variables=[
-            fl.InputVariable(
-                name="obstacle",
-                minimum=0.0,
-                maximum=1.0,
-                lock_range=False,
-                terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
-            )
-        ],
-        output_variables=[
-            fl.OutputVariable(
-                name="mSteer",
-                minimum=0.0,
-                maximum=1.0,
-                lock_range=False,
-                lock_previous=False,
-                default_value=fl.nan,
-                aggregation=fl.Maximum(),
-                defuzzifier=fl.Centroid(resolution=100),
-                terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
-            )
-        ],
-        rule_blocks=[
-            fl.RuleBlock(
-                name="mamdani",
-                conjunction=None,
-                disjunction=None,
-                implication=fl.AlgebraicProduct(),
-                activation=fl.General(),
-                rules=[
-                    fl.Rule.create("if obstacle is left then mSteer is right"),
-                    fl.Rule.create("if obstacle is right then mSteer is left"),
-                ],
-            )
-        ],
-    )
-    ```
+engine = fl.Engine(
+    name="ObstacleAvoidance",
+    input_variables=[
+        fl.InputVariable(
+            name="obstacle",
+            minimum=0.0,
+            maximum=1.0,
+            lock_range=False,
+            terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
+        )
+    ],
+    output_variables=[
+        fl.OutputVariable(
+            name="mSteer",
+            minimum=0.0,
+            maximum=1.0,
+            lock_range=False,
+            lock_previous=False,
+            default_value=fl.nan,
+            aggregation=fl.Maximum(),
+            defuzzifier=fl.Centroid(resolution=100),
+            terms=[fl.Ramp("left", 1.0, 0.0), fl.Ramp("right", 0.0, 1.0)],
+        )
+    ],
+    rule_blocks=[
+        fl.RuleBlock(
+            name="mamdani",
+            conjunction=None,
+            disjunction=None,
+            implication=fl.AlgebraicProduct(),
+            activation=fl.General(),
+            rules=[
+                fl.Rule.create("if obstacle is left then mSteer is right"),
+                fl.Rule.create("if obstacle is right then mSteer is left"),
+            ],
+        )
+    ],
+)
+```
 
 ## <a name="contributing">Contributing</a>
 
