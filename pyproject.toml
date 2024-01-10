@@ -4,36 +4,37 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "7.1.1"
+version = "8.0.0"
 description = "a fuzzy logic control library in Python"
+license = "Proprietary"
 readme = "README.md"
 keywords = ["fuzzy logic control", "soft computing", "artificial intelligence"]
-authors = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
-maintainers = ["Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>"]
+authors = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
+maintainers = ["Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>"]
 repository = "https://github.com/fuzzylite/pyfuzzylite.git"
 include = [
     "fuzzylite/",
     "tests/",
+    "AUTHOR",
+    "CITATION.cff",
+    "fuzzylite.png",
+    "HISTORY",
+    "LICENSE.FuzzyLite.txt",
+    "LICENSE.GPL.txt",
     "noxfile.py",
-    "poetry.lock",
     "poetry.toml",
     "pyproject.toml",
-    "AUTHOR",
-    "CHANGELOG",
-    "fuzzylite.png",
-    "LICENSE",
-    "LICENSE.FuzzyLite",
     "README.md",
+    "requirements.txt",
     "THANKS",
 ]
-exclude = ["fuzzylite/examples/**/*.fld"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "License :: OSI Approved :: MIT License",
+    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -44,6 +45,9 @@ classifiers = [
 
 [tool.poetry_bumpversion.file."fuzzylite/library.py"]
 [tool.poetry_bumpversion.file."tests/test_library.py"]
+[tool.poetry_bumpversion.file."docs/index.md"]
+search = "# pyfuzzylite {current_version}"
+replace = "# pyfuzzylite {new_version}"
 
 
 [[tool.poetry.packages]]
@@ -51,47 +55,67 @@ include = "fuzzylite"
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/fuzzylite/pyfuzzylite"
-Documentation = "https://fuzzylite.com/documentation"
+Documentation = "https://fuzzylite.github.io/pyfuzzylite/"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
+numpy = "^1.20" # Numeric manipulation and vectorisation
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"             # Code formatting
-coverage = "^7.2.2"           # Code coverage
-mypy = "^1.1.1"               # Static analysis
-numpy = "^1.19"               # Better division by zero
+black = { extras = [
+    "jupyter",
+], version = "^23.11.0" } # Use static charts with plotly
+coverage = "^7.2.3" # Code coverage
+jupyter-contrib-nbextensions = "^0.7.0" # Extensions for Jupyter Notebooks
+kaleido = "0.2.1" # Use static charts with plotly
+mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
+mkdocstrings = { extras = [
+    "python",
+], version = "^0.22.0" } # Source code documentation for mkdocs
+mypy = "^1.2.0" # Static code analysis
+notebook = "6.5.6" # Jupyter Notebooks
+plotly = "^5.18.0" # Interactive plots
 poetry-bumpversion = "^0.3.0" # Version management
-pyhamcrest = "^2.0.4"         # Test Driven Development
-pytest = "^7.2.2"             # Test Driven Development
-ruff = "^0.0.256"             # Code formatting
-twine = "^4.0.2"              # Publish package
+pymarkdownlnt = "^0.9.12" # Markdown linter
+pyright = "^1.1.305" # Static code analysis
+pytest = "^7.3.1" # Test driven development
+pytest-benchmark = "^4.0.0" # Local benchmarks
+pytest-codspeed = "^2.0.1" # Cloud benchmarks
+ruff = "^0.0.256" # Code formatting
+twine = "^4.0.2" # Publish package
+
+# Packages below are ground truth for version management. See requirements.txt.
+poetry = "~=1.7.1" # Build management
+nox = "~=2023.4.22" # Command-line build management
+
+
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py39"]
+line-length = 100
 
 [tool.ruff]
 # https://beta.ruff.rs/docs/rules/
 select = [
-    "A",   # flake8-builtins 
+    "A", # flake8-builtins
     "ANN", # flake8-annotations
     # "ARG", # flake8-unused-arguments
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    "D",   # pydocstyle
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
     "ICN", # flake8-import-conventions
     "ISC", # flake8-implicit-str-concat
-    "N",   # pep8 naming
+    "N", # pep8 naming
     "NPY", # NumPy-specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib
-    "UP",  # pyupgrade
+    "UP", # pyupgrade
     "RET", # flake8-return
     "SIM", # flake8-simplify
     # "TRY", # tryceratops
@@ -99,24 +123,24 @@ select = [
 ]
 
 fixable = [
-    "A",   # flake8-builtins 
+    "A", # flake8-builtins
     "ANN", # flake8-annotations
     # "ARG", # flake8-unused-arguments
     "B", # flake8-bugbear
     # "C",  # flake8-comprehensions
     # "COM", # flake8-commas
-    "D",   # pydocstyle
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
     "ICN", # flake8-import-conventions
     "ISC", # flake8-implicit-str-concat
-    "N",   # pep8 naming
+    "N", # pep8 naming
     "NPY", # NumPy-specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib
-    "UP",  # pyupgrade
+    "UP", # pyupgrade
     "RET", # flake8-return
     "SIM", # flake8-simplify
     # "TRY", # tryceratops
@@ -124,45 +148,62 @@ fixable = [
 ]
 
 ignore = [
-    "A001",   # Variable `__name__` is shadowing a python builtin
-    "A002",   # Argument `type` is shadowing a python builtin
-    "A003",   # Class attribute `format` is shadowing a python builtin
+    "A001", # Variable `__name__` is shadowing a python builtin
+    "A002", # Argument `type` is shadowing a python builtin
+    "A003", # Class attribute `format` is shadowing a python builtin
     "ANN101", # Missing type annotation for `self` in method
     "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed in `**args`
-    "B007",   # [*] Loop control variable `x` not used within loop body
-    "D100",   # Missing docstring in public module
-    "D104",   # Missing docstring in public package
-    "D205",   # 1 blank line required between summary line and description"
+    "B007", # [*] Loop control variable `x` not used within loop body
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    # "D212", # Multi-line docstring summary should start at the first line
+    # "D400", # First line should end with a period
+    # "D415", # First line should end with a period, question mark, or exclamation point
+    # "D205", # 1 blank line required between summary line and description"
     # "D213",   # `no-blank-line-before-class`, `multi-line-summary-second-line`
-    # "D417",   # Missing argument descriptions in the docstring
+    # "D417", # Missing argument descriptions in the docstring
     "E501", # Line too long (handled by black)
     # "F401", #  imported but unused
-    "F405",    # Imports from star
-    "F403",    # Detect names from star imports
-    "N817",    # CamelCase imported as acronym 
-    "N999",    # Invalid module name
-    "N812",    # Lowercase  imported as non-lowercase 
-    "PD901",   # df is a bad variable name
+    "F405", # Imports from star
+    "F403", # Detect names from star imports
+    # "N817", # CamelCase imported as acronym
+    "N999", # Invalid module name
+    # "N812", # Lowercase  imported as non-lowercase
+    "PD901", # df is a bad variable name
     "PLW2901", # `for` loop variable `line` overwritten by assignment target
-    "RET504",  # Unnecessary variable assignment before `return` statement
-    "RET505",  # Unnecessary `else` after `return` statement
-    "SIM102",  # Use a single `if` statement instead of nested `if` statements
-    "SIM300",  # Yoda conditions are discouraged
+    "RET504", # Unnecessary variable assignment before `return` statement
+    "RET505", # Unnecessary `else` after `return` statement
+    "SIM102", # Use a single `if` statement instead of nested `if` statements
+    "SIM300", # Yoda conditions are discouraged
     # "W605",    # [*] Invalid escape sequence: latex
+    # "W291", # Trailing whitespace # hinders markdown
 ]
 
-unfixable = []
+unfixable = [
+    #    "D",
+    #    "D212", # Multi-line docstring summary should start at the first line
+    "D301", # Use `r"""` if any backslashes in a docstring # do not escape `\`
+    #    "D400", # First line should end with a period
+    #    "D415", # First line should end with a period, question mark, or exclamation point
+    #    "W291", # Trailing whitespace # hinders markdown
+]
 
 exclude = []
 
 # Same as Black.
-line-length = 88
+line-length = 100
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-target-version = "py37"
+target-version = "py39"
+
+[tool.ruff.per-file-ignores]
+"fuzzylite/examples/**/*.py" = [
+    "D101", # Missing docstring in public class
+    "D107", # Missing docstring in `__init__`
+]
 
 [tool.ruff.mccabe]
 max-complexity = 10
@@ -170,10 +211,20 @@ max-complexity = 10
 [tool.ruff.pydocstyle]
 convention = "google"
 
+[tool.pyright]
+include = ["fuzzylite/", "noxfile.py", "tests/"]
+pythonVersion = "3.9"
+# strict =  ["fuzzylite/", "noxfile.py", "tests/"] # This is too strict, but useful at times
+venv = ".venv"
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.9"
 strict = true
 exclude = []
+incremental = true
 
 verbosity = 0
 show_traceback = true
@@ -182,6 +233,24 @@ dump_type_stats = false
 dump_inference_stats = false
 
 [[tool.mypy.overrides]]
-# ignore warnings of fl.nan not being explicitly exported.
-module = "fuzzylite"
-implicit_reexport = true
+# ignore errors of abstract types used in factories
+module = "fuzzylite.factory"
+disable_error_code = ["type-abstract"]
+
+[[tool.mypy.overrides]]
+# skipping analyzing "pytest_benchmark.fixture": module is installed, but missing library stubs or py.typed marker
+module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--ignore=tests/test_benchmark_pytest.py --ignore=tests/test_benchmark_codspeed.py"
+
+[tool.pymarkdown]
+plugins.line-length.enabled = true
+plugins.line-length.line_length = 120
+# docs/index.md:324:1: MD046: Code block style [Expected: indented; Actual: fenced] (code-block-style)
+plugins.MD046.enabled = false
+# MD033: Inline HTML [Element: a] (no-inline-html)
+plugins.MD033.enabled = false
+# MD034: Bare URL used (no-bare-urls)
+plugins.MD034.enabled = false

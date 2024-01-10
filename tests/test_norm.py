@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,11 +11,15 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
-from typing import Dict, Tuple
+
+import numpy as np
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -24,19 +28,22 @@ from tests.assert_component import BaseAssert
 class NormAssert(BaseAssert[fl.Norm]):
     """Assert norms."""
 
-    def is_t_norm(self) -> "NormAssert":
+    def is_t_norm(self) -> NormAssert:
         """Assert it is a T-Norm."""
         self.test.assertIsInstance(self.actual, fl.TNorm)
         return self
 
-    def is_s_norm(self) -> "NormAssert":
+    def is_s_norm(self) -> NormAssert:
         """Assert it is an S-Norm."""
         self.test.assertIsInstance(self.actual, fl.SNorm)
         return self
 
     def evaluates(
-        self, abz: Dict[Tuple[float, float], float], commutative: bool = True
-    ) -> "NormAssert":
+        self,
+        abz: dict[tuple[float, float], float],
+        commutative: bool = True,
+        associative: bool = True,
+    ) -> NormAssert:
         """Assert the norm produces the expected values."""
         for ab, z in abz.items():
             self.test.assertEqual(z, self.actual.compute(*ab), f"in ({ab})")
@@ -46,6 +53,31 @@ class NormAssert(BaseAssert[fl.Norm]):
                     self.actual.compute(*reversed(ab)),
                     f"when ({tuple(reversed(ab))})",
                 )
+            if associative:
+                a: fl.Scalar = ab[0]
+                b: fl.Scalar = ab[1]
+                c: fl.Scalar = sum(ab) / 2
+                abc = self.actual.compute(self.actual.compute(a, b), c)
+                bca = self.actual.compute(self.actual.compute(b, c), a)
+                cab = self.actual.compute(self.actual.compute(c, a), b)
+                np.testing.assert_allclose(abc, bca, atol=fl.settings.atol, rtol=fl.settings.rtol)
+                np.testing.assert_allclose(bca, cab, atol=fl.settings.atol, rtol=fl.settings.rtol)
+        # Test as numpy array
+        a = fl.array([x[0] for x in abz])
+        b = fl.array([x[1] for x in abz])
+        expected = fl.array([z for z in abz.values()])
+        obtained = self.actual.compute(a, b)
+        np.testing.assert_equal(expected, obtained)
+        if commutative:
+            obtained = self.actual.compute(b, a)
+            np.testing.assert_equal(expected, obtained)
+        if associative:
+            c = (a + b) / 2
+            abc = self.actual.compute(self.actual.compute(a, b), c)
+            bca = self.actual.compute(self.actual.compute(b, c), a)
+            cab = self.actual.compute(self.actual.compute(c, a), b)
+            np.testing.assert_allclose(abc, bca, rtol=fl.settings.rtol, atol=fl.settings.atol)
+            np.testing.assert_allclose(bca, cab, rtol=fl.settings.rtol, atol=fl.settings.atol)
         return self
 
 
@@ -54,7 +86,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_algebraic_product(self) -> None:
         """Test the algebraic product."""
-        NormAssert(self, fl.AlgebraicProduct()).is_t_norm().evaluates(
+        NormAssert(self, fl.AlgebraicProduct()).is_t_norm().repr_is(
+            "fl.AlgebraicProduct()"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -74,7 +108,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_bounded_difference(self) -> None:
         """Test the bounded difference."""
-        NormAssert(self, fl.BoundedDifference()).is_t_norm().evaluates(
+        NormAssert(self, fl.BoundedDifference()).is_t_norm().repr_is(
+            "fl.BoundedDifference()"
+        ).exports_fll("BoundedDifference").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -94,7 +130,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_drastic_product(self) -> None:
         """Test the drastic product."""
-        NormAssert(self, fl.DrasticProduct()).is_t_norm().evaluates(
+        NormAssert(self, fl.DrasticProduct()).is_t_norm().repr_is(
+            "fl.DrasticProduct()"
+        ).exports_fll("DrasticProduct").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -114,7 +152,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_einstein_product(self) -> None:
         """Test the einstein product."""
-        NormAssert(self, fl.EinsteinProduct()).is_t_norm().evaluates(
+        NormAssert(self, fl.EinsteinProduct()).is_t_norm().repr_is(
+            "fl.EinsteinProduct()"
+        ).exports_fll("EinsteinProduct").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -134,7 +174,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_hamacher_product(self) -> None:
         """Test the hamacher product."""
-        NormAssert(self, fl.HamacherProduct()).is_t_norm().evaluates(
+        NormAssert(self, fl.HamacherProduct()).is_t_norm().repr_is(
+            "fl.HamacherProduct()"
+        ).exports_fll("HamacherProduct").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -154,7 +196,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_minimum(self) -> None:
         """Test the minimum."""
-        NormAssert(self, fl.Minimum()).is_t_norm().evaluates(
+        NormAssert(self, fl.Minimum()).is_t_norm().repr_is("fl.Minimum()").exports_fll(
+            "Minimum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -174,7 +218,9 @@ class TestTNorm(unittest.TestCase):
 
     def test_nilpotent_minimum(self) -> None:
         """Test the nilpotent minimum."""
-        NormAssert(self, fl.NilpotentMinimum()).is_t_norm().evaluates(
+        NormAssert(self, fl.NilpotentMinimum()).is_t_norm().repr_is(
+            "fl.NilpotentMinimum()"
+        ).exports_fll("NilpotentMinimum").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.00,
@@ -198,7 +244,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_algebraic_sum(self) -> None:
         """Test the algebraic sum."""
-        NormAssert(self, fl.AlgebraicSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.AlgebraicSum()).is_s_norm().repr_is("fl.AlgebraicSum()").exports_fll(
+            "AlgebraicSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -218,7 +266,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_bounded_sum(self) -> None:
         """Test the bounded sum."""
-        NormAssert(self, fl.BoundedSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.BoundedSum()).is_s_norm().repr_is("fl.BoundedSum()").exports_fll(
+            "BoundedSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -238,7 +288,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_drastic_sum(self) -> None:
         """Test the drastic sum."""
-        NormAssert(self, fl.DrasticSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.DrasticSum()).is_s_norm().repr_is("fl.DrasticSum()").exports_fll(
+            "DrasticSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -258,7 +310,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_einstein_sum(self) -> None:
         """Test the einstein sum."""
-        NormAssert(self, fl.EinsteinSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.EinsteinSum()).is_s_norm().repr_is("fl.EinsteinSum()").exports_fll(
+            "EinsteinSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -278,7 +332,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_hamacher_sum(self) -> None:
         """Test the hamacher sum."""
-        NormAssert(self, fl.HamacherSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.HamacherSum()).is_s_norm().repr_is("fl.HamacherSum()").exports_fll(
+            "HamacherSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -298,7 +354,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_maximum(self) -> None:
         """Test the maximum."""
-        NormAssert(self, fl.Maximum()).is_s_norm().evaluates(
+        NormAssert(self, fl.Maximum()).is_s_norm().repr_is("fl.Maximum()").exports_fll(
+            "Maximum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -318,7 +376,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_nilpotent_maximum(self) -> None:
         """Test the nilpotent maximum."""
-        NormAssert(self, fl.NilpotentMaximum()).is_s_norm().evaluates(
+        NormAssert(self, fl.NilpotentMaximum()).is_s_norm().repr_is(
+            "fl.NilpotentMaximum()"
+        ).exports_fll("NilpotentMaximum").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -338,7 +398,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_normalized_sum(self) -> None:
         """Test the normalised sum."""
-        NormAssert(self, fl.NormalizedSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.NormalizedSum()).is_s_norm().repr_is("fl.NormalizedSum()").exports_fll(
+            "NormalizedSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -358,7 +420,9 @@ class TestSNorm(unittest.TestCase):
 
     def test_unbounded_sum(self) -> None:
         """Test the unbounded sum."""
-        NormAssert(self, fl.UnboundedSum()).is_s_norm().evaluates(
+        NormAssert(self, fl.UnboundedSum()).is_s_norm().repr_is("fl.UnboundedSum()").exports_fll(
+            "UnboundedSum"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -384,7 +448,9 @@ class TestNormFunctions(unittest.TestCase):
         """Test the norm function."""
         NormAssert(
             self, fl.NormFunction(fl.Function.create("AlgebraicSum", "a + b - (a * b)"))
-        ).exports_fll("NormFunction").is_s_norm().is_t_norm().evaluates(
+        ).exports_fll("NormFunction").is_s_norm().is_t_norm().repr_is(
+            "fl.NormFunction(fl.Function('AlgebraicSum', 'a + b - (a * b)'))"
+        ).evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,
@@ -406,7 +472,7 @@ class TestNormFunctions(unittest.TestCase):
         """Test the norm lambda."""
         NormAssert(self, fl.NormLambda(lambda a, b: a + b - (a * b))).exports_fll(
             "NormLambda"
-        ).is_s_norm().is_t_norm().evaluates(
+        ).is_s_norm().is_t_norm().repr_is("fl.NormLambda(lambda a, b: ...)").evaluates(
             {
                 (0.00, 0.00): 0.00,
                 (0.00, 0.25): 0.25,

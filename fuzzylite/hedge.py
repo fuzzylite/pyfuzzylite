@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,9 +11,11 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "Hedge",
@@ -27,229 +29,356 @@ __all__ = [
     "HedgeFunction",
 ]
 
-import math
-import typing
+from abc import ABC, abstractmethod
 from typing import Callable
 
-if typing.TYPE_CHECKING:
-    from .term import Function
+import numpy as np
+
+from .library import representation, scalar
+from .term import Function
+from .types import Scalar
 
 
-class Hedge:
-    """The Hedge class is the abstract class for hedges. Hedges are utilized
-    within the Antecedent and Consequent of a Rule in order to modify the
-    membership function of a linguistic Term.
+class Hedge(ABC):
+    r"""Abstract class for hedges.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Antecedent
-    @see Consequent
-    @see Rule
-    @see HedgeFactory
-    @since 4.0
+    Hedges are used in the antecedent and consequent of a rule to modify the membership function of the term it precedes.
+
+    The hedges in the library can be ordered based on the difference between the
+    membership function $\mu(x)$ and its hedge $h(\mu(x))$ as follows (from most similar to least):
+    Seldom   $<$ Somewhat   $<$ Very  $<$ Extremely   $<$ Not   $<$ Any
+
+    | `term`                                                	| Seldom                                                                                                     	| Somewhat                                                                                                        	| Very                                                                                                    	| Extremely                                                                                                         	| Not                                                                                                   	| Any                                                                                                   	|
+    |-------------------------------------------------------	|------------------------------------------------------------------------------------------------------------	|-----------------------------------------------------------------------------------------------------------------	|---------------------------------------------------------------------------------------------------------	|-------------------------------------------------------------------------------------------------------------------	|-------------------------------------------------------------------------------------------------------	|-------------------------------------------------------------------------------------------------------	|
+    | [fuzzylite.term.Rectangle][]                          	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Rectangle][]                                                    	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Rectangle][]                                                       	| [fuzzylite.hedge.Very][] [fuzzylite.term.Rectangle][]                                                   	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Rectangle][]                                                        	| [fuzzylite.hedge.Not][] [fuzzylite.term.Rectangle][]                                                  	| [fuzzylite.hedge.Any][] [fuzzylite.term.Rectangle][]                                                  	|
+    | ![](../../image/term/Rectangle.svg)                   	| ![](../../image/hedge/Seldom-Rectangle.svg)                                                                	| ![](../../image/hedge/Somewhat-Rectangle.svg)                                                                   	| ![](../../image/hedge/Very-Rectangle.svg)                                                               	| ![](../../image/hedge/Extremely-Rectangle.svg)                                                                    	| ![](../../image/hedge/Not-Rectangle.svg)                                                              	| ![](../../image/hedge/Any-Rectangle.svg)                                                              	|
+    | [fuzzylite.term.SemiEllipse][]                        	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.SemiEllipse][]                                                  	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.SemiEllipse][]                                                     	| [fuzzylite.hedge.Very][] [fuzzylite.term.SemiEllipse][]                                                 	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.SemiEllipse][]                                                      	| [fuzzylite.hedge.Not][] [fuzzylite.term.SemiEllipse][]                                                	| [fuzzylite.hedge.Any][] [fuzzylite.term.SemiEllipse][]                                                	|
+    | ![](../../image/term/SemiEllipse.svg )                	| ![](../../image/hedge/Seldom-SemiEllipse.svg )                                                             	| ![](../../image/hedge/Somewhat-SemiEllipse.svg )                                                                	| ![](../../image/hedge/Very-SemiEllipse.svg )                                                            	| ![](../../image/hedge/Extremely-SemiEllipse.svg )                                                                 	| ![](../../image/hedge/Not-SemiEllipse.svg )                                                           	| ![](../../image/hedge/Any-SemiEllipse.svg )                                                           	|
+    | [fuzzylite.term.Triangle][]                           	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Triangle][]                                                     	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Triangle][]                                                        	| [fuzzylite.hedge.Very][] [fuzzylite.term.Triangle][]                                                    	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Triangle][]                                                         	| [fuzzylite.hedge.Not][] [fuzzylite.term.Triangle][]                                                   	| [fuzzylite.hedge.Any][] [fuzzylite.term.Triangle][]                                                   	|
+    | ![](../../image/term/Triangle.svg )                   	| ![](../../image/hedge/Seldom-Triangle.svg )                                                                	| ![](../../image/hedge/Somewhat-Triangle.svg )                                                                   	| ![](../../image/hedge/Very-Triangle.svg )                                                               	| ![](../../image/hedge/Extremely-Triangle.svg )                                                                    	| ![](../../image/hedge/Not-Triangle.svg )                                                              	| ![](../../image/hedge/Any-Triangle.svg )                                                              	|
+    | [fuzzylite.term.Trapezoid][]                          	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Trapezoid][]                                                    	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Trapezoid][]                                                       	| [fuzzylite.hedge.Very][] [fuzzylite.term.Trapezoid][]                                                   	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Trapezoid][]                                                        	| [fuzzylite.hedge.Not][] [fuzzylite.term.Trapezoid][]                                                  	| [fuzzylite.hedge.Any][] [fuzzylite.term.Trapezoid][]                                                  	|
+    | ![](../../image/term/Trapezoid.svg)                   	| ![](../../image/hedge/Seldom-Trapezoid.svg)                                                                	| ![](../../image/hedge/Somewhat-Trapezoid.svg)                                                                   	| ![](../../image/hedge/Very-Trapezoid.svg)                                                               	| ![](../../image/hedge/Extremely-Trapezoid.svg)                                                                    	| ![](../../image/hedge/Not-Trapezoid.svg)                                                              	| ![](../../image/hedge/Any-Trapezoid.svg)                                                              	|
+    | [fuzzylite.term.Discrete][]                           	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Discrete][]                                                     	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Discrete][]                                                        	| [fuzzylite.hedge.Very][] [fuzzylite.term.Discrete][]                                                    	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Discrete][]                                                         	| [fuzzylite.hedge.Not][] [fuzzylite.term.Discrete][]                                                   	| [fuzzylite.hedge.Any][] [fuzzylite.term.Discrete][]                                                   	|
+    | ![](../../image/term/Discrete.svg )                   	| ![](../../image/hedge/Seldom-Discrete.svg )                                                                	| ![](../../image/hedge/Somewhat-Discrete.svg )                                                                   	| ![](../../image/hedge/Very-Discrete.svg )                                                               	| ![](../../image/hedge/Extremely-Discrete.svg )                                                                    	| ![](../../image/hedge/Not-Discrete.svg )                                                              	| ![](../../image/hedge/Any-Discrete.svg )                                                              	|
+    | [fuzzylite.term.Bell][]                               	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Bell][]                                                         	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Bell][]                                                            	| [fuzzylite.hedge.Very][] [fuzzylite.term.Bell][]                                                        	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Bell][]                                                             	| [fuzzylite.hedge.Not][] [fuzzylite.term.Bell][]                                                       	| [fuzzylite.hedge.Any][] [fuzzylite.term.Bell][]                                                       	|
+    | ![](../../image/term/Bell.svg)                        	| ![](../../image/hedge/Seldom-Bell.svg)                                                                     	| ![](../../image/hedge/Somewhat-Bell.svg)                                                                        	| ![](../../image/hedge/Very-Bell.svg)                                                                    	| ![](../../image/hedge/Extremely-Bell.svg)                                                                         	| ![](../../image/hedge/Not-Bell.svg)                                                                   	| ![](../../image/hedge/Any-Bell.svg)                                                                   	|
+    | [fuzzylite.term.Cosine][]                             	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Cosine][]                                                       	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Cosine][]                                                          	| [fuzzylite.hedge.Very][] [fuzzylite.term.Cosine][]                                                      	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Cosine][]                                                           	| [fuzzylite.hedge.Not][] [fuzzylite.term.Cosine][]                                                     	| [fuzzylite.hedge.Any][] [fuzzylite.term.Cosine][]                                                     	|
+    | ![](../../image/term/Cosine.svg)                      	| ![](../../image/hedge/Seldom-Cosine.svg)                                                                   	| ![](../../image/hedge/Somewhat-Cosine.svg)                                                                      	| ![](../../image/hedge/Very-Cosine.svg)                                                                  	| ![](../../image/hedge/Extremely-Cosine.svg)                                                                       	| ![](../../image/hedge/Not-Cosine.svg)                                                                 	| ![](../../image/hedge/Any-Cosine.svg)                                                                 	|
+    | [fuzzylite.term.Gaussian][]                           	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Gaussian][]                                                     	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Gaussian][]                                                        	| [fuzzylite.hedge.Very][] [fuzzylite.term.Gaussian][]                                                    	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Gaussian][]                                                         	| [fuzzylite.hedge.Not][] [fuzzylite.term.Gaussian][]                                                   	| [fuzzylite.hedge.Any][] [fuzzylite.term.Gaussian][]                                                   	|
+    | ![](../../image/term/Gaussian.svg)                    	| ![](../../image/hedge/Seldom-Gaussian.svg)                                                                 	| ![](../../image/hedge/Somewhat-Gaussian.svg)                                                                    	| ![](../../image/hedge/Very-Gaussian.svg)                                                                	| ![](../../image/hedge/Extremely-Gaussian.svg)                                                                     	| ![](../../image/hedge/Not-Gaussian.svg)                                                               	| ![](../../image/hedge/Any-Gaussian.svg)                                                               	|
+    | [fuzzylite.term.GaussianProduct][]                    	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.GaussianProduct][]                                              	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.GaussianProduct][]                                                 	| [fuzzylite.hedge.Very][] [fuzzylite.term.GaussianProduct][]                                             	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.GaussianProduct][]                                                  	| [fuzzylite.hedge.Not][] [fuzzylite.term.GaussianProduct][]                                            	| [fuzzylite.hedge.Any][] [fuzzylite.term.GaussianProduct][]                                            	|
+    | ![](../../image/term/GaussianProduct.svg)             	| ![](../../image/hedge/Seldom-GaussianProduct.svg)                                                          	| ![](../../image/hedge/Somewhat-GaussianProduct.svg)                                                             	| ![](../../image/hedge/Very-GaussianProduct.svg)                                                         	| ![](../../image/hedge/Extremely-GaussianProduct.svg)                                                              	| ![](../../image/hedge/Not-GaussianProduct.svg)                                                        	| ![](../../image/hedge/Any-GaussianProduct.svg)                                                        	|
+    | [fuzzylite.term.PiShape][]                            	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.PiShape][]                                                      	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.PiShape][]                                                         	| [fuzzylite.hedge.Very][] [fuzzylite.term.PiShape][]                                                     	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.PiShape][]                                                          	| [fuzzylite.hedge.Not][] [fuzzylite.term.PiShape][]                                                    	| [fuzzylite.hedge.Any][] [fuzzylite.term.PiShape][]                                                    	|
+    | ![](../../image/term/PiShape.svg)                     	| ![](../../image/hedge/Seldom-PiShape.svg)                                                                  	| ![](../../image/hedge/Somewhat-PiShape.svg)                                                                     	| ![](../../image/hedge/Very-PiShape.svg)                                                                 	| ![](../../image/hedge/Extremely-PiShape.svg)                                                                      	| ![](../../image/hedge/Not-PiShape.svg)                                                                	| ![](../../image/hedge/Any-PiShape.svg)                                                                	|
+    | [fuzzylite.term.SigmoidDifference][]                  	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.SigmoidDifference][]                                            	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.SigmoidDifference][]                                               	| [fuzzylite.hedge.Very][] [fuzzylite.term.SigmoidDifference][]                                           	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.SigmoidDifference][]                                                	| [fuzzylite.hedge.Not][] [fuzzylite.term.SigmoidDifference][]                                          	| [fuzzylite.hedge.Any][] [fuzzylite.term.SigmoidDifference][]                                          	|
+    | ![](../../image/term/SigmoidDifference.svg)           	| ![](../../image/hedge/Seldom-SigmoidDifference.svg)                                                        	| ![](../../image/hedge/Somewhat-SigmoidDifference.svg)                                                           	| ![](../../image/hedge/Very-SigmoidDifference.svg)                                                       	| ![](../../image/hedge/Extremely-SigmoidDifference.svg)                                                            	| ![](../../image/hedge/Not-SigmoidDifference.svg)                                                      	| ![](../../image/hedge/Any-SigmoidDifference.svg)                                                      	|
+    | [fuzzylite.term.SigmoidProduct][]                     	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.SigmoidProduct][]                                               	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.SigmoidProduct][]                                                  	| [fuzzylite.hedge.Very][] [fuzzylite.term.SigmoidProduct][]                                              	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.SigmoidProduct][]                                                   	| [fuzzylite.hedge.Not][] [fuzzylite.term.SigmoidProduct][]                                             	| [fuzzylite.hedge.Any][] [fuzzylite.term.SigmoidProduct][]                                             	|
+    | ![](../../image/term/SigmoidProduct.svg)              	| ![](../../image/hedge/Seldom-SigmoidProduct.svg)                                                           	| ![](../../image/hedge/Somewhat-SigmoidProduct.svg)                                                              	| ![](../../image/hedge/Very-SigmoidProduct.svg)                                                          	| ![](../../image/hedge/Extremely-SigmoidProduct.svg)                                                               	| ![](../../image/hedge/Not-SigmoidProduct.svg)                                                         	| ![](../../image/hedge/Any-SigmoidProduct.svg)                                                         	|
+    | [fuzzylite.term.Spike][]                              	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Spike][]                                                        	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Spike][]                                                           	| [fuzzylite.hedge.Very][] [fuzzylite.term.Spike][]                                                       	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Spike][]                                                            	| [fuzzylite.hedge.Not][] [fuzzylite.term.Spike][]                                                      	| [fuzzylite.hedge.Any][] [fuzzylite.term.Spike][]                                                      	|
+    | ![](../../image/term/Spike.svg)                       	| ![](../../image/hedge/Seldom-Spike.svg)                                                                    	| ![](../../image/hedge/Somewhat-Spike.svg)                                                                       	| ![](../../image/hedge/Very-Spike.svg)                                                                   	| ![](../../image/hedge/Extremely-Spike.svg)                                                                        	| ![](../../image/hedge/Not-Spike.svg)                                                                  	| ![](../../image/hedge/Any-Spike.svg)                                                                  	|
+    | [fuzzylite.term.Arc][]                                	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Arc][]                                                          	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Arc][]                                                             	| [fuzzylite.hedge.Very][] [fuzzylite.term.Arc][]                                                         	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Arc][]                                                              	| [fuzzylite.hedge.Not][] [fuzzylite.term.Arc][]                                                        	| [fuzzylite.hedge.Any][] [fuzzylite.term.Arc][]                                                        	|
+    | ![](../../image/term/Arc.svg)                         	| ![](../../image/hedge/Seldom-Arc.svg)                                                                      	| ![](../../image/hedge/Somewhat-Arc.svg)                                                                         	| ![](../../image/hedge/Very-Arc.svg)                                                                     	| ![](../../image/hedge/Extremely-Arc.svg)                                                                          	| ![](../../image/hedge/Not-Arc.svg)                                                                    	| ![](../../image/hedge/Any-Arc.svg)                                                                    	|
+    | [fuzzylite.term.Binary][]                             	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Binary][]                                                       	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Binary][]                                                          	| [fuzzylite.hedge.Very][] [fuzzylite.term.Binary][]                                                      	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Binary][]                                                           	| [fuzzylite.hedge.Not][] [fuzzylite.term.Binary][]                                                     	| [fuzzylite.hedge.Any][] [fuzzylite.term.Binary][]                                                     	|
+    | ![](../../image/term/Binary.svg)                      	| ![](../../image/hedge/Seldom-Binary.svg)                                                                   	| ![](../../image/hedge/Somewhat-Binary.svg)                                                                      	| ![](../../image/hedge/Very-Binary.svg)                                                                  	| ![](../../image/hedge/Extremely-Binary.svg)                                                                       	| ![](../../image/hedge/Not-Binary.svg)                                                                 	| ![](../../image/hedge/Any-Binary.svg)                                                                 	|
+    | [fuzzylite.term.Concave][]                            	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Concave][]                                                      	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Concave][]                                                         	| [fuzzylite.hedge.Very][] [fuzzylite.term.Concave][]                                                     	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Concave][]                                                          	| [fuzzylite.hedge.Not][] [fuzzylite.term.Concave][]                                                    	| [fuzzylite.hedge.Any][] [fuzzylite.term.Concave][]                                                    	|
+    | ![](../../image/term/Concave.svg)                     	| ![](../../image/hedge/Seldom-Concave.svg)                                                                  	| ![](../../image/hedge/Somewhat-Concave.svg)                                                                     	| ![](../../image/hedge/Very-Concave.svg)                                                                 	| ![](../../image/hedge/Extremely-Concave.svg)                                                                      	| ![](../../image/hedge/Not-Concave.svg)                                                                	| ![](../../image/hedge/Any-Concave.svg)                                                                	|
+    | [fuzzylite.term.Ramp][]                               	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Ramp][]                                                         	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Ramp][]                                                            	| [fuzzylite.hedge.Very][] [fuzzylite.term.Ramp][]                                                        	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Ramp][]                                                             	| [fuzzylite.hedge.Not][] [fuzzylite.term.Ramp][]                                                       	| [fuzzylite.hedge.Any][] [fuzzylite.term.Ramp][]                                                       	|
+    | ![](../../image/term/Ramp.svg)                        	| ![](../../image/hedge/Seldom-Ramp.svg)                                                                     	| ![](../../image/hedge/Somewhat-Ramp.svg)                                                                        	| ![](../../image/hedge/Very-Ramp.svg)                                                                    	| ![](../../image/hedge/Extremely-Ramp.svg)                                                                         	| ![](../../image/hedge/Not-Ramp.svg)                                                                   	| ![](../../image/hedge/Any-Ramp.svg)                                                                   	|
+    | [fuzzylite.term.Sigmoid][]                            	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.Sigmoid][]                                                      	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.Sigmoid][]                                                         	| [fuzzylite.hedge.Very][] [fuzzylite.term.Sigmoid][]                                                     	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.Sigmoid][]                                                          	| [fuzzylite.hedge.Not][] [fuzzylite.term.Sigmoid][]                                                    	| [fuzzylite.hedge.Any][] [fuzzylite.term.Sigmoid][]                                                    	|
+    | ![](../../image/term/Sigmoid.svg)                     	| ![](../../image/hedge/Seldom-Sigmoid.svg)                                                                  	| ![](../../image/hedge/Somewhat-Sigmoid.svg)                                                                     	| ![](../../image/hedge/Very-Sigmoid.svg)                                                                 	| ![](../../image/hedge/Extremely-Sigmoid.svg)                                                                      	| ![](../../image/hedge/Not-Sigmoid.svg)                                                                	| ![](../../image/hedge/Any-Sigmoid.svg)                                                                	|
+    | [fuzzylite.term.SShape][] - [fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Seldom][] fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Somewhat][] [fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Very][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Very][] [fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Extremely][] [fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Not][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Not][] [fuzzylite.term.ZShape][] 	| [fuzzylite.hedge.Any][] [fuzzylite.term.SShape][] - [fuzzylite.hedge.Any][] [fuzzylite.term.ZShape][] 	|
+    | ![](../../image/term/ZShape - SShape.svg)             	| ![](../../image/hedge/Seldom-ZShape - SShape.svg)                                                          	| ![](../../image/hedge/Somewhat-ZShape - SShape.svg)                                                             	| ![](../../image/hedge/Very-ZShape - SShape.svg)                                                         	| ![](../../image/hedge/Extremely-ZShape - SShape.svg)                                                              	| ![](../../image/hedge/Not-ZShape - SShape.svg)                                                        	| ![](../../image/hedge/Any-ZShape - SShape.svg)                                                        	|
+    | [fuzzylite.term.SShape][]                             	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.SShape][]                                                       	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.SShape][]                                                          	| [fuzzylite.hedge.Very][] [fuzzylite.term.SShape][]                                                      	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.SShape][]                                                           	| [fuzzylite.hedge.Not][] [fuzzylite.term.SShape][]                                                     	| [fuzzylite.hedge.Any][] [fuzzylite.term.SShape][]                                                     	|
+    | ![](../../image/term/SShape.svg)                      	| ![](../../image/hedge/Seldom-SShape.svg)                                                                   	| ![](../../image/hedge/Somewhat-SShape.svg)                                                                      	| ![](../../image/hedge/Very-SShape.svg)                                                                  	| ![](../../image/hedge/Extremely-SShape.svg)                                                                       	| ![](../../image/hedge/Not-SShape.svg)                                                                 	| ![](../../image/hedge/Any-SShape.svg)                                                                 	|
+    | [fuzzylite.term.ZShape][]                             	| [fuzzylite.hedge.Seldom][] [fuzzylite.term.ZShape][]                                                       	| [fuzzylite.hedge.Somewhat][] [fuzzylite.term.ZShape][]                                                          	| [fuzzylite.hedge.Very][] [fuzzylite.term.ZShape][]                                                      	| [fuzzylite.hedge.Extremely][] [fuzzylite.term.ZShape][]                                                           	| [fuzzylite.hedge.Not][] [fuzzylite.term.ZShape][]                                                     	| [fuzzylite.hedge.Any][] [fuzzylite.term.ZShape][]                                                     	|
+    | ![](../../image/term/ZShape.svg)                      	| ![](../../image/hedge/Seldom-ZShape.svg)                                                                   	| ![](../../image/hedge/Somewhat-ZShape.svg)                                                                      	| ![](../../image/hedge/Very-ZShape.svg)                                                                  	| ![](../../image/hedge/Extremely-ZShape.svg)                                                                       	| ![](../../image/hedge/Not-ZShape.svg)                                                                 	| ![](../../image/hedge/Any-ZShape.svg)                                                                 	|
+
+    info: related
+        - [fuzzylite.hedge.Not][]
+        - [fuzzylite.hedge.Seldom][]
+        - [fuzzylite.hedge.Somewhat][]
+        - [fuzzylite.hedge.Very][]
+        - [fuzzylite.hedge.Extremely][]
+        - [fuzzylite.hedge.Any][]
+        - [fuzzylite.rule.Antecedent][]
+        - [fuzzylite.rule.Consequent][]
+        - [fuzzylite.rule.Rule][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
+
+    def __str__(self) -> str:
+        """Return the name of the hedge.
+
+        Returns:
+            name of the hedge.
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """Return the Python code to construct the hedge.
+
+        Returns:
+            Python code to construct the hedge.
+        """
+        return representation.as_constructor(self)
 
     @property
     def name(self) -> str:
-        """Returns the name of the hedge
-        @return the name of the hedge.
+        """Return the name of the hedge.
+
+        Returns:
+            name of the hedge.
         """
         return self.__class__.__name__.lower()
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return the hedge of $x$.
+    @abstractmethod
+    def hedge(self, x: Scalar) -> Scalar:
+        """Implement the hedge for the membership function value $x$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+           hedge of $x$.
         """
-        raise NotImplementedError()
 
 
 class Any(Hedge):
-    """The Any class is a special Hedge that always returns `1.0`. Its
-    position with respect to the other hedges is last in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any). The Antecedent of a Rule
-    considers Any to be a syntactically special hedge because it is not
-    followed by a Term (e.g., `if Variable is any then...`). Amongst hedges,
-    only Any has virtual methods to be overridden due to its particular case.
+    """Special hedge that always returns `1.0`.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    The antecedent of a rule considers `Any` to be a syntactically special hedge because it is not
+    followed by a term (e.g., `if Variable is any then...` vs `if Variable is very term then...`)
+
+    The hedge is useful for better documenting rules.
+
+    info: related
+        - [fuzzylite.rule.Antecedent][]
+        - [fuzzylite.rule.Rule][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the given value
-        @param x is irrelevant
-        @return `1.0`.
+    def hedge(self, x: Scalar) -> Scalar:
+        """Return scalar of same shape of `x` filled with `1.0`.
+
+        Args:
+            x: irrelevant except for its shape
+
+        Returns:
+            $h(x)=1.0$
         """
-        return 1.0
+        x = scalar(x)
+        y = np.full_like(x, 1.0)
+        return y
 
 
 class Extremely(Hedge):
-    """The Extremely class is a Hedge located fifth in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term as follows.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    Note: Equation
+        $h(x) = \begin{cases}
+            2x^2 & \mbox{if } x \le 0.5 \cr
+            1-2(1-x)^2 & \mbox{otherwise} \cr
+            \end{cases}$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $
-        \begin{cases}
-        2x^2 & \mbox{if $x \le 0.5$} \cr
-        1-2(1-x)^2 & \mbox{otherwise} \cr
-        \end{cases}$.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\text{Extremely}(x)$.
+
+        Args:
+             x: membership function value
+
+        Returns:
+            $h(x) = \begin{cases} 2x^2 & \mbox{if } x \le 0.5 \cr 1-2(1-x)^2 & \mbox{otherwise} \cr \end{cases}$
         """
-        return 2.0 * x * x if x <= 0.5 else (1.0 - 2.0 * (1.0 - x) * (1.0 - x))
+        x = scalar(x)
+        y = np.where(x <= 0.5, 2 * x**2, 1 - 2 * (1 - x) ** 2)
+        return y
 
 
 class Not(Hedge):
-    """The Not class is a Hedge located first in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    """Hedge that modifies the membership function value of a term by.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    Note: Equation
+        $h(x) = 1-x$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $1-x$.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\text{Not}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+             $h(x) = 1-x$
         """
-        return 1.0 - x
+        x = scalar(x)
+        y = 1 - x
+        return y
 
 
 class Seldom(Hedge):
-    """The Seldom class is a Hedge located second in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term as follows.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    Note: Equation
+        $h(x) = \begin{cases}
+            \sqrt{\dfrac{x}{2}} & \mbox{if } x \le 0.5 \cr
+            1-\sqrt{\dfrac{1-x}{2}} & \mbox{otherwise}
+        \end{cases}$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $
-        \begin{cases}
-        \sqrt{0.5x} & \mbox{if $x \le 0.5$} \cr
-        1-\sqrt{0.5(1-x)} & \mbox{otherwise}\cr
-        \end{cases}
-        $.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\text{Seldom(x)}$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $h(x) = \begin{cases} \sqrt{\dfrac{x}{2}} & \mbox{if $x \le 0.5$} \cr 1-\sqrt{\dfrac{(1-x)}{2}} & \mbox{otherwise}\cr \end{cases}$
         """
-        return math.sqrt(0.5 * x) if x <= 0.5 else (1.0 - math.sqrt(0.5 * (1.0 - x)))
+        x = scalar(x)
+        y = np.where(x <= 0.5, np.sqrt(0.5 * x), 1 - np.sqrt(0.5 * (1 - x)))
+        return y
 
 
 class Somewhat(Hedge):
-    """The Somewhat class is a Hedge located third in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term by.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    Note: Equation
+        $h(x) = \sqrt{x}$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        r"""Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $\sqrt{x}$.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\text{Somewhat}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $h(x) = \sqrt{x}$
         """
-        return math.sqrt(x)
+        x = scalar(x)
+        y = np.sqrt(x)
+        return y
 
 
 class Very(Hedge):
-    """The Very class is a Hedge located fourth in the ordered set
-    (Not, Seldom, Somewhat, Very, Extremely, Any).
+    r"""Hedge that modifies the membership function value of a term by.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see HedgeFactory
-    @since 4.0
+    Note: Equation
+        $h(x) = x^2$
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the membership function value $x$
-        @param x is a membership function value
-        @return $x^2$.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\text{Very}(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+             $h(x) = x^2$
         """
-        return x * x
+        x = scalar(x)
+        y = x**2
+        return y
 
 
 class HedgeLambda(Hedge):
-    """The HedgeLambda class is a customizable Hedge via Lambda, which
-    computes any function based on the $x$ value. This hedge is not
-    registered with the HedgeFactory due to issues configuring the formula
-    within. To register the hedge, a static method with the
-    constructor needs to be manually created and registered.
+    r"""Hedge that modifies the membership function value of a term according to a $\lambda$ function.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Hedge
-    @see HedgeFactory
-    @since 7.0
+    This hedge is not registered with the HedgeFactory because the $\lambda$ function cannot be easily configured.
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.hedge.HedgeFunction][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def __init__(self, name: str, function: Callable[[float], float]) -> None:
-        """Create the hedge.
-        @param name is the name of the hedge
-        @param function is the lambda function.
+    def __init__(self, name: str, function: Callable[[Scalar], Scalar]) -> None:
+        r"""Constructor.
+
+        Args:
+            name: name of the hedge
+            function: $\lambda$ function.
         """
         self._name = name
         self.function = function
 
     @property
     def name(self) -> str:
-        """Gets the name of the hedge."""
+        """Get the name of the hedge.
+
+        Returns:
+            name of the hedge
+        """
         return self._name
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the membership function value $x$ utilizing
-        the HedgeFunction::function
-        @param x is a membership function value
-        @return the evaluation of the function.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $\lambda(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $h(x) = \lambda(x)$
         """
         return self.function(x)
 
 
 class HedgeFunction(Hedge):
-    """The HedgeFunction class is a customizable Hedge via Function, which
-    computes any function based on the $x$ value. This hedge is not
-    registered with the HedgeFactory due to issues configuring the formula
-    within. To register the hedge, a static method with the
-    constructor needs to be manually created and registered. Please, check the
-    file `test/hedge/HedgeFunction.cpp` for further details.
+    r"""Hedge that modifies the membership function value of a term according to the term Function.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Hedge
-    @see HedgeFactory
-    @since 6.0
+    This hedge is not registered with the HedgeFactory because the Function cannot be easily configured.
+
+    info: related
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.hedge.HedgeLambda][]
+        - [fuzzylite.factory.HedgeFactory][]
     """
 
-    def __init__(self, function: "Function") -> None:
-        """Create the hedge.
-        @param function is the function.
+    def __init__(self, function: Function) -> None:
+        """Constructor.
+
+        Args:
+            function: function $f$.
         """
         self.function = function
 
     @property
     def name(self) -> str:
-        """Gets the name of the function."""
+        """Get the name of the hedge.
+
+        Returns:
+            name of the hedge
+        """
         return self.function.name
 
-    def hedge(self, x: float) -> float:
-        """Computes the hedge for the membership function value $x$ utilizing
-        the HedgeFunction::function
-        @param x is a membership function value
-        @return the evaluation of the function.
+    def hedge(self, x: Scalar) -> Scalar:
+        r"""Compute $f(x)$.
+
+        Args:
+            x: membership function value
+
+        Returns:
+            $h(x) = f(x)$
         """
         return self.function.membership(x)

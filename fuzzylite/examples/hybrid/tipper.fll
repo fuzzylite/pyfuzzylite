@@ -21,7 +21,7 @@ OutputVariable: mTip
   range: 0.000 30.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 100
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: cheap Triangle 0.000 5.000 10.000

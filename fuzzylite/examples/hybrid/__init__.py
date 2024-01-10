@@ -1,1 +1,2 @@
-__all__ = ["ObstacleAvoidance", "tipper"]
+__all__ = ["obstacle_avoidance", "tipper"]
+from . import obstacle_avoidance, tipper

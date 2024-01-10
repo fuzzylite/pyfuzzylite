@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,19 +11,22 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Importer", "FllImporter"]
 
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple, Type, TypeVar, Union
+from typing import overload
 
 from .activation import Activation
 from .defuzzifier import Defuzzifier
 from .engine import Engine
-from .factory import ConstructionFactory
+from .library import representation, settings, to_float
 from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule, RuleBlock
@@ -31,61 +34,84 @@ from .term import Term
 from .variable import InputVariable, OutputVariable
 
 
-class Importer:
-    """The Importer class is the abstract class for importers to configure an
-    Engine and its components from different text formats.
-    @todo declare methods to import specific components
-    @author Juan Rada-Vilela, Ph.D.
-    @see Exporter
-    @since 4.0.
+class Importer(ABC):
+    """Abstract class for importers to configure an engine and its components from different text formats.
+
+    info: related
+        - [fuzzylite.exporter.Exporter][]
     """
 
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the importer
-        @return the name of the importer.
-        """
-        return self.__class__.__name__
+    # TODO: declare methods to import specific components
 
-    def from_string(self, fll: str) -> Engine:
-        """Imports the engine from the given text
-        @param text is the string representation of the engine to import from
-        @return the engine represented by the text.
-        """
-        raise NotImplementedError()
+    def __str__(self) -> str:
+        """Return the class name of the importer.
 
-    def from_file(self, path: Union[Path, str]) -> Engine:
-        """Imports the engine from the given file
-        @param path is the full path of the file containing the engine to import from
-        @return the engine represented by the file.
+        Returns:
+            class name of the importer.
+        """
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """Return the Python code to construct the importer.
+
+        Returns:
+            Python code to construct the importer.
+        """
+        return representation.as_constructor(self)
+
+    @abstractmethod
+    def from_string(self, text: str, /) -> Engine:
+        """Return the engine described in the text representation.
+
+        Args:
+            text: representation of the engine to import
+
+        Returns:
+            engine described in the text representation
+        """
+
+    def from_file(self, path: Path | str, /) -> Engine:
+        """Read from the file the text representation of an engine.
+
+        Args:
+            path: file path to import engine
+
+        Returns:
+            engine represented in the file
         """
         if isinstance(path, str):
             path = Path(path)
-        with path.open(encoding="UTF8") as fll:
+        with path.open(encoding="utf-8") as fll:
             return self.from_string(fll.read())
 
 
 class FllImporter(Importer):
-    """The FllImporter class is an Importer that configures an Engine and its
-    components utilizing the FuzzyLite Language (FLL), see
-    [http://www.fuzzylite.com/fll-fld](http://www.fuzzylite.com/fll-fld) for
-    more information.
-    @author Juan Rada-Vilela, Ph.D.
-    @see FllExporter
-    @see Importer
-    @since 4.0
-    @todo parse methods returning respective instances from blocks of text.
+    """Import an engine and its components described using the FuzzyLite Language.
+
+    info: related
+        - [fuzzylite.importer.Importer][]
+        - [fuzzylite.exporter.FllExporter][]
+        - [FuzzyLite Language (FLL)](https://fuzzylite.com/fll-fld/)
     """
 
-    T = TypeVar("T", Activation, Defuzzifier, SNorm, TNorm)
+    # todo: parse methods returning respective instances from blocks of text.
 
     def __init__(self, separator: str = "\n") -> None:
-        """Creates an importer with the specific separator
-        @param separator is the separator of the language.
+        """Constructor.
+
+        Args:
+            separator: separation between components of the FuzzyLite Language.
         """
         self.separator = separator
 
-    def _process(self, component: str, block: List[str], engine: Engine) -> None:
+    def _process(self, component: str, block: list[str], engine: Engine) -> None:
+        """Process the main components of the FuzzyLite Language, namely Engine, InputVariable, OutputVariable and RuleBlock.
+
+        Args:
+            component: one of `Engine`, `InputVariable`, `OutputVariable` and `RuleBlock`
+            block: list of lines that make up the component
+            engine: engine to add the component to
+        """
         if component == "Engine":
             for line in block:
                 line = Op.strip_comments(line)
@@ -96,9 +122,7 @@ class FllImporter(Importer):
                 elif key == "description":
                     engine.description = value
                 else:
-                    raise SyntaxError(
-                        f"'{key}' is not a valid component of '{component}'"
-                    )
+                    raise SyntaxError(f"'{key}' is not a valid component of '{component}'")
         elif component == "InputVariable":
             input_variable = self.input_variable(self.separator.join(block), engine)
             engine.input_variables.append(input_variable)
@@ -109,21 +133,29 @@ class FllImporter(Importer):
             rule_block = self.rule_block(self.separator.join(block), engine)
             engine.rule_blocks.append(rule_block)
 
-    def from_string(self, fll: str) -> Engine:
-        """Creates an engine from the FuzzyLite Language.
-        @param fll is the engine in the FuzzyLite Language
-        @returns the engine.
+    def from_string(self, text: str, /) -> Engine:
+        """Return the engine describe using the FuzzyLite Language.
+
+        Args:
+            text: engine described using the FuzzyLite Language
+
+        Returns:
+            engine described using the FuzzyLite Language
         """
-        return self.engine(fll)
+        return self.engine(text)
 
     def engine(self, fll: str) -> Engine:
-        """Creates an engine from the FuzzyLite Language.
-        @param fll is the engine in the FuzzyLite Language
-        @returns the engine.
+        """Return the engine describe using the FuzzyLite Language.
+
+        Args:
+            fll: engine described using the FuzzyLite Language
+
+        Returns:
+            engine described using the FuzzyLite Language
         """
         engine = Engine()
         component = ""
-        block: List[str] = []
+        block: list[str] = []
 
         for line in fll.split(self.separator):
             line = Op.strip_comments(line)
@@ -142,13 +174,15 @@ class FllImporter(Importer):
             self._process(component, block, engine)
         return engine
 
-    def input_variable(
-        self, fll: str, engine: Optional[Engine] = None
-    ) -> InputVariable:
-        """Creates an input variable from the FuzzyLite Language.
-        @param fll is the input variable in the FuzzyLite Language
-        @param engine is the reference engine for the input variable
-        @returns the input variable.
+    def input_variable(self, fll: str, engine: Engine | None = None) -> InputVariable:
+        """Return the input variable described using the FuzzyLite Language.
+
+        Args:
+            fll: input variable described using the FuzzyLite Language
+            engine: engine to update the reference of the terms in the variable
+
+        Returns:
+            input variable described using the FuzzyLite Language
         """
         iv = InputVariable()
         for line in fll.split(self.separator):
@@ -169,19 +203,19 @@ class FllImporter(Importer):
             elif key == "term":
                 iv.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{iv.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{iv.__class__.__name__}'")
         iv.name = Op.as_identifier(iv.name)
         return iv
 
-    def output_variable(
-        self, fll: str, engine: Optional[Engine] = None
-    ) -> OutputVariable:
-        """Creates an output variable from the FuzzyLite Language.
-        @param fll is the output variable in the FuzzyLite Language
-        @param engine is the reference engine for the output variable
-        @returns the output variable.
+    def output_variable(self, fll: str, engine: Engine | None = None) -> OutputVariable:
+        """Return the output variable described using the FuzzyLite Language.
+
+        Args:
+            fll: output variable described using the FuzzyLite Language
+            engine: engine to update the reference of the terms in the variable
+
+        Returns:
+            output variable described using the FuzzyLite Language
         """
         ov = OutputVariable()
         for line in fll.split(self.separator):
@@ -198,7 +232,7 @@ class FllImporter(Importer):
             elif key == "range":
                 ov.range = self.range(value)
             elif key == "default":
-                ov.default_value = Op.scalar(value)
+                ov.default_value = to_float(value)
             elif key == "lock-previous":
                 ov.lock_previous = self.boolean(value)
             elif key == "lock-range":
@@ -210,17 +244,19 @@ class FllImporter(Importer):
             elif key == "term":
                 ov.terms.append(self.term(line, engine))
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{ov.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{ov.__class__.__name__}'")
         ov.name = Op.as_identifier(ov.name)
         return ov
 
-    def rule_block(self, fll: str, engine: Optional[Engine] = None) -> RuleBlock:
-        """Creates a rule block from the FuzzyLite Language.
-        @param fll is the rule block in the FuzzyLite Language
-        @param engine is the reference engine for the rule block
-        @returns the rule block.
+    def rule_block(self, fll: str, engine: Engine | None = None) -> RuleBlock:
+        """Return the rule block described using the FuzzyLite Language.
+
+        Args:
+            fll: rule block described using the FuzzyLite Language
+            engine: engine to use for loading the rules
+
+        Returns:
+            rule block described using the FuzzyLite Language
         """
         rb = RuleBlock()
         for line in fll.split(self.separator):
@@ -247,126 +283,186 @@ class FllImporter(Importer):
                 if rule:
                     rb.rules.append(rule)
             else:
-                raise SyntaxError(
-                    f"'{key}' is not a valid component of '{rb.__class__.__name__}'"
-                )
+                raise SyntaxError(f"'{key}' is not a valid component of '{rb.__class__.__name__}'")
         return rb
 
-    def term(self, fll: str, engine: Optional[Engine] = None) -> Term:
-        """Creates a term from the FuzzyLite Language.
-        @param fll is the term in the FuzzyLite Language
-        @param engine is the reference engine for the term
-        @returns the term.
-        """
-        from . import lib
+    def term(self, fll: str, engine: Engine | None = None) -> Term:
+        """Return the term described using the FuzzyLite Language.
 
+        Args:
+            fll: term described using the FuzzyLite Language
+            engine: engine to update the reference of the term
+
+        Returns:
+            term described using the FuzzyLite Language
+        """
         values = self.extract_value(fll, "term").split(maxsplit=2)
         if len(values) < 2:
-            raise SyntaxError(
-                f"expected format 'term: name Term [parameters]', but got '{fll}'"
-            )
+            raise SyntaxError(f"expected format 'term: name Term [parameters]', but got '{fll}'")
 
-        term = lib.factory_manager.term.construct(values[1])
-        term.name = Op.as_identifier(values[0])
-        term.update_reference(engine)
+        term = settings.factory_manager.term.construct(values[1], name=Op.as_identifier(values[0]))
         if len(values) > 2:
             term.configure(values[2])
+        term.update_reference(engine)
         return term
 
-    def rule(self, fll: str, engine: Optional[Engine] = None) -> Optional[Rule]:
-        """Creates a rule from the FuzzyLite Language.
-        @param fll is the rule in the FuzzyLite Language
-        @param engine is the reference engine for the rule
-        @returns the rule.
+    def rule(self, fll: str, engine: Engine | None = None) -> Rule | None:
+        """Return the rule described using the FuzzyLite Language.
+
+        Args:
+            fll: rule described using the FuzzyLite Language
+            engine: engine to load the rule
+
+        Returns:
+            rule described using the FuzzyLite Language
         """
         return Rule.create(self.extract_value(fll, "rule"), engine)
 
-    def tnorm(self, fll: str) -> Optional[TNorm]:
-        """Creates a T-Norm from the FuzzyLite Language.
-        @param fll is the T-Norm in the FuzzyLite Language
-        @returns the T-Norm.
-        """
-        return self.component(TNorm, fll)
+    def tnorm(self, fll: str) -> TNorm | None:
+        """Return the TNorm described using the FuzzyLite Language.
 
-    def snorm(self, fll: str) -> Optional[SNorm]:
-        """Creates a S-Norm from the FuzzyLite Language.
-        @param fll is the S-Norm in the FuzzyLite Language
-        @returns the S-Norm.
-        """
-        return self.component(SNorm, fll)
+        Args:
+            fll: TNorm described using the FuzzyLite Language
 
-    def activation(self, fll: str) -> Optional[Activation]:
-        """Creates an activation method from the FuzzyLite Language.
-        @param fll is the activation method in the FuzzyLite Language
-        @returns the activation method.
+        Returns:
+            TNorm described using the FuzzyLite Language
         """
-        values = fll.split(maxsplit=1)
-        name = values[0]
-        parameters = values[1] if len(values) > 1 else None
-        return self.component(Activation, name, parameters)
-
-    def defuzzifier(self, fll: str) -> Optional[Defuzzifier]:
-        """Creates a defuzzifier from the FuzzyLite Language.
-        @param fll is the defuzzifier in the FuzzyLite Language
-        @returns the defuzzifier.
-        """
-        values = fll.split(maxsplit=1)
-        name = values[0]
-        parameters = values[1] if len(values) > 1 else None
-        return self.component(Defuzzifier, name, parameters)
-
-    def component(
-        self, cls: Type["FllImporter.T"], fll: str, parameters: Optional[str] = None
-    ) -> Optional["FllImporter.T"]:
-        """Create component from the factory.
-        @param cls is the component class to create
-        @param fll is the component in the FuzzyLite Language
-        @param parameters is the component parameters in the FuzzyLite Language
-        @returns the component or None.
-        """
-        from . import lib
-
-        fll = Op.strip_comments(fll)
         if not fll or fll == "none":
             return None
+        return settings.factory_manager.tnorm.construct(fll)
 
-        factory_attr = cls.__name__.lower()
-        if not hasattr(lib.factory_manager, factory_attr):
-            raise SyntaxError(
-                f"factory manager does not contain a factory named '{factory_attr}' "
-                f"to construct objects of type '{cls}'"
-            )
+    def snorm(self, fll: str) -> SNorm | None:
+        """Return the SNorm described using the FuzzyLite Language.
 
-        factory: ConstructionFactory[FllImporter.T] = getattr(
-            lib.factory_manager, factory_attr
-        )
-        result = factory.construct(fll)
-        if parameters and hasattr(result, "configure"):
+        Args:
+            fll: SNorm described using the FuzzyLite Language
+
+        Returns:
+            SNorm described using the FuzzyLite Language
+        """
+        if not fll or fll == "none":
+            return None
+        return settings.factory_manager.snorm.construct(fll)
+
+    def activation(self, fll: str) -> Activation | None:
+        """Return the activation method described using the FuzzyLite Language.
+
+        Args:
+            fll: activation method described using the FuzzyLite Language
+
+        Returns:
+            activation method described using the FuzzyLite Language
+        """
+        if not fll or fll == "none":
+            return None
+        values = fll.split(maxsplit=1)
+        name = values[0]
+        parameters = values[1] if len(values) > 1 else None
+        result = settings.factory_manager.activation.construct(name)
+        if parameters:
             result.configure(parameters)
         return result
 
-    def range(self, fll: str) -> Tuple[float, float]:
-        """Gets the range from a value in the FuzzyLite Language."""
+    def defuzzifier(self, fll: str) -> Defuzzifier | None:
+        """Return the defuzzifier described using the FuzzyLite Language.
+
+        Args:
+            fll: defuzzifier described using the FuzzyLite Language
+
+        Returns:
+            defuzzifier described using the FuzzyLite Language
+        """
+        if not fll or fll == "none":
+            return None
+        values = fll.split(maxsplit=1)
+        name = values[0]
+        parameters = values[1] if len(values) > 1 else None
+        result = settings.factory_manager.defuzzifier.construct(name)
+        if parameters:
+            result.configure(parameters)
+        return result
+
+    @overload
+    def component(self, cls: type[Activation], fll: str) -> Activation | None:
+        ...
+
+    @overload
+    def component(self, cls: type[Defuzzifier], fll: str) -> Defuzzifier | None:
+        ...
+
+    @overload
+    def component(self, cls: type[SNorm], fll: str) -> SNorm | None:
+        ...
+
+    @overload
+    def component(self, cls: type[TNorm], fll: str) -> TNorm | None:
+        ...
+
+    def component(
+        self,
+        cls: type[Activation | Defuzzifier | TNorm | SNorm],
+        fll: str,
+    ) -> Activation | Defuzzifier | TNorm | SNorm | None:
+        """Return the component described using the FuzzyLite Language.
+
+        Args:
+            cls: class of the component to import
+            fll: component described using the FuzzyLite Language
+
+        Returns:
+            component described using the FuzzyLite Language
+        """
+        if issubclass(cls, Activation):
+            return self.activation(fll)
+        if issubclass(cls, Defuzzifier):
+            return self.defuzzifier(fll)
+        if issubclass(cls, SNorm):
+            return self.snorm(fll)
+        if issubclass(cls, TNorm):
+            return self.tnorm(fll)
+        else:
+            raise TypeError(
+                f"expected {Activation}, {Defuzzifier}, {SNorm} or {TNorm}, but got {cls}"
+            )
+
+    def range(self, fll: str) -> tuple[float, float]:
+        """Returns the values of a range described using the FuzzyLite Language.
+
+        Args:
+            fll: range of values described using the FuzzyLite Language (eg, `0.0 1.0`)
+
+        Returns:
+              range of values described using the FuzzyLite Language
+        """
         values = fll.split()
         if len(values) != 2:
             raise SyntaxError(f"expected range of two values, but got {values}")
-        return Op.scalar(values[0]), Op.scalar(values[1])
+        return to_float(values[0]), to_float(values[1])
 
     def boolean(self, fll: str) -> bool:
-        """Gets a boolean from a value in the FuzzyLite Language."""
+        """Returns a boolean value described using the FuzzyLite Language.
+
+        Args:
+            fll: `true` or `false`
+
+        Returns:
+              boolean value described using the FuzzyLite Language.
+        """
         if fll.strip() == "true":
             return True
         if fll.strip() == "false":
             return False
         raise SyntaxError(f"expected boolean in {['true', 'false']}, but got '{fll}'")
 
-    def extract_key_value(
-        self, fll: str, component: Optional[str] = None
-    ) -> Tuple[str, str]:
-        """Extract 'key: value' pair from the line of text in the FuzzyLite Language
-        @param fll is the line of text in the FuzzyLite Language
-        @param component is the name of the specific key to extract
-        @returns tuple of (key, value).
+    def extract_key_value(self, fll: str, component: str | None = None) -> tuple[str, str]:
+        """Return key-value pair described using the FuzzyLite Language.
+
+        Args:
+            fll: key-value pair in the form `key: value`
+            component: name of the key to extract
+
+        Returns:
+            tuple of `(key, value)`
         """
         parts = Op.strip_comments(fll).split(":", maxsplit=1)
         if len(parts) != 2 or (component and parts[0] != component):
@@ -374,10 +470,14 @@ class FllImporter(Importer):
             raise SyntaxError(f"expected '{key}: value' definition, but found '{fll}'")
         return parts[0].strip(), parts[1].strip()
 
-    def extract_value(self, fll: str, component: Optional[str] = None) -> str:
-        """Extract the value from the line of text in the FuzzyLite Language
-        @param fll is the line of text in the FuzzyLite Language
-        @param component is the name of the specific key to extract the value from
-        @returns the value.
+    def extract_value(self, fll: str, component: str | None = None) -> str:
+        """Return value from the `key: value` pair described using the FuzzyLite Language.
+
+        Args:
+            fll: key-value pair in the form `key: value`
+            component: name of the key to extract
+
+        Returns:
+            value from the `key: value` pair described using the FuzzyLite Language
         """
         return self.extract_key_value(fll, component)[1]

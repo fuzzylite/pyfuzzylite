@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,213 +11,253 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = ["Operation", "Op"]
 
+import builtins
+import importlib
+import importlib.util
 import inspect
-import math
-from typing import Callable, List, Optional, SupportsFloat, Union
+import typing
+from collections.abc import Iterable, Sequence
+from pathlib import Path
+from types import ModuleType
+from typing import Any, Callable, Literal, overload
+
+import numpy as np
+
+from .library import scalar, settings
+from .types import Array, Scalar, ScalarArray
+
+if typing.TYPE_CHECKING:
+    from .engine import Engine
 
 
 class Operation:
-    """The Operation class contains methods for numeric operations, string
-    manipulation, and other functions, all of which are also accessible via
-    fl.Op.
-    @author Juan Rada-Vilela, Ph.D.
-    @since 4.0.
+    """Methods for numeric operations, string manipulation, and other functions.
+
+    `fl.Op` is a shortcut to this class.
     """
 
-    @staticmethod
-    def eq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is equal to $b$ at the given tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is equal to $b$ at the given tolerance.
-        """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b)
+    isinf = np.isinf
+    isnan = np.isnan
 
     @staticmethod
-    def neq(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is not equal to $b$ at the given tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is equal to $b$ at the given tolerance.
+    def eq(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        r"""Return $a = b$ (with NaN's as equal).
 
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a=b$
         """
-        if abs_tolerance is None:
-            from . import lib
-
-            abs_tolerance = lib.abs_tolerance
-        return not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b))
+        return np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
-    def gt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is greater than $b$ at the given tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is greater than $b$ at the given tolerance.
-        """
-        if abs_tolerance is None:
-            from . import lib
+    def neq(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        r"""Return $a \not= b$ (with NaN's as equal).
 
-            abs_tolerance = lib.abs_tolerance
-        return (
-            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a > b
-        )
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a\not=b$
+        """
+        return ~np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
-    def ge(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is greater than or equal to $b$ at the
-        given tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is greater than or equal to $b$ at the
-        given tolerance.
-        """
-        if abs_tolerance is None:
-            from . import lib
+    def gt(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        """Return $a > b$.
 
-            abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a > b
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a>b$
+        """
+        return scalar(a > b)
 
     @staticmethod
-    def le(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is less than or equal to $b$ at the given
-        tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is less than or equal to $b$ at the given
-        tolerance.
-        """
-        if abs_tolerance is None:
-            from . import lib
+    def ge(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        r"""Return $a \ge b$ (with NaN's as equal).
 
-            abs_tolerance = lib.abs_tolerance
-        return a == b or abs(a - b) < abs_tolerance or (a != a and b != b) or a < b
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a \ge b$
+        """
+        return (a >= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
-    def lt(a: float, b: float, abs_tolerance: Optional[float] = None) -> bool:
-        """Returns whether $a$ is less than $b$ at the given tolerance
-        @param a
-        @param b
-        @param macheps is the minimum difference upon which two
-        floating-point values are considered equivalent
-        @return whether $a$ is less than $b$ at the given tolerance.
-        """
-        if abs_tolerance is None:
-            from . import lib
+    def le(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        r"""Return $a \le b$ (with NaN's as equal).
 
-            abs_tolerance = lib.abs_tolerance
-        return (
-            not (a == b or abs(a - b) < abs_tolerance or (a != a and b != b)) and a < b
-        )
+        Args:
+            a: scalar
+            b: scalar
 
-    @staticmethod
-    def logical_and(a: float, b: float) -> bool:
-        r"""Computes the logical AND
-        @param a
-        @param b
-        @return $
-        \begin{cases}
-        1.0 & \mbox{if $a=1 \wedge b=1$}\cr
-        0.0 & \mbox{otherwise}
-        \end{cases}
-        $.
+        Returns:
+             $a \le b$
         """
-        return Operation.eq(a, 1.0) and Operation.eq(b, 1.0)
+        return (a <= b) | np.isclose(a, b, rtol=0, atol=0, equal_nan=True)  # type: ignore
 
     @staticmethod
-    def logical_or(a: float, b: float) -> bool:
-        r"""Computes the logical OR
-        @param a
-        @param b
-        @return $
-        \begin{cases}
-        1.0 & \mbox{if $a=1 \vee b=1$}\cr
-        0.0 & \mbox{otherwise}
-        \end{cases}
-        $.
+    def lt(
+        a: Scalar,
+        b: Scalar,
+    ) -> Scalar:
+        r"""Return $a < b$.
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a < b$
         """
-        return Operation.eq(a, 1.0) or Operation.eq(b, 1.0)
+        return scalar(a < b)
+
+    @staticmethod
+    def is_close(a: Scalar, b: Scalar) -> bool | Array[np.bool_]:
+        r"""Return $a \approx b$ (with NaN's as equal) using the absolute and relative tolerances of the library.
+
+        Args:
+            a: scalar
+            b: scalar
+
+        Returns:
+             $a \approx b$
+
+        info: related
+            - [fuzzylite.library.Settings][]
+        """
+        z = np.isclose(a, b, atol=settings.atol, rtol=settings.rtol, equal_nan=True)
+        return z
 
     @staticmethod
     def as_identifier(name: str) -> str:
-        """Convert the name into a valid FuzzyLite identifier
-        @param name is the name to convert
-        @returns the name as a valid identifier.
+        """Convert the name into a valid FuzzyLite and Python identifier by removing non-alphanumeric characters and prepending `_` to names starting with a number.
 
+        Args:
+            name: name to convert
+
+        Returns:
+             name as a valid identifier.
         """
-        result = "".join([x for x in name if x in ("_", ".") or x.isalnum()])
-        return result if result else "unnamed"
+        name = "".join([x for x in name if x.isalnum() or x == "_"]) or "_"
+        if name[0].isnumeric():
+            name = f"_{name}"
+        return name
+
+    @staticmethod
+    def snake_case(text: str) -> str:
+        """Converts the string to snake_case.
+
+        Args:
+            text: any string
+
+        Returns:
+            text in `snake_case`
+        """
+        result = [" "]
+        for character in text:
+            if character.isalpha() and character.isupper():
+                if result[-1] != " ":
+                    result.append(" ")
+                result.append(character.lower())
+            elif character.isalnum():
+                result.append(character)
+            elif (character.isspace() or not character.isalnum()) and result[-1] != " ":
+                result.append(" ")
+        sc_text = "".join(result).strip().replace(" ", "_")
+        return sc_text
+
+    @staticmethod
+    def pascal_case(text: str) -> str:
+        """Converts the string to PascalCase.
+
+        Args:
+            text: any string
+
+        Returns:
+            text in `PascalCase`
+        """
+        result = Op.snake_case(text)
+        cc_text = "".join(word.capitalize() for word in result.split("_"))
+        return cc_text
 
     @staticmethod
     def scale(
-        x: float,
-        from_minimum: float,
-        from_maximum: float,
-        to_minimum: float,
-        to_maximum: float,
-    ) -> float:
-        r"""Linearly interpolates the parameter $x$ in range
-        `[fromMin,fromMax]` to a new value in the range `[toMin,toMax]`,
-        truncated to the range `[toMin,toMax]` if bounded is `true`.
-        @param x is the source value to interpolate
-        @param fromMin is the minimum value of the source range
-        @param fromMax is the maximum value of the source range
-        @param toMin is the minimum value of the target range
-        @param toMax is the maximum value of the target range
-        @param bounded determines whether the resulting value is bounded to
-        the range
-        @return the source value linearly interpolated to the target range:
-        $ y = y_a + (y_b - y_a) \dfrac{x-x_a}{x_b-x_a} $.
+        x: Scalar,
+        x_min: float,
+        x_max: float,
+        y_min: float,
+        y_max: float,
+    ) -> Scalar:
+        r"""Linearly interpolates $x$ from the source range `[from_minimum, from_maximum]` to its new value in the target range `[to_minimum, to_maximum]`.
+
+        Args:
+            x: value to interpolate
+            x_min: minimum value of the source range
+            x_max: maximum value of the source range
+            y_min: minimum value of the target range
+            y_max: maximum value of the target range
+
+        Returns:
+             $x$ linearly interpolated to the target range as: $y = \dfrac{y_\max - y_\min}{x_\max-x_\min} (x-x_\min) + y_\min$
         """
-        return (to_maximum - to_minimum) / (from_maximum - from_minimum) * (
-            x - from_minimum
-        ) + to_minimum
+        x = scalar(x)
+        return (y_max - y_min) / (x_max - x_min) * (x - x_min) + y_min
 
     @staticmethod
-    def bound(x: float, minimum: float, maximum: float) -> float:
-        r"""Returns $x$ bounded in $[\min,\max]$
-        @param x is the value to be bounded
-        @param min is the minimum value of the range
-        @param max is the maximum value of the range
-        @return $
-        \begin{cases}
-        \min & \mbox{if $x < \min$} \cr
-        \max & \mbox{if $x > \max$} \cr
-        x & \mbox{otherwise}
-        \end{cases}
-        $.
+    def bound(x: Scalar, minimum: float, maximum: float) -> Scalar:
+        r"""Return $x$ clipped between `[minimum, maximum]`.
+
+        Args:
+           x: value to be clipped
+           minimum: minimum value of the range
+           maximum: maximum value of the range
+
+        Returns:
+             $$\begin{cases} \min & \mbox{if $x < \min$} \cr \max & \mbox{if $x > \max$} \cr x & \mbox{otherwise} \end{cases}$$
         """
-        if x > maximum:
-            return maximum
-        if x < minimum:
-            return minimum
-        return x
+        return np.clip(scalar(x), minimum, maximum)
 
     @staticmethod
     def arity_of(method: Callable) -> int:  # type: ignore
-        """Gets the arity of the given method.
-        @param method is the method to get the arity from
-        @returns the arity of the method.
+        """Gets the arity of the method.
 
+        Args:
+            method: method to get the arity from
+
+        Returns:
+            arity of the method.
         """
         signature = inspect.signature(method)
         required_parameters = [
@@ -228,56 +268,50 @@ class Operation:
         return len(required_parameters)
 
     @staticmethod
-    def pi() -> float:
-        """Gets the value of Pi."""
-        return math.pi
-
-    @staticmethod
     def describe(
         instance: object,
-        slots: bool = True,
         variables: bool = True,
         class_hierarchy: bool = False,
     ) -> str:
-        """Describes the instance in terms of its slots, variables, and class hierarchy.
-        @param instance is the instance to describe
-        @param slots whether to include slots in the description
-        @param variables whether to include variables in the description
-        @param class_hierarchy whether to include class hierarchy in the description.
+        """Describe the instance based on its variables and class hierarchy.
 
-        @return the description of the instance
+        Args:
+            instance: instance to describe
+            variables: include variables in the description
+            class_hierarchy: include class hierarchy in the description.
+
+        Returns:
+             description of the instance
         """
         if not instance:
             return str(None)
         key_values = {}
         if instance:
-            if slots and hasattr(instance, "__slots__") and instance.__slots__:
-                for slot in instance.__slots__:
-                    key_values[slot] = str(getattr(instance, slot))
-
             if variables and hasattr(instance, "__dict__") and instance.__dict__:
-                for variable in instance.__dict__:
-                    key_values[variable] = str(getattr(instance, variable))
+                for variable, value in vars(instance).items():
+                    key_values[variable] = str(value)
 
             if class_hierarchy:
                 key_values["__hierarchy__"] = ", ".join(
-                    f"{cls.__module__}.{cls.__name__}"
-                    for cls in inspect.getmro(instance.__class__)
+                    f"{cls.__module__}.{cls.__name__}" for cls in inspect.getmro(instance.__class__)
                 )
 
-        class_name = instance.__class__.__name__
         sorted_dict = {key: key_values[key] for key in sorted(key_values.keys())}
-        return f"{class_name}[{sorted_dict}]"
+        return f"{Op.class_name(instance)}[{sorted_dict}]"
 
     @staticmethod
-    def strip_comments(fll: str, delimiter: str = "#") -> str:
-        """Removes the comments from the text.
-        @param fll is the text to strip comments from
-        @param delimiter is the start delimiter to denote a comment.
+    def strip_comments(fll: str, /, delimiter: str = "#") -> str:
+        """Remove the comments from the text.
 
-        @returns the text with comments stripped out.
+        Args:
+            fll: text to strip comments from
+            delimiter: delimiter that indicates the start of a comment.
+
+        Returns:
+            text with comments stripped out.
         """
-        lines: List[str] = []
+        # todo: Move to FllImporter
+        lines: list[str] = []
         for line in fll.split("\n"):
             ignore = line.find(delimiter)
             if ignore != -1:
@@ -288,27 +322,38 @@ class Operation:
         return "\n".join(lines)
 
     @staticmethod
-    def scalar(x: Union[SupportsFloat, str, bytes]) -> float:
-        """Convert the value into a floating point defined by the library
-        @param x is the value to convert.
-        """
-        from . import lib
+    def midpoints(start: float, end: float, resolution: int = 1000) -> ScalarArray:
+        """Return the list of values in the range at the given resolution using the [midpoint rule](https://en.wikipedia.org/wiki/Rectangle_method).
 
-        return lib.floating_point(x)
+        Args:
+            start: start of range
+            end: end of range
+            resolution: number of divisions to discretize the range
+
+        Returns:
+            list of values in the range at the given resolution using the [midpoint rule](https://en.wikipedia.org/wiki/Rectangle_method)
+        """
+        # dx = ((end - start) / resolution)
+        # result = start + (i + 0.5) * dx
+        return start + (np.array(range(resolution)) + 0.5) * ((end - start) / resolution)
 
     @staticmethod
     def increment(
-        x: List[int],
-        minimum: List[int],
-        maximum: List[int],
-        position: Optional[int] = None,
+        x: list[int],
+        minimum: list[int],
+        maximum: list[int],
+        position: int | None = None,
     ) -> bool:
-        """Increments the list by the unit.
-        @param x is the list to increment
-        @param minimum is the list of minimum values for each element in the list
-        @param maximum is the list of maximum values for each element in the list
-        @param position is the position in the list to increment
-        @returns boolean whether it was incremented.
+        """Increment the list by the unit.
+
+        Args:
+            x: list to increment
+            minimum: list of minimum values for each element in the list
+            maximum: list of maximum values for each element in the list
+            position: position in the list to increment
+
+        Returns:
+             whether the list was incremented.
         """
         if position is None:
             position = len(x) - 1
@@ -326,21 +371,197 @@ class Operation:
                 incremented = Op.increment(x, minimum, maximum, position)
         return incremented
 
-    # Last method of class such that it does not replace builtins.str
     @staticmethod
-    def str(x: Union[float, object], decimals: Optional[int] = None) -> str:
-        """Returns a string representation of the given value
-        @param x is the value
-        @param decimals is the number of decimals to display
-        @return a string representation of the given value.
-        """
-        if not decimals:
-            from . import lib
+    def class_name(x: Any, /, qualname: bool = False) -> str:
+        """Return the class name of the object.
 
-            decimals = lib.decimals
-        if isinstance(x, float):
-            return f"{x:.{decimals}f}"
-        return str(x)
+        Args:
+            x: object to get the class name
+            qualname: use fully qualified classes
+
+        Returns:
+            class name of the given object.
+        """
+        package = ""
+        if qualname:
+            from .library import representation
+
+            package = representation.package_of(x)
+
+        if inspect.isclass(x):
+            return f"{package}{x.__name__}"
+        return f"{package}{x.__class__.__name__}"
+
+    @staticmethod
+    def to_fll(x: Any, /) -> str:
+        """Return the string representation of the object in the FuzzyLite Language.
+
+        Args:
+            x: object
+
+        Returns:
+            string representation of the object in the FuzzyLite Language.
+        """
+        from .library import representation
+
+        return representation.fll.to_string(x)
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["module"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ModuleType]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["engine"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[Engine]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["dataset"] | Literal["fld"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ScalarArray]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["language"] | Literal["fll"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[str]:
+        ...
+
+    @staticmethod
+    @overload
+    def glob_examples(
+        return_type: Literal["files"],
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[Path]:
+        ...
+
+    @staticmethod
+    def glob_examples(
+        return_type: Literal["module"]
+        | Literal["engine"]
+        | Literal["dataset"]
+        | Literal["fld"]
+        | Literal["language"]
+        | Literal["fll"]
+        | Literal["files"] = "engine",
+        module: ModuleType | None = None,
+        recursive: bool = True,
+    ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:
+        """Glob the examples (alphabetically and in ascending order) returning the specified type.
+
+        Args:
+            return_type: type of objects to return
+            module: package (eg, `fuzzylite.examples`) or module (eg, `fuzzylite.examples.terms.arc`) to glob
+            recursive: recursively glob into subdirectories
+
+        Yields:
+            Iterable of the specified type.
+        """
+        if module is None:
+            import fuzzylite.examples
+
+            module = fuzzylite.examples
+
+        pattern = "**/" if recursive else ""
+
+        # A package is a module with a __path__ attribute: https://docs.python.org/3/reference/import.html#packages
+        is_package = hasattr(module, "__path__")
+
+        if is_package:
+            # module is a package (directory) (eg, fuzzylite.examples)
+            package = Path(*module.__path__)
+            pattern += "*"
+        else:
+            # module is a module (eg, fuzzylite.examples.terms.arc)
+            package = Path(f"{module.__file__}").parent
+            pattern += Path(f"{module.__file__}").stem
+
+        if return_type in {"module", "engine"}:
+            pattern += ".py"
+            for file in sorted(package.glob(pattern)):
+                if file.stem != "__init__":
+                    submodule = ".".join(
+                        Op.as_identifier(part)
+                        for part in file.with_suffix("").relative_to(package).parts
+                    )
+                    import_name = (
+                        f"{module.__name__}.{submodule}" if is_package else module.__name__
+                    )
+                    example_module = importlib.import_module(import_name)
+                    if return_type == "module":
+                        yield example_module
+                    else:
+                        example_class, *_ = inspect.getmembers(
+                            example_module, predicate=inspect.isclass
+                        )
+                        # example_class: tuple[str, type]
+                        engine = example_class[1]().engine
+                        yield engine
+
+        elif return_type in {"dataset", "fld"}:
+            pattern += ".fld"
+            for file in sorted(package.glob(pattern)):
+                yield np.loadtxt(file, skiprows=1)
+
+        elif return_type in {"language", "fll"}:
+            pattern += ".fll"
+            for file in sorted(package.glob(pattern)):
+                yield file.read_text()
+
+        elif return_type == "files":
+            pattern += ".*"
+            for file in sorted(package.glob(pattern)):
+                if file.suffix in {".py", ".fll", ".fld"} and file.name != "__init__.py":
+                    yield file
+
+        else:
+            raise ValueError(
+                f"expected 'return_type' in {'module engine dataset fld language fll files'.split()}, "
+                f"but got '{return_type}'"
+            )
+
+    @staticmethod
+    def str(x: Any, /, delimiter: str = " ") -> builtins.str:
+        """Returns a string representation of the value.
+
+        Args:
+            x: value
+            delimiter: delimiter to use when `x` is a `Sequence` or `ScalarArray`
+
+        Returns:
+             string representation of the value.
+        """
+        if isinstance(x, str):
+            return x
+        if isinstance(x, (float, np.floating)):
+            return f"{x:.{settings.decimals}f}"
+        if isinstance(x, Sequence):
+            return delimiter.join([Op.str(x_i) for x_i in x])
+        if isinstance(x, np.ndarray):
+            if x.ndim == 0:
+                return f"{x.item():.{settings.decimals}f}"
+            if x.ndim == 1:
+                return delimiter.join([Op.str(x_i) for x_i in np.atleast_1d(x)])
+            if x.ndim == 2:
+                return "\n".join(Op.str(x[i, :]) for i in range(len(x)))
+            return np.array2string(x, precision=settings.decimals, floatmode="fixed")
+        return builtins.str(x)
 
 
 Op = Operation

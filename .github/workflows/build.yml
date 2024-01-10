@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development, feature/*]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"] #, "3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Check
+        run: nox -e check
+
+      - name: Install
+        run: nox -e install
+
+      - name: Lint
+        run: nox -e lint
+
+      - name: Test
+        run: nox -e test
+
+      - name: Documentation
+        run: nox -e docs
+
+      - name: Coverage
+        uses: coverallsapp/github-action@v2
+
+      - name: Benchmark
+        uses: CodSpeedHQ/action@v1
+        with:
+          token: ${{ secrets.CODSPEED_TOKEN }}
+          run: nox -e benchmark -- codspeed

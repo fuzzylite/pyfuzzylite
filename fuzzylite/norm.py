@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,9 +11,13 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
+from __future__ import annotations
+
 __all__ = [
     "Norm",
     "TNorm",
@@ -39,469 +43,742 @@ __all__ = [
 ]
 
 import typing
+from abc import ABC, abstractmethod
 from typing import Callable
+
+import numpy as np
+
+from .library import representation, scalar
+from .operation import Op
+from .types import Scalar
 
 if typing.TYPE_CHECKING:
     from .term import Function
 
 
-class Norm:
-    """The Norm class is the abstract class for norms.
-    @author Juan Rada-Vilela, Ph.D.
-    @see TNorm
-    @see SNorm
-    @see TNormFactory
-    @see SNormFactory
-    @since 4.0.
+class Norm(ABC):
+    """Abstract class for norms.
+
+    | [fuzzylite.norm.TNorm][]                      	| [fuzzylite.norm.SNorm][]                     	|
+    |-----------------------------------------------	|----------------------------------------------	|
+    | [fuzzylite.norm.AlgebraicProduct][]           	| [fuzzylite.norm.AlgebraicSum][]              	|
+    | ![](../../image/norm/T-AlgebraicProduct.svg)  	| ![](../../image/norm/S-AlgebraicSum.svg)     	|
+    | [fuzzylite.norm.BoundedDifference][]          	| [fuzzylite.norm.BoundedSum][]                	|
+    | ![](../../image/norm/T-BoundedDifference.svg) 	| ![](../../image/norm/S-BoundedSum.svg)       	|
+    | [fuzzylite.norm.DrasticProduct][]             	| [fuzzylite.norm.DrasticSum][]                	|
+    | ![](../../image/norm/T-DrasticProduct.svg)    	| ![](../../image/norm/S-DrasticSum.svg)       	|
+    | [fuzzylite.norm.EinsteinProduct][]            	| [fuzzylite.norm.EinsteinSum][]               	|
+    | ![](../../image/norm/T-EinsteinProduct.svg)   	| ![](../../image/norm/S-EinsteinSum.svg)      	|
+    | [fuzzylite.norm.HamacherProduct][]            	| [fuzzylite.norm.HamacherSum][]               	|
+    | ![](../../image/norm/T-HamacherProduct.svg)   	| ![](../../image/norm/S-HamacherSum.svg)      	|
+    | [fuzzylite.norm.Minimum][]                    	| [fuzzylite.norm.Maximum][]                   	|
+    | ![](../../image/norm/T-Minimum.svg)           	| ![](../../image/norm/S-Maximum.svg)          	|
+    | [fuzzylite.norm.NilpotentMinimum][]           	| [fuzzylite.norm.NilpotentMaximum][]          	|
+    | ![](../../image/norm/T-NilpotentMinimum.svg)  	| ![](../../image/norm/S-NilpotentMaximum.svg) 	|
+    |                                               	| [fuzzylite.norm.NormalizedSum][]             	|
+    |                                               	| ![](../../image/norm/S-NormalizedSum.svg)    	|
+    |                                               	| [fuzzylite.norm.UnboundedSum][]              	|
+    |                                               	| ![](../../image/norm/S-UnboundedSum.svg)     	|
+
+    info: related
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
     def __str__(self) -> str:
-        """Gets a string representation in the FuzzyLite Language."""
-        from .exporter import FllExporter
+        """Return the code to construct the norm in the FuzzyLite Language.
 
-        return FllExporter().norm(self)
-
-    @property
-    def class_name(self) -> str:
-        """Returns the name of the class of the norm
-        @return the name of the class of the norm.
+        Returns:
+            code to construct the norm in the FuzzyLite Language.
         """
-        return self.__class__.__name__
+        return representation.fll.norm(self)
 
-    def compute(self, a: float, b: float) -> float:
-        """Computes the norm for $a$ and $b$
-        @param a is a membership function value
-        @param b is a membership function value
-        @return the norm between $a$ and $b$.
+    def __repr__(self) -> str:
+        """Return the code to construct the norm in Python.
+
+        Returns:
+            code to construct the norm in Python.
         """
-        raise NotImplementedError()
+        return representation.as_constructor(self)
+
+    @abstractmethod
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Implement the norm.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             norm between $a$ and $b$
+        """
 
 
 class TNorm(Norm):
-    """The TNorm class is the base class for T-Norms, and it is utilized as the
-    conjunction fuzzy logic operator and as the implication (or `activation`
-    in versions 5.0 and earlier) fuzzy logic operator.
-    @author Juan Rada-Vilela, Ph.D.
-    @see RuleBlock::getConjunction()
-    @see RuleBlock::getImplication()
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    """Base class for T-Norms, used as fuzzy logic operator for conjunction and implication in rule blocks.
+
+    | [fuzzylite.norm.TNorm][]                      	|
+    |-----------------------------------------------	|
+    | [fuzzylite.norm.AlgebraicProduct][]           	|
+    | ![](../../image/norm/T-AlgebraicProduct.svg)  	|
+    | [fuzzylite.norm.BoundedDifference][]          	|
+    | ![](../../image/norm/T-BoundedDifference.svg) 	|
+    | [fuzzylite.norm.DrasticProduct][]             	|
+    | ![](../../image/norm/T-DrasticProduct.svg)    	|
+    | [fuzzylite.norm.EinsteinProduct][]            	|
+    | ![](../../image/norm/T-EinsteinProduct.svg)   	|
+    | [fuzzylite.norm.HamacherProduct][]            	|
+    | ![](../../image/norm/T-HamacherProduct.svg)   	|
+    | [fuzzylite.norm.Minimum][]                    	|
+    | ![](../../image/norm/T-Minimum.svg)           	|
+    | [fuzzylite.norm.NilpotentMinimum][]           	|
+    | ![](../../image/norm/T-NilpotentMinimum.svg)  	|
+
+    info: related
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.term.Activated][]
+        - [fuzzylite.rule.RuleBlock][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        """Not implemented."""
-        raise NotImplementedError()
+    @abstractmethod
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Implement the T-Norm $a \otimes b$.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \otimes b$
+        """
+
+
+class SNorm(Norm):
+    """Base class for S-Norms, used as fuzzy logic operator for disjunction and aggregation in rule blocks.
+
+    | [fuzzylite.norm.SNorm][]                     	|
+    |----------------------------------------------	|
+    | [fuzzylite.norm.AlgebraicSum][]              	|
+    | ![](../../image/norm/S-AlgebraicSum.svg)     	|
+    | [fuzzylite.norm.BoundedSum][]                	|
+    | ![](../../image/norm/S-BoundedSum.svg)       	|
+    | [fuzzylite.norm.DrasticSum][]                	|
+    | ![](../../image/norm/S-DrasticSum.svg)       	|
+    | [fuzzylite.norm.EinsteinSum][]               	|
+    | ![](../../image/norm/S-EinsteinSum.svg)      	|
+    | [fuzzylite.norm.HamacherSum][]               	|
+    | ![](../../image/norm/S-HamacherSum.svg)      	|
+    | [fuzzylite.norm.Maximum][]                   	|
+    | ![](../../image/norm/S-Maximum.svg)          	|
+    | [fuzzylite.norm.NilpotentMaximum][]          	|
+    | ![](../../image/norm/S-NilpotentMaximum.svg) 	|
+    | [fuzzylite.norm.NormalizedSum][]             	|
+    | ![](../../image/norm/S-NormalizedSum.svg)    	|
+    | [fuzzylite.norm.UnboundedSum][]              	|
+    | ![](../../image/norm/S-UnboundedSum.svg)     	|
+
+    info: related
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.term.Aggregated][]
+        - [fuzzylite.rule.RuleBlock][]
+        - [fuzzylite.factory.TNormFactory][]
+    """
+
+    @abstractmethod
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Implement the S-Norm $a \oplus b$.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \oplus b$
+        """
 
 
 class AlgebraicProduct(TNorm):
-    """The AlgebraicProduct class is a TNorm that computes the algebraic product
-    of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see AlgebraicSum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm to compute the algebraic product of any two values.
+
+    ![](../../image/norm/T-AlgebraicProduct.svg)
+
+    Note: Equation
+        $a \otimes b=a\times b$
+
+    info: related
+        - [fuzzylite.norm.AlgebraicSum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the algebraic product of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $a\times b$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the algebraic product of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \otimes b=a\times b$
         """
+        a = scalar(a)
+        b = scalar(b)
         return a * b
 
 
 class BoundedDifference(TNorm):
-    """The BoundedDifference class is a TNorm that computes the bounded
-    difference between any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see BoundedSum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm to compute the bounded difference between any two values.
+
+    ![](../../image/norm/T-BoundedDifference.svg)
+
+    Note: Equation
+        $a \otimes b=\max(0, a + b - 1)$
+
+    info: related
+        - [fuzzylite.norm.BoundedSum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the bounded difference between two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\max(0, a+b - 1)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the bounded difference between two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \otimes b=\max(0, a + b - 1)$
         """
-        return max(0.0, a + b - 1.0)
+        a = scalar(a)
+        b = scalar(b)
+        return np.maximum(0, a + b - 1)
 
 
 class DrasticProduct(TNorm):
-    """The DrasticProduct class is a TNorm that computes the drastic product of
-    any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see DrasticSum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm to compute the drastic product of any two values.
+
+    ![](../../image/norm/T-DrasticProduct.svg)
+
+    Note: Equation
+        $a \otimes b = \begin{cases}
+            \min(a,b) & \mbox{if } \max(a,b)=1 \cr
+            0 & \mbox{otherwise}
+        \end{cases}$
+
+    info: related
+        - [fuzzylite.norm.DrasticSum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the drastic product of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\begin{cases}
-        \min(a,b) & \mbox{if $\max(a,b)=1$} \cr
-        0 & \mbox{otherwise}
-        \end{cases}$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the drastic product of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value.
+
+        Returns:
+            $a \otimes b = \begin{cases} \min(a,b) & \mbox{if } \max(a,b)=1 \cr 0 & \mbox{otherwise} \end{cases}$
         """
-        return min(a, b) if max(a, b) == 1.0 else 0.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(np.maximum(a, b) == 1.0, np.minimum(a, b), 0.0)
 
 
 class EinsteinProduct(TNorm):
-    """The EinsteinProduct class is a TNorm that computes the Einstein product
-    of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see EinsteinSum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm to compute the Einstein product of any two values.
+
+    ![](../../image/norm/T-EinsteinProduct.svg)
+
+    Note: Equation
+        $a \otimes b=\dfrac{a\times b}{2-(a+b-a\times b)}$
+
+    info: related
+        - [fuzzylite.norm.EinsteinSum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the Einstein product of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $(a\times b)/(2-(a+b-a\times b))$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the Einstein product of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \otimes b=\dfrac{a\times b}{2-(a+b-a\times b)}$
         """
+        a = scalar(a)
+        b = scalar(b)
         return (a * b) / (2.0 - (a + b - a * b))
 
 
 class HamacherProduct(TNorm):
-    """The HamacherProduct class is a TNorm that computes the Hamacher product
-    of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see HamacherSum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm to compute the Hamacher product of any two values.
 
+    ![](../../image/norm/T-HamacherProduct.svg)
+
+    Note: Equation
+        $a \otimes b=\dfrac{a \times b}{a+b- a \times b}$
+
+    info: related
+        - [fuzzylite.norm.HamacherSum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the Hamacher product of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $(a \times b) / (a+b- a \times b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the Hamacher product of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \otimes b=\dfrac{a \times b}{a+b- a \times b}$
         """
-        return (a * b) / (a + b - a * b) if a + b != 0.0 else 0.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b != 0.0, (a * b) / (a + b - a * b), 0.0)
 
 
 class Minimum(TNorm):
-    """The Minimum class is a TNorm that computes the minimum of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see Maximum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 4.0.
+    r"""TNorm that computes the minimum of any two values.
+
+    ![](../../image/norm/T-Minimum.svg)
+
+    Note: Equation
+        $a \otimes b=\min(a,b)$
+
+    info: related
+        - [fuzzylite.norm.Maximum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the minimum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\min(a,b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the minimum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \otimes b=\min(a,b)$
         """
-        return min(a, b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.minimum(a, b)
 
 
 class NilpotentMinimum(TNorm):
-    """The NilpotentMinimum class is a TNorm that computes the nilpotent minimum
-    of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see NilpotentMaximum
-    @see TNorm
-    @see TNormFactory
-    @see Norm
-    @since 5.0.
+    r"""TNorm to compute the nilpotent minimum of any two values.
+
+    ![](../../image/norm/T-NilpotentMinimum.svg)
+
+    Note: Equation
+        $a \otimes b=\begin{cases}
+            \min(a,b) & \mbox{if }a+b>1 \cr
+            0 & \mbox{otherwise}
+        \end{cases}$
+
+    info: related
+        - [fuzzylite.norm.NilpotentMaximum][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the nilpotent minimum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\begin{cases}
-        \min(a,b) & \mbox{if $a+b>1$} \cr
-        0 & \mbox{otherwise}
-        \end{cases}$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the nilpotent minimum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \otimes b=\begin{cases}  \min(a,b) & \mbox{if }a+b>1 \cr  0 & \mbox{otherwise}  \end{cases}$
         """
-        return min(a, b) if a + b > 1.0 else 0.0
-
-
-class SNorm(Norm):
-    """The SNorm class is the base class for all S-Norms, and it is utilized as
-    the disjunction fuzzy logic operator and as the aggregation (or
-    `accumulation` in versions 5.0 and earlier) fuzzy logic operator.
-    @author Juan Rada-Vilela, Ph.D.
-    @see RuleBlock::getDisjunction()
-    @see OutputVariable::fuzzyOutput()
-    @see Aggregated::getAggregation()
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
-    """
-
-    def compute(self, a: float, b: float) -> float:
-        """Not implemented."""
-        raise NotImplementedError()
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b > 1.0, np.minimum(a, b), 0.0)
 
 
 class AlgebraicSum(SNorm):
-    """The AlgebraicSum class is an SNorm that computes the algebraic sum of
-    values any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see AlgebraicProduct
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the algebraic sum of values any two values.
+
+    ![](../../image/norm/S-AlgebraicSum.svg)
+
+    Note: Equation
+        $a \oplus b=a+b-(a \times b)$
+
+    info: related
+        - [fuzzylite.norm.AlgebraicProduct][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the algebraic sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $a+b-(a \times b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the algebraic sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \oplus b=a+b-(a \times b)$
         """
+        a = scalar(a)
+        b = scalar(b)
         return a + b - (a * b)
 
 
 class BoundedSum(SNorm):
-    """The BoundedSum class is an SNorm that computes the bounded sum of any two
-    values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see BoundedDifference
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the bounded sum of any two values.
+
+    ![](../../image/norm/S-BoundedSum.svg)
+
+    Note: Equation
+        $a \oplus b=\min(1, a+b)$
+
+    info: related
+        - [fuzzylite.norm.BoundedDifference][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the bounded sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\min(1, a+b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the bounded sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\min(1, a+b)$
         """
-        return min(1.0, a + b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.minimum(1.0, a + b)
 
 
 class DrasticSum(SNorm):
-    """The DrasticSum class is an SNorm that computes the drastic sum of any two
-    values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see DrasticProduct
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the drastic sum of any two values.
+
+    ![](../../image/norm/S-DrasticSum.svg)
+
+    Note: Equation
+        $a \oplus b=\begin{cases}
+            \max(a,b) & \mbox{if } \min(a,b)=0 \cr
+             1 & \mbox{otherwise}
+        \end{cases}$
+
+    info: related
+        - [fuzzylite.norm.DrasticProduct][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the drastic sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\begin{cases}
-        \max(a,b) & \mbox{if $\min(a,b)=0$} \cr
-        1 & \mbox{otherwise}
-        \end{cases}$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the drastic sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\begin{cases}  \max(a,b) & \mbox{if } \min(a,b)=0 \cr  1 & \mbox{otherwise}  \end{cases}$
         """
-        return max(a, b) if min(a, b) == 0.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(np.minimum(a, b) == 0.0, np.maximum(a, b), 1.0)
 
 
 class EinsteinSum(SNorm):
-    """The EinsteinSum class is an SNorm that computes the einstein sum of any
-    two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see EinsteinProduct
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the einstein sum of any two values.
+
+    ![](../../image/norm/S-EinsteinSum.svg)
+
+    Note: Equation
+        $a \oplus b=\dfrac{a+b}{1+a \times b}$
+
+    info: related
+        - [fuzzylite.norm.EinsteinProduct][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the Einstein sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $a+b/(1+a \times b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the Einstein sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\dfrac{a+b}{1+a \times b}$
         """
+        a = scalar(a)
+        b = scalar(b)
         return (a + b) / (1.0 + a * b)
 
 
 class HamacherSum(SNorm):
-    """The HamacherSum class is an SNorm that computes the Hamacher sum of any
-    two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see HamacherProduct
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the Hamacher sum of any two values.
+
+    ![](../../image/norm/S-HamacherSum.svg)
+
+    Note: Equation
+        $a \oplus b=\dfrac{a+b-2(\times a \times b)}{1-a\times b}$
+
+    info: related
+        - [fuzzylite.norm.HamacherProduct][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the Hamacher sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $a+b-(2\times a \times b)/(1-a\times b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the Hamacher sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\dfrac{a+b-2(\times a \times b)}{1-a\times b}$
         """
-        return (a + b - 2.0 * a * b) / (1.0 - a * b) if a * b != 1.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a * b != 1.0, (a + b - 2.0 * a * b) / (1.0 - a * b), 1.0)
 
 
 class Maximum(SNorm):
-    """The Maximum class is an SNorm that computes the maximum of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see Minimum
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the maximum of any two values.
+
+    ![](../../image/norm/S-Maximum.svg)
+
+    Note: Equation
+        $a \oplus b=\max(a,b)$
+
+    info: related
+       - [fuzzylite.norm.Minimum][]
+       - [fuzzylite.norm.SNorm][]
+       - [fuzzylite.norm.Norm][]
+       - [fuzzylite.factory.SNormFactory][]
+
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the maximum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\max(a,b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Computes the maximum of two membership function values.
 
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\max(a,b)$
         """
-        return max(a, b)
+        a = scalar(a)
+        b = scalar(b)
+        return np.maximum(a, b)
 
 
 class NilpotentMaximum(SNorm):
-    """The NilpotentMaximum class is an SNorm that computes the nilpotent
-    maximum of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see NilpotentMinimum
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 5.0.
+    r"""SNorm to compute the nilpotent maximum of any two values.
+
+    ![](../../image/norm/S-NilpotentMaximum.svg)
+
+    Note: Equation
+        $a \oplus b=\begin{cases}
+        \max(a,b) & \mbox{if } a+b<0 \cr
+        1 & \mbox{otherwise}
+        \end{cases}$
+
+    info: related
+       - [fuzzylite.norm.NilpotentMinimum][]
+       - [fuzzylite.norm.SNorm][]
+       - [fuzzylite.norm.Norm][]
+       - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the nilpotent maximum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\begin{cases}
-        \max(a,b) & \mbox{if $a+b<0$} \cr
-        1 & \mbox{otherwise}
-        \end{cases}$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the nilpotent maximum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=\begin{cases} \max(a,b) & \mbox{if } a+b<0 \cr 1 & \mbox{otherwise} \end{cases}$
         """
-        return max(a, b) if a + b < 1.0 else 1.0
+        a = scalar(a)
+        b = scalar(b)
+        return np.where(a + b < 1.0, np.maximum(a, b), 1.0)
 
 
 class NormalizedSum(SNorm):
-    """The NormalizedSum class is an SNorm that computes the normalized sum of
-    any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the normalized sum of any two values.
+
+    ![](../../image/norm/S-NormalizedSum.svg)
+
+    Note: Equation
+        $a \oplus b=\dfrac{a+b}{\max(1, a + b)}$
+
+    info: related
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the normalized sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $(a+b)/\max(1, a + b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the normalized sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+             $a \oplus b=\dfrac{a+b}{\max(1, a + b)}$
         """
-        return (a + b) / max(1.0, a + b)
+        a = scalar(a)
+        b = scalar(b)
+        return (a + b) / np.maximum(1.0, a + b)
 
 
 class UnboundedSum(SNorm):
-    """The UnboundedSum class is an SNorm that computes the sum of any two values.
-    @author Juan Rada-Vilela, Ph.D.
-    @see BoundedSum
-    @see SNorm
-    @see SNormFactory
-    @see Norm
-    @since 4.0.
+    r"""SNorm to compute the sum of any two values.
+
+    ![](../../image/norm/S-UnboundedSum.svg)
+
+    Note: Equation
+        $a \oplus b=a+b$
+
+    info: related
+        - [fuzzylite.norm.BoundedSum][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
     """
 
-    def compute(self, a: float, b: float) -> float:
-        r"""Computes the bounded sum of two membership function values
-        @param a is a membership function value
-        @param b is a membership function value
-        @return $\min(1, a+b)$.
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the sum of two membership function values.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=a+b$
         """
+        a = scalar(a)
+        b = scalar(b)
         return a + b
 
 
 class NormLambda(TNorm, SNorm):
-    """The NormLambda class is a customizable Norm via Lambda, which
-    computes any lambda based on the $a$ and $b$ values.
-    This Norm is not registered with the SNormFactory or the TNormFactory.
-    @author Juan Rada-Vilela, Ph.D.
-    @see SNorm
-    @see TNorm
-    @see Norm
-    @see SNormFactory
-    @see TNormFactory
-    @since 7.0.
+    r"""TNorm or SNorm based on a $\lambda$ function on any two values.
 
+    Note: Equation
+        $a \oplus b = a \otimes b = \lambda(a,b)$
+
+    This Norm is not registered in the SNormFactory or TNormFactory.
+
+    info: related
+        - [fuzzylite.norm.NormFunction][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def __init__(self, function: Callable[[float, float], float]) -> None:
-        """Create the norm.
-        @param function is a binary function.
+    def __init__(self, function: Callable[[Scalar, Scalar], Scalar]) -> None:
+        r"""Constructor.
 
+        Args:
+            function: function $\lambda(a,b)$.
         """
         self.function = function
 
-    def compute(self, a: float, b: float) -> float:
-        """Computes the Norm utilizing the given lambda, which automatically assigns the values
-        of $a$ and $b$.
-        @param a is a membership function value
-        @param b is a membership function value
-        @return the evaluation of the function.
+    def __repr__(self) -> str:
+        """Return the code to construct the norm in Python.
 
+        Returns:
+            code to construct the norm in Python.
+        """
+        return f"{Op.class_name(self, qualname=True)}(lambda a, b: ...)"
+
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the norm using $\lambda(a,b)$.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b = a \otimes b = \lambda(a,b)$
         """
         return self.function(a, b)
 
 
 class NormFunction(TNorm, SNorm):
-    """The NormFunction class is a customizable Norm via Function, which
-    computes any function based on the $a$ and $b$ values.
-    This Norm is not registered with the SNormFactory or the TNormFactory.
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see SNorm
-    @see TNorm
-    @see Norm
-    @see SNormFactory
-    @see TNormFactory
-    @since 6.0.
+    r"""TNorm or SNorm based on a term function on any two values.
 
+    Note: Equation
+        $a \oplus b = a \otimes b = f(a,b)$
+
+    This Norm is not registered in the SNormFactory or TNormFactory.
+
+    info: related
+        - [fuzzylite.norm.NormLambda][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.norm.Norm][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.TNormFactory][]
     """
 
-    def __init__(self, function: "Function") -> None:
-        """Create the norm.
-        @param function is a binary function.
+    def __init__(self, function: Function) -> None:
+        r"""Constructor.
 
+        Args:
+            function: function $f(a,b)$.
         """
         self.function = function
 
-    def compute(self, a: float, b: float) -> float:
-        """Computes the Norm utilizing the given function, which automatically assigns the values
-        of $a$ and $b$.
-        @param a is a membership function value
-        @param b is a membership function value
-        @return the evaluation of the function.
+    def __repr__(self) -> str:
+        """Return the code to construct the norm in Python.
 
+        Returns:
+            code to construct the norm in Python.
+        """
+        return representation.as_constructor(self, positional=True)
+
+    def compute(self, a: Scalar, b: Scalar) -> Scalar:
+        r"""Compute the Norm using $f(a,b)$.
+
+        Args:
+            a: membership function value
+            b: membership function value
+
+        Returns:
+            $a \oplus b=f(a,b)$
         """
         return self.function.evaluate({"a": a, "b": b})

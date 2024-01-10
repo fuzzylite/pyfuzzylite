@@ -1,0 +1,1 @@
+::: fuzzylite.rule.Antecedent

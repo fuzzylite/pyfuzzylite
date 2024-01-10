@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,9 +11,11 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 import glob
 import os
@@ -21,7 +23,6 @@ import re
 import tempfile
 import unittest
 from typing import cast
-from unittest.mock import MagicMock
 
 import fuzzylite as fl
 
@@ -61,27 +62,21 @@ RuleBlock: steer_away
 class TestImporter(unittest.TestCase):
     """Test the importer class."""
 
-    def test_class_name(self) -> None:
-        """Test the base class name."""
-        self.assertEqual(fl.Importer().class_name, "Importer")
-
-    def test_to_string(self) -> None:
-        """Test the base class importer from string is not implemented."""
-        with self.assertRaises(NotImplementedError):
-            fl.Importer().from_string("")
-
     def test_from_file(self) -> None:
         """Test the importer can read files."""
-        importer = fl.Importer()
-        importer.from_string = MagicMock(  # type: ignore
-            side_effect=lambda string: fl.Engine(description=string)
-        )
+
+        class BaseImporter(fl.Importer):
+            """Base importer class for testing."""
+
+            def from_string(self, fll: str) -> fl.Engine:
+                """Returns an empty engine with the FLL as a description."""
+                return fl.Engine(description=fll)
 
         path = tempfile.mkstemp(text=True)[1]
         with open(path, "w") as file:
             file.write(BELL_FLL)
 
-        engine = importer.from_file(path)
+        engine = BaseImporter().from_file(path)
 
         self.assertEqual(BELL_FLL, engine.description)
 
@@ -103,9 +98,7 @@ Engine: Bell
 
   description: obstacle avoidance for self-driving cars
 """
-        self.assertEqual(
-            engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine))
-        )
+        self.assertEqual(engine.replace("\n\n", "\n"), str(fl.FllImporter().engine(engine)))
 
     def test_input_variable(self) -> None:
         """Test input variables can be imported."""
@@ -118,9 +111,7 @@ InputVariable: obstacle
 
   term: left Triangle 0.000 0.333 0.666
   term: right Triangle 0.333 0.666 1.000"""
-        self.assertEqual(
-            iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv))
-        )
+        self.assertEqual(iv.replace("\n\n", "\n"), str(fl.FllImporter().input_variable(iv)))
 
     def test_output_variable(self) -> None:
         """Test output variables can be imported."""
@@ -137,9 +128,7 @@ OutputVariable: steer
 
   term: left Bell 0.333 0.167 3.000
   term: right Bell 0.666 0.167 3.000"""
-        self.assertEqual(
-            ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov))
-        )
+        self.assertEqual(ov.replace("\n\n", "\n"), str(fl.FllImporter().output_variable(ov)))
 
     def test_rule_block(self) -> None:
         """Test rule blocks can be imported."""
@@ -164,15 +153,11 @@ RuleBlock: steer_away
         term = "term: function Function 1 + 1"
         self.assertEqual(term, str(fl.FllImporter().term(term)))
         self.assertEqual(None, cast(fl.Function, fl.FllImporter().term(term)).engine)
-        self.assertEqual(
-            engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine
-        )
+        self.assertEqual(engine, cast(fl.Function, fl.FllImporter().term(term, engine)).engine)
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected format 'term: name Term [parameters]', but got 'term: name'"
-            ),
+            re.escape("expected format 'term: name Term [parameters]', but got 'term: name'"),
         ):
             fl.FllImporter().term("term: name")
 
@@ -232,9 +217,7 @@ RuleBlock: steer_away
     def test_defuzzifier(self) -> None:
         """Test defuzzifiers can be imported."""
         defuzzifier = "Centroid"
-        self.assertEqual(
-            defuzzifier + " 100", str(fl.FllImporter().defuzzifier(defuzzifier))
-        )
+        self.assertEqual(defuzzifier, str(fl.FllImporter().defuzzifier(defuzzifier)))
         defuzzifier = "WeightedAverage TakagiSugeno"
         self.assertEqual(defuzzifier, str(fl.FllImporter().defuzzifier(defuzzifier)))
 
@@ -277,12 +260,8 @@ RuleBlock: steer_away
 
     def test_extract_key_value(self) -> None:
         """Test correct extraction of keys and values."""
-        self.assertEqual(
-            ("Key", "value"), fl.FllImporter().extract_key_value("Key: value")
-        )
-        self.assertEqual(
-            ("Key", "value"), fl.FllImporter().extract_key_value("Key : value")
-        )
+        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key: value"))
+        self.assertEqual(("Key", "value"), fl.FllImporter().extract_key_value("Key : value"))
         self.assertEqual(
             ("Key", "value1 : value2"),
             fl.FllImporter().extract_key_value("Key: value1 : value2", "Key"),
@@ -294,9 +273,7 @@ RuleBlock: steer_away
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'"
-            ),
+            re.escape("expected 'key: value' definition, but found 'key value1 value2'"),
         ):
             fl.FllImporter().extract_key_value("key value1 value2")
 
@@ -307,9 +284,7 @@ RuleBlock: steer_away
                 "but found 'description: value1 value2'"
             ),
         ):
-            fl.FllImporter().extract_key_value(
-                "description: value1 value2", "DESCRIPTION"
-            )
+            fl.FllImporter().extract_key_value("description: value1 value2", "DESCRIPTION")
 
     def test_extract_value(self) -> None:
         """Test correct extraction of values from a key-value."""
@@ -326,9 +301,7 @@ RuleBlock: steer_away
 
         with self.assertRaisesRegex(
             SyntaxError,
-            re.escape(
-                "expected 'key: value' definition, but found 'key value1 value2'"
-            ),
+            re.escape("expected 'key: value' definition, but found 'key value1 value2'"),
         ):
             fl.FllImporter().extract_value("key value1 value2")
 
@@ -352,31 +325,18 @@ RuleBlock: steer_away
             SyntaxError,
             re.escape("'invalid' is not a valid component of 'InputVariable'"),
         ):
-            fl.FllImporter().input_variable(
-                """InputVariable: name\n  invalid: component"""
-            )
+            fl.FllImporter().input_variable("""InputVariable: name\n  invalid: component""")
 
         with self.assertRaisesRegex(
             SyntaxError,
             re.escape("'invalid' is not a valid component of 'OutputVariable'"),
         ):
-            fl.FllImporter().output_variable(
-                """OutputVariable: name\n  invalid: component"""
-            )
+            fl.FllImporter().output_variable("""OutputVariable: name\n  invalid: component""")
 
         with self.assertRaisesRegex(
             SyntaxError, re.escape("'invalid' is not a valid component of 'RuleBlock'")
         ):
             fl.FllImporter().rule_block("""RuleBlock: name\n  invalid: component""")
-
-        with self.assertRaisesRegex(
-            SyntaxError,
-            re.escape(
-                "factory manager does not contain a factory named 'variable' "
-                "to construct objects of type '<class 'fuzzylite.variable.Variable'>'"
-            ),
-        ):
-            fl.FllImporter().component(fl.Variable, """Variable: Invalid""")  # type: ignore
 
 
 class TestFllImporterBatch(unittest.TestCase):
@@ -388,10 +348,10 @@ class TestFllImporterBatch(unittest.TestCase):
         self.maxDiff = None  # show all differences
         importer = fl.FllImporter()
         exporter = fl.FllExporter()
-        fl.lib.decimals = 9
+        fl.settings.decimals = 9
         import logging
 
-        fl.lib.logger.setLevel(logging.INFO)
+        fl.settings.logger.setLevel(logging.INFO)
         import fuzzylite.examples.terms
 
         terms = next(iter(fuzzylite.examples.terms.__path__))
@@ -399,13 +359,13 @@ class TestFllImporterBatch(unittest.TestCase):
         for fll_file in glob.iglob(terms + "/*.fll", recursive=True):
             counter += 1
             with open(fll_file) as file:
-                fl.lib.logger.info(fll_file)
+                fl.settings.logger.info(fll_file)
                 fll_from_string = file.read()
                 engine = importer.from_string(fll_from_string)
                 export_fll = exporter.to_string(engine)
                 self.assertEqual(fll_from_string, export_fll)
         self.assertEqual(20, counter)
-        fl.lib.decimals = 3
+        fl.settings.decimals = 3
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,9 +11,11 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
 __all__ = [
     "ConstructionFactory",
@@ -29,352 +31,364 @@ __all__ = [
 ]
 
 import copy
-import math
-from typing import Callable, Dict, Generic, Iterator, Optional, TypeVar
+import inspect
+from collections.abc import Iterator
+from types import ModuleType
+from typing import Any, Callable, Generic, TypeVar
 
-from .activation import (
-    Activation,
-    First,
-    General,
-    Highest,
-    Last,
-    Lowest,
-    Proportional,
-    Threshold,
-)
-from .defuzzifier import (
-    Bisector,
-    Centroid,
-    Defuzzifier,
-    LargestOfMaximum,
-    MeanOfMaximum,
-    SmallestOfMaximum,
-    WeightedAverage,
-    WeightedSum,
-)
-from .hedge import Any, Extremely, Hedge, Not, Seldom, Somewhat, Very
-from .norm import (
-    AlgebraicProduct,
-    AlgebraicSum,
-    BoundedDifference,
-    BoundedSum,
-    DrasticProduct,
-    DrasticSum,
-    EinsteinProduct,
-    EinsteinSum,
-    HamacherProduct,
-    HamacherSum,
-    Maximum,
-    Minimum,
-    NilpotentMaximum,
-    NilpotentMinimum,
-    NormalizedSum,
-    SNorm,
-    TNorm,
-    UnboundedSum,
-)
+import numpy as np
+
+from .activation import Activation
+from .defuzzifier import Defuzzifier
+from .hedge import Hedge
+from .library import representation
+from .norm import SNorm, TNorm
 from .operation import Op
 from .rule import Rule
-from .term import (
-    Bell,
-    Binary,
-    Concave,
-    Constant,
-    Cosine,
-    Discrete,
-    Function,
-    Gaussian,
-    GaussianProduct,
-    Linear,
-    PiShape,
-    Ramp,
-    Rectangle,
-    Sigmoid,
-    SigmoidDifference,
-    SigmoidProduct,
-    Spike,
-    SShape,
-    Term,
-    Trapezoid,
-    Triangle,
-    ZShape,
-)
+from .term import Function, Term
 
 T = TypeVar("T")
 
 
 class ConstructionFactory(Generic[T]):
-    """The ConstructionFactory class is the base class for a factory whose
-    objects are created from a registered ConstructionFactory::Constructor.
+    """Base class for a factory whose objects are created from a registered constructor.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.ActivationFactory][]
+        - [fuzzylite.factory.DefuzzifierFactory][]
+        - [fuzzylite.factory.HedgeFactory][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.TermFactory][]
+        - [fuzzylite.factory.TNormFactory][]
+        - [fuzzylite.factory.FactoryManager][]
+        - [fuzzylite.factory.CloningFactory][]
     """
 
-    def __init__(self) -> None:
-        """Create the construction factory."""
-        self.constructors: Dict[str, Callable[[], T]] = {}
+    def __init__(self, constructors: dict[str, type[T]] | None = None) -> None:
+        """Constructor.
+
+        Args:
+            constructors: dictionary of constructors
+        """
+        self.constructors = constructors or {}
 
     def __iter__(self) -> Iterator[str]:
-        """Gets the iterator of constructors."""
-        return self.constructors.__iter__()
+        """Return the iterator of the factory.
 
-    @property
-    def class_name(self) -> str:
-        """Returns the class name of the factory
-        @return the class name of the factory.
+        Returns:
+             iterator of the factory.
         """
-        return self.__class__.__name__
+        return iter(self.constructors)
 
-    def construct(self, key: str) -> T:
-        """Creates an object by executing the constructor associated to the given key
-        @param key is the unique name by which constructors are registered
-        @return an object by executing the constructor associated to the given key
-        @throws ValueError if the key is not in the registered constructors.
+    def __getitem__(self, key: str) -> type[T]:
+        """Return the type by the key.
+
+        Returns:
+            type by the key.
+
+        Raises:
+            KeyError: when the key is not in the constructors
+        """
+        return self.constructors[key]
+
+    def __setitem__(self, key: str, value: type[T]) -> None:
+        """Set the value for the key.
+
+        Args:
+            key: name of the constructor
+            value: type of the constructor
+        """
+        self.constructors[key] = value
+
+    def __len__(self) -> int:
+        """Return the number of constructors in the factory.
+
+        Returns:
+            number of constructors in the factory.
+        """
+        return len(self.constructors)
+
+    def __str__(self) -> str:
+        """Return the class name of the factory.
+
+        Returns:
+            class name of the factory.
+        """
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """Return the Python code to construct the factory.
+
+        Returns:
+            Python code to construct the factory.
+        """
+        return representation.as_constructor(self)
+
+    def import_from(self, module: ModuleType, cls: type[T]) -> list[type[T]]:
+        """Import constructors from the module.
+
+        Args:
+            module: module to import constructors
+            cls: class of constructors to import
+
+        Returns:
+             list of constructors imported from the module.
+        """
+
+        def constructable(obj: type[T]) -> bool:
+            try:
+                return issubclass(obj, cls) and not inspect.isabstract(obj) and bool(obj())
+            except:  # noqa: E722
+                return False
+
+        constructors = [
+            constructor for _, constructor in inspect.getmembers(module, predicate=constructable)
+        ]
+        return constructors
+
+    def construct(self, key: str, **kwargs: Any) -> T:
+        """Create an object from the constructor registered by the key.
+
+        Args:
+            key: name of the constructor
+            **kwargs: parameters to pass to the constructor
+
+        Returns:
+             object created from the constructor registered by the key
+
+        Raises:
+            ValueError: when the key is not registered
         """
         if key in self.constructors:
-            return self.constructors[key]()
-        raise ValueError(f"constructor of '{key}' not found in {self.class_name}")
+            return self.constructors[key](**kwargs)
+        raise ValueError(f"constructor of '{key}' not found in {Op.class_name(self)}")
 
 
 class CloningFactory(Generic[T]):
-    """The CloningFactory class is the base class for a factory whose objects
-    are created from a registered object by creating a deep copy.
+    """Base class for a factory whose objects are created by a deep copy of registered instances.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.FunctionFactory][]
+        - [fuzzylite.factory.FactoryManager][]
+        - [fuzzylite.factory.ConstructionFactory][]
     """
 
-    def __init__(self) -> None:
-        """Create cloning factory."""
-        self.objects: Dict[str, T] = {}
+    def __init__(self, objects: dict[str, T] | None = None) -> None:
+        """Constructor."""
+        self.objects = objects or {}
 
     def __iter__(self) -> Iterator[str]:
-        """Get iterator iterator of objects."""
-        return self.objects.__iter__()
+        """Return the iterator of the factory.
 
-    @property
-    def class_name(self) -> str:
-        """Returns the class name of the factory
-        @return the class name of the factory.
+        Returns:
+             iterator of the factory.
         """
-        return self.__class__.__name__
+        return iter(self.objects)
+
+    def __getitem__(self, key: str) -> T:
+        """Return the object by the key.
+
+        Returns:
+            object by the key.
+
+        Raises:
+        KeyError: when the key is not in the factory
+        """
+        return self.objects[key]
+
+    def __setitem__(self, key: str, value: T) -> None:
+        """Set the value for the key.
+
+        Args:
+            key: name of the object
+            value: instance to be deep copied
+        """
+        self.objects[key] = value
+
+    def __len__(self) -> int:
+        """Return the number of objects in the factory.
+
+        Returns:
+            number of objects in the factory.
+        """
+        return len(self.objects)
+
+    def __str__(self) -> str:
+        """Return the class name of the factory.
+
+        Returns:
+            class name of the factory.
+        """
+        return Op.class_name(self)
+
+    def __repr__(self) -> str:
+        """Return the Python code to construct the factory.
+
+        Returns:
+            Python code to construct the factory.
+        """
+        return representation.as_constructor(self)
 
     def copy(self, key: str) -> T:
-        """Creates a deep copy of the registered object
-        @param key is the unique name by which the object is registered
-        @return a deep copy of the registered object
-        @throws ValueError if the key is not in the registered objected.
+        """Create a deep copy of the object registered by the key.
+
+        Args:
+            key: name of the object
+
+        Returns:
+             deep copy of the object registered by the key
+
+        Raises:
+            ValueError: when the key is not registered.
         """
         if key in self.objects:
             return copy.deepcopy(self.objects[key])
-        raise ValueError(f"object with key '{key}' not found in {self.class_name}")
+        raise ValueError(f"object with key '{key}' not found in {Op.class_name(self)}")
 
 
 class ActivationFactory(ConstructionFactory[Activation]):
-    """e ActivationFactory class is a ConstructionFactory of Activation
-    methods for RuleBlock%s.
+    """Construction factory of activation methods for rule blocks.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Activation
-    @see RuleBlock
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 6.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.activation.Activation][]
+        - [fuzzylite.rule.RuleBlock][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            activation().class_name: activation
-            for activation in [
-                First,
-                General,
-                Highest,
-                Last,
-                Lowest,
-                Proportional,
-                Threshold,
-            ]
-        }
+        """Constructor."""
+        from . import activation
+
+        activations = {Op.class_name(a): a for a in self.import_from(activation, Activation)}
+        super().__init__(constructors=activations)
 
 
 class DefuzzifierFactory(ConstructionFactory[Defuzzifier]):
-    """The DefuzzifierFactory class is a ConstructionFactory of Defuzzifier%s.
+    """Factory of defuzzifiers.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Defuzzifier
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.defuzzifier.Defuzzifier][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            defuzzifier().class_name: defuzzifier
-            for defuzzifier in [
-                Bisector,
-                Centroid,
-                LargestOfMaximum,
-                MeanOfMaximum,
-                SmallestOfMaximum,
-                WeightedAverage,
-                WeightedSum,
-            ]
-        }
+        """Constructor."""
+        from . import defuzzifier
 
-    # TODO: Implement?
-    # def construct(self, key: str, parameter: Union[int, str]):
-    #     raise NotImplementedError()
+        defuzzifiers = {Op.class_name(d): d for d in self.import_from(defuzzifier, Defuzzifier)}
+        super().__init__(constructors=defuzzifiers)
 
 
 class HedgeFactory(ConstructionFactory[Hedge]):
-    """The HedgeFactory class is a ConstructionFactory of Hedge%s.
+    """Factory of hedges.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Hedge
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.hedge.Hedge][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            hedge().name: hedge
-            for hedge in [Any, Extremely, Not, Seldom, Somewhat, Very]
-        }
+        """Constructor."""
+        from . import hedge
+
+        hedges = {h().name: h for h in self.import_from(hedge, Hedge)}
+        super().__init__(constructors=hedges)
 
 
 class SNormFactory(ConstructionFactory[SNorm]):
-    """The SNormFactory class is a ConstructionFactory of SNorm%s.
+    """Factory of SNorms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see SNorm
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.norm.SNorm][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            snorm().class_name: snorm
-            for snorm in [
-                AlgebraicSum,
-                BoundedSum,
-                DrasticSum,
-                EinsteinSum,
-                HamacherSum,
-                Maximum,
-                NilpotentMaximum,
-                NormalizedSum,
-                UnboundedSum,
-            ]
-        }
+        """Constructor."""
+        from . import norm as norm
+
+        snorms = {Op.class_name(n): n for n in self.import_from(norm, SNorm)}
+        super().__init__(constructors=snorms)
 
 
 class TNormFactory(ConstructionFactory[TNorm]):
-    """The TNormFactory class is a ConstructionFactory of TNorm%s.
+    """Factory of TNorms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see TNorm
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.norm.TNorm][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            tnorm().class_name: tnorm
-            for tnorm in [
-                AlgebraicProduct,
-                BoundedDifference,
-                DrasticProduct,
-                EinsteinProduct,
-                HamacherProduct,
-                Minimum,
-                NilpotentMinimum,
-            ]
-        }
+        """Constructor."""
+        from . import norm as norm
+
+        tnorms = {Op.class_name(n): n for n in self.import_from(norm, TNorm)}
+        super().__init__(constructors=tnorms)
 
 
 class TermFactory(ConstructionFactory[Term]):
-    """The TermFactory class is a ConstructionFactory of Term%s.
+    """Factory of terms.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Term
-    @see ConstructionFactory
-    @see FactoryManager
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.term.Term][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self.constructors = {
-            term().class_name: term
-            for term in [
-                Bell,
-                Binary,
-                Concave,
-                Constant,
-                Cosine,
-                Discrete,
-                Function,
-                Gaussian,
-                GaussianProduct,
-                Linear,
-                PiShape,
-                Ramp,
-                Rectangle,
-                Sigmoid,
-                SigmoidDifference,
-                SigmoidProduct,
-                Spike,
-                SShape,
-                Trapezoid,
-                Triangle,
-                ZShape,
-            ]
+        """Constructor."""
+        from . import term as term
+
+        terms = {
+            Op.class_name(t): t
+            for t in self.import_from(term, Term)
+            if t not in {term.Activated, term.Aggregated}
         }
+        super().__init__(constructors=terms)
 
 
 class FunctionFactory(CloningFactory[Function.Element]):
-    """The FunctionFactory class is a CloningFactory of operators and functions
-    utilized by the Function term.
+    """Factory of operators and functions used by the Function term.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see Function
-    @see Element
-    @see CloningFactory
-    @see FactoryManager
-    @since 5.0
+    info: related
+        - [fuzzylite.factory.CloningFactory][]
+        - [fuzzylite.term.Function.Element][]
+        - [fuzzylite.term.Function][]
+        - [fuzzylite.factory.FactoryManager][]
     """
 
     def __init__(self) -> None:
-        """Create the factory."""
-        super().__init__()
-        self._register_operators()
-        self._register_functions()
+        """Constructor."""
+        elements = {
+            element.name: element for element in self._create_operators() + self._create_functions()
+        }
+        super().__init__(objects=elements)
 
     def _precedence(self, importance: int) -> int:
+        """Inverts the priority of precedence of operations, mapping 0-10 in ascending order to 100-0 in descending order.
+
+        Args:
+            importance: value between 0 and 10, where 0 is the most important
+
+        Returns:
+             precedence between 100 and 0, where 100 is the most important
+        """
         maximum = 100
         step = 10
         return maximum - importance * step
 
-    def _register_operators(self) -> None:
-        import operator
+    def _create_operators(self) -> list[Function.Element]:
+        """Return the list of function operators.
 
+        Returns:
+            list of function operators
+        """
         operator_type = Function.Element.Type.Operator
         p: Callable[[int], int] = self._precedence
         operators = [
@@ -383,7 +397,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "!",
                 "Logical NOT",
                 operator_type,
-                operator.not_,
+                np.logical_not,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -392,7 +406,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "~",
                 "Negate",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(0),
                 associativity=1,
@@ -402,7 +416,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "^",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -411,7 +425,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "**",
                 "Power",
                 operator_type,
-                operator.pow,
+                np.float_power,
                 arity=2,
                 precedence=p(1),
                 associativity=1,
@@ -420,7 +434,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".-",
                 "Unary minus",
                 operator_type,
-                operator.neg,
+                np.negative,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -429,7 +443,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 ".+",
                 "Unary plus",
                 operator_type,
-                operator.pos,
+                np.positive,
                 arity=1,
                 precedence=p(1),
                 associativity=1,
@@ -439,7 +453,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "*",
                 "Multiplication",
                 operator_type,
-                operator.mul,
+                np.multiply,
                 arity=2,
                 precedence=p(2),
             ),
@@ -447,22 +461,32 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 "/",
                 "Division",
                 operator_type,
-                operator.truediv,
+                np.true_divide,
                 arity=2,
                 precedence=p(2),
             ),
             Function.Element(
-                "%", "Modulo", operator_type, operator.mod, arity=2, precedence=p(2)
+                "%",
+                "Modulo",
+                operator_type,
+                np.remainder,
+                arity=2,
+                precedence=p(2),
             ),
             # Fourth order: Addition, Subtraction
             Function.Element(
-                "+", "Addition", operator_type, operator.add, arity=2, precedence=p(3)
+                "+",
+                "Addition",
+                operator_type,
+                np.add,
+                arity=2,
+                precedence=p(3),
             ),
             Function.Element(
                 "-",
                 "Subtraction",
                 operator_type,
-                operator.sub,
+                np.subtract,
                 arity=2,
                 precedence=p(3),
             ),
@@ -471,7 +495,7 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.AND,
                 "Logical AND",
                 operator_type,
-                Op.logical_and,
+                np.logical_and,
                 arity=2,
                 precedence=p(4),
             ),
@@ -480,152 +504,360 @@ class FunctionFactory(CloningFactory[Function.Element]):
                 Rule.OR,
                 "Logical OR",
                 operator_type,
-                Op.logical_or,
+                np.logical_or,
                 arity=2,
                 precedence=p(5),
             ),
         ]
-        for op in operators:
-            self.objects[op.name] = op
+        return operators
 
-    def _register_functions(self) -> None:
+    def _create_functions(self) -> list[Function.Element]:
+        """Return the list of functions.
+
+        Returns:
+            list of functions
+        """
         function_type = Function.Element.Type.Function
-
+        p: Callable[[int], int] = self._precedence
         functions = [
-            Function.Element("gt", "Greater than (>)", function_type, Op.gt, arity=2),
             Function.Element(
-                "ge", "Greater than or equal to (>=)", function_type, Op.ge, arity=2
-            ),
-            Function.Element("eq", "Equal to (==)", function_type, Op.eq, arity=2),
-            Function.Element(
-                "neq", "Not equal to (!=)", function_type, Op.neq, arity=2
-            ),
-            Function.Element(
-                "le", "Less than or equal to (<=)", function_type, Op.le, arity=2
-            ),
-            Function.Element("lt", "Less than (>)", function_type, Op.lt, arity=2),
-            Function.Element("min", "Minimum", function_type, min, arity=2),
-            Function.Element("max", "Maximum", function_type, max, arity=2),
-            Function.Element(
-                "acos", "Inverse cosine", function_type, math.acos, arity=1
-            ),
-            Function.Element("asin", "Inverse sine", function_type, math.asin, arity=1),
-            Function.Element(
-                "atan", "Inverse tangent", function_type, math.atan, arity=1
-            ),
-            Function.Element("ceil", "Ceiling", function_type, math.ceil, arity=1),
-            Function.Element("cos", "Cosine", function_type, math.cos, arity=1),
-            Function.Element(
-                "cosh", "Hyperbolic cosine", function_type, math.cosh, arity=1
-            ),
-            Function.Element("exp", "Exponential", function_type, math.exp, arity=1),
-            Function.Element("abs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("fabs", "Absolute", function_type, math.fabs, arity=1),
-            Function.Element("floor", "Floor", function_type, math.floor, arity=1),
-            Function.Element(
-                "log", "Natural logarithm", function_type, math.log, arity=1
+                "gt",
+                "Greater than (>)",
+                function_type,
+                Op.gt,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "log10", "Common logarithm", function_type, math.log10, arity=1
-            ),
-            Function.Element("round", "Round", function_type, round, arity=1),
-            Function.Element("sin", "Sine", function_type, math.sin, arity=1),
-            Function.Element(
-                "sinh", "Hyperbolic sine", function_type, math.sinh, arity=1
-            ),
-            Function.Element("sqrt", "Square root", function_type, math.sqrt, arity=1),
-            Function.Element("tan", "Tangent", function_type, math.tan, arity=1),
-            Function.Element(
-                "tanh", "Hyperbolic tangent", function_type, math.tanh, arity=1
+                "ge",
+                "Greater than or equal to (>=)",
+                function_type,
+                Op.ge,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "log1p", "Natural logarithm plus one", function_type, math.log1p, 1
+                "eq",
+                "Equal to (==)",
+                function_type,
+                Op.eq,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "acosh", "Inverse hyperbolic cosine", function_type, math.acosh, 1
+                "neq",
+                "Not equal to (!=)",
+                function_type,
+                Op.neq,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "asinh", "Inverse hyperbolic sine", function_type, math.asinh, 1
+                "le",
+                "Less than or equal to (<=)",
+                function_type,
+                Op.le,
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "atanh", "Inverse hyperbolic tangent", function_type, math.atanh, 1
+                "lt",
+                "Less than (<)",
+                function_type,
+                Op.lt,
+                arity=2,
+                precedence=p(0),
             ),
-            Function.Element("pow", "Power", function_type, math.pow, arity=2),
             Function.Element(
-                "atan2", "Inverse tangent (y,x)", function_type, math.atan2, arity=2
+                "min",
+                "Minimum",
+                function_type,
+                min,  # because is variadiac, whereas np.min takes arrays as args
+                arity=2,
+                precedence=p(0),
             ),
             Function.Element(
-                "fmod", "Floating-point remainder", function_type, math.fmod, arity=2
+                "max",
+                "Maximum",
+                function_type,
+                max,  # because is variadiac, whereas np.max takes arrays as args
+                arity=2,
+                precedence=p(0),
             ),
-            Function.Element("pi", "Pi constant", function_type, Op.pi, arity=0),
+            Function.Element(
+                "acos",
+                "Inverse cosine",
+                function_type,
+                np.arccos,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "asin",
+                "Inverse sine",
+                function_type,
+                np.arcsin,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "atan",
+                "Inverse tangent",
+                function_type,
+                np.arctan,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "ceil",
+                "Ceiling",
+                function_type,
+                np.ceil,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "cos",
+                "Cosine",
+                function_type,
+                np.cos,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "cosh",
+                "Hyperbolic cosine",
+                function_type,
+                np.cosh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "exp",
+                "Exponential",
+                function_type,
+                np.exp,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "abs",
+                "Absolute",
+                function_type,
+                np.fabs,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "fabs",
+                "Absolute",
+                function_type,
+                np.fabs,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "floor",
+                "Floor",
+                function_type,
+                np.floor,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log",
+                "Natural logarithm",
+                function_type,
+                np.log,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log10",
+                "Common logarithm",
+                function_type,
+                np.log10,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "round",
+                "Round",
+                function_type,
+                np.round,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sin",
+                "Sine",
+                function_type,
+                np.sin,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sinh",
+                "Hyperbolic sine",
+                function_type,
+                np.sinh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "sqrt",
+                "Square root",
+                function_type,
+                np.sqrt,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "tan",
+                "Tangent",
+                function_type,
+                np.tan,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "tanh",
+                "Hyperbolic tangent",
+                function_type,
+                np.tanh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "log1p",
+                "Natural logarithm plus one",
+                function_type,
+                np.log1p,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "acosh",
+                "Inverse hyperbolic cosine",
+                function_type,
+                np.arccosh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "asinh",
+                "Inverse hyperbolic sine",
+                function_type,
+                np.arcsinh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "atanh",
+                "Inverse hyperbolic tangent",
+                function_type,
+                np.arctanh,
+                arity=1,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "pow",
+                "Power",
+                function_type,
+                np.float_power,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "atan2",
+                "Inverse tangent (y,x)",
+                function_type,
+                np.arctan2,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "fmod",
+                "Floating-point remainder",
+                function_type,
+                np.fmod,
+                arity=2,
+                precedence=p(0),
+            ),
+            Function.Element(
+                "pi",
+                "Pi constant",
+                function_type,
+                lambda: np.pi,
+                arity=0,
+                precedence=p(0),
+            ),
         ]
+        return functions
 
-        for f in functions:
-            f.precedence = self._precedence(0)
-            self.objects[f.name] = f
+    def operators(self) -> dict[str, Function.Element]:
+        """Return a dictionary of the operators available.
 
-    def operators(self) -> Dict[str, Function.Element]:
-        """Returns a dictionary of the operators available
-        @return a dictionary of the operators available.
+        Returns:
+             dictionary of the operators available.
         """
         result = {
-            key: prototype
-            for key, prototype in self.objects.items()
-            if prototype.is_operator()
+            key: prototype for key, prototype in self.objects.items() if prototype.is_operator()
         }
         return result
 
-    def functions(self) -> Dict[str, Function.Element]:
-        """Returns a dictionary of the functions available
-        @return a dictionary of the functions available.
+    def functions(self) -> dict[str, Function.Element]:
+        """Return a dictionary of the functions available.
+
+        Returns:
+            dictionary of the functions available.
         """
         result = {
-            key: prototype
-            for key, prototype in self.objects.items()
-            if prototype.is_function()
+            key: prototype for key, prototype in self.objects.items() if prototype.is_function()
         }
         return result
 
 
 class FactoryManager:
-    """The FactoryManager class is a central class grouping different factories
-    of objects, together with a singleton instance to access each of the
-    factories throughout the library.
+    """Manager that groups different factories to facilitate access across the library.
 
-    @author Juan Rada-Vilela, Ph.D.
-    @see TermFactory
-    @see TNormFactory
-    @see SNormFactory
-    @see HedgeFactory
-    @see ActivationFactory
-    @see DefuzzifierFactory
-    @see FunctionFactory
-    @since 4.0
+    info: related
+        - [fuzzylite.factory.ConstructionFactory][]
+        - [fuzzylite.factory.CloningFactory][]
+        - [fuzzylite.factory.TermFactory][]
+        - [fuzzylite.factory.TNormFactory][]
+        - [fuzzylite.factory.SNormFactory][]
+        - [fuzzylite.factory.HedgeFactory][]
+        - [fuzzylite.factory.ActivationFactory][]
+        - [fuzzylite.factory.DefuzzifierFactory][]
+        - [fuzzylite.factory.FunctionFactory][]
     """
 
     def __init__(
         self,
-        tnorm: Optional[TNormFactory] = None,
-        snorm: Optional[SNormFactory] = None,
-        activation: Optional[ActivationFactory] = None,
-        defuzzifier: Optional[DefuzzifierFactory] = None,
-        term: Optional[TermFactory] = None,
-        hedge: Optional[HedgeFactory] = None,
-        function: Optional[FunctionFactory] = None,
+        tnorm: TNormFactory | None = None,
+        snorm: SNormFactory | None = None,
+        activation: ActivationFactory | None = None,
+        defuzzifier: DefuzzifierFactory | None = None,
+        term: TermFactory | None = None,
+        hedge: HedgeFactory | None = None,
+        function: FunctionFactory | None = None,
     ) -> None:
-        """Creates a factory manager with the given factories (or default factories if none supplied)
-        @param tnorm is the factory of TNorm%s
-        @param snorm is the factory of SNorm%s
-        @param activation is the factory of Activation methods
-        @param defuzzifier is the factory of Defuzzifier%s
-        @param term is the factory of Term%s
-        @param hedge is the factory of Hedge%s
-        @param function is the factory of Function Element%s.
+        """Constructor.
+
+        Args:
+            tnorm: factory of TNorms
+            snorm: factory of SNorms
+            activation: factory of activation methods
+            defuzzifier: factory of defuzzifiers
+            term: factory of terms
+            hedge: factory of hedges
+            function: factory of functions
         """
-        self.tnorm = tnorm if tnorm else TNormFactory()
-        self.snorm = snorm if snorm else SNormFactory()
-        self.activation = activation if activation else ActivationFactory()
-        self.defuzzifier = defuzzifier if defuzzifier else DefuzzifierFactory()
-        self.term = term if term else TermFactory()
-        self.hedge = hedge if hedge else HedgeFactory()
-        self.function = function if function else FunctionFactory()
+        self.tnorm = tnorm or TNormFactory()
+        self.snorm = snorm or SNormFactory()
+        self.activation = activation or ActivationFactory()
+        self.defuzzifier = defuzzifier or DefuzzifierFactory()
+        self.term = term or TermFactory()
+        self.hedge = hedge or HedgeFactory()
+        self.function = function or FunctionFactory()

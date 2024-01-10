@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,12 +11,16 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
+
 import unittest
-from typing import Dict, List, Optional, Type, Union
 from unittest.mock import MagicMock
+
+import numpy as np
 
 import fuzzylite as fl
 from tests.assert_component import BaseAssert
@@ -58,13 +62,11 @@ class TestExpression(unittest.TestCase):
         proposition = fl.Proposition()
         proposition.variable = fl.Variable("variable")
         proposition.hedges = [fl.Very()]
-        proposition.term = fl.Term("term")
+        proposition.term = fl.Triangle("term")
 
         self.assertEqual("variable is very term", str(proposition))
 
-        proposition = fl.Proposition(
-            fl.Variable("variable"), [fl.Very()], fl.Term("term")
-        )
+        proposition = fl.Proposition(fl.Variable("variable"), [fl.Very()], fl.Triangle("term"))
         self.assertEqual("variable is very term", str(proposition))
 
     def test_operator(self) -> None:
@@ -78,10 +80,10 @@ class TestExpression(unittest.TestCase):
         operator = fl.Operator()
         operator.name = "OR"
         operator.left = fl.Proposition(
-            fl.Variable("variable_a"), [fl.Very()], fl.Term("term_a")
+            fl.Variable("variable_a"), [fl.Very()], fl.Triangle("term_a")
         )
         operator.right = fl.Proposition(
-            fl.Variable("variable_b"), [fl.Very()], fl.Term("term_b")
+            fl.Variable("variable_b"), [fl.Very()], fl.Triangle("term_b")
         )
         self.assertEqual("OR", str(operator))
 
@@ -90,24 +92,22 @@ class AssertAntecedent:
     """Antecedent assert."""
 
     def __init__(self, test: unittest.TestCase, engine: fl.Engine) -> None:
-        """Construct the assert."""
+        """Construct the assertion."""
         self.test = test
         self.engine = engine
 
     def can_load_antecedent(
         self,
         text: str,
-        postfix: Optional[str] = None,
-        prefix: Optional[str] = None,
-        infix: Optional[str] = None,
-    ) -> "AssertAntecedent":
+        postfix: str | None = None,
+        prefix: str | None = None,
+        infix: str | None = None,
+    ) -> AssertAntecedent:
         """Assert that the text can be loaded as an antecedent and it can be converted to any notation."""
         antecedent = fl.Antecedent(text)
         antecedent.load(self.engine)
         self.test.assertTrue(antecedent.is_loaded())
-        self.test.assertTrue(
-            postfix or prefix or infix, "expected one of {postfix, prefix, infix}"
-        )
+        self.test.assertTrue(postfix or prefix or infix, "expected one of {postfix, prefix, infix}")
         if postfix:
             self.test.assertEqual(postfix, antecedent.postfix(antecedent.expression))
         if prefix:
@@ -117,8 +117,8 @@ class AssertAntecedent:
         return self
 
     def cannot_load_antecedent(
-        self, text: str, exception: Type[Exception], regex: str
-    ) -> "AssertAntecedent":
+        self, text: str, exception: type[Exception], regex: str
+    ) -> AssertAntecedent:
         """Assert the antecedent cannot be loaded."""
         antecedent = fl.Antecedent(text)
         with self.test.assertRaisesRegex(exception, regex):
@@ -127,15 +127,12 @@ class AssertAntecedent:
 
     def has_activation_degrees(
         self,
-        inputs: Union[
-            Dict[fl.InputVariable, List[float]],
-            Dict[fl.OutputVariable, List[List[fl.Activated]]],
-        ],
-        rules: Dict[str, List[float]],
-        conjunction: Optional[fl.TNorm] = None,
-        disjunction: Optional[fl.SNorm] = None,
-        decimal_places: int = 3,
-    ) -> "AssertAntecedent":
+        inputs: dict[fl.InputVariable, list[float]]
+        | dict[fl.OutputVariable, list[list[fl.Activated]]],
+        rules: dict[str, list[float]],
+        conjunction: fl.TNorm | None = None,
+        disjunction: fl.SNorm | None = None,
+    ) -> AssertAntecedent:
         """Assert the rules have the expected activation degrees."""
         self.test.assertTrue(inputs, msg="inputs is empty")
         self.test.assertTrue(rules, msg="rules is empty")
@@ -149,6 +146,10 @@ class AssertAntecedent:
                     variable.value = values[index]  # type: ignore
                 elif isinstance(variable, fl.OutputVariable):
                     variable.fuzzy.terms = values[index]  # type: ignore
+                else:
+                    raise TypeError(
+                        f"expected an InputVariable or OutputVariable, but got {type(variable)}"
+                    )
 
             for text, values in rules.items():
                 antecedent = fl.Antecedent(text)
@@ -157,8 +158,12 @@ class AssertAntecedent:
                     conjunction=conjunction, disjunction=disjunction
                 )
                 expected = values[index]
-                self.test.assertAlmostEqual(
-                    expected, obtained, places=decimal_places, msg=f"at index {index}"
+                np.testing.assert_allclose(
+                    obtained,
+                    expected,
+                    atol=fl.settings.atol,
+                    rtol=fl.settings.rtol,
+                    err_msg=f"at index {index}",
                 )
             index += 1
 
@@ -173,11 +178,12 @@ class TestAntecedent(unittest.TestCase):
         antecedent = fl.Antecedent()
         self.assertFalse(antecedent.is_loaded())
 
-        antecedent.expression = fl.Expression()
+        antecedent.expression = fl.Proposition()
         self.assertTrue(antecedent.is_loaded())
 
         antecedent.unload()
         self.assertFalse(antecedent.is_loaded())
+        self.assertIsNone(antecedent.expression)
 
     def test_antecedent_load_input_variable(self) -> None:
         """Test antecedents can be loaded from an engine."""
@@ -191,9 +197,7 @@ class TestAntecedent(unittest.TestCase):
             "Ambient is very DARK", infix="Ambient is very DARK"
         )
 
-        AssertAntecedent(self, engine).can_load_antecedent(
-            "Ambient is any", infix="Ambient is any"
-        )
+        AssertAntecedent(self, engine).can_load_antecedent("Ambient is any", infix="Ambient is any")
 
     def test_antecedent_load_input_variables_connectors(self) -> None:
         """Test antecedents can be loaded with input variables."""
@@ -523,7 +527,7 @@ class AssertConsequent:
         self.test = test
         self.engine = engine
 
-    def can_load_consequent(self, text: str) -> "AssertConsequent":
+    def can_load_consequent(self, text: str) -> AssertConsequent:
         """Assert the text can be loaded as a consequent."""
         consequent = fl.Consequent(text)
         consequent.load(self.engine)
@@ -533,8 +537,8 @@ class AssertConsequent:
         return self
 
     def cannot_load_consequent(
-        self, text: str, exception: Type[Exception], regex: str
-    ) -> "AssertConsequent":
+        self, text: str, exception: type[Exception], regex: str
+    ) -> AssertConsequent:
         """Assert the text cannot be loaded as a consequent."""
         consequent = fl.Consequent(text)
         with self.test.assertRaisesRegex(exception, regex):
@@ -545,10 +549,9 @@ class AssertConsequent:
         self,
         text: str,
         activation_degree: float,
-        expected: Dict[fl.OutputVariable, List[fl.Activated]],
-        implication: Optional[fl.TNorm] = None,
-        decimal_places: int = 3,
-    ) -> "AssertConsequent":
+        expected: dict[fl.OutputVariable, list[fl.Activated]],
+        implication: fl.TNorm | None = None,
+    ) -> AssertConsequent:
         """Assert the modification of the consequent results in the expected activation terms of the output variables."""
         self.test.assertTrue(expected, "expected cannot be empty")
 
@@ -558,17 +561,16 @@ class AssertConsequent:
         for variable in expected:
             expected_terms = {t.term.name: t.degree for t in expected[variable]}
             obtained_terms = {t.term.name: t.degree for t in variable.fuzzy.terms}
-            self.test.assertSetEqual(
-                set(expected_terms.keys()), set(obtained_terms.keys())
-            )
+            self.test.assertSetEqual(set(expected_terms.keys()), set(obtained_terms.keys()))
 
             for expected_term, expected_activation in expected_terms.items():
                 obtained_activation = obtained_terms[expected_term]
-                self.test.assertAlmostEqual(
-                    expected_activation,
+                np.testing.assert_allclose(
                     obtained_activation,
-                    places=decimal_places,
-                    msg=f"for activated term {expected_term}",
+                    expected_activation,
+                    atol=fl.settings.atol,
+                    rtol=fl.settings.rtol,
+                    err_msg=f"for activated term {expected_term}",
                 )
 
             for activated in variable.fuzzy.terms:
@@ -583,8 +585,8 @@ class AssertConsequent:
         self,
         text: str,
         activation_degree: float,
-        implication: Optional[fl.TNorm] = None,
-    ) -> "AssertConsequent":
+        implication: fl.TNorm | None = None,
+    ) -> AssertConsequent:
         """Not implemented."""
         raise NotImplementedError()
 
@@ -617,9 +619,7 @@ class TestConsequent(unittest.TestCase):
         """Test the consequent can have `and` connectors."""
         engine = fl.FllImporter().from_string(SimpleDimmer)
 
-        AssertConsequent(self, engine).can_load_consequent(
-            "Power is HIGH and Power is HIGH"
-        )
+        AssertConsequent(self, engine).can_load_consequent("Power is HIGH and Power is HIGH")
 
         AssertConsequent(self, engine).can_load_consequent(
             "Power is very HIGH and Power is very HIGH"
@@ -741,14 +741,14 @@ class RuleAssert:
         """Create the assert."""
         self.test = test
 
-    def can_parse_rule(self, text: str, as_text: Optional[str] = None) -> "RuleAssert":
+    def can_parse_rule(self, text: str, as_text: str | None = None) -> RuleAssert:
         """Assert the text can be parsed as a rule."""
         rule = fl.Rule()
         rule.parse(text)
         self.test.assertEqual(as_text if as_text else text, rule.text)
         return self
 
-    def can_load_rule(self, text: str, engine: fl.Engine) -> "RuleAssert":
+    def can_load_rule(self, text: str, engine: fl.Engine) -> RuleAssert:
         """Assert the text can be loaded as a rule in the engine."""
         rule = fl.Rule()
         rule.parse(text)
@@ -759,15 +759,15 @@ class RuleAssert:
         self.can_create_rule(text, engine)
         return self
 
-    def can_create_rule(self, text: str, engine: fl.Engine) -> "RuleAssert":
+    def can_create_rule(self, text: str, engine: fl.Engine) -> RuleAssert:
         """Assert the text can be created as a rule in the engine."""
         rule = fl.Rule.create(text, engine)
         self.test.assertEqual(text, rule.text)
         return self
 
     def cannot_parse_rule(
-        self, text: str, exception: Type[Exception] = SyntaxError, regex: str = ""
-    ) -> "RuleAssert":
+        self, text: str, exception: type[Exception] = SyntaxError, regex: str = ""
+    ) -> RuleAssert:
         """Assert the text cannot be parsed as a rule."""
         with self.test.assertRaisesRegex(exception, regex):
             rule = fl.Rule()
@@ -778,9 +778,9 @@ class RuleAssert:
         self,
         text: str,
         engine: fl.Engine,
-        exception: Type[Exception] = SyntaxError,
+        exception: type[Exception] = SyntaxError,
         regex: str = "",
-    ) -> "RuleAssert":
+    ) -> RuleAssert:
         """Assert the rule cannot be created in the engine."""
         with self.test.assertRaisesRegex(exception, regex):
             fl.Rule.create(text, engine)
@@ -801,18 +801,14 @@ class TestRule(unittest.TestCase):
         """Test that rules can be parsed."""
         RuleAssert(self).can_parse_rule("if a then b")
         RuleAssert(self).can_parse_rule("if a then b with 1.0", as_text="if a then b")
-        RuleAssert(self).can_parse_rule(
-            "if antecedent1 antecedent2 then consequent1 consequent2"
-        )
+        RuleAssert(self).can_parse_rule("if antecedent1 antecedent2 then consequent1 consequent2")
 
     def test_parser_exceptions(self) -> None:
         """Test that rules cannot be parsed in expected cases."""
         RuleAssert(self).cannot_parse_rule("", SyntaxError, "expected an if-then rule")
         RuleAssert(self).cannot_parse_rule("then", SyntaxError, "expected keyword 'if'")
         RuleAssert(self).cannot_parse_rule("if", SyntaxError, "expected keyword 'then'")
-        RuleAssert(self).cannot_parse_rule(
-            "if then", SyntaxError, "expected an antecedent in rule"
-        )
+        RuleAssert(self).cannot_parse_rule("if then", SyntaxError, "expected an antecedent in rule")
         RuleAssert(self).cannot_parse_rule(
             "if antecedent then", SyntaxError, "expected a consequent in rule"
         )
@@ -832,19 +828,17 @@ class TestRule(unittest.TestCase):
         engine = fl.FllImporter().from_string(SimpleDimmer)
 
         RuleAssert(self).can_load_rule("if Ambient is DARK then Power is HIGH", engine)
-        RuleAssert(self).can_load_rule(
-            "if Ambient is MEDIUM then Power is MEDIUM", engine
-        )
+        RuleAssert(self).can_load_rule("if Ambient is MEDIUM then Power is MEDIUM", engine)
         RuleAssert(self).can_load_rule("if Ambient is BRIGHT then Power is LOW", engine)
 
     def test_deactivate(self) -> None:
         """Test the deactivation of a rule."""
         rule = fl.Rule()
-        rule.activation_degree = fl.nan
-        rule.triggered = True
+        rule.activation_degree = fl.scalar([fl.nan])
+        rule.triggered = fl.array([True])
         rule.deactivate()
         self.assertEqual(rule.activation_degree, 0.0)
-        self.assertEqual(rule.triggered, False)
+        self.assertEqual(rule.triggered, fl.array([False]))
 
     def test_activate_with(self) -> None:
         """Test rule activation weights."""
@@ -958,7 +952,7 @@ class TestRuleBlock(unittest.TestCase):
         RuleBlockAssert(self, fl.RuleBlock()).exports_fll(
             "\n".join(
                 [
-                    "RuleBlock: ",
+                    "RuleBlock:",
                     "  enabled: true",
                     "  conjunction: none",
                     "  disjunction: none",
@@ -974,10 +968,10 @@ class TestRuleBlock(unittest.TestCase):
                 "rb",
                 "a ruleblock",
                 rules=[fl.Rule.create("if a then z"), fl.Rule.create("if b then y")],
-                conjunction=fl.TNorm(),
-                disjunction=fl.SNorm(),
-                implication=fl.TNorm(),
-                activation=fl.Activation(),
+                conjunction=fl.AlgebraicProduct(),
+                disjunction=fl.AlgebraicSum(),
+                implication=fl.DrasticProduct(),
+                activation=fl.General(),
             ),
         ).exports_fll(
             "\n".join(
@@ -985,15 +979,49 @@ class TestRuleBlock(unittest.TestCase):
                     "RuleBlock: rb",
                     "  description: a ruleblock",
                     "  enabled: true",
-                    "  conjunction: TNorm",
-                    "  disjunction: SNorm",
-                    "  implication: TNorm",
-                    "  activation: Activation",
+                    "  conjunction: AlgebraicProduct",
+                    "  disjunction: AlgebraicSum",
+                    "  implication: DrasticProduct",
+                    "  activation: General",
                     "  rule: if a then z",
                     "  rule: if b then y",
                 ]
             )
         )
+
+    def test_len_iter_getitem(self) -> None:
+        """Test iter, len, and getitem of rule blocks."""
+        a, b = [fl.Rule.create("if a then z"), fl.Rule.create("if b then y")]
+        rule_block = fl.RuleBlock("test", rules=[a, b])
+
+        # test getitem
+        self.assertEqual(rule_block[0], a)
+        self.assertEqual(rule_block[1], b)
+        with self.assertRaises(IndexError) as error:
+            rule_block[2]
+        self.assertEqual("list index out of range", str(error.exception))
+        # test slice
+        self.assertListEqual(rule_block[:], rule_block.rules)
+        self.assertListEqual(rule_block[0:], rule_block.rules)
+        self.assertListEqual(rule_block[0:1], [rule_block.rules[0]])
+        self.assertListEqual(rule_block[1:], [rule_block.rules[1]])
+
+        self.assertEqual(0, len(fl.RuleBlock()))
+        self.assertEqual(2, len(rule_block))
+
+        # iterating over rules
+        ## via list comprehension
+        self.assertListEqual([r for r in rule_block], rule_block.rules)
+
+        ## via enumeration
+        rules = [a, b]
+        for index, rule in enumerate(rule_block):
+            self.assertEqual(rules[index], rule)
+
+        ## via iterators
+        iterator = iter(rule_block)
+        self.assertEqual(next(iterator), a)
+        self.assertEqual(next(iterator), b)
 
     def test_activate(self) -> None:
         """Test the activation method."""
@@ -1006,9 +1034,7 @@ class TestRuleBlock(unittest.TestCase):
         activation.activate.assert_called_once_with(rb)
 
         rb.activation = None
-        with self.assertRaisesRegex(
-            ValueError, "expected an activation method, but found none"
-        ):
+        with self.assertRaisesRegex(ValueError, "expected an activation method, but found none"):
             rb.activate()
 
     def test_unload_rules(self) -> None:
@@ -1043,14 +1069,10 @@ class TestRuleBlock(unittest.TestCase):
         rule1 = fl.Rule.create("if X then Y", engine=None)
         self.assertFalse(rule1.is_loaded())
 
-        rule2 = fl.Rule.create(
-            "if Ambient is MEDIUM then Power is MEDIUM", engine=engine
-        )
+        rule2 = fl.Rule.create("if Ambient is MEDIUM then Power is MEDIUM", engine=engine)
         self.assertTrue(rule2.is_loaded())
 
-        rule3 = fl.Rule.create(
-            "if Ambient is BRIGHT then Power is Invalid", engine=None
-        )
+        rule3 = fl.Rule.create("if Ambient is BRIGHT then Power is Invalid", engine=None)
         self.assertFalse(rule3.is_loaded())
 
         rb = fl.RuleBlock(rules=[rule1, rule2, rule3])

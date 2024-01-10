@@ -1,0 +1,29 @@
+Engine: SigmoidProduct
+  description: obstacle avoidance for self-driving cars
+InputVariable: obstacle
+  description: location of obstacle relative to vehicle
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: left Triangle 0.000 0.333 0.666
+  term: right Triangle 0.333 0.666 1.000
+OutputVariable: steer
+  description: direction to steer the vehicle to
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: Centroid
+  default: nan
+  lock-previous: false
+  term: left SigmoidProduct 0.167 30.000 -30.000 0.500
+  term: right SigmoidProduct 0.500 30.000 -30.000 0.833
+RuleBlock: steer_away
+  description: steer away from obstacles
+  enabled: true
+  conjunction: none
+  disjunction: none
+  implication: Minimum
+  activation: General
+  rule: if obstacle is left then steer is right
+  rule: if obstacle is right then steer is left

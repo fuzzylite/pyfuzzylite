@@ -16,7 +16,7 @@ OutputVariable: force
   range: -5.000 5.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: negBig Bell -5.000 1.670 8.000
@@ -28,14 +28,14 @@ OutputVariable: force2
   range: -5.000 5.000
   lock-range: false
   aggregation: Maximum
-  defuzzifier: Centroid 200
+  defuzzifier: Centroid
   default: nan
   lock-previous: false
   term: negBig2 Bell -3.000 1.670 8.000
   term: negSmall2 Bell -1.000 1.670 8.000
   term: posSmall2 Bell 1.000 1.670 8.000
   term: posBig2 Bell 3.000 1.670 8.000
-RuleBlock: 
+RuleBlock:
   enabled: true
   conjunction: Minimum
   disjunction: Maximum

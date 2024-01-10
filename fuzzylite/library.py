@@ -1,7 +1,7 @@
 """pyfuzzylite (TM), a fuzzy logic control library in Python.
 
 Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, Ph.D. <jcrada@fuzzylite.com>.
+Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
 
 This file is part of pyfuzzylite.
 
@@ -11,212 +11,457 @@ the terms of the FuzzyLite License included with the software.
 You should have received a copy of the FuzzyLite License along with
 pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
 
-pyfuzzylite is a trademark of FuzzyLite Limited
+pyfuzzylite is a trademark of FuzzyLite Limited.
+
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+from __future__ import annotations
 
+__all__ = [
+    "information",
+    "Information",
+    "settings",
+    "Settings",
+    "repr",
+    "representation",
+    "Representation",
+    "scalar",
+    "to_float",
+    "array",
+    "inf",
+    "nan",
+]
+
+import builtins
+import inspect
 import logging
-from typing import Optional, SupportsFloat, Type, Union
+import reprlib
+import typing
+from collections.abc import Generator, Sequence
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Any, Final, overload
 
-from .factory import FactoryManager
+import numpy as np
 
-__all__ = ["Library"]
+from .types import Array, Scalar, ScalarArray
+
+if typing.TYPE_CHECKING:
+    from .factory import FactoryManager
+
+np.seterr(invalid="ignore", divide="ignore")
+
+logging.basicConfig(
+    level=logging.ERROR,
+    datefmt="%Y-%m-%d %H:%M:%S",
+    format="%(asctime)s %(levelname)s %(module)s::%(funcName)s()[%(lineno)d]\n%(message)s",
+)
+
+array: Final = np.array
+inf: Final = np.inf
+nan: Final = np.nan
 
 
-class Library:
-    """The Library class contains global settings and information about the library.
-    @author Juan Rada-Vilela, Ph.D.
-    @since 4.0.
+def to_float(x: Any, /) -> float:
+    """Convert the value into a floating point defined by the library.
+
+    Args:
+        x: value to convert.
+
+    Returns:
+        converted value
     """
+    return settings.float_type(x)  # type: ignore
+
+
+@overload
+def scalar(x: Sequence[Any] | Array[Any], /) -> ScalarArray:
+    ...
+
+
+@overload
+def scalar(x: Any, /) -> Scalar:
+    ...
+
+
+def scalar(x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any) -> ScalarArray | Scalar:
+    """Convert the values into a floating point value defined by the library.
+
+    Args:
+        x: value to convert.
+        **kwargs: keyword arguments to pass to [numpy.asarray][]
+
+    Returns:
+        array of converted values
+
+    """
+    return np.asarray(x, dtype=settings.float_type, **kwargs)
+
+
+class Settings:
+    """Settings for the library."""
 
     def __init__(
         self,
-        decimals: int,
-        abs_tolerance: float,
-        floating_point_type: Type[float] = float,
-        factory_manager: Optional["FactoryManager"] = None,
+        float_type: Any = np.float64,
+        decimals: int = 3,
+        atol: float = 1e-03,
+        rtol: float = 0.0,
+        alias: str = "fl",
+        logger: logging.Logger | None = None,
+        factory_manager: FactoryManager | None = None,
     ) -> None:
-        """Creates an instance of the library.
-        @param decimals is the number of decimals utilized when formatting scalar values
-        @param abs_tolerance is the minimum difference at which two scalar values are considered equivalent
-        @param floating_point_type is the type of floating point (default is float, but numpy.float_ can also be used)
-        @param factory_manager is the central manager of fuzzylite object factories
-        @param logger is the logger of fuzzylite.
+        """Constructor.
+
+        Args:
+            float_type: floating point type.
+            decimals: number of decimals.
+            atol: absolute tolerance.
+            rtol: relative tolerance.
+            alias: alias to use when representing objects (ie, `__repr__()`).
+                Cases:
+                    - fully qualified package when alias == "" (eg, `fuzzylite.term.Constant(name="A", height=1.0)`)
+                    - no prefixes when alias == "*" (eg, `Constant(name="A", height=1.0)`)
+                    - alias otherwise (eg, `{alias}.Constant(name="A", height=1.0)`
+            logger: logger.
+            factory_manager: factory manager.
         """
+        self.float_type = float_type
         self.decimals = decimals
-        self.abs_tolerance: float = abs_tolerance
-        self.floating_point_type = floating_point_type
-        self.factory_manager = factory_manager if factory_manager else FactoryManager()
-        self.logger = logging.getLogger("fuzzylite")
+        self.atol = atol
+        self.rtol = rtol
+        self.alias = alias
+        self.logger = logger or logging.getLogger("fuzzylite")
+        self._factory_manager = factory_manager
 
-    def floating_point(self, value: Union[SupportsFloat, str, bytes]) -> float:
-        """Convert the value into a floating point defined by the library
-        @param value is the value to convert.
-        """
-        return self.floating_point_type(value)
+    def __repr__(self) -> str:
+        """Return code to construct the settings in Python.
 
-    def configure_logging(self, level: int, reset: bool = True) -> None:
-        """Configure the logging service.
-        @param level is the level of logging (see levels in Logging module)
-        @param reset is whether to remove all previous logger handlers before configuring.
+        Returns:
+            code to construct the settings in Python
         """
-        if reset:
-            for handler in logging.root.handlers[:]:
-                logging.root.removeHandler(handler)
-                handler.close()
-        logging.basicConfig(
-            level=level,
-            datefmt="%Y-%m-%d %H:%M:%S",
-            format="%(asctime)s %(levelname)s "
-            "%(module)s::%(funcName)s()[%(lineno)d]"
-            "\n%(message)s",
-        )
+        fields = vars(self).copy()
+        fields["factory_manager"] = fields.pop("_factory_manager")
+        return representation.as_constructor(self, fields)
+
+    @property
+    def factory_manager(self) -> FactoryManager:
+        """Get/Set the factory manager.
+
+        # Getter
+
+        Returns:
+            factory manager
+
+        # Setter
+
+        Args:
+            value (FactoryManager): factory manager
+        """
+        if self._factory_manager is None:
+            # done here to avoid partially initialised class during __init__ using setter
+            from .factory import FactoryManager
+
+            self._factory_manager = FactoryManager()
+        return self._factory_manager
+
+    @factory_manager.setter
+    def factory_manager(self, value: FactoryManager) -> None:
+        """Set the factory manager.
+
+        Args:
+            value: factory manager
+        """
+        self._factory_manager = value
 
     @property
     def debugging(self) -> bool:
-        """Return whether the logger level is debugging."""
+        """Get/Set the library in debug mode.
+
+        # Getter
+
+        Returns:
+            whether the library is in debug mode
+
+        # Setter
+
+        Args:
+            value (bool): set logging level to `DEBUG` if `true`, and to `ERROR` otherwise
+        """
         return self.logger.level == logging.DEBUG
 
-    @property
-    def name(self) -> str:
-        """Return the name of the `fuzzylite` library."""
-        return "pyfuzzylite"
+    @debugging.setter
+    def debugging(self, value: bool) -> None:
+        """Set the library debugging mode.
+
+        Args:
+            value: set logging level to `DEBUG` if `true`, and to `ERROR` otherwise
+        """
+        self.logger.setLevel(logging.DEBUG if value else logging.ERROR)
+
+    @contextmanager
+    def context(
+        self,
+        *,
+        float_type: Any | None = None,
+        decimals: int | None = None,
+        atol: float | None = None,
+        rtol: float | None = None,
+        alias: str | None = None,
+        logger: logging.Logger | None = None,
+        factory_manager: FactoryManager | None = None,
+    ) -> Generator[None, None, None]:
+        """Create a context with specific settings.
+
+        Args:
+            float_type: floating point type
+            decimals: number of decimals.
+            atol: absolute tolerance.
+            rtol: relative tolerance.
+            alias: alias for the library.
+            logger: logger.
+            factory_manager: factory manager.
+
+        Returns:
+            context with specific settings.
+        """
+        context_settings = {
+            key: value for key, value in locals().items() if not (key == "self" or value is None)
+        }
+        if "factory_manager" in context_settings:
+            context_settings["_factory_manager"] = context_settings.pop("factory_manager")
+        rollback_settings = vars(self).copy()
+        for key, value in context_settings.items():
+            setattr(self, key, value)
+        try:
+            yield
+        finally:
+            for key, value in context_settings.items():
+                setattr(self, key, rollback_settings[key])
+
+
+settings: Final = Settings()
+
+
+@dataclass(frozen=True, repr=False)
+class Information:
+    """Information about the library."""
+
+    name: Final[str] = "fuzzylite"
+    description: Final[str] = "a fuzzy logic control library in Python"
+    license: Final[str] = "FuzzyLite License"
+    author: Final[str] = "Juan Rada-Vilela, PhD"
+    author_email: Final[str] = "jcrada@fuzzylite.com"
+    company: Final[str] = "FuzzyLite Limited"
+    website: Final[str] = "https://fuzzylite.com/"
+
+    def __repr__(self) -> str:
+        """Return code to construct the information in Python.
+
+        Returns:
+            code to construct the information in Python
+        """
+        fields = vars(self).copy()
+        fields["version"] = self.version
+        return representation.as_constructor(self, fields)
 
     @property
     def version(self) -> str:
-        """Return the version of the `fuzzylite` library."""
-        __version__ = "7.1.1"
+        """Automatic version of the library handled by poetry using `[tool.poetry_bumpversion.file."fuzzylite/library.py"]`.
+
+        Returns:
+            version of the library
+        """
+        __version__ = "8.0.0"
         return __version__
 
-    @property
-    def license(self) -> str:
-        """Return the license of the `fuzzylite` library."""
-        return "GNU Affero General Public License v3"
 
-    @property
-    def description(self) -> str:
-        """Return the description of the `fuzzylite` library."""
-        return "a fuzzy logic control library in Python"
+information: Final = Information()
 
-    @property
-    def author(self) -> str:
-        """Return the author of the `fuzzylite` library."""
-        return "Juan Rada-Vilela, Ph.D."
 
-    @property
-    def author_email(self) -> str:
-        """Return the email of the author of the `fuzzylite` library."""
-        return "jcrada@fuzzylite.com"
+class Representation(reprlib.Repr):
+    """Representation class for the library."""
 
-    @property
-    def company(self) -> str:
-        """Return the name of the company that owns the `fuzzylite` library."""
-        return "FuzzyLite Limited"
+    T = typing.TypeVar("T")
 
-    @property
-    def website(self) -> str:
-        """Return the website of the `fuzzylite` library."""
-        return "https://fuzzylite.com/"
+    def __init__(self) -> None:
+        """Constructor."""
+        super().__init__()
+        limits = {k: v for k, v in vars(self).items()}
+        increase_factor = int(1e9)  # virtually limitless
+        for variable, value in limits.items():
+            setattr(self, variable, value * increase_factor)
+        self.maxlevel = 10  # except for recursion level
+        from .exporter import FllExporter
 
-    @property
-    def summary(self) -> str:
-        """Return a Markdown summary of the `fuzzylite` library."""
-        result = """\
-# pyfuzzylite: A Fuzzy Logic Control Library in Python
+        self.fll: Final = FllExporter()
 
-##  Introduction
+    def __repr__(self) -> str:
+        """Return code to construct the representation in Python.
 
-**`fuzzylite`** is a free and open-source fuzzy logic control library
-programmed in C++ for multiple platforms (e.g., Windows, Linux, Mac, iOS).
-**`jfuzzylite`** is the equivalent `fuzzylite` library for Java and Android
-platforms. **`pyfuzzylite`** is the equivalent `fuzzylite` library for Python.
-**`QtFuzzyLite 6`** is (very likely) the best application available to easily
-design and directly operate fuzzy logic controllers in real time.
+        Returns:
+            code to construct the representation in Python
+        """
+        return representation.as_constructor(self)
 
-If you are going to cite us in your article, please do so as:
+    def package_of(self, x: Any, /) -> str:
+        """Return the qualified class name of the object.
 
-```
-Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL https://fuzzylite.com/.
-```
+        Args:
+            x: object to get package of
 
-```bibtex
- @misc{fl::fuzzylite,
- author={Juan Rada-Vilela},
- title={The FuzzyLite Libraries for Fuzzy Logic Control},
- url={https://fuzzylite.com/},
- year={2018}}
-```
+        Returns:
+             qualified class name of the object.
+        """
+        package = ""
+        module = inspect.getmodule(x)
+        if module:
+            if not settings.alias:
+                package = module.__name__
+            elif settings.alias == "*":
+                package = ""
+            elif module.__name__.startswith("fuzzylite."):
+                package = settings.alias
+            else:
+                package = module.__name__
+            if module.__name__.startswith("fuzzylite.examples.") and settings.alias:
+                # use fully qualified package
+                package += module.__name__[len("fuzzylite") :]
+        if package and not package.endswith("."):
+            package += "."
+        return package
 
-##  License of the FuzzyLite Libraries
+    def import_statement(self) -> str:
+        """Return the library's import statement based on the alias in the settings.
 
-The FuzzyLite Libraries, namely **`fuzzylite 6.0`** and **`jfuzzylite 6.0`**,
-are licensed under the [**GNU General Public License (GPL)
-3.0**](https://www.gnu.org/licenses/gpl.html), and **`pyfuzzylite 7.0`** is released under the [
-**GNU Affero General Public License v3**](https://www.gnu.org/licenses/agpl.html). The FuzzyLite
-Libraries are also offered under a **paid license for commercial purposes**. If you are using
-them under a free license, please consider purchasing a license of **QtFuzzyLite** to support
-the development of the libraries. If you want a commercial license of `fuzzylite`, `jfuzzylite`,
-or `pyfuzzylite`, please contact [sales@fuzzylite.com](mailto:sales@fuzzylite.com).
+        info: related
+            - [fuzzylite.library.Settings.alias][]
 
-## Features
+        Returns:
+            library's import statement based on the alias in the settings.
+        """
+        if not settings.alias:
+            return "import fuzzylite"
+        elif settings.alias == "*":
+            return "from fuzzylite import *"
+        else:
+            return f"import fuzzylite as {settings.alias}"
 
-The FuzzyLite Libraries have the following features:
+    def as_constructor(  # noqa: D417 # Missing argument description in the docstring: `self`
+        self,
+        x: T,
+        /,
+        fields: dict[str, Any] | None = None,
+        *,
+        positional: bool = False,
+        cast_as: type[T] | None = None,
+    ) -> str:
+        """Return the Python code to use the constructor of the object.
 
-**(6) Controllers**: Mamdani, Takagi-Sugeno, Larsen, Tsukamoto, Inverse
-Tsukamoto, Hybrids
+        Args:
+            x: object to construct
+            fields: override the parameters and arguments to use in the constructor
+            positional: use positional parameters if `true`, and keyword parameters otherwise
+            cast_as: type to upcast the object (useful in inheritance approaches)
 
-**(21) Linguistic terms**: (4) _Basic_: triangle, trapezoid, rectangle,
-discrete. (9) _Extended_: bell, cosine, gaussian, gaussian product, pi-shape,
-sigmoid difference, sigmoid product, spike. (5) _Edges_: binary, concave, ramp,
-sigmoid, s-shape, z-shape. (3) _Functions_: constant, linear, function.
+        Returns:
+            Python code to use the constructor of the object.
+        """
+        arguments = self.construction_arguments(
+            x, fields=fields, positional=positional, cast_as=cast_as
+        )
+        return f"{self.package_of((cast_as or x))}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
 
-**(7) Activation methods**: general, proportional, threshold, first, last,
-lowest, highest.
+    def construction_arguments(  # noqa: D417 # Missing argument description in the docstring: `self`
+        self,
+        x: T,
+        /,
+        fields: dict[str, Any] | None = None,
+        *,
+        positional: bool = False,
+        cast_as: type[T] | None = None,
+    ) -> list[str]:
+        """Return the list of parameters and arguments for the constructor of the object.
 
-**(8) Conjunction and Implication (T-Norms)**: minimum, algebraic product,
-bounded difference, drastic product, einstein product, hamacher product,
-nilpotent minimum, function.
+        Args:
+            x: object to construct
+            fields: override the parameters and arguments to use in the constructor
+            positional: use positional parameters if `true`, and keyword parameters otherwise
+            cast_as: type to upcast the object (useful in inheritance approaches)
 
-**(10) Disjunction and Aggregation (S-Norms)**: maximum, algebraic sum, bounded
-sum, drastic sum, einstein sum, hamacher sum, nilpotent maximum, normalized
-sum, unbounded sum, function.
+        Returns:
+             list of parameters and arguments for the constructor of the object.
+        """
+        if fields is None:
+            fields = vars(x) or {}
+        arguments = []
+        if x.__class__.__init__ == object.__init__:
+            # there is no constructor in fuzzylite class hierarchy
+            constructor = []
+        else:
+            constructor = list(
+                inspect.signature((cast_as or x.__class__).__init__).parameters.values()
+            )
+        for parameter in constructor:
+            if parameter.name == "self":
+                continue
+            if parameter.name in fields:
+                value = self.repr(fields[parameter.name])
+                argument = ("" if positional else f"{parameter.name}=") + value
+                arguments.append(argument)
+            else:
+                if parameter.default != parameter.empty:
+                    # if argument is not given for the parameter and the parameter has a default value,
+                    # we can ignore it, but next parameter values need to use keywords.
+                    positional = False
+                else:
+                    # if the parameter does not have a default value, then the constructor will not be valid code.
+                    raise ValueError(
+                        f"expected argument for parameter `{parameter.name}` in constructor of {x.__class__.__name__}, "
+                        f"but it was missing from the fields context: {fields}"
+                    )
+        return arguments
 
-**(7) Defuzzifiers**: (5) _Integral_: centroid, bisector, smallest of maximum,
-largest of maximum, mean of maximum. (2) _Weighted_: weighted average, weighted
-sum.
+    def repr_float(self, x: float | np.floating[Any], level: int) -> str:
+        """Return the string representation of the floating-point value in Python.
 
-**(7) Hedges**: any, not, extremely, seldom, somewhat, very, function.
+        Args:
+            x: float to represent
+            level: irrelevant
 
-**(3) Importers**: FuzzyLite Language `fll`, Fuzzy Inference System `fis`,
-Fuzzy Control Language `fcl`.
+        Returns:
+            string representation of the floating-point value in Python.
+        """
+        from .operation import Op
 
-**(7) Exporters**: `C++`, `Java`, FuzzyLite Language `fll`, FuzzyLite Dataset
-`fld`, `R` script, Fuzzy Inference System `fis`, Fuzzy Control Language `fcl`.
+        if Op.isinf(x):
+            infinity = f"{self.package_of(settings)}{np.abs(x)!r}"
+            return infinity if x > 0 else f"-{infinity}"
+        if Op.isnan(x):
+            return f"{self.package_of(settings)}{x!r}"
+        # TODO: should it be `return Op.str(x)`?
+        return builtins.repr(x)
 
-**(30+) Examples** of Mamdani, Takagi-Sugeno, Tsukamoto, and Hybrid controllers
-from `fuzzylite`, Octave, and Matlab, each included in the following formats:
-`C++`, `Java`, `fll`, `fld`, `R`, `fis`, and `fcl`.
+    repr_float16 = repr_float
+    repr_float32 = repr_float
+    repr_float64 = repr_float
+    repr_float128 = repr_float
 
-In addition, you can easily:
+    def repr_ndarray(self, x: Array[Any], level: int) -> str:
+        """Return the string representation of the numpy array in Python.
 
-* Create your own classes inheriting from `fuzzylite`, register them in the
-  factories, and incorporate them to operate in `fuzzylite`.
+        Args:
+            x: numpy array to represent
+            level: level for recursion control
 
-* Utilize multiple rule blocks within a single engine, each containing any
-  number of (possibly weighted) rule, and different conjunction, disjunction
-  and activation operators.
+        Returns:
+            string representation of the numpy array in Python
+        """
+        if x.ndim == 0:
+            return self.repr1(x.item(), level)
+        elements = ", ".join(self.repr1(y, level) for y in x)
+        return f"{self.package_of(settings)}{array.__name__}([{elements}])"
 
-* Write inference rules just naturally, e.g., `"if obstacle is left then steer
-  is right"`.
 
-* Return a default output value, lock the output values to be within specific
-  ranges, lock the previous valid output value when no rules are activated.
-
-* Explore the function space of your controller.
-
-* Utilize the entire library across multiple threads as it is thread-safe.
-
-* Download the sources, documentation, and binaries for the major platforms in
-  the [**Downloads**](www.fuzzylite.com/downloads) tab.\
-"""
-        return result
+representation: Final = Representation()
+repr: Final = representation.repr
