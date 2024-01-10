@@ -26,7 +26,6 @@ from types import ModuleType
 from typing import Any
 
 import numpy as np
-from typing_extensions import Self
 
 from .engine import Engine
 from .library import nan, representation, settings
@@ -46,14 +45,14 @@ class Benchmark:
     """
 
     def __init__(
-        self,
-        name: str,
-        engine: Engine,
-        data: ScalarArray,
-        *,
-        rows: int | float = 1.0,
-        shuffle: bool = True,
-        seed: int | None = None,
+            self,
+            name: str,
+            engine: Engine,
+            data: ScalarArray,
+            *,
+            rows: int | float = 1.0,
+            shuffle: bool = True,
+            seed: int | None = None,
     ) -> None:
         """Constructor.
 
@@ -89,12 +88,12 @@ class Benchmark:
 
     @classmethod
     def for_example(
-        cls,
-        example: ModuleType,
-        rows: int | float = 1.0,
-        shuffle: bool = True,
-        seed: int | None = None,
-    ) -> Self:
+            cls,
+            example: ModuleType,
+            rows: int | float = 1.0,
+            shuffle: bool = True,
+            seed: int | None = None,
+    ) -> Benchmark:
         """Create benchmark for the example.
 
         Args:
@@ -152,7 +151,7 @@ class Benchmark:
             rows = int(self.rows * len(data))
             data = data[0:rows, :]
         else:
-            data = data[0 : self.rows, :]
+            data = data[0: self.rows, :]
         self.test_data = data
 
     def measure(self, *, runs: int = 1) -> None:
@@ -175,7 +174,7 @@ class Benchmark:
                 np.mean(
                     np.square(
                         self.engine.output_values
-                        - self.test_data[:, len(self.engine.input_variables) :]
+                        - self.test_data[:, len(self.engine.input_variables):]
                     )
                 ).astype(float)
             )
