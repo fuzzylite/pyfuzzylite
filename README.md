@@ -92,7 +92,7 @@ each included in the following formats: `py`, `fll`, `fld`. With `fuzzylite`: `C
 
 ### FuzzyLite Language
 
-```properties
+```yaml
 # File: examples/mamdani/ObstacleAvoidance.fll
 Engine: ObstacleAvoidance
 InputVariable: obstacle
