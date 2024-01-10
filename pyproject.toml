@@ -240,7 +240,7 @@ disable_error_code = ["type-abstract"]
 
 [[tool.mypy.overrides]]
 # skipping analyzing "pytest_benchmark.fixture": module is installed, but missing library stubs or py.typed marker
-module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture"]
+module = ["pytest_codspeed.plugin", "pytest_benchmark.fixture", "exceptiongroup"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
