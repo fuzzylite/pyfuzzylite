@@ -54,6 +54,12 @@ significantly **speed up** the design of your fuzzy logic controllers, while pro
 and **beautiful** user interface.
 Please, download it and check it out for free at [fuzzylite.com/downloads](https://fuzzylite.com/downloads).
 
+## <a name="install">Install</a>
+
+```commandline
+pip install pyfuzzylite
+```
+
 ## <a name="features">Features</a>
 
 **Documentation**: [fuzzylite.github.io/pyfuzzylite/](https://fuzzylite.github.io/pyfuzzylite/)
