@@ -170,6 +170,33 @@ engine = fl.Engine(
 )
 ```
 
+### `float` and vectorization
+
+```python
+# single `float` operation
+engine.input_variable("obstacle").value = 0.5
+engine.process()
+print("y =", engine.output_variable("mSteer").value)
+# > y = 0.5
+print("ỹ =", engine.output_variable("mSteer").fuzzy_value())
+# > ỹ = 0.500/left + 0.500/right
+
+# vectorization
+engine.input_variable("obstacle").value = fl.array([0, 0.25, 0.5, 0.75, 1.0])
+engine.process()
+print("y =", repr(engine.output_variable("mSteer").value))
+# > y = array([0.6666665 , 0.62179477, 0.5       , 0.37820523, 0.3333335 ])
+print("ỹ =", repr(engine.output_variable("mSteer").fuzzy_value()))
+# > ỹ = array(['0.000/left + 1.000/right',
+#              '0.250/left + 0.750/right',
+#              '0.500/left + 0.500/right',
+#              '0.750/left + 0.250/right',
+#              '1.000/left + 0.000/right'], dtype='<U26')
+```
+
+Please refer to the documentation for more
+information: [**fuzzylite.github.io/pyfuzzylite/**](https://fuzzylite.github.io/pyfuzzylite/)
+
 ## <a name="contributing">Contributing</a>
 
 All contributions are welcome, provided they follow the following guidelines:
