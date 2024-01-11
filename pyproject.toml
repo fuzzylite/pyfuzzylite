@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "8.0.0"
+version = "8.0.1"
 description = "a fuzzy logic control library in Python"
 license = "Proprietary"
 readme = "README.md"
@@ -45,10 +45,11 @@ classifiers = [
 
 [tool.poetry_bumpversion.file."fuzzylite/library.py"]
 [tool.poetry_bumpversion.file."tests/test_library.py"]
-[tool.poetry_bumpversion.file."docs/index.md"]
+
+[[tool.poetry_bumpversion.replacements]]
+files = ["README.md", "docs/index.md"]
 search = "# pyfuzzylite {current_version}"
 replace = "# pyfuzzylite {new_version}"
-
 
 [[tool.poetry.packages]]
 include = "fuzzylite"
