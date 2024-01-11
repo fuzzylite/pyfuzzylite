@@ -13,21 +13,12 @@ by [**Juan Rada-Vilela, PhD**](https://fuzzylite.com/about)
 
 ***
 
-[main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
 [![Build](
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=main)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)
 [![Coverage Status](
 https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
 https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
-
-[development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![Build](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=development)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
-[![Coverage Status](
-https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](
-https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
 
 ***
 
@@ -183,7 +174,6 @@ engine = fl.Engine(
 
 All contributions are welcome, provided they follow the following guidelines:
 
-- Pull requests are made to the [development](https://github.com/fuzzylite/pyfuzzylite/tree/development) branch
 - Source code is consistent with standards in the library
 - Contribution is properly documented and tested, raising issues where appropriate
 - Contribution is licensed under the FuzzyLite License

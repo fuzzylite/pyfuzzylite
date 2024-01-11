@@ -6,7 +6,7 @@ on:
       - created
 
     #pull_request: # test-only
-    #branches: [ main, development, feature/* ] # test-only
+    #branches: [ main, feature/* ] # test-only
 
 jobs:
   publish:
