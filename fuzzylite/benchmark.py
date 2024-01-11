@@ -26,7 +26,6 @@ from types import ModuleType
 from typing import Any
 
 import numpy as np
-from typing_extensions import Self
 
 from .engine import Engine
 from .library import nan, representation, settings
@@ -94,7 +93,7 @@ class Benchmark:
         rows: int | float = 1.0,
         shuffle: bool = True,
         seed: int | None = None,
-    ) -> Self:
+    ) -> Benchmark:
         """Create benchmark for the example.
 
         Args:
