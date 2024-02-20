@@ -372,6 +372,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#float-and-vectorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      float and vectorization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3774,6 +3789,29 @@ each included in the following formats: <code>py</code>, <code>fll</code>, <code
 </div>
 </div>
 </div>
+<h3 id="float-and-vectorization"><code>float</code> and vectorization<a class="headerlink" href="#float-and-vectorization" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># single `float` operation</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">engine</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="s2">&quot;obstacle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">engine</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y =&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">.</span><span class="n">output_variable</span><span class="p">(</span><span class="s2">&quot;mSteer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># &gt; y = 0.5</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ỹ =&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">.</span><span class="n">output_variable</span><span class="p">(</span><span class="s2">&quot;mSteer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fuzzy_value</span><span class="p">())</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># &gt; ỹ = 0.500/left + 0.500/right</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># vectorization</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">engine</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="s2">&quot;obstacle&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">fl</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">engine</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y =&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">output_variable</span><span class="p">(</span><span class="s2">&quot;mSteer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="c1"># &gt; y = array([0.6666665 , 0.62179477, 0.5       , 0.37820523, 0.3333335 ])</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ỹ =&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">output_variable</span><span class="p">(</span><span class="s2">&quot;mSteer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fuzzy_value</span><span class="p">()))</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># &gt; ỹ = array([&#39;0.000/left + 1.000/right&#39;,</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="c1">#              &#39;0.250/left + 0.750/right&#39;,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="c1">#              &#39;0.500/left + 0.500/right&#39;,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="c1">#              &#39;0.750/left + 0.250/right&#39;,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="c1">#              &#39;1.000/left + 0.000/right&#39;], dtype=&#39;&lt;U26&#39;)</span>
+</span></code></pre></div>
+<p>Please refer to the documentation for more
+information: <a href="https://fuzzylite.github.io/pyfuzzylite/"><strong>fuzzylite.github.io/pyfuzzylite/</strong></a></p>
 <h2 id="contributing"><a name="contributing">Contributing</a><a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h2>
 <p>All contributions are welcome, provided they follow the following guidelines:</p>
 <ul>
@@ -3788,12 +3826,12 @@ each included in the following formats: <code>py</code>, <code>fll</code>, <code
 <p>Juan Rada-Vilela. The FuzzyLite Libraries for Fuzzy Logic Control, 2018. URL <a href="https://fuzzylite.com">https://fuzzylite.com</a>.</p>
 </blockquote>
 <p>Or using <code>bibtex</code>:</p>
-<div class="language-bibtex highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nc">@misc</span><span class="p">{</span><span class="nl">fl::fuzzylite</span><span class="p">,</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="na">author</span><span class="p">=</span><span class="s">{Juan Rada-Vilela}</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="na">title</span><span class="p">=</span><span class="s">{The FuzzyLite Libraries for Fuzzy Logic Control}</span><span class="p">,</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="na">url</span><span class="p">=</span><span class="s">{https://fuzzylite.com}</span><span class="p">,</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="na">year</span><span class="p">=</span><span class="s">{2018}</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
+<div class="language-bibtex highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nc">@misc</span><span class="p">{</span><span class="nl">fl::fuzzylite</span><span class="p">,</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="na">author</span><span class="p">=</span><span class="s">{Juan Rada-Vilela}</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="na">title</span><span class="p">=</span><span class="s">{The FuzzyLite Libraries for Fuzzy Logic Control}</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="na">url</span><span class="p">=</span><span class="s">{https://fuzzylite.com}</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="na">year</span><span class="p">=</span><span class="s">{2018}</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
 <p>fuzzylite&reg; is a registered trademark of FuzzyLite Limited <br>
