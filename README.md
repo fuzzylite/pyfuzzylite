@@ -1,11 +1,12 @@
 # pyfuzzylite 8.0.1
 
-<img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="right" alt="fuzzylite">
+<img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="left" alt="fuzzylite">
 
 ## A Fuzzy Logic Control Library in Python
 
 by [**Juan Rada-Vilela, PhD**](https://fuzzylite.com/about)
 
+<br>
 <br>
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
