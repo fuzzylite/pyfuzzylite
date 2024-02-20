@@ -8,26 +8,19 @@
 
 by [**Juan Rada-Vilela, PhD** :fontawesome-solid-square-arrow-up-right:](https://fuzzylite.com/about)
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
-[![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
-
 ***
 
-[main branch](https://github.com/fuzzylite/pyfuzzylite/tree/main)  
-[![Build](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=main)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
+[![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
 [![Coverage Status](
 https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
 https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
-
-[development branch](https://github.com/fuzzylite/pyfuzzylite/tree/development)  
-[![Build](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg?branch=development)](
-https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)  
-[![Coverage Status](
-https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=development)](
-https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=development)
+[![Build](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)
+[![Test](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/test.yml/badge.svg)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/test.yml)
+[![Publish](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml/badge.svg)](
+https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml)
 
 ***
 
