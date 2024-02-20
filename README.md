@@ -7,6 +7,7 @@
 by [**Juan Rada-Vilela, PhD**](https://fuzzylite.com/about)
 
 <br>
+<br>
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
