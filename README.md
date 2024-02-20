@@ -1,6 +1,6 @@
 # pyfuzzylite 8.0.1
 
-<img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="left" alt="fuzzylite">
+<img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="right" alt="fuzzylite">
 
 ## A Fuzzy Logic Control Library in Python
 
