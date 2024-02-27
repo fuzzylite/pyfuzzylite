@@ -28,7 +28,6 @@ MARKDOWN_FILES = ["README.md", "THANKS.md", "docs/"]
 def check(session: nox.Session) -> None:
     """Check the `pyproject.toml` is valid."""
     session.run(*"poetry check".split(), external=True)
-    session.run(*"poetry check --lock".split(), external=True)
 
 
 @nox.session(python=False)
