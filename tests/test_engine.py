@@ -424,6 +424,97 @@ class TestEngine(unittest.TestCase):
             ),
         )
 
+    def test_input_values(self) -> None:
+        """Test the engine.input_values."""
+        engine = fl.Engine("Test")
+        np.testing.assert_equal(fl.array([]), engine.input_values)
+
+        engine = fl.Engine("Test", input_variables=[fl.InputVariable("A")])
+        engine.input_variable(0).value = 0.6
+        np.testing.assert_equal(fl.array([[0.6]]), engine.input_values)
+
+        engine.input_variable(0).value = fl.array([0.6, 0.7])
+        np.testing.assert_equal(fl.array([[0.6], [0.7]]), engine.input_values)
+
+        engine = fl.Engine("Test", input_variables=[fl.InputVariable("A"), fl.InputVariable("B")])
+        engine.input_variable(0).value = 0.6
+        engine.input_variable(1).value = 0.2
+        np.testing.assert_equal(fl.array([[0.6, 0.2]]), engine.input_values)
+
+        engine.input_variable(0).value = fl.array([0.6, 0.7])
+        engine.input_variable(1).value = fl.array([0.2, 0.3])
+        np.testing.assert_equal(fl.array([[0.6, 0.2], [0.7, 0.3]]), engine.input_values)
+
+    def test_output_values(self) -> None:
+        """Test the engine.output_values."""
+        engine = fl.Engine("Test")
+        np.testing.assert_equal(fl.array([]), engine.output_values)
+
+        engine = fl.Engine("Test", output_variables=[fl.OutputVariable("A")])
+        engine.output_variable(0).value = 0.6
+        np.testing.assert_equal(fl.array([[0.6]]), engine.output_values)
+
+        engine.output_variable(0).value = fl.array([0.6, 0.7])
+        np.testing.assert_equal(fl.array([[0.6], [0.7]]), engine.output_values)
+
+        engine = fl.Engine(
+            "Test", output_variables=[fl.OutputVariable("A"), fl.OutputVariable("B")]
+        )
+        engine.output_variable(0).value = 0.6
+        engine.output_variable(1).value = 0.2
+        np.testing.assert_equal(fl.array([[0.6, 0.2]]), engine.output_values)
+
+        engine.output_variable(0).value = fl.array([0.6, 0.7])
+        engine.output_variable(1).value = fl.array([0.2, 0.3])
+        np.testing.assert_equal(fl.array([[0.6, 0.2], [0.7, 0.3]]), engine.output_values)
+
+    def test_input_values_manual_bug(self) -> None:
+        """Test the bug raised in https://github.com/fuzzylite/pyfuzzylite/issues/75."""
+        fll = """\
+Engine: ObstacleAvoidance
+InputVariable: obstacle
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: left Ramp 1.000 0.000
+  term: right Ramp 0.000 1.000
+InputVariable: obstacle2
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  term: left Ramp 1.000 0.000
+  term: right Ramp 0.000 1.000
+OutputVariable: tsSteer
+  enabled: true
+  range: 0.000 1.000
+  lock-range: false
+  aggregation: Maximum
+  defuzzifier: WeightedAverage
+  default: nan
+  lock-previous: false
+  term: right Linear 1 1 0
+  term: left Linear 0 1 1
+RuleBlock: takagiSugeno
+  enabled: true
+  conjunction: Minimum
+  disjunction: none
+  implication: none
+  activation: General
+  rule: if obstacle is left and obstacle2 is left then tsSteer is right
+  rule: if obstacle is left and obstacle2 is right then tsSteer is right"""
+        engine = fl.FllImporter().from_string(fll)
+        engine.input_variable(0).value = 0.2
+        engine.input_variable(1).value = 0.6
+        engine.process()
+        np.testing.assert_allclose(0.8, engine.output_values)
+        np.testing.assert_allclose(fl.array([[0.2, 0.6, 0.8]]), engine.values)
+
+        engine.input_variable(0).value = fl.array([0.2, 0.2])
+        engine.input_variable(1).value = fl.array([0.6, 0.6])
+        engine.process()
+        np.testing.assert_allclose(fl.array([[0.8], [0.8]]), engine.output_values)
+        np.testing.assert_allclose(fl.array([[0.2, 0.6, 0.8], [0.2, 0.6, 0.8]]), engine.values)
+
     def test_repr(self) -> None:
         """Tests repr."""
         code = fl.repr(SimpleDimmer().engine)

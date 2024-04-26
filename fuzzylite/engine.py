@@ -323,9 +323,9 @@ class Engine:
             ValueError: when the dimensionality of values is greater than 2
             ValueError: when the number of columns in the values is different from the number of input variables
         """
-        return np.atleast_2d(  # type:ignore
-            np.array([v.value for v in self.input_variables])
-        ).T
+        values = tuple(input_variable.value for input_variable in self.input_variables)
+        result = np.column_stack(values) if values else np.array(values)
+        return result
 
     @input_values.setter
     def input_values(self, values: ScalarArray) -> None:
@@ -379,9 +379,9 @@ class Engine:
             2D array of output values (rows) for each output variable (columns).
         """
         # TODO: Maybe a property setter like input_values.
-        return np.atleast_2d(  # type:ignore
-            np.array([v.value for v in self.output_variables])
-        ).T
+        values = tuple(output_variable.value for output_variable in self.output_variables)
+        result = np.column_stack(values) if values else np.array(values)
+        return result
 
     @property
     def values(self) -> ScalarArray:
