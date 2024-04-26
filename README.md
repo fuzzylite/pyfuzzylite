@@ -1,4 +1,4 @@
-# pyfuzzylite 8.0.1
+# pyfuzzylite 8.0.2
 
 <img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="left" alt="fuzzylite">
 
