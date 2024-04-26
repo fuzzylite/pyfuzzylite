@@ -20,8 +20,10 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+import numpy.testing as npt
 
 import fuzzylite as fl
+from fuzzylite import inf, nan
 from tests.assert_component import BaseAssert
 
 
@@ -46,13 +48,20 @@ class NormAssert(BaseAssert[fl.Norm]):
     ) -> NormAssert:
         """Assert the norm produces the expected values."""
         for ab, z in abz.items():
-            self.test.assertEqual(z, self.actual.compute(*ab), f"in ({ab})")
+            npt.assert_allclose(z, self.actual.compute(*ab), equal_nan=True, err_msg=f"in ({ab})")
+            # self.test.assertEqual(z, self.actual.compute(*ab), f"in ({ab})")
             if commutative:
-                self.test.assertEqual(
+                npt.assert_allclose(
                     z,
                     self.actual.compute(*reversed(ab)),
-                    f"when ({tuple(reversed(ab))})",
+                    equal_nan=True,
+                    err_msg=f"when ({tuple(reversed(ab))})",
                 )
+                # self.test.assertEqual(
+                #     z,
+                #     self.actual.compute(*reversed(ab)),
+                #     f"when ({tuple(reversed(ab))})",
+                # )
             if associative:
                 a: fl.Scalar = ab[0]
                 b: fl.Scalar = ab[1]
@@ -103,6 +112,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): inf,
+                (inf, -inf): -inf,
+                (-inf, -inf): inf,
             }
         )
 
@@ -125,6 +138,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): inf,
+                (inf, -inf): nan,
+                (-inf, -inf): 0,
             }
         )
 
@@ -147,6 +164,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): 0.0,
+                (inf, inf): 0.0,
+                (inf, -inf): 0.0,
+                (-inf, -inf): 0.0,
             }
         )
 
@@ -169,6 +190,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): nan,
             }
         )
 
@@ -191,6 +216,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): nan,
             }
         )
 
@@ -213,6 +242,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): inf,
+                (inf, -inf): -inf,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -235,6 +268,10 @@ class TestTNorm(unittest.TestCase):
                 (1.00, 0.50): 0.50,
                 (1.00, 0.75): 0.75,
                 (1.00, 1.00): 1.00,
+                (nan, nan): 0.0,
+                (inf, inf): inf,
+                (inf, -inf): 0.0,
+                (-inf, -inf): 0.0,
             }
         )
 
@@ -261,6 +298,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -283,6 +324,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): 1.0,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -305,6 +350,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): 1.0,
+                (inf, inf): 1.0,
+                (inf, -inf): 1.0,
+                (-inf, -inf): 1.0,
             }
         )
 
@@ -327,6 +376,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): nan,
             }
         )
 
@@ -349,6 +402,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): nan,
             }
         )
 
@@ -371,6 +428,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): inf,
+                (inf, -inf): inf,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -393,6 +454,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): 1.0,
+                (inf, inf): 1.0,
+                (inf, -inf): 1.0,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -415,6 +480,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -437,6 +506,10 @@ class TestSNorm(unittest.TestCase):
                 (1.00, 0.50): 1.50,
                 (1.00, 0.75): 1.75,
                 (1.00, 1.00): 2.00,
+                (nan, nan): nan,
+                (inf, inf): inf,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -465,6 +538,10 @@ class TestNormFunctions(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
@@ -487,6 +564,11 @@ class TestNormFunctions(unittest.TestCase):
                 (1.00, 0.50): 1.00,
                 (1.00, 0.75): 1.00,
                 (1.00, 1.00): 1.00,
+                (nan, nan): nan,
+                (inf, inf): nan,
+                (-inf, inf): nan,
+                (inf, -inf): nan,
+                (-inf, -inf): -inf,
             }
         )
 
