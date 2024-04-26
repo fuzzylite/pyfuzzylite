@@ -1044,3 +1044,14 @@ class RuleBlock:
         """
         self.unload_rules()
         self.load_rules(engine)
+
+    def rule(self, index: int, /) -> Rule:
+        """Get the rule at the index.
+
+        Args:
+            index: index of the rule.
+
+        Returns:
+            rule at the index
+        """
+        return self.rules[index]

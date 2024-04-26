@@ -994,6 +994,10 @@ class TestRuleBlock(unittest.TestCase):
         a, b = [fl.Rule.create("if a then z"), fl.Rule.create("if b then y")]
         rule_block = fl.RuleBlock("test", rules=[a, b])
 
+        # test rule()
+        self.assertEqual(rule_block.rule(0), a)
+        self.assertEqual(rule_block.rule(1), b)
+
         # test getitem
         self.assertEqual(rule_block[0], a)
         self.assertEqual(rule_block[1], b)
