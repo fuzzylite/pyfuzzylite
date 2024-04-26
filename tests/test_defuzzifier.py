@@ -89,12 +89,7 @@ class DefuzzifierAssert(BaseAssert[fl.Defuzzifier]):
         return self
 
 
-class NanTerm(fl.Term):
-    """A term that always returns NaN as its membership value."""
-
-    def membership(self, x: Scalar) -> Scalar:
-        """Returns NaN as the membership value of the term."""
-        return np.full_like(x, np.nan)
+NaN = fl.Constant
 
 
 class TestDefuzzifier(unittest.TestCase):
@@ -157,7 +152,7 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.Bisector()).defuzzifies(
             0,
             2,
-            {NanTerm(): np.nan},  # mean of range of variable
+            {NaN(): np.nan},  # mean of range of variable
         )
 
     def test_centroid(self) -> None:
@@ -207,7 +202,7 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.Centroid()).defuzzifies(
             -1,
             1,
-            {NanTerm(): np.nan},
+            {NaN(): np.nan},
         )
 
     def test_som_defuzzifier(self) -> None:
@@ -277,7 +272,7 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.SmallestOfMaximum()).defuzzifies(
             -1,
             1,
-            {NanTerm(): np.nan},
+            {NaN(): np.nan},
         )
 
     def test_lom_defuzzifier(self) -> None:
@@ -349,7 +344,7 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.LargestOfMaximum()).defuzzifies(
             -1,
             1,
-            {NanTerm(): np.nan},
+            {NaN(): np.nan},
         )
 
     def test_mom_defuzzifier(self) -> None:
@@ -420,7 +415,7 @@ class TestDefuzzifier(unittest.TestCase):
         DefuzzifierAssert(self, fl.MeanOfMaximum()).defuzzifies(
             -1,
             1,
-            {NanTerm(): np.nan},
+            {NaN(): np.nan},
         )
 
     def test_weighted_defuzzifier(self) -> None:
@@ -621,7 +616,7 @@ class TestDefuzzifier(unittest.TestCase):
                         fl.Activated(fl.Constant("C", -3.0), 0.5),
                     ],
                     aggregation=fl.AlgebraicSum(),
-                ): ((1 * 1 + 1 * -2 + (0.5 + 0.5 - (0.25)) * -3) / (1 + 1 + (0.5 + 0.5 - 0.25))),
+                ): -1.181818,  # ((1 * 1 + 1 * -2 + (0.5 + 0.5 - (0.25)) * -3) / (1 + 1 + (0.5 + 0.5 - 0.25))),
             },
             vectorized=False,
         )
