@@ -1,3 +1,9 @@
+# Version 8.0.2
+
+### Bug fixes
+
+- Fix `engine.[input|output]_values`, which was not working correctly when manually setting variable values (issue #75).
+
 # Version 8.0.1
 
 ### Bug fixes
@@ -24,10 +30,10 @@
 - function `fl.to_float` converts any argument to a `float`, which was the behaviour of `fl.Op.scalar`.
 - linguistic terms `Arc` and `SemiEllipse`
 - indexable components:
-    - `Engine`: get variables or rule blocks by name using square brackets, eg, `engine["light"].value`
-    - `Variable`: get terms by name using square brackets, eg, `variable["low"].membership(value)`
-    - `Factory`: get constructors and objects by name using square brackets,
-      eg, `factory["Triangle"]()`, `factory["sin"](3.14)`
+  - `Engine`: get variables or rule blocks by name using square brackets, eg, `engine["light"].value`
+  - `Variable`: get terms by name using square brackets, eg, `variable["low"].membership(value)`
+  - `Factory`: get constructors and objects by name using square brackets,
+    eg, `factory["Triangle"]()`, `factory["sin"](3.14)`
 - class `Benchmark` to benchmark engines
 - `from __future__ import annotations` in every file to use better type annotations
 - class `library.Settings` to configure general settings in singleton `library.settings`

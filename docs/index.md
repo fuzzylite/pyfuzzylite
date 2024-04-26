@@ -1,4 +1,4 @@
-# pyfuzzylite 8.0.1
+# pyfuzzylite 8.0.2
 
 ***
 
