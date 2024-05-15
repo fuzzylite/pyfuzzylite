@@ -31,7 +31,7 @@ class TestLibrary(unittest.TestCase):
     def test_library_exports_dir(self) -> None:
         """Test the library exports expected components."""
         expected = """
-__builtins__ __cached__ __doc__ __file__ __loader__
+__author__ __builtins__ __cached__ __copyright__ __doc__ __file__ __license__ __loader__
 __name__ __package__ __path__ __spec__ __version__
 
 activation Activation First General Highest Last Lowest Proportional Threshold
@@ -77,9 +77,18 @@ variable InputVariable OutputVariable Variable
     def test_library_vars(self) -> None:
         """Test the library variables."""
         __version__ = "8.0.2"
-        self.assertEqual(fl.__name__, "fuzzylite")
-        self.assertEqual(fl.__version__, __version__)
-        self.assertEqual(fl.__doc__, fl.information.description)
+        self.assertTrue("fuzzylite" == fl.__name__ == fl.information.name)
+        self.assertTrue(__version__ == fl.__version__ == fl.information.version)
+        self.assertTrue(
+            "a fuzzy logic control library in Python" == fl.__doc__ == fl.information.description
+        )
+        self.assertTrue("Juan Rada-Vilela, PhD" == fl.__author__ == fl.information.author)
+        self.assertTrue("FuzzyLite License" == fl.__license__ == fl.information.license)
+        self.assertTrue(
+            "Copyright (C) 2010-2024 FuzzyLite by Juan Rada-Vilela. All rights reserved."
+            == fl.__copyright__
+            == fl.information.copyright
+        )
 
     def test_context(self) -> None:
         """Tests the context."""

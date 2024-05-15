@@ -35,3 +35,6 @@ from .variable import *
 __name__ = information.name
 __doc__ = information.description
 __version__ = information.version
+__author__ = information.author
+__copyright__ = information.copyright
+__license__ = information.license

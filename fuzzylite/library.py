@@ -252,8 +252,11 @@ class Information:
     license: Final[str] = "FuzzyLite License"
     author: Final[str] = "Juan Rada-Vilela, PhD"
     author_email: Final[str] = "jcrada@fuzzylite.com"
-    company: Final[str] = "FuzzyLite Limited"
+    company: Final[str] = "FuzzyLite"
     website: Final[str] = "https://fuzzylite.com/"
+    copyright: Final[
+        str
+    ] = "Copyright (C) 2010-2024 FuzzyLite by Juan Rada-Vilela. All rights reserved."
 
     def __repr__(self) -> str:
         """Return code to construct the information in Python.
@@ -378,7 +381,7 @@ class Representation(reprlib.Repr):
         arguments = self.construction_arguments(
             x, fields=fields, positional=positional, cast_as=cast_as
         )
-        return f"{self.package_of((cast_as or x))}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
+        return f"{self.package_of(cast_as or x)}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
 
     def construction_arguments(  # noqa: D417 # Missing argument description in the docstring: `self`
         self,
