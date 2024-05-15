@@ -11,7 +11,7 @@ authors:
   - given-names: Juan
     family-names: Rada-Vilela
     email: jcrada@fuzzylite.com
-    affiliation: FuzzyLite Limited
+    affiliation: FuzzyLite
 repository-code: 'https://github.com/fuzzylite/pyfuzzylite'
 url: 'https://fuzzylite.com'
 abstract: >-

@@ -223,7 +223,7 @@ Or using `bibtex`:
 
 ***
 
-fuzzylite&reg; is a registered trademark of FuzzyLite Limited <br>
-jfuzzylite&trade; is a trademark of FuzzyLite Limited <br>
-pyfuzzylite&trade; is a trademark of FuzzyLite Limited <br>
-QtFuzzyLite&trade; is a trademark of FuzzyLite Limited <br>
+fuzzylite&reg; is a registered trademark of FuzzyLite <br>
+jfuzzylite&trade; is a trademark of FuzzyLite <br>
+pyfuzzylite&trade; is a trademark of FuzzyLite <br>
+QtFuzzyLite&trade; is a trademark of FuzzyLite <br>
