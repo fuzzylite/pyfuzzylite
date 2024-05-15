@@ -2758,8 +2758,8 @@ class Function(Term):
             element: Function.Element | None = None,
             variable: str = "",
             constant: float = nan,
-            right: Function.Node | None = None,
             left: Function.Node | None = None,
+            right: Function.Node | None = None,
         ) -> None:
             """Constructor.
 
@@ -2773,8 +2773,8 @@ class Function(Term):
             self.element = element
             self.variable = variable
             self.constant = constant
-            self.right = right
             self.left = left
+            self.right = right
 
         def __repr__(self) -> str:
             """Return the code to construct the node in Python.
@@ -2821,9 +2821,10 @@ class Function(Term):
                 if arity == 0:
                     result = self.element.method()
                 elif arity == 1:
-                    if not self.right:
-                        raise ValueError("expected a right node, but found none")
-                    result = self.element.method(self.right.evaluate(local_variables))
+                    if node := (self.left or self.right):
+                        result = self.element.method(node.evaluate(local_variables))
+                    else:
+                        raise ValueError("expected a node, but found none")
                 elif arity == 2:
                     if not self.right:
                         raise ValueError("expected a right node, but found none")
@@ -2898,7 +2899,10 @@ class Function(Term):
             if is_function:
                 result = node.value() + f" ( {' '.join(children)} )"
             else:  # is operator
-                result = f" {node.value()} ".join(children)
+                if len(children) == 1:
+                    result = f"{node.value()} {children[0]}"
+                else:
+                    result = f" {node.value()} ".join(children)
 
             return result
 

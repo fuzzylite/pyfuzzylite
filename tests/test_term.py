@@ -25,11 +25,11 @@ from collections.abc import Sequence
 from typing import Callable, NoReturn
 
 import numpy as np
-from numpy import inf, nan
 from typing_extensions import Self
 
 import fuzzylite as fl
-from fuzzylite import Scalar
+import fuzzylite.library
+from fuzzylite import Scalar, inf, nan
 from tests.assert_component import BaseAssert
 
 
@@ -82,10 +82,23 @@ class TermAssert(BaseAssert[fl.Term]):
         self.actual.configure(parameters)
         return self
 
-    def has_memberships(self, x_mf: dict[float, float], height: float = 1.0) -> Self:
+    def has_memberships(
+        self, x_mf: dict[float, float], heights: Sequence[float] | None = None
+    ) -> Self:
         """Assert the term's membership function produces $f(x{_keys}) = mf_{values}$."""
-        inputs = fl.scalar([x for x in x_mf])
-        expected = height * fl.scalar([mf for mf in x_mf.values()])
+        inputs = fl.scalar(list(x_mf.keys()))
+        if heights is None:
+            heights = [0.0, 0.25, 0.5, 0.75, 1.0]
+        for height in heights:
+            self.actual.height = height
+            outputs = height * fl.scalar(list(x_mf.values()))
+            self.has_membership(dict(zip(inputs, outputs)))
+        return self
+
+    def has_membership(self, x_mf: dict[float, float]) -> Self:
+        """Assert the term's membership function produces $f(x{_keys}) = mf_{values}$."""
+        inputs = fl.scalar(list(x_mf.keys()))
+        expected = fl.scalar(list(x_mf.values()))
         if isinstance(self.actual, fl.Linear):
             self.test.assertIsNotNone(self.actual.engine)
             # membership function of linear terms do not depend on parameter inputs,
@@ -212,7 +225,7 @@ class TestTerm(unittest.TestCase):
             "degree=1.0, implication=fl.AlgebraicProduct())"
         ).exports_fll(
             "term: _ Activated AlgebraicProduct(1.000,triangle)"
-        ).is_not_monotonic().has_memberships(
+        ).is_not_monotonic().has_membership(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
@@ -240,7 +253,7 @@ class TestTerm(unittest.TestCase):
             ),
         ).exports_fll(
             "term: _ Activated AlgebraicProduct(0.500,triangle)"
-        ).is_not_monotonic().has_memberships(
+        ).is_not_monotonic().has_membership(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
@@ -306,7 +319,8 @@ class TestTerm(unittest.TestCase):
                 nan: nan,
                 inf: 0.0,
                 -inf: 0.0,
-            }
+            },
+            heights=[1.0]
         )
 
         self.assertEqual(aggregated.activation_degree(low), 0.6)
@@ -407,24 +421,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Arc("arc")).configured_as(".50 -.50").exports_fll(
             "term: arc Arc 0.500 -0.500"
-        ).repr_is("fl.Arc('arc', 0.5, -0.5)").has_memberships(
-            {
-                -1.0: 1.0,
-                -0.5: 1.0,
-                -0.4: 0.995,
-                -0.25: 0.968,
-                -0.1: 0.916,
-                0.0: 0.866,
-                0.1: 0.8,
-                0.25: 0.661,
-                0.4: 0.436,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 1.0,
-            }
-        ).has_tsukamotos(
+        ).repr_is("fl.Arc('arc', 0.5, -0.5)").has_tsukamotos(
             {
                 0.0: 0.5,
                 0.25: 0.468,
@@ -442,24 +439,6 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Arc("arc")).configured_as("-.50 .50 .5").exports_fll(
             "term: arc Arc -0.500 0.500 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0,
-                -0.4: 0.436,
-                -0.25: 0.661,
-                -0.1: 0.8,
-                0.0: 0.866,
-                0.1: 0.916,
-                0.25: 0.968,
-                0.4: 0.995,
-                0.5: 1.0,
-                1.0: 1.0,
-                nan: nan,
-                inf: 1.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         ).has_tsukamotos(
             {
                 0.0: -0.5,
@@ -478,24 +457,6 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Arc("arc")).configured_as(".50 -.50 .5").exports_fll(
             "term: arc Arc 0.500 -0.500 0.500"
-        ).has_memberships(
-            {
-                -1.0: 1.0,
-                -0.5: 1.0,
-                -0.4: 0.995,
-                -0.25: 0.968,
-                -0.1: 0.916,
-                0.0: 0.866,
-                0.1: 0.8,
-                0.25: 0.661,
-                0.4: 0.436,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 1.0,
-            },
-            height=0.5,
         ).has_tsukamotos(
             {
                 0.0: 0.5,
@@ -541,24 +502,6 @@ class TestTerm(unittest.TestCase):
             "term: bell Bell 0.000 0.250 3.000 0.500"
         ).repr_is(
             "fl.Bell('bell', 0.0, 0.25, 3.0, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.015384615384615385,
-                -0.4: 0.05625177755617076,
-                -0.25: 0.5,
-                -0.1: 0.9959207087768499,
-                0.0: 1.0,
-                0.1: 0.9959207087768499,
-                0.25: 0.5,
-                0.4: 0.05625177755617076,
-                0.5: 0.015384615384615385,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_binary(self) -> None:
@@ -589,12 +532,12 @@ class TestTerm(unittest.TestCase):
             "term: binary Binary 0.000 -inf 0.500"
         ).repr_is("fl.Binary('binary', 0.0, -fl.inf, 0.5)").has_memberships(
             {
-                -1: 0.5,
-                -0.5: 0.5,
-                -0.4: 0.5,
-                -0.25: 0.5,
-                -0.1: 0.5,
-                0.0: 0.5,
+                -1: 1.0,
+                -0.5: 1.0,
+                -0.4: 1.0,
+                -0.25: 1.0,
+                -0.1: 1.0,
+                0.0: 1.0,
                 0.1: 0.0,
                 0.25: 0.0,
                 0.4: 0.0,
@@ -602,7 +545,7 @@ class TestTerm(unittest.TestCase):
                 1.0: 0.0,
                 nan: nan,
                 inf: 0.0,
-                -inf: 0.5,
+                -inf: 1.0,
             }
         )
 
@@ -686,7 +629,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Concave("concave")).configured_as("0.00 -0.500 0.5").repr_is(
             "fl.Concave('concave', 0.0, -0.5, 0.5)"
-        ).exports_fll("term: concave Concave 0.000 -0.500 0.500").has_memberships(
+        ).exports_fll("term: concave Concave 0.000 -0.500 0.500").has_membership(
             {
                 -1.0: 0.5,
                 -0.5: 0.5,
@@ -733,7 +676,7 @@ class TestTerm(unittest.TestCase):
             "term: constant Constant 0.500"
         ).repr_is(
             "fl.Constant('constant', 0.5)"
-        ).has_memberships(
+        ).has_membership(
             {
                 -1.0: 0.5,
                 -0.5: 0.5,
@@ -756,7 +699,7 @@ class TestTerm(unittest.TestCase):
             "fl.Constant('constant', -0.5)"
         ).exports_fll(
             "term: constant Constant -0.500"
-        ).has_memberships(
+        ).has_membership(
             {
                 -1.0: -0.5,
                 -0.5: -0.5,
@@ -806,24 +749,6 @@ class TestTerm(unittest.TestCase):
             "term: cosine Cosine 0.000 1.000 0.500"
         ).repr_is(
             "fl.Cosine('cosine', 0.0, 1.0, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0,
-                -0.4: 0.09549150281252633,
-                -0.25: 0.5,
-                -0.1: 0.9045084971874737,
-                0.0: 1.0,
-                0.1: 0.9045084971874737,
-                0.25: 0.5,
-                0.4: 0.09549150281252633,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_discrete(self) -> None:
@@ -877,24 +802,6 @@ class TestTerm(unittest.TestCase):
         ).exports_fll(
             "term: discrete Discrete "
             "-0.500 0.000 -0.250 1.000 0.000 0.500 0.250 1.000 0.500 0.000 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0,
-                -0.4: 0.3999999999999999,
-                -0.25: 1.0,
-                -0.1: 0.7,
-                0.0: 0.5,
-                0.1: 0.7,
-                0.25: 1.0,
-                0.4: 0.3999999999999999,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
         term = fl.Discrete()
@@ -999,24 +906,6 @@ class TestTerm(unittest.TestCase):
             "fl.Gaussian('gaussian', 0.0, 0.25, 0.5)"
         ).exports_fll(
             "term: gaussian Gaussian 0.000 0.250 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.1353352832366127,
-                -0.4: 0.2780373004531941,
-                -0.25: 0.6065306597126334,
-                -0.1: 0.9231163463866358,
-                0.0: 1.0,
-                0.1: 0.9231163463866358,
-                0.25: 0.6065306597126334,
-                0.4: 0.2780373004531941,
-                0.5: 0.1353352832366127,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_gaussian_product(self) -> None:
@@ -1056,24 +945,6 @@ class TestTerm(unittest.TestCase):
             "term: gaussian_product GaussianProduct 0.000 0.250 0.100 0.500 0.500"
         ).repr_is(
             "fl.GaussianProduct('gaussian_product', 0.0, 0.25, 0.1, 0.5, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.1353352832366127,
-                -0.4: 0.2780373004531941,
-                -0.25: 0.6065306597126334,
-                -0.1: 0.9231163463866358,
-                0.0: 1.0,
-                0.1: 1.0,
-                0.25: 0.9559974818331,
-                0.4: 0.835270211411272,
-                0.5: 0.7261490370736908,
-                1.0: 0.198,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_linear(self) -> None:
@@ -1103,7 +974,7 @@ class TestTerm(unittest.TestCase):
             "term: linear Linear 1.000 2.000 3.000"
         ).repr_is(
             "fl.Linear('linear', [1.0, 2.0, 3.0])"
-        ).has_memberships(
+        ).has_membership(
             {
                 -1.0: 1 * 0 + 2 * 1 + 3 * 2,  # = 8
                 -0.5: 8,
@@ -1123,7 +994,7 @@ class TestTerm(unittest.TestCase):
         )
         TermAssert(self, linear).configured_as("1 2 3 5").exports_fll(
             "term: linear Linear 1.000 2.000 3.000 5.000"
-        ).has_memberships(
+        ).has_membership(
             {
                 -1.0: 1 * 0 + 2 * 1 + 3 * 2 + 5,  # = 13
                 -0.5: 13,
@@ -1186,25 +1057,6 @@ class TestTerm(unittest.TestCase):
             "term: pi_shape PiShape -0.900 -0.100 0.100 1.000 0.500"
         ).repr_is(
             "fl.PiShape('pi_shape', -0.9, -0.1, 0.1, 1.0, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.5,
-                -0.4: 0.71875,
-                -0.25: 0.9296875,
-                -0.1: 1.0,
-                0.0: 1.0,
-                0.1: 1.0,
-                0.25: 0.9444444444444444,
-                0.4: 0.7777777777777777,
-                0.5: 0.6049382716049383,
-                0.95: 0.00617283950617285,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_ramp(self) -> None:
@@ -1315,25 +1167,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Ramp("ramp")).configured_as("0.250 -0.750 0.5").exports_fll(
             "term: ramp Ramp 0.250 -0.750 0.500"
-        ).repr_is("fl.Ramp('ramp', 0.25, -0.75, 0.5)").has_memberships(
-            {
-                -1.0: 1.0,
-                -0.5: 0.750,
-                -0.4: 0.650,
-                -0.25: 0.500,
-                -0.1: 0.350,
-                0.0: 0.250,
-                0.1: 0.150,
-                0.25: 0.0,
-                0.4: 0.0,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 1.0,
-            },
-            height=0.5,
-        ).has_tsukamotos(
+        ).repr_is("fl.Ramp('ramp', 0.25, -0.75, 0.5)").has_tsukamotos(
             {
                 0.0: 0.25,
                 0.125: 0,
@@ -1386,24 +1220,6 @@ class TestTerm(unittest.TestCase):
             "term: rectangle Rectangle -0.400 0.400 0.500"
         ).repr_is(
             "fl.Rectangle('rectangle', -0.4, 0.4, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0,
-                -0.4: 1.0,
-                -0.25: 1.0,
-                -0.1: 1.0,
-                0.0: 1.0,
-                0.1: 1.0,
-                0.25: 1.0,
-                0.4: 1.0,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_semiellipse(self) -> None:
@@ -1458,25 +1274,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.SemiEllipse("semiellipse")).configured_as("-0.5 0.5 0.5").exports_fll(
             "term: semiellipse SemiEllipse -0.500 0.500 0.500"
-        ).repr_is("fl.SemiEllipse('semiellipse', -0.5, 0.5, 0.5)").has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0,
-                -0.4: 0.6,
-                -0.25: 0.866,
-                -0.1: 0.979,
-                0.0: 1.0,
-                0.1: 0.979,
-                0.25: 0.866,
-                0.4: 0.6,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
-        )
+        ).repr_is("fl.SemiEllipse('semiellipse', -0.5, 0.5, 0.5)")
 
     def test_sigmoid(self) -> None:
         """Test the sigmoid term."""
@@ -1560,25 +1358,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.Sigmoid("sigmoid")).configured_as("0 10 .5").exports_fll(
             "term: sigmoid Sigmoid 0.000 10.000 0.500"
-        ).repr_is("fl.Sigmoid('sigmoid', 0.0, 10.0, 0.5)").has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.007,
-                -0.4: 0.018,
-                -0.25: 0.076,
-                -0.1: 0.269,
-                0.0: 0.5,
-                0.1: 0.731,
-                0.25: 0.924,
-                0.4: 0.982,
-                0.5: 0.993,
-                1.0: 0.999,
-                nan: nan,
-                inf: 1.0,
-                -inf: 0.0,
-            },
-            height=0.5,
-        ).has_tsukamotos(
+        ).repr_is("fl.Sigmoid('sigmoid', 0.0, 10.0, 0.5)").has_tsukamotos(
             {
                 0.0: -inf,
                 0.125: -0.11,
@@ -1633,24 +1413,6 @@ class TestTerm(unittest.TestCase):
             "fl.SigmoidDifference('sigmoid_difference', -0.25, 25.0, 50.0, 0.25, 0.5)"
         ).exports_fll(
             "term: sigmoid_difference SigmoidDifference -0.250 25.000 50.000 0.250 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0019267346633274238,
-                -0.4: 0.022977369910017923,
-                -0.25: 0.49999999998611205,
-                -0.1: 0.9770226049799834,
-                0.0: 0.9980695386973883,
-                0.1: 0.9992887851439739,
-                0.25: 0.49999627336071584,
-                0.4: 0.000552690994449101,
-                0.5: 3.7194451510957904e-06,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_sigmoid_product(self) -> None:
@@ -1690,24 +1452,6 @@ class TestTerm(unittest.TestCase):
             "fl.SigmoidProduct('sigmoid_product', -0.25, 20.0, -20.0, 0.25, 0.5)"
         ).exports_fll(
             "term: sigmoid_product SigmoidProduct -0.250 20.000 -20.000 0.250 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.006692848876926853,
-                -0.4: 0.04742576597971327,
-                -0.25: 0.4999773010656488,
-                -0.1: 0.9517062830264366,
-                0.0: 0.9866590924049252,
-                0.1: 0.9517062830264366,
-                0.25: 0.4999773010656488,
-                0.4: 0.04742576597971327,
-                0.5: 0.006692848876926853,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_spike(self) -> None:
@@ -1741,24 +1485,6 @@ class TestTerm(unittest.TestCase):
             "fl.Spike('spike', 0.0, 1.0, 0.5)"
         ).exports_fll(
             "term: spike Spike 0.000 1.000 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.006737946999085467,
-                -0.4: 0.01831563888873418,
-                -0.25: 0.0820849986238988,
-                -0.1: 0.36787944117144233,
-                0.0: 1.0,
-                0.1: 0.36787944117144233,
-                0.25: 0.0820849986238988,
-                0.4: 0.01831563888873418,
-                0.5: 0.006737946999085467,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
         )
 
     def test_s_shape(self) -> None:
@@ -1804,25 +1530,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.SShape("s_shape")).configured_as("-0.5 0.5 0.5").repr_is(
             "fl.SShape('s_shape', -0.5, 0.5, 0.5)"
-        ).exports_fll("term: s_shape SShape -0.500 0.500 0.500").has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.0,
-                -0.4: 0.02,
-                -0.25: 0.125,
-                -0.1: 0.32,
-                0.0: 0.5,
-                0.1: 0.68,
-                0.25: 0.875,
-                0.4: 0.98,
-                0.5: 1.0,
-                1.0: 1.0,
-                nan: nan,
-                inf: 1.0,
-                -inf: 0.0,
-            },
-            height=0.5,
-        ).has_tsukamotos(
+        ).exports_fll("term: s_shape SShape -0.500 0.500 0.500").has_tsukamotos(
             {
                 0.0: -0.5,
                 0.125: -0.146,
@@ -1871,35 +1579,16 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
+        )
+        TermAssert(self, fl.Trapezoid("trapezoid")).configured_as(
             "-0.400 -0.100 0.100 0.400 .5"
-        ).exports_fll(
-            "term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400 0.500"
-        ).repr_is(
+        ).exports_fll("term: trapezoid Trapezoid -0.400 -0.100 0.100 0.400 0.500").repr_is(
             "fl.Trapezoid('trapezoid', -0.4, -0.1, 0.1, 0.4, 0.5)"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.000,
-                -0.4: 0.000,
-                -0.25: 0.500,
-                -0.1: 1.000,
-                0.0: 1.000,
-                0.1: 1.000,
-                0.25: 0.500,
-                0.4: 0.000,
-                0.5: 0.000,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
-        ).configured_as(
+        )
+
+        TermAssert(self, fl.Trapezoid("trapezoid")).configured_as(
             "-0.400 -0.400 0.100 0.400"
-        ).exports_fll(
-            "term: trapezoid Trapezoid -0.400 -0.400 0.100 0.400"
-        ).has_memberships(
+        ).exports_fll("term: trapezoid Trapezoid -0.400 -0.400 0.100 0.400").has_memberships(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
@@ -1916,11 +1605,10 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
+        )
+        TermAssert(self, fl.Trapezoid("trapezoid")).configured_as(
             "-0.400 -0.100 0.400 0.400"
-        ).exports_fll(
-            "term: trapezoid Trapezoid -0.400 -0.100 0.400 0.400"
-        ).has_memberships(
+        ).exports_fll("term: trapezoid Trapezoid -0.400 -0.100 0.400 0.400").has_memberships(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
@@ -1937,11 +1625,10 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
+        )
+        TermAssert(self, fl.Trapezoid("trapezoid")).configured_as(
             "-inf -0.100 0.100 .4"
-        ).exports_fll(
-            "term: trapezoid Trapezoid -inf -0.100 0.100 0.400"
-        ).has_memberships(
+        ).exports_fll("term: trapezoid Trapezoid -inf -0.100 0.100 0.400").has_memberships(
             {
                 -1.0: 1.0,
                 -0.5: 1.000,
@@ -1958,28 +1645,26 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 1.0,
             }
-        ).configured_as(
+        )
+        TermAssert(self, fl.Trapezoid("trapezoid")).configured_as(
             "-.4 -0.100 0.100 inf .5"
-        ).exports_fll(
-            "term: trapezoid Trapezoid -0.400 -0.100 0.100 inf 0.500"
-        ).has_memberships(
+        ).exports_fll("term: trapezoid Trapezoid -0.400 -0.100 0.100 inf 0.500").has_membership(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
-                -0.25: 0.500,
-                -0.1: 1.000,
-                0.0: 1.000,
-                0.1: 1.000,
-                0.25: 1.000,
-                0.4: 1.000,
-                0.5: 1.000,
-                1.0: 1.0,
+                -0.25: 0.500 * 0.5,
+                -0.1: 1.000 * 0.5,
+                0.0: 1.000 * 0.5,
+                0.1: 1.000 * 0.5,
+                0.25: 1.000 * 0.5,
+                0.4: 1.000 * 0.5,
+                0.5: 1.000 * 0.5,
+                1.0: 1.0 * 0.5,
                 nan: nan,
-                inf: 1.0,
+                inf: 1.0 * 0.5,
                 -inf: 0.0,
             },
-            height=0.5,
         )
 
     def test_triangle(self) -> None:
@@ -2013,33 +1698,11 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
-            "-0.400 0.000 0.400 .5"
-        ).repr_is(
+        )
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-0.400 0.000 0.400 .5").repr_is(
             "fl.Triangle('triangle', -0.4, 0.0, 0.4, 0.5)"
-        ).exports_fll(
-            "term: triangle Triangle -0.400 0.000 0.400 0.500"
-        ).has_memberships(
-            {
-                -1.0: 0.0,
-                -0.5: 0.000,
-                -0.4: 0.000,
-                -0.25: 0.37500000000000006,
-                -0.1: 0.7500000000000001,
-                0.0: 1.000,
-                0.1: 0.7500000000000001,
-                0.25: 0.37500000000000006,
-                0.4: 0.000,
-                0.5: 0.000,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 0.0,
-            },
-            height=0.5,
-        ).configured_as(
-            "-0.500 0.000 0.500"
-        ).exports_fll(
+        ).exports_fll("term: triangle Triangle -0.400 0.000 0.400 0.500")
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-0.500 0.000 0.500").exports_fll(
             "term: triangle Triangle -0.500 0.000 0.500"
         ).has_memberships(
             {
@@ -2058,9 +1721,8 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
-            "-0.500 -0.500 0.500"
-        ).exports_fll(
+        )
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-0.500 -0.500 0.500").exports_fll(
             "term: triangle Triangle -0.500 -0.500 0.500"
         ).has_memberships(
             {
@@ -2079,9 +1741,8 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
-            "-0.500 0.500 0.500"
-        ).exports_fll(
+        )
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-0.500 0.500 0.500").exports_fll(
             "term: triangle Triangle -0.500 0.500 0.500"
         ).has_memberships(
             {
@@ -2099,9 +1760,8 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             }
-        ).configured_as(
-            "-inf 0.000 0.400"
-        ).exports_fll(
+        )
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-inf 0.000 0.400").exports_fll(
             "term: triangle Triangle -inf 0.000 0.400"
         ).has_memberships(
             {
@@ -2120,28 +1780,26 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 1.000,
             }
-        ).configured_as(
-            "-0.400 0.000 inf .5"
-        ).exports_fll(
+        )
+        TermAssert(self, fl.Triangle("triangle")).configured_as("-0.400 0.000 inf .5").exports_fll(
             "term: triangle Triangle -0.400 0.000 inf 0.500"
-        ).has_memberships(
+        ).has_membership(
             {
                 -1.0: 0.0,
                 -0.5: 0.000,
                 -0.4: 0.000,
-                -0.25: 0.375,
-                -0.1: 0.750,
-                0.0: 1.000,
-                0.1: 1.000,
-                0.25: 1.000,
-                0.4: 1.000,
-                0.5: 1.000,
-                1.0: 1.0,
+                -0.25: 0.375 * 0.5,
+                -0.1: 0.750 * 0.5,
+                0.0: 1.000 * 0.5,
+                0.1: 1.000 * 0.5,
+                0.25: 1.000 * 0.5,
+                0.4: 1.000 * 0.5,
+                0.5: 1.000 * 0.5,
+                1.0: 1.0 * 0.5,
                 nan: nan,
-                inf: 1.000,
+                inf: 1.000 * 0.5,
                 -inf: 0.0,
             },
-            height=0.5,
         )
 
     def test_z_shape(self) -> None:
@@ -2187,25 +1845,7 @@ class TestTerm(unittest.TestCase):
 
         TermAssert(self, fl.ZShape("z_shape")).configured_as("-0.5 0.5 0.5").repr_is(
             "fl.ZShape('z_shape', -0.5, 0.5, 0.5)"
-        ).exports_fll("term: z_shape ZShape -0.500 0.500 0.500").has_memberships(
-            {
-                -1.0: 1.0,
-                -0.5: 1.0,
-                -0.4: 0.98,
-                -0.25: 0.875,
-                -0.1: 0.68,
-                0.0: 0.5,
-                0.1: 0.32,
-                0.25: 0.125,
-                0.4: 0.02,
-                0.5: 0.0,
-                1.0: 0.0,
-                nan: nan,
-                inf: 0.0,
-                -inf: 1.0,
-            },
-            height=0.5,
-        ).has_tsukamotos(
+        ).exports_fll("term: z_shape ZShape -0.500 0.500 0.500").has_tsukamotos(
             {
                 0.0: 0.5,
                 0.125: 0.146,
@@ -2227,31 +1867,23 @@ class TestTerm(unittest.TestCase):
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
 
-        default_float = fl.settings.float_type
-        fl.settings.float_type = np.float64
-        np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
-        try:
-            TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_memberships(
+        with fl.settings.context(float_type=np.float64):
+            np.seterr(divide="ignore")  # ignore "errors", (e.g., division by zero)
+            TermAssert(self, fl.Function.create("dbz", "0.0/x")).has_membership(
                 {0.0: fl.nan, fl.inf: 0.0, -fl.inf: -0.0, fl.nan: fl.nan}
             )
 
-            TermAssert(self, fl.Function.create("dbz", "inf/x")).has_memberships(
+            TermAssert(self, fl.Function.create("dbz", "inf/x")).has_membership(
                 {0.0: fl.inf, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan}
             )
 
-            TermAssert(self, fl.Function.create("dbz", "~inf/x")).has_memberships(
+            TermAssert(self, fl.Function.create("dbz", "~inf/x")).has_membership(
                 {0.0: -fl.inf, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan}
             )
 
-            TermAssert(self, fl.Function.create("dbz", "nan/x")).has_memberships(
+            TermAssert(self, fl.Function.create("dbz", "nan/x")).has_membership(
                 {0.0: fl.nan, fl.inf: fl.nan, -fl.inf: fl.nan, -fl.nan: fl.nan}
             )
-        except Exception:
-            fl.settings.float_type = default_float
-            raise
-
-        fl.settings.float_type = default_float
-        self.assertEqual(fl.settings.float_type, default_float)
 
     def test_some_function(self) -> None:
         """Test function results."""
@@ -2345,7 +1977,8 @@ class TestFunction(unittest.TestCase):
                 nan: nan,
                 inf: inf,
                 -inf: -inf,
-            }
+            },
+            heights=[1.0],
         )
 
         input_a = fl.InputVariable("i_A")
@@ -2377,7 +2010,8 @@ class TestFunction(unittest.TestCase):
                 nan: nan,
                 inf: inf,
                 -inf: -inf,
-            }
+            },
+            heights=[1.0],
         )
 
         function_a.variables = {"x": nan}
@@ -2497,7 +2131,7 @@ class TestFunction(unittest.TestCase):
 
         FunctionNodeAssert(
             self, fl.Function.Node(element=functions.copy("cos"), right=None)
-        ).fails_to_evaluate(ValueError, re.escape("expected a right node, but found none"))
+        ).fails_to_evaluate(ValueError, re.escape("expected a node, but found none"))
 
         FunctionNodeAssert(
             self,
@@ -2603,8 +2237,22 @@ class TestFunction(unittest.TestCase):
 
         FunctionNodeAssert(self, fl.Function.Node(variable="x")).value_is("x")
         FunctionNodeAssert(self, fl.Function.Node(variable="x", constant=1.0)).value_is("x")
-
         FunctionNodeAssert(self, fl.Function.Node(constant=1)).value_is("1")
+        negate = fuzzylite.library.settings.factory_manager.function.copy("~")
+        (
+            FunctionNodeAssert(self, fl.Function.Node(negate, right=fl.Function.Node(constant=5.0)))
+            .prefix_is("~ 5.000")
+            .infix_is("~ 5.000")
+            .postfix_is("5.000 ~")
+            .evaluates_to(-5.000)
+        )
+        (
+            FunctionNodeAssert(self, fl.Function.Node(negate, left=fl.Function.Node(constant=5.0)))
+            .prefix_is("~ 5.000")
+            .infix_is("~ 5.000")
+            .postfix_is("5.000 ~")
+            .evaluates_to(-5.000)
+        )
 
     def test_function_format_infix(self) -> None:
         """Test formatting infix equations."""
