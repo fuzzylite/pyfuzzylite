@@ -387,11 +387,12 @@ class PythonExporter(Exporter):
         Returns:
             code formatted if `black` is installed, otherwise the code without format
         """
-        kwargs = {"line_length": 100} | kwargs
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode(**kwargs))
+            kwargs |= dict(line_length=100, target_versions={black.mode.TargetVersion.PY39})
+            formatted = black.format_str(code, mode=black.Mode(**kwargs))
+            return formatted
         except ModuleNotFoundError:
             settings.logger.error("expected `black` module to be installed, but could not be found")
         except ValueError:  # black.parsing.InvalidInput
@@ -415,7 +416,6 @@ class PythonExporter(Exporter):
         if isinstance(instance, Engine):
             code += f"""\
 class {Op.pascal_case(instance.name)}:
-
     def __init__(self) -> None:
         self.engine = {repr(instance)}
 """
