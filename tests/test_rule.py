@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -127,8 +128,9 @@ class AssertAntecedent:
 
     def has_activation_degrees(
         self,
-        inputs: dict[fl.InputVariable, list[float]]
-        | dict[fl.OutputVariable, list[list[fl.Activated]]],
+        inputs: (
+            dict[fl.InputVariable, list[float]] | dict[fl.OutputVariable, list[list[fl.Activated]]]
+        ),
         rules: dict[str, list[float]],
         conjunction: fl.TNorm | None = None,
         disjunction: fl.SNorm | None = None,

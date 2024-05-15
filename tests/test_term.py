@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 import copy
@@ -320,7 +321,7 @@ class TestTerm(unittest.TestCase):
                 inf: 0.0,
                 -inf: 0.0,
             },
-            heights=[1.0]
+            heights=[1.0],
         )
 
         self.assertEqual(aggregated.activation_degree(low), 0.6)

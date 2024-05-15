@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 __all__ = ["Variable", "InputVariable", "OutputVariable"]
@@ -81,12 +82,10 @@ class Variable:
     #         ) from None
 
     @overload
-    def __getitem__(self, item: int | str) -> Term:
-        ...
+    def __getitem__(self, item: int | str) -> Term: ...
 
     @overload
-    def __getitem__(self, item: slice) -> list[Term]:
-        ...
+    def __getitem__(self, item: slice) -> list[Term]: ...
 
     def __getitem__(self, item: int | str | slice) -> Term | list[Term]:
         """Allow indexing terms by index, name, or slices (eg, `engine["power"]["low"]`).

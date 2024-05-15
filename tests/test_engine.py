@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -601,7 +602,7 @@ RuleBlock:
 
         # Non-existing component by name
         with self.assertRaises(AttributeError) as error:
-            engine.Variable  # type: ignore
+            engine.Variable  # type: ignore # noqa: B018
         self.assertEqual("'Engine' object has no attribute 'Variable'", str(error.exception))
 
         # engine's members are retrieved first

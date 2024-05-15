@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 __all__ = ["Operation", "Op"]
@@ -412,8 +413,7 @@ class Operation:
         return_type: Literal["module"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[ModuleType]:
-        ...
+    ) -> Iterable[ModuleType]: ...
 
     @staticmethod
     @overload
@@ -421,8 +421,7 @@ class Operation:
         return_type: Literal["engine"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[Engine]:
-        ...
+    ) -> Iterable[Engine]: ...
 
     @staticmethod
     @overload
@@ -430,8 +429,7 @@ class Operation:
         return_type: Literal["dataset"] | Literal["fld"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[ScalarArray]:
-        ...
+    ) -> Iterable[ScalarArray]: ...
 
     @staticmethod
     @overload
@@ -439,8 +437,7 @@ class Operation:
         return_type: Literal["language"] | Literal["fll"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[str]:
-        ...
+    ) -> Iterable[str]: ...
 
     @staticmethod
     @overload
@@ -448,18 +445,19 @@ class Operation:
         return_type: Literal["files"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[Path]:
-        ...
+    ) -> Iterable[Path]: ...
 
     @staticmethod
     def glob_examples(
-        return_type: Literal["module"]
-        | Literal["engine"]
-        | Literal["dataset"]
-        | Literal["fld"]
-        | Literal["language"]
-        | Literal["fll"]
-        | Literal["files"] = "engine",
+        return_type: (
+            Literal["module"]
+            | Literal["engine"]
+            | Literal["dataset"]
+            | Literal["fld"]
+            | Literal["language"]
+            | Literal["fll"]
+            | Literal["files"]
+        ) = "engine",
         module: ModuleType | None = None,
         recursive: bool = True,
     ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:

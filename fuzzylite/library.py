@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 __all__ = [
@@ -75,13 +76,11 @@ def to_float(x: Any, /) -> float:
 
 
 @overload
-def scalar(x: Sequence[Any] | Array[Any], /) -> ScalarArray:
-    ...
+def scalar(x: Sequence[Any] | Array[Any], /) -> ScalarArray: ...
 
 
 @overload
-def scalar(x: Any, /) -> Scalar:
-    ...
+def scalar(x: Any, /) -> Scalar: ...
 
 
 def scalar(x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any) -> ScalarArray | Scalar:
@@ -254,9 +253,9 @@ class Information:
     author_email: Final[str] = "jcrada@fuzzylite.com"
     company: Final[str] = "FuzzyLite"
     website: Final[str] = "https://fuzzylite.com/"
-    copyright: Final[
-        str
-    ] = "Copyright (C) 2010-2024 FuzzyLite by Juan Rada-Vilela. All rights reserved."
+    copyright: Final[str] = (
+        "Copyright (C) 2010-2024 FuzzyLite by Juan Rada-Vilela. All rights reserved."
+    )
 
     def __repr__(self) -> str:
         """Return code to construct the information in Python.

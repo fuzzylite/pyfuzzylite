@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 __all__ = ["Importer", "FllImporter"]
@@ -383,20 +384,16 @@ class FllImporter(Importer):
         return result
 
     @overload
-    def component(self, cls: type[Activation], fll: str) -> Activation | None:
-        ...
+    def component(self, cls: type[Activation], fll: str) -> Activation | None: ...
 
     @overload
-    def component(self, cls: type[Defuzzifier], fll: str) -> Defuzzifier | None:
-        ...
+    def component(self, cls: type[Defuzzifier], fll: str) -> Defuzzifier | None: ...
 
     @overload
-    def component(self, cls: type[SNorm], fll: str) -> SNorm | None:
-        ...
+    def component(self, cls: type[SNorm], fll: str) -> SNorm | None: ...
 
     @overload
-    def component(self, cls: type[TNorm], fll: str) -> TNorm | None:
-        ...
+    def component(self, cls: type[TNorm], fll: str) -> TNorm | None: ...
 
     def component(
         self,

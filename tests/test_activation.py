@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -165,9 +166,9 @@ class TestActivation(unittest.TestCase):
         expected_c = [True, False] * 4
 
         ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-        ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
-            rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
+            rule="a", activation_degree=fl.array(expected_a, dtype=np.float64)
+        ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float64)).given(
+            rule="c", activation_degree=fl.array(expected_c, dtype=np.float64)
         ).activate(
             fl.General()
         ).then_triggers(
@@ -184,9 +185,9 @@ class TestActivation(unittest.TestCase):
         ]
         for activation in unsupported_activations:
             ActivationAssert(self, fl.RuleBlock()).given(
-                rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-            ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
-                rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
+                rule="a", activation_degree=fl.array(expected_a, dtype=np.float64)
+            ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float64)).given(
+                rule="c", activation_degree=fl.array(expected_c, dtype=np.float64)
             ).activate_fails(
                 activation
             )

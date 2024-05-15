@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 __all__ = [
@@ -1193,10 +1194,12 @@ class Discrete(Term):
     @staticmethod
     def create(
         name: str,
-        xy: str
-        | Sequence[Floatable]
-        | tuple[Sequence[Floatable], Sequence[Floatable]]
-        | dict[Floatable, Floatable],
+        xy: (
+            str
+            | Sequence[Floatable]
+            | tuple[Sequence[Floatable], Sequence[Floatable]]
+            | dict[Floatable, Floatable]
+        ),
         height: float = 1.0,
     ) -> Discrete:
         """Create a discrete term from the parameters.
@@ -3147,9 +3150,8 @@ class Function(Term):
                 settings.logger.debug(f"queue: {queue}")
                 settings.logger.debug(f"stack: {stack}")
 
-            element: Function.Element | None = (
-                factory.objects[token] if token in factory.objects else None
-            )
+            element: Function.Element | None = factory.objects.get(token)
+
             is_operand = not element and token not in {"(", ")", ","}
 
             if is_operand:
@@ -3223,9 +3225,7 @@ class Function(Term):
         factory = settings.factory_manager.function
 
         for token in postfix.split():
-            element: Function.Element | None = (
-                factory.objects[token] if token in factory.objects else None
-            )
+            element: Function.Element | None = factory.objects.get(token)
             is_operand = not element and token not in {"(", ")", ","}
 
             if element:

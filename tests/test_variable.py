@@ -15,6 +15,7 @@ pyfuzzylite is a trademark of FuzzyLite Limited.
 
 fuzzylite is a registered trademark of FuzzyLite Limited.
 """
+
 from __future__ import annotations
 
 import math
@@ -404,13 +405,15 @@ class TestOutputVariable(unittest.TestCase):
             minimum=minimum,
             maximum=maximum,
             default_value=default_value,
-            terms=terms
-            if terms is not None
-            else [
-                fl.Triangle("low", -1.0, -1.0, 0.0),
-                fl.Triangle("medium", -0.5, 0.0, 0.5),
-                fl.Triangle("high", 0.0, 1.0, 1.0),
-            ],
+            terms=(
+                terms
+                if terms is not None
+                else [
+                    fl.Triangle("low", -1.0, -1.0, 0.0),
+                    fl.Triangle("medium", -0.5, 0.0, 0.5),
+                    fl.Triangle("high", 0.0, 1.0, 1.0),
+                ]
+            ),
         )
 
     def test_constructor(self) -> None:
