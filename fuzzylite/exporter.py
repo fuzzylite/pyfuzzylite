@@ -390,7 +390,7 @@ class PythonExporter(Exporter):
         try:
             import black
 
-            kwargs |= dict(line_length=100, target_versions={black.mode.TargetVersion.PY39})
+            kwargs = dict(line_length=100) | kwargs
             formatted = black.format_str(code, mode=black.Mode(**kwargs))
             return formatted
         except ModuleNotFoundError:

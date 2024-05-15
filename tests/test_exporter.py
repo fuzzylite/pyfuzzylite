@@ -431,6 +431,28 @@ def create() -> {return_type}:
         finally:
             sys.modules["black"] = black  # type: ignore
 
+    def test_black_format_options(self) -> None:
+        """Test overriding black format options."""
+        engine = mamdani.simple_dimmer.SimpleDimmer().engine
+        obtained = fl.PythonExporter().format(repr(engine), line_length=1000)
+        expected = (
+            'fl.Engine(name="SimpleDimmer", '
+            'input_variables=[fl.InputVariable(name="Ambient", minimum=0.0, maximum=1.0, '
+            'lock_range=False, terms=[fl.Triangle("DARK", 0.0, 0.25, 0.5), '
+            'fl.Triangle("MEDIUM", 0.25, 0.5, 0.75), fl.Triangle("BRIGHT", 0.5, 0.75, '
+            '1.0)])], output_variables=[fl.OutputVariable(name="Power", minimum=0.0, '
+            "maximum=1.0, lock_range=False, lock_previous=False, default_value=fl.nan, "
+            "aggregation=fl.Maximum(), defuzzifier=fl.Centroid(), "
+            'terms=[fl.Triangle("LOW", 0.0, 0.25, 0.5), fl.Triangle("MEDIUM", 0.25, 0.5, '
+            '0.75), fl.Triangle("HIGH", 0.5, 0.75, 1.0)])], '
+            'rule_blocks=[fl.RuleBlock(name="", conjunction=None, disjunction=None, '
+            'implication=fl.Minimum(), activation=fl.General(), rules=[fl.Rule.create("if '
+            'Ambient is DARK then Power is HIGH"), fl.Rule.create("if Ambient is MEDIUM '
+            'then Power is MEDIUM"), fl.Rule.create("if Ambient is BRIGHT then Power is '
+            'LOW")])])\n'
+        )
+        self.assertEqual(expected, obtained)
+
     def test_none_export(self) -> None:
         """Tests export of None values, like in Norm, Activation, or Defuzzifier."""
         self.assert_that(None, "None\n")
