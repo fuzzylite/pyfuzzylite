@@ -7,6 +7,7 @@
 - `Function`: Unary functions can be defined in either left or right nodes
 - Upgraded dependencies: `nox`, `poetry`, `mypy`, `pyright`, `black`, `ruff`
 - Improved tests
+- Shortened preamble in every file
 
 # Version 8.0.2
 
