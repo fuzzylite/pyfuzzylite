@@ -48,8 +48,8 @@ classifiers = [
 
 [[tool.poetry_bumpversion.replacements]]
 files = ["README.md", "docs/index.md"]
-search = "# pyfuzzylite {current_version}"
-replace = "# pyfuzzylite {new_version}"
+search = "<h1>pyfuzzylite {current_version}</h1>"
+replace = "<h1>pyfuzzylite {new_version}</h1>"
 
 [[tool.poetry.packages]]
 include = "fuzzylite"

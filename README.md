@@ -1,25 +1,23 @@
-# pyfuzzylite 8.0.2
+<div align="center">
+<img src="/fuzzylite.png" alt="fuzzylite" width="10%">
+<h1>pyfuzzylite 8.0.2</h1>
+<h2>A Fuzzy Logic Control Library in Python</h2>
+<h3>by <a href="https://fuzzylite.com/about"><b>Juan Rada-Vilela, PhD</b></a></h3>
 
-<img src="https://fuzzylite.github.io/pyfuzzylite/image/fuzzylite.svg" align="left" alt="fuzzylite">
-
-## A Fuzzy Logic Control Library in Python
-
-by [**Juan Rada-Vilela, PhD**](https://fuzzylite.com/about)
-
-<br>
-<br>
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
 [![Coverage Status](
 https://coveralls.io/repos/github/fuzzylite/pyfuzzylite/badge.svg?branch=main)](
-https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)
+https://coveralls.io/github/fuzzylite/pyfuzzylite?branch=main)  
 [![Build](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml/badge.svg)](
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)
 [![Test](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/test.yml/badge.svg)](
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/test.yml)
 [![Publish](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml/badge.svg)](
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml)
+
+</div>
 
 ## <a name="fuzzylite">FuzzyLite</a>
 
@@ -224,6 +222,5 @@ Or using `bibtex`:
 ***
 
 fuzzylite&reg; is a registered trademark of FuzzyLite <br>
-jfuzzylite&trade; is a trademark of FuzzyLite <br>
-pyfuzzylite&trade; is a trademark of FuzzyLite <br>
-QtFuzzyLite&trade; is a trademark of FuzzyLite <br>
+jfuzzylite&trade;, pyfuzzylite&trade; and QtFuzzyLite&trade; are trademarks of FuzzyLite
+
