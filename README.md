@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" markdown=1>
 <img src="/fuzzylite.png" alt="fuzzylite" width="10%">
 <h1>pyfuzzylite 8.0.3</h1>
 <h2>A Fuzzy Logic Control Library in Python</h2>
