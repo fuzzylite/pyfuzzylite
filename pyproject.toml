@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyfuzzylite"
-version = "8.0.2"
+version = "8.0.3"
 description = "a fuzzy logic control library in Python"
 license = "Proprietary"
 readme = "README.md"
@@ -250,3 +250,5 @@ plugins.MD046.enabled = false
 plugins.MD033.enabled = false
 # MD034: Bare URL used (no-bare-urls)
 plugins.MD034.enabled = false
+# MD041: First line in file should be a top level heading
+plugins.MD041.enabled = false

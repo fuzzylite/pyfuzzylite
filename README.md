@@ -1,9 +1,8 @@
 <div align="center">
 <img src="/fuzzylite.png" alt="fuzzylite" width="10%">
-<h1>pyfuzzylite 8.0.2</h1>
+<h1>pyfuzzylite 8.0.3</h1>
 <h2>A Fuzzy Logic Control Library in Python</h2>
 <h3>by <a href="https://fuzzylite.com/about"><b>Juan Rada-Vilela, PhD</b></a></h3>
-
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/license/gpl-3-0/)
 [![License: Paid](https://img.shields.io/badge/License-proprietary-blue)](mailto:sales@fuzzylite.com)
@@ -223,4 +222,3 @@ Or using `bibtex`:
 
 fuzzylite&reg; is a registered trademark of FuzzyLite <br>
 jfuzzylite&trade;, pyfuzzylite&trade; and QtFuzzyLite&trade; are trademarks of FuzzyLite
-
