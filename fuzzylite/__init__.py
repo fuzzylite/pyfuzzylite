@@ -1,21 +1,15 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
-from . import examples  # noqa
+
+from . import examples  # noqa: F401
 from .activation import *
 from .benchmark import *
 from .defuzzifier import *
@@ -35,3 +29,6 @@ from .variable import *
 __name__ = information.name
 __doc__ = information.description
 __version__ = information.version
+__author__ = information.author
+__copyright__ = information.copyright
+__license__ = information.license

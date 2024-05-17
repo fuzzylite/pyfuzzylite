@@ -4,8 +4,8 @@ site_author: Juan Rada-Vilela, PhD
 #site_url: https://fuzzylite.com
 repo_name: "fuzzylite/pyfuzzylite"
 repo_url: "https://github.com/fuzzylite/pyfuzzylite"
-edit_uri: "edit/development/docs/"
-copyright: Copyright&copy; 2010-<script>document.write(new Date().getFullYear())</script> FuzzyLite Limited. All rights reserved.
+#edit_uri: "edit/development/docs/"
+copyright: Copyright&copy; 2010-<script>document.write(new Date().getFullYear())</script> FuzzyLite by Juan Rada-Vilela. All rights reserved.
 
 watch: [ README.md, fuzzylite/, docs/ ]
 

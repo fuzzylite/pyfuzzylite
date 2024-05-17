@@ -1,19 +1,12 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
 
 import nox
@@ -33,24 +26,42 @@ def check(session: nox.Session) -> None:
 @nox.session(python=False)
 def format(session: nox.Session) -> None:
     """Run code formatting."""
-    files = PYTHON_FILES
+    formatters = {
+        "ruff": format_ruff,
+        "black": format_black,
+    }
+    posargs = list(session.posargs)
+    if not posargs:
+        posargs = list(formatters.keys())
+    for formatter in posargs:
+        formatters[formatter](session)
 
+
+@nox.session(python=False)
+def format_black(session: nox.Session) -> None:
+    """Run code formatting with black."""
+    files = PYTHON_FILES
     session.run(*"black --version".split(), external=True)
     session.run("black", *files, external=True)
 
+
+@nox.session(python=False)
+def format_ruff(session: nox.Session) -> None:
+    """Run code formatting with ruff."""
+    files = PYTHON_FILES
     session.run(*"ruff --version".split(), external=True)
-    session.run(*"ruff --fix".split(), *files, external=True)
+    session.run(*"ruff format".split(), *files, external=True)
 
 
 @nox.session(python=False)
 def lint(session: nox.Session) -> None:
     """Run static code analysis and checks format is correct."""
     linters = {
-        "black": "lint_black",
-        "ruff": "lint_ruff",
-        "pyright": "lint_pyright",
-        "mypy": "lint_mypy",
-        "markdown": "lint_markdown",
+        "ruff": lint_ruff,
+        "black": lint_black,
+        "pyright": lint_pyright,
+        "mypy": lint_mypy,
+        "markdown": lint_markdown,
     }
     # Case 1: posargs is empty, run all linters
     # Case 2: posargs is not empty, run only the specified linters
@@ -58,7 +69,7 @@ def lint(session: nox.Session) -> None:
     if not posargs:
         posargs = list(linters.keys())
     for linter in posargs:
-        session.notify(linters[linter])
+        linters[linter](session)
 
 
 @nox.session(python=False)
@@ -73,8 +84,8 @@ def lint_black(session: nox.Session) -> None:
 def lint_ruff(session: nox.Session) -> None:
     """Run ruff linter."""
     files = PYTHON_FILES
-    session.run(*"ruff check".split(), *files, external=True)
     session.run(*"ruff --version".split(), external=True)
+    session.run(*"ruff check".split(), *files, external=True)
 
 
 @nox.session(python=False)

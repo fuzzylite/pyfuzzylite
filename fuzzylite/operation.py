@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 __all__ = ["Operation", "Op"]
@@ -412,8 +406,7 @@ class Operation:
         return_type: Literal["module"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[ModuleType]:
-        ...
+    ) -> Iterable[ModuleType]: ...
 
     @staticmethod
     @overload
@@ -421,8 +414,7 @@ class Operation:
         return_type: Literal["engine"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[Engine]:
-        ...
+    ) -> Iterable[Engine]: ...
 
     @staticmethod
     @overload
@@ -430,8 +422,7 @@ class Operation:
         return_type: Literal["dataset"] | Literal["fld"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[ScalarArray]:
-        ...
+    ) -> Iterable[ScalarArray]: ...
 
     @staticmethod
     @overload
@@ -439,8 +430,7 @@ class Operation:
         return_type: Literal["language"] | Literal["fll"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[str]:
-        ...
+    ) -> Iterable[str]: ...
 
     @staticmethod
     @overload
@@ -448,18 +438,19 @@ class Operation:
         return_type: Literal["files"],
         module: ModuleType | None = None,
         recursive: bool = True,
-    ) -> Iterable[Path]:
-        ...
+    ) -> Iterable[Path]: ...
 
     @staticmethod
     def glob_examples(
-        return_type: Literal["module"]
-        | Literal["engine"]
-        | Literal["dataset"]
-        | Literal["fld"]
-        | Literal["language"]
-        | Literal["fll"]
-        | Literal["files"] = "engine",
+        return_type: (
+            Literal["module"]
+            | Literal["engine"]
+            | Literal["dataset"]
+            | Literal["fld"]
+            | Literal["language"]
+            | Literal["fll"]
+            | Literal["files"]
+        ) = "engine",
         module: ModuleType | None = None,
         recursive: bool = True,
     ) -> Iterable[ModuleType | Engine | ScalarArray | str | Path]:

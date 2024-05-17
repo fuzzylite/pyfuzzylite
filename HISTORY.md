@@ -1,3 +1,14 @@
+# Version 8.0.3
+
+- Renamed `requirements.txt` to `requirements-dev.txt`
+- Added `__author__`, `__copyright__` and `__license__` to `fuzzylite.__init__.py` and `fuzzylite.library.information`
+- Removed `Limited` in `FuzzyLite Limited` everywhere, eg, `fuzzylite.information.company = "FuzzyLite"`
+- `RuleBlock`: Added `RuleBlock.rule(int)` to get rule by index
+- `Function`: Unary functions can be defined in either left or right nodes
+- Upgraded dependencies: `nox`, `poetry`, `mypy`, `pyright`, `black`, `ruff`
+- Improved tests
+- Shortened preamble in every file
+
 # Version 8.0.2
 
 ### Bug fixes

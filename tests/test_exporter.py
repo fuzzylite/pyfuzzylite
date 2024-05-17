@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 import io
@@ -429,6 +423,28 @@ def create() -> {return_type}:
                 )
         finally:
             sys.modules["black"] = black  # type: ignore
+
+    def test_black_format_options(self) -> None:
+        """Test overriding black format options."""
+        engine = mamdani.simple_dimmer.SimpleDimmer().engine
+        obtained = fl.PythonExporter().format(repr(engine), line_length=1000)
+        expected = (
+            'fl.Engine(name="SimpleDimmer", '
+            'input_variables=[fl.InputVariable(name="Ambient", minimum=0.0, maximum=1.0, '
+            'lock_range=False, terms=[fl.Triangle("DARK", 0.0, 0.25, 0.5), '
+            'fl.Triangle("MEDIUM", 0.25, 0.5, 0.75), fl.Triangle("BRIGHT", 0.5, 0.75, '
+            '1.0)])], output_variables=[fl.OutputVariable(name="Power", minimum=0.0, '
+            "maximum=1.0, lock_range=False, lock_previous=False, default_value=fl.nan, "
+            "aggregation=fl.Maximum(), defuzzifier=fl.Centroid(), "
+            'terms=[fl.Triangle("LOW", 0.0, 0.25, 0.5), fl.Triangle("MEDIUM", 0.25, 0.5, '
+            '0.75), fl.Triangle("HIGH", 0.5, 0.75, 1.0)])], '
+            'rule_blocks=[fl.RuleBlock(name="", conjunction=None, disjunction=None, '
+            'implication=fl.Minimum(), activation=fl.General(), rules=[fl.Rule.create("if '
+            'Ambient is DARK then Power is HIGH"), fl.Rule.create("if Ambient is MEDIUM '
+            'then Power is MEDIUM"), fl.Rule.create("if Ambient is BRIGHT then Power is '
+            'LOW")])])\n'
+        )
+        self.assertEqual(expected, obtained)
 
     def test_none_export(self) -> None:
         """Tests export of None values, like in Norm, Activation, or Defuzzifier."""

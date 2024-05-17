@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 __all__ = [
@@ -75,13 +69,11 @@ def to_float(x: Any, /) -> float:
 
 
 @overload
-def scalar(x: Sequence[Any] | Array[Any], /) -> ScalarArray:
-    ...
+def scalar(x: Sequence[Any] | Array[Any], /) -> ScalarArray: ...
 
 
 @overload
-def scalar(x: Any, /) -> Scalar:
-    ...
+def scalar(x: Any, /) -> Scalar: ...
 
 
 def scalar(x: Sequence[Any] | Array[Any] | Any, /, **kwargs: Any) -> ScalarArray | Scalar:
@@ -252,8 +244,11 @@ class Information:
     license: Final[str] = "FuzzyLite License"
     author: Final[str] = "Juan Rada-Vilela, PhD"
     author_email: Final[str] = "jcrada@fuzzylite.com"
-    company: Final[str] = "FuzzyLite Limited"
+    company: Final[str] = "FuzzyLite"
     website: Final[str] = "https://fuzzylite.com/"
+    copyright: Final[str] = (
+        "Copyright (C) 2010-2024 FuzzyLite by Juan Rada-Vilela. All rights reserved."
+    )
 
     def __repr__(self) -> str:
         """Return code to construct the information in Python.
@@ -272,7 +267,7 @@ class Information:
         Returns:
             version of the library
         """
-        __version__ = "8.0.2"
+        __version__ = "8.0.3"
         return __version__
 
 
@@ -378,7 +373,7 @@ class Representation(reprlib.Repr):
         arguments = self.construction_arguments(
             x, fields=fields, positional=positional, cast_as=cast_as
         )
-        return f"{self.package_of((cast_as or x))}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
+        return f"{self.package_of(cast_as or x)}{(cast_as or x.__class__).__name__}({', '.join(arguments)})"
 
     def construction_arguments(  # noqa: D417 # Missing argument description in the docstring: `self`
         self,

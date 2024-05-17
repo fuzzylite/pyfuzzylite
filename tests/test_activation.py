@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 import unittest
@@ -165,9 +159,9 @@ class TestActivation(unittest.TestCase):
         expected_c = [True, False] * 4
 
         ActivationAssert(self, fl.RuleBlock()).given(
-            rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-        ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
-            rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
+            rule="a", activation_degree=fl.array(expected_a, dtype=np.float64)
+        ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float64)).given(
+            rule="c", activation_degree=fl.array(expected_c, dtype=np.float64)
         ).activate(
             fl.General()
         ).then_triggers(
@@ -184,9 +178,9 @@ class TestActivation(unittest.TestCase):
         ]
         for activation in unsupported_activations:
             ActivationAssert(self, fl.RuleBlock()).given(
-                rule="a", activation_degree=fl.array(expected_a, dtype=np.float_)
-            ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float_)).given(
-                rule="c", activation_degree=fl.array(expected_c, dtype=np.float_)
+                rule="a", activation_degree=fl.array(expected_a, dtype=np.float64)
+            ).given(rule="b", activation_degree=fl.array(expected_b, dtype=np.float64)).given(
+                rule="c", activation_degree=fl.array(expected_c, dtype=np.float64)
             ).activate_fails(
                 activation
             )

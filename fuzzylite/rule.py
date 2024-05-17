@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 __all__ = [
@@ -329,7 +323,7 @@ class Antecedent:
         token: str | None = None
         for token in postfix.split():
             if state & s_variable:
-                variable = variables.get(token, None)
+                variable = variables.get(token)
                 if variable:
                     proposition = Proposition(variable)
                     stack.append(proposition)
@@ -354,7 +348,7 @@ class Antecedent:
 
             if state & s_term:
                 terms = {t.name: t for t in proposition.variable.terms}  # type: ignore
-                term = terms.get(token, None)
+                term = terms.get(token)
                 if term:
                     proposition.term = term  # type: ignore
                     state = s_variable | s_and_or
@@ -609,7 +603,7 @@ class Consequent:
         token: str | None = None
         for token in self.text.split():
             if state & s_variable:
-                variable = output_variables.get(token, None)
+                variable = output_variables.get(token)
                 if variable:
                     proposition = Proposition(variable)
                     conclusions.append(proposition)
@@ -630,7 +624,7 @@ class Consequent:
 
             if state & s_term:
                 terms = {t.name: t for t in proposition.variable.terms}  # type: ignore
-                term = terms.get(token, None)
+                term = terms.get(token)
                 if term:
                     proposition.term = term  # type: ignore
                     state = s_and | s_with
@@ -960,12 +954,10 @@ class RuleBlock:
         return iter(self.rules)
 
     @overload
-    def __getitem__(self, item: int) -> Rule:
-        ...
+    def __getitem__(self, item: int) -> Rule: ...
 
     @overload
-    def __getitem__(self, item: slice) -> list[Rule]:
-        ...
+    def __getitem__(self, item: slice) -> list[Rule]: ...
 
     def __getitem__(self, item: int | slice) -> Rule | list[Rule]:
         """Allow indexing rules in rule block (eg, `rule_block[0]`).
@@ -1044,3 +1036,14 @@ class RuleBlock:
         """
         self.unload_rules()
         self.load_rules(engine)
+
+    def rule(self, index: int, /) -> Rule:
+        """Get the rule at the index.
+
+        Args:
+            index: index of the rule.
+
+        Returns:
+            rule at the index
+        """
+        return self.rules[index]

@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 __all__ = [
@@ -1193,10 +1187,12 @@ class Discrete(Term):
     @staticmethod
     def create(
         name: str,
-        xy: str
-        | Sequence[Floatable]
-        | tuple[Sequence[Floatable], Sequence[Floatable]]
-        | dict[Floatable, Floatable],
+        xy: (
+            str
+            | Sequence[Floatable]
+            | tuple[Sequence[Floatable], Sequence[Floatable]]
+            | dict[Floatable, Floatable]
+        ),
         height: float = 1.0,
     ) -> Discrete:
         """Create a discrete term from the parameters.
@@ -2758,8 +2754,8 @@ class Function(Term):
             element: Function.Element | None = None,
             variable: str = "",
             constant: float = nan,
-            right: Function.Node | None = None,
             left: Function.Node | None = None,
+            right: Function.Node | None = None,
         ) -> None:
             """Constructor.
 
@@ -2773,8 +2769,8 @@ class Function(Term):
             self.element = element
             self.variable = variable
             self.constant = constant
-            self.right = right
             self.left = left
+            self.right = right
 
         def __repr__(self) -> str:
             """Return the code to construct the node in Python.
@@ -2821,9 +2817,10 @@ class Function(Term):
                 if arity == 0:
                     result = self.element.method()
                 elif arity == 1:
-                    if not self.right:
-                        raise ValueError("expected a right node, but found none")
-                    result = self.element.method(self.right.evaluate(local_variables))
+                    if node := (self.left or self.right):
+                        result = self.element.method(node.evaluate(local_variables))
+                    else:
+                        raise ValueError("expected a node, but found none")
                 elif arity == 2:
                     if not self.right:
                         raise ValueError("expected a right node, but found none")
@@ -2898,7 +2895,10 @@ class Function(Term):
             if is_function:
                 result = node.value() + f" ( {' '.join(children)} )"
             else:  # is operator
-                result = f" {node.value()} ".join(children)
+                if len(children) == 1:
+                    result = f"{node.value()} {children[0]}"
+                else:
+                    result = f" {node.value()} ".join(children)
 
             return result
 
@@ -3143,9 +3143,8 @@ class Function(Term):
                 settings.logger.debug(f"queue: {queue}")
                 settings.logger.debug(f"stack: {stack}")
 
-            element: Function.Element | None = (
-                factory.objects[token] if token in factory.objects else None
-            )
+            element: Function.Element | None = factory.objects.get(token)
+
             is_operand = not element and token not in {"(", ")", ","}
 
             if is_operand:
@@ -3219,9 +3218,7 @@ class Function(Term):
         factory = settings.factory_manager.function
 
         for token in postfix.split():
-            element: Function.Element | None = (
-                factory.objects[token] if token in factory.objects else None
-            )
+            element: Function.Element | None = factory.objects.get(token)
             is_operand = not element and token not in {"(", ")", ","}
 
             if element:

@@ -1,20 +1,14 @@
-"""pyfuzzylite (TM), a fuzzy logic control library in Python.
-
-Copyright (C) 2010-2023 FuzzyLite Limited. All rights reserved.
-Author: Juan Rada-Vilela, PhD <jcrada@fuzzylite.com>.
+"""pyfuzzylite: a fuzzy logic control library in Python.
 
 This file is part of pyfuzzylite.
 
-pyfuzzylite is free software: you can redistribute it and/or modify it under
-the terms of the FuzzyLite License included with the software.
+Repository: https://github.com/fuzzylite/pyfuzzylite/
 
-You should have received a copy of the FuzzyLite License along with
-pyfuzzylite. If not, see <https://github.com/fuzzylite/pyfuzzylite/>.
+License: FuzzyLite License
 
-pyfuzzylite is a trademark of FuzzyLite Limited.
-
-fuzzylite is a registered trademark of FuzzyLite Limited.
+Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 """
+
 from __future__ import annotations
 
 __all__ = ["Exporter", "FllExporter", "PythonExporter", "FldExporter"]
@@ -386,11 +380,12 @@ class PythonExporter(Exporter):
         Returns:
             code formatted if `black` is installed, otherwise the code without format
         """
-        kwargs = {"line_length": 100} | kwargs
         try:
             import black
 
-            return black.format_str(code, mode=black.Mode(**kwargs))
+            kwargs = dict(line_length=100) | kwargs
+            formatted = black.format_str(code, mode=black.Mode(**kwargs))
+            return formatted
         except ModuleNotFoundError:
             settings.logger.error("expected `black` module to be installed, but could not be found")
         except ValueError:  # black.parsing.InvalidInput
@@ -414,7 +409,6 @@ class PythonExporter(Exporter):
         if isinstance(instance, Engine):
             code += f"""\
 class {Op.pascal_case(instance.name)}:
-
     def __init__(self) -> None:
         self.engine = {repr(instance)}
 """
