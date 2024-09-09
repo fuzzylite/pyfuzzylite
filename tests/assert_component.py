@@ -15,9 +15,9 @@ import unittest
 from typing import Any, Generic, TypeVar
 
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
+from fuzzylite.types import Self
 
 T = TypeVar("T")
 
@@ -37,11 +37,11 @@ class BaseAssert(Generic[T]):
         self.test.maxDiff = None  # show all differences
 
     def repr_is(
-        self,
-        representation: str,
-        /,
-        with_alias: str | None = None,
-        validate: bool = True,
+            self,
+            representation: str,
+            /,
+            with_alias: str | None = None,
+            validate: bool = True,
     ) -> Self:
         """Asserts that the obtained object's representation is equal to the expected representation."""
 

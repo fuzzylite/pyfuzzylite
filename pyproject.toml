@@ -109,6 +109,7 @@ select = [
     "ISC", # flake8-implicit-str-concat
     "N", # pep8 naming
     "NPY", # NumPy-specific rules
+    "NPY201", # NumPy 2.0 specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib

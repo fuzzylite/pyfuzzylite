@@ -16,10 +16,10 @@ from typing import cast
 
 import black
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
 from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer
+from fuzzylite.types import Self
 from tests.assert_component import BaseAssert
 
 
@@ -27,10 +27,10 @@ class EngineAssert(BaseAssert[fl.Engine]):
     """Engine assert."""
 
     def has_type(
-        self,
-        expected: fl.Engine.Type | set[fl.Engine.Type],
-        /,
-        reasons: list[str] | None = None,
+            self,
+            expected: fl.Engine.Type | set[fl.Engine.Type],
+            /,
+            reasons: list[str] | None = None,
     ) -> Self:
         """Asserts the engine has the expected type."""
         obtained_reasons: list[str] = []
