@@ -79,9 +79,9 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
     """Function Factory assert."""
 
     def contains_exactly(
-            self,
-            elements: set[str],
-            element_type: fl.Function.Element.Type | None = None,
+        self,
+        elements: set[str],
+        element_type: fl.Function.Element.Type | None = None,
     ) -> Self:
         """Assert the factory contains only the expected elements."""
         if element_type == fl.Function.Element.Type.Operator:
@@ -129,7 +129,7 @@ class FunctionFactoryAssert(BaseAssert[fl.FunctionFactory]):
             elements[a].precedence,
             elements[b].precedence,
             msg=f"expected precedence of {a} ({elements[a].precedence}) > {b} ({elements[b].precedence}), "
-                f"but got {elements[a].precedence} <= {elements[b].precedence}",
+            f"but got {elements[a].precedence} <= {elements[b].precedence}",
         )
         return self
 

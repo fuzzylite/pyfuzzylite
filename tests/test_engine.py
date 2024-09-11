@@ -27,10 +27,10 @@ class EngineAssert(BaseAssert[fl.Engine]):
     """Engine assert."""
 
     def has_type(
-            self,
-            expected: fl.Engine.Type | set[fl.Engine.Type],
-            /,
-            reasons: list[str] | None = None,
+        self,
+        expected: fl.Engine.Type | set[fl.Engine.Type],
+        /,
+        reasons: list[str] | None = None,
     ) -> Self:
         """Asserts the engine has the expected type."""
         obtained_reasons: list[str] = []

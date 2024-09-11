@@ -381,14 +381,14 @@ class TestOutputVariable(unittest.TestCase):
     """Test the output variable."""
 
     def output_variable(
-            self,
-            enabled: bool = True,
-            name: str = "name",
-            description: str = "description",
-            minimum: float = -1.0,
-            maximum: float = 1.0,
-            default_value: float = fl.nan,
-            terms: list[fl.Term] | None = None,
+        self,
+        enabled: bool = True,
+        name: str = "name",
+        description: str = "description",
+        minimum: float = -1.0,
+        maximum: float = 1.0,
+        default_value: float = fl.nan,
+        terms: list[fl.Term] | None = None,
     ) -> fl.OutputVariable:
         """Create an output variable."""
         return fl.OutputVariable(
