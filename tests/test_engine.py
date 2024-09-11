@@ -16,10 +16,10 @@ from typing import cast
 
 import black
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
 from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer
+from fuzzylite.types import Self
 from tests.assert_component import BaseAssert
 
 

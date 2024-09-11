@@ -19,11 +19,11 @@ from collections.abc import Sequence
 from typing import Callable, NoReturn
 
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
 import fuzzylite.library
 from fuzzylite import Scalar, inf, nan
+from fuzzylite.types import Self
 from tests.assert_component import BaseAssert
 
 

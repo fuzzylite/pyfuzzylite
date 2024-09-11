@@ -76,7 +76,6 @@ pyright = "^1.1.362" # Static code analysis
 pytest = "^7.3.1" # Test driven development
 pytest-benchmark = "^4.0.0" # Local benchmarks
 pytest-codspeed = "^2.0.1" # Cloud benchmarks
-ruff = "^0.4.4" # Code formatting
 
 # Packages below are ground truth for version management. See requirements-dev.txt.
 # poetry = "~=1.8.3" # Build management
@@ -109,6 +108,7 @@ select = [
     "ISC", # flake8-implicit-str-concat
     "N", # pep8 naming
     "NPY", # NumPy-specific rules
+    "NPY201", # NumPy 2.0 specific rules
     # "PD", # pandas-vet
     "PLW", # warning
     # "PTH", # flake8-use-pathlib

@@ -15,9 +15,9 @@ import unittest
 from typing import Any, Generic, TypeVar
 
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
+from fuzzylite.types import Self
 
 T = TypeVar("T")
 

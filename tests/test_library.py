@@ -62,7 +62,7 @@ term Activated Aggregated Arc Bell Binary Concave Constant Cosine Discrete Funct
 GaussianProduct Linear PiShape Ramp Rectangle SShape SemiEllipse Sigmoid SigmoidDifference
 SigmoidProduct Spike Term Trapezoid Triangle ZShape
 
-types Array Scalar ScalarArray
+types Array Scalar ScalarArray Self
 
 variable InputVariable OutputVariable Variable
 """

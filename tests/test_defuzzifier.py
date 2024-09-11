@@ -16,10 +16,9 @@ import unittest
 from typing import Any
 
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
-from fuzzylite.types import Scalar
+from fuzzylite.types import Scalar, Self
 from tests.assert_component import BaseAssert
 
 

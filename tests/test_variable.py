@@ -18,9 +18,9 @@ from typing import Any, TypeVar
 from unittest.mock import MagicMock
 
 import numpy as np
-from typing_extensions import Self
 
 import fuzzylite as fl
+from fuzzylite.types import Self
 from tests.assert_component import BaseAssert
 
 T_Variable = TypeVar("T_Variable", bound=fl.Variable)

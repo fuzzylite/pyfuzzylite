@@ -27,7 +27,7 @@ def check(session: nox.Session) -> None:
 def format(session: nox.Session) -> None:
     """Run code formatting."""
     formatters = {
-        "ruff": format_ruff,
+        # "ruff": format_ruff,
         "black": format_black,
     }
     posargs = list(session.posargs)
@@ -57,7 +57,7 @@ def format_ruff(session: nox.Session) -> None:
 def lint(session: nox.Session) -> None:
     """Run static code analysis and checks format is correct."""
     linters = {
-        "ruff": lint_ruff,
+        # "ruff": lint_ruff,
         "black": lint_black,
         "pyright": lint_pyright,
         "mypy": lint_mypy,
