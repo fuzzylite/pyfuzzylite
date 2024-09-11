@@ -47,7 +47,7 @@ jobs:
         uses: coverallsapp/github-action@v2
 
       - name: Benchmark
-        uses: CodSpeedHQ/action@v2
+        uses: CodSpeedHQ/action@v3
         with:
           token: ${{ secrets.CODSPEED_TOKEN }}
           run: nox -e benchmark -- codspeed
