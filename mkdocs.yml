@@ -76,7 +76,8 @@ plugins:
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
       # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-search/#+search.separator
-  - autorefs  # Cross-links to headings
+  - autorefs: # Cross-links to headings
+      resolve_closest: true
   - mkdocstrings:
       default_handler: python
       handlers:
