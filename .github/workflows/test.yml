@@ -3,6 +3,8 @@ name: Test
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ build/* ]
   schedule: # monthly, first day
     - cron: 0 0 1 * *
 
