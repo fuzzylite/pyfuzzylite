@@ -70,7 +70,7 @@ variable InputVariable OutputVariable Variable
 
     def test_library_vars(self) -> None:
         """Test the library variables."""
-        __version__ = "8.0.3"
+        __version__ = "8.0.4"
         self.assertTrue("fuzzylite" == fl.__name__ == fl.information.name)
         self.assertTrue(__version__ == fl.__version__ == fl.information.version)
         self.assertTrue(

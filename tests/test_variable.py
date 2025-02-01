@@ -11,12 +11,12 @@ Copyright: FuzzyLite by Juan Rada-Vilela. All rights reserved.
 
 from __future__ import annotations
 
-import math
 import unittest
 from collections.abc import Sequence
 from typing import Any, TypeVar
 from unittest.mock import MagicMock
 
+import math
 import numpy as np
 
 import fuzzylite as fl
