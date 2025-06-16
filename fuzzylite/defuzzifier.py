@@ -518,7 +518,7 @@ class WeightedAverage(WeightedDefuzzifier):
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output)
 
-        weighted_sum = scalar(0.0 if fuzzy_output.terms else nan)
+        weighted_sum = scalar(0.0)
         weights = scalar(0.0)
         membership = (
             Term.tsukamoto.__name__
@@ -580,7 +580,7 @@ class WeightedSum(WeightedDefuzzifier):
         if self.type == WeightedDefuzzifier.Type.Automatic:
             this_type = self.infer_type(fuzzy_output)
 
-        weighted_sum = scalar(0.0 if fuzzy_output.terms else nan)
+        weighted_sum = scalar(0.0)
         weights = scalar(0.0)
         membership = (
             Term.tsukamoto.__name__
