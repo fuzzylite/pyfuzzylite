@@ -532,7 +532,8 @@ class OutputVariable(Variable):
 
         # Applying default values
         if not np.isnan(self.default_value):
-            value[np.isnan(value)] = self.default_value  # type: ignore
+            value = np.atleast_1d(value)
+            value[np.isnan(value)] = self.default_value
 
         # Committing the value
         self.value = value
