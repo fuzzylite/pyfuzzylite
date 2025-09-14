@@ -23,46 +23,37 @@ from fuzzylite.examples import mamdani, takagi_sugeno, tsukamoto
 class AssertIntegration:
     """Asserts integration of a Mamdani or Takagi-Sugeno system with a defuzzifier."""
 
-    def __init__(self, engine: fl.Engine, vectorize: bool = True) -> None:
+    def __init__(self, engine: fl.Engine) -> None:
         """Constructor.
 
         @param engine is the engine to test on.
         @param vectorize is whether to test vectorization.
         """
         self.engine = copy.deepcopy(engine)
-        self.vectorize = vectorize
 
-    def assert_that(self, defuzzifier: fl.Defuzzifier, input_expected: dict[float, float]) -> None:
+    def assert_that(
+        self,
+        defuzzifier: fl.Defuzzifier,
+        input_expected: dict[float, float] | list[tuple[float, float]],
+    ) -> None:
         """Asserts integration of a Mamdani or Takagi-Sugeno system with a defuzzifier."""
         for output in self.engine.output_variables:
             output.defuzzifier = defuzzifier
+        if isinstance(input_expected, dict):
+            input_expected = list(input_expected.items())
+        inputs = fl.array([x[0] for x in input_expected])
+        expected_outputs = fl.array([x[1] for x in input_expected])
 
-        self.engine.restart()
-        for input, expected_output in input_expected.items():
-            self.engine.input_variables[0].value = input
-            self.engine.process()
-            obtained = self.engine.output_variables[0].value
-            np.testing.assert_allclose(
-                obtained,
-                expected_output,
-                err_msg=f"{fl.Op.class_name(defuzzifier)}({input}) = {obtained}, but expected {expected_output}",
-                atol=fl.settings.atol,
-                rtol=fl.settings.rtol,
-            )
-        if self.vectorize:
-            self.engine.restart()
-            inputs = fl.array([x for x in input_expected])
-            expected_outputs = fl.array([x for x in input_expected.values()])
-            self.engine.input_variables[0].value = inputs
-            self.engine.process()
-            obtained = self.engine.output_variables[0].value
-            np.testing.assert_allclose(
-                obtained,
-                expected_outputs,
-                err_msg=f"{fl.Op.class_name(defuzzifier)}([{inputs}]) = {obtained}, but expected {expected_outputs}",
-                atol=fl.settings.atol,
-                rtol=fl.settings.rtol,
-            )
+        self.engine.input_variables[0].value = inputs
+        self.engine.process()
+        obtained = self.engine.output_variables[0].value
+        np.testing.assert_allclose(
+            obtained,
+            expected_outputs,
+            err_msg=f"{fl.Op.class_name(defuzzifier)}([{inputs}]) = {obtained}, but expected {expected_outputs}",
+            atol=fl.settings.atol,
+            rtol=fl.settings.rtol,
+        )
 
 
 class TestMamdani(unittest.TestCase):
@@ -82,6 +73,46 @@ class TestMamdani(unittest.TestCase):
                 0.675: 0.304,
                 0.75: 0.25,
             },
+        )
+
+    def test_simple_mamdani_bisector_integration_with_locking(self) -> None:
+        """Test a simple integration with Bisector."""
+        engine = mamdani.simple_dimmer.SimpleDimmer().engine
+        for output_variable in engine.output_variables:
+            output_variable.lock_previous = True
+            output_variable.default_value = 0.2468
+            output_variable.value = np.array([1.234, 9.876])
+
+        AssertIntegration(engine).assert_that(
+            fl.Bisector(),
+            [
+                # replace first nans with last value
+                (0.0, 9.876),  # (0.0, fl.nan),
+                (1.0, 9.876),  # (1.0, fl.nan),
+                (0.25, 0.75),
+                (0.375, 0.625),
+                (0.5, 0.5),
+                # replace nans with previous values
+                (0.0, 0.5),  # (0.0, fl.nan),
+                (1.0, 0.5),  # (1.0, fl.nan),
+            ],
+        )
+
+        engine.restart()
+
+        AssertIntegration(engine).assert_that(
+            fl.Bisector(),
+            [
+                # replace first nans default value
+                (0.0, 0.2468),  # 0.0: fl.nan,
+                (1.0, 0.2468),  # 1.0: fl.nan,
+                (0.25, 0.75),
+                (0.375, 0.625),
+                (0.5, 0.5),
+                # replace nans with previous values
+                (0.0, 0.5),  # (0.0, fl.nan),
+                (1.0, 0.5),  # (1.0, fl.nan),
+            ],
         )
 
     def test_simple_mamdani_centroid_integration(self) -> None:
@@ -166,6 +197,46 @@ class TestWeightedDefuzzifier(unittest.TestCase):
                 0.675: 0.325,
                 0.75: 0.25,
             },
+        )
+
+    def test_simple_takagisugeno_avg_integration_locking_previous(self) -> None:
+        """Test a simple integration with WeightedAverage."""
+        engine = takagi_sugeno.simple_dimmer.SimpleDimmer().engine
+        for output_variable in engine.output_variables:
+            output_variable.lock_previous = True
+            output_variable.default_value = 0.2468
+            output_variable.value = np.array([1.234, 9.876])
+
+        AssertIntegration(engine).assert_that(
+            fl.WeightedAverage(),
+            [
+                # replace first nans with last value
+                (0.0, 9.876),  # 0.0: fl.nan,
+                (1.0, 9.876),  # 1.0: fl.nan,
+                (0.25, 0.75),
+                (0.375, 0.625),
+                (0.5, 0.5),
+                # replace nans with previous values
+                (0.0, 0.5),
+                (1.0, 0.5),
+            ],
+        )
+
+        engine.restart()
+
+        AssertIntegration(engine).assert_that(
+            fl.WeightedAverage(),
+            [
+                # replace first nans with default value
+                (0.0, 0.2468),  # 0.0: fl.nan,
+                (1.0, 0.2468),  # 1.0: fl.nan,
+                (0.25, 0.75),
+                (0.375, 0.625),
+                (0.5, 0.5),
+                # replace nans with previous values
+                (0.0, 0.5),
+                (1.0, 0.5),
+            ],
         )
 
     def test_simple_takagisugeno_sum_integration(self) -> None:
