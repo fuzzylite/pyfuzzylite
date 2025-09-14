@@ -515,7 +515,7 @@ class OutputVariable(Variable):
                 f"expected a defuzzifier in output variable '{self.name}', but found None"
             )
         # value at t+1
-        value = self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum)
+        value = np.atleast_1d(self.defuzzifier.defuzzify(self.fuzzy, self.minimum, self.maximum))
 
         # previous value is the last element of the value at t
         self.previous_value = np.take(self.value, -1).astype(float)
@@ -532,7 +532,6 @@ class OutputVariable(Variable):
 
         # Applying default values
         if not np.isnan(self.default_value):
-            value = np.atleast_1d(value)
             value[np.isnan(value)] = self.default_value
 
         # Committing the value
