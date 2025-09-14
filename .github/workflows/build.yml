@@ -50,6 +50,8 @@ jobs:
 
       - name: Coverage
         uses: coverallsapp/github-action@v2
+        with:
+          fail-on-error: false
 
       - name: Benchmark
         uses: CodSpeedHQ/action@v3
