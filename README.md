@@ -15,7 +15,7 @@ https://github.com/fuzzylite/pyfuzzylite/actions/workflows/build.yml)
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/test.yml)
 [![Publish](https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml/badge.svg)](
 https://github.com/fuzzylite/pyfuzzylite/actions/workflows/publish.yml)  
-[![Python Versions](https://img.shields.io/badge/python-3.9–3.13-blue.svg)](https://www.python.org/downloads/)
+[![Python Versions](https://img.shields.io/badge/python-3.9–3.14-blue.svg)](https://www.python.org/downloads/)
 
 </div>
 
