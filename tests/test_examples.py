@@ -16,37 +16,14 @@ import logging
 import pathlib
 import unittest
 from pathlib import Path
+from typing import Final
+
+import pytest
 
 logger = logging.getLogger()
 
-
-class TestExamples(unittest.TestCase):
-    """Test the examples."""
-
-    def test_imports(self) -> None:
-        """Tests the examples can be imported."""
-        from fuzzylite import examples  # noqa
-        from fuzzylite.examples import hybrid, mamdani, takagi_sugeno  # noqa
-        from fuzzylite.examples.mamdani import simple_dimmer  # noqa
-        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
-
-    def test_absolute_imports(self) -> None:
-        """Tests the examples can be imported with absolute imports."""
-        import fuzzylite  # noqa
-        import fuzzylite.examples  # noqa
-        import fuzzylite.examples.mamdani  # noqa
-        import fuzzylite.examples.mamdani.simple_dimmer  # noqa
-        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
-
-    def test_examples(self) -> None:
-        """Test all the examples are included and can be imported."""
-        import fuzzylite as fl
-
-        examples = pathlib.Path(*fl.examples.__path__)
-        self.assertTrue(examples.exists() and examples.is_dir())
-
-        expected = set(
-            """\
+EXAMPLES: Final = (
+    """\
 fuzzylite.examples.hybrid.obstacle_avoidance
 fuzzylite.examples.hybrid.tipper
 fuzzylite.examples.mamdani.all_terms
@@ -107,39 +84,68 @@ fuzzylite.examples.terms.spike
 fuzzylite.examples.terms.trapezoid
 fuzzylite.examples.terms.triangle
 fuzzylite.examples.terms.zs_shape
-fuzzylite.examples.tsukamoto.tsukamoto
-""".split()
-        )
+fuzzylite.examples.tsukamoto.tsukamoto""".split()
+)
+
+
+class TestExamples(unittest.TestCase):
+    """Test the examples."""
+
+    def test_imports(self) -> None:
+        """Tests the examples can be imported."""
+        from fuzzylite import examples  # noqa
+        from fuzzylite.examples import hybrid, mamdani, takagi_sugeno  # noqa
+        from fuzzylite.examples.mamdani import simple_dimmer  # noqa
+        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
+
+    def test_absolute_imports(self) -> None:
+        """Tests the examples can be imported with absolute imports."""
+        import fuzzylite  # noqa
+        import fuzzylite.examples  # noqa
+        import fuzzylite.examples.mamdani  # noqa
+        import fuzzylite.examples.mamdani.simple_dimmer  # noqa
+        from fuzzylite.examples.mamdani.simple_dimmer import SimpleDimmer  # noqa
+
+    def test_examples(self) -> None:
+        """Test all the examples are included and can be imported."""
+        import fuzzylite as fl
+
+        examples = pathlib.Path(*fl.examples.__path__)
+        self.assertTrue(examples.exists() and examples.is_dir())
+
+        expected = EXAMPLES
 
         obtained = {module for module in fl.Op.glob_examples("module")}
-        self.assertSetEqual(expected, {module.__name__ for module in obtained})
+        self.assertSetEqual(set(expected), {module.__name__ for module in obtained})
 
         engines = [engine for engine in fl.Op.glob_examples("engine")]
         self.assertEqual(len(engines), len(obtained))
 
-    def test_examples_remain_the_same(self) -> None:
-        """Test that all the examples remain the same when exported in Python, FLL and FLD."""
-        import fuzzylite as fl
 
-        examples = set(fl.Op.glob_examples("module"))
-        self.assertTrue(bool(examples), msg="examples not found")
+@pytest.mark.parametrize("example", EXAMPLES)
+def test_examples_remain_the_same(example: str) -> None:
+    """Test that all the examples remain the same when exported in Python, FLL and FLD."""
+    import fuzzylite as fl
 
-        for example_module in examples:
-            example_class, *_ = inspect.getmembers(example_module, predicate=inspect.isclass)
-            engine = example_class[1]().engine
+    import importlib
 
-            expected_python = Path(str(example_module.__file__)).read_text()
-            obtained_python = fl.PythonExporter(formatted=True, encapsulated=True).to_string(engine)
-            self.assertEqual(expected_python, obtained_python, msg=example_module.__name__)
+    example_module = importlib.import_module(example)
 
-            expected_fll = Path(str(example_module.__file__)).with_suffix(".fll").read_text()
-            obtained_fll = fl.FllExporter().to_string(engine)
-            self.assertEqual(expected_fll, obtained_fll, msg=example_module.__name__)
+    example_class, *_ = inspect.getmembers(example_module, predicate=inspect.isclass)
+    engine = example_class[1]().engine
 
-            expected_fld = Path(str(example_module.__file__)).with_suffix(".fld").read_text()
-            with fl.settings.context(decimals=9):
-                obtained_fld = fl.FldExporter().to_string(engine)
-            self.assertEqual(expected_fld, obtained_fld, msg=example_module.__name__)
+    expected_python = Path(str(example_module.__file__)).read_text()
+    obtained_python = fl.PythonExporter(formatted=True, encapsulated=True).to_string(engine)
+    assert obtained_python == expected_python
+
+    expected_fll = Path(str(example_module.__file__)).with_suffix(".fll").read_text()
+    obtained_fll = fl.FllExporter().to_string(engine)
+    assert obtained_fll == expected_fll
+
+    expected_fld = Path(str(example_module.__file__)).with_suffix(".fld").read_text()
+    with fl.settings.context(decimals=9):
+        obtained_fld = fl.FldExporter().to_string(engine)
+    assert obtained_fld == expected_fld
 
 
 if __name__ == "__main__":
