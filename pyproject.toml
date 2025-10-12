@@ -60,22 +60,22 @@ Documentation = "https://fuzzylite.github.io/pyfuzzylite/"
 "Bug Tracker" = "https://github.com/fuzzylite/pyfuzzylite/issues"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9"
 numpy = "^1.20" # Numeric manipulation and vectorisation
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2" # Code formatting
-coverage = "^7.2.3" # Code coverage
-mkdocs-material = "^9.1.21" # Documentation with material theme for mkdocs
-mkdocstrings = {extras = ["python"], version = "^0.26.1"}
-mkdocstrings-python = "^1.11.1"
-mypy = "^1.10.0" # Static code analysis
-# poetry-bumpversion = "^0.3.0" # Version management; manual installation to avoid modifying poetry
-pymarkdownlnt = "^0.9.12" # Markdown linter
-pyright = "^1.1.362" # Static code analysis
-pytest = "^7.3.1" # Test driven development
-pytest-benchmark = "^4.0.0" # Local benchmarks
-pytest-codspeed = "^2.0.1" # Cloud benchmarks
+coverage = ">=7.2.3" # Code coverage
+mkdocs-material = ">=9.1.21" # Documentation with material theme for mkdocs
+mkdocstrings = { extras = ["python"], version = ">=0.26.1" }
+mkdocstrings-python = ">=1.11.1"
+mypy = ">=1.10.0" # Static code analysis
+# poetry-bumpversion = ">=0.3.0" # Version management; manual installation to avoid modifying poetry
+pymarkdownlnt = ">=0.9.12" # Markdown linter
+pyright = ">=1.1.362,<1.1.400" # Static code analysis
+pytest = ">=7.3.1" # Test driven development
+pytest-benchmark = ">=4.0.0" # Local benchmarks
+pytest-codspeed = ">=2.0.1" # Cloud benchmarks
 
 
 [tool.black]
