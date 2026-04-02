@@ -15,9 +15,8 @@ import inspect
 from types import ModuleType
 from typing import Any, Callable
 
-from pytest_benchmark.fixture import BenchmarkFixture
-
 import fuzzylite as fl
+from pytest_benchmark.fixture import BenchmarkFixture
 
 
 def generate_tests(package: ModuleType) -> str:
@@ -77,7 +76,7 @@ class PytestBenchmark(fl.Benchmark):
         self.rows = rows
         self.shuffle = shuffle
         self.prepare()
-        benchmark.pedantic(
+        benchmark.pedantic(  # type: ignore[no-untyped-call]
             self.run,
             rounds=rounds,
             iterations=iterations,
