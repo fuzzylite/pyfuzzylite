@@ -17,7 +17,7 @@ import pathlib
 import unittest
 from pathlib import Path
 from typing import Final
-
+import fuzzylite as fl
 import pytest
 
 logger = logging.getLogger()
@@ -146,6 +146,50 @@ def test_examples_remain_the_same(example: str) -> None:
     with fl.settings.context(decimals=9):
         obtained_fld = fl.FldExporter().to_string(engine)
     assert obtained_fld == expected_fld
+
+
+def test_example1_failing_in_python_3_14() -> None:
+    test_data = """\
+Age RiskTolerance PercentageInStocks
+20.000000000 0.000000000 50.000000000
+20.000000000 0.322580645 50.000000000
+20.000000000 0.645161290 50.000000000
+20.000000000 0.967741935 50.000000000
+20.000000000 1.290322581 50.000000000
+20.000000000 1.612903226 50.000000000
+20.000000000 1.935483871 50.000000000
+20.000000000 2.258064516 50.076647906
+20.000000000 2.580645161 50.390073412
+20.000000000 2.903225806 50.952319485
+20.000000000 3.225806452 51.774914430
+"""
+    engine = fl.examples.mamdani.octave.investment_portfolio.InvestmentPortfolio().engine
+
+    with fl.settings.context(decimals=9):
+        for line in test_data.splitlines()[1:]:
+            age, risk_tolerance, expected = line.split()
+            engine.input_variable("Age").value = fl.scalar(age)
+            engine.input_variable("RiskTolerance").value = fl.scalar(risk_tolerance)
+
+            engine.process()
+
+            obtained = engine.output_variable(0).value.squeeze()
+            assert obtained == fl.scalar(expected).squeeze()
+
+    # test_examples_remain_the_same("fuzzylite.examples.mamdani.octave.investment_portfolio")
+
+
+def test_example2_failing_in_python_3_14(example: str) -> None:
+    test_examples_remain_the_same("fuzzylite.examples.mamdani.octave.mamdani_tip_calculator")
+    engine = fuzzylite.examples.mamdani.octave.mamdani_tip_calculator.MamdaniTipCalculator().engine
+    engine.input_variable(0).value = 20.0
+    engine.input_variable(1).value = 0.0
+    engine.process()
+    obtained = (
+        f"{engine.output_variable(0).fuzzy_value()} = {engine.output_variable(0).value.squeeze()}"
+    )
+    expected = "1.000/AboutFifteen + 0.000/AboutFifty + 1.000/AboutEightyFive = 50.0"
+    assert obtained == expected
 
 
 if __name__ == "__main__":

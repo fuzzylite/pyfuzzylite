@@ -97,7 +97,7 @@ class Settings:
         self,
         float_type: Any = np.float64,
         decimals: int = 3,
-        atol: float = 1e-03,
+        atol: float = 1e-3,
         rtol: float = 0.0,
         alias: str = "fl",
         logger: logging.Logger | None = None,
@@ -464,6 +464,18 @@ class Representation(reprlib.Repr):
             return self.repr1(x.item(), level)
         elements = ", ".join(self.repr1(y, level) for y in x)
         return f"{self.package_of(settings)}{array.__name__}([{elements}])"
+
+    def repr_list(self, x: list[Any], level: int) -> str:
+        """Return the string representation of the list in Python.
+        Args:
+            x: list to represent
+        """
+        if not x:
+            return "[]"
+
+        # elements = ", ".join(f"x_[{index}]" for index, x_i in enumerate(x))
+        elements = ", ".join(x_i.__repr__() for x_i in x)
+        return f"[{elements}]"
 
 
 representation: Final = Representation()
