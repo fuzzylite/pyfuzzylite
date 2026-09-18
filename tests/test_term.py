@@ -1541,6 +1541,12 @@ class TestTerm(unittest.TestCase):
                 -inf: nan,
             }
         )
+    def test_s_shape_membership_values(self):
+        s_shape = fl.SShape("s_shape", 0.0, 10.0)
+
+        assert s_shape.membership(0.0) == 0.0
+        assert s_shape.membership(10.0) == 1.0
+        assert 0.0 < s_shape.membership(5.0) < 1.0
 
     def test_trapezoid(self) -> None:
         """Test the trapezoid term."""
@@ -1856,7 +1862,13 @@ class TestTerm(unittest.TestCase):
                 -inf: nan,
             }
         )
+    def test_z_shape_membership_values(self):
+        z_shape = fl.ZShape("z_shape", 0.0, 10.0)
 
+        assert z_shape.membership(0.0) == 1.0
+        assert z_shape.membership(10.0) == 0.0
+        assert 0.0 < z_shape.membership(5.0) < 1.0
+        
     def test_division_by_zero_does_not_fail_with_numpy_float(self) -> None:
         """Test the division by zero is not raised when using numpy floats."""
         import numpy as np
